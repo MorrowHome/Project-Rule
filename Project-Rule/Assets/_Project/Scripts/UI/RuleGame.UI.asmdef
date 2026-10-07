@@ -1,0 +1,19 @@
+{
+    "name": "RuleGame.UI",
+    "rootNamespace": "RuleGame.UI",
+    "references": [
+        "RuleGame.Core",
+        "RuleGame.Infrastructure",
+        "RuleGame.Gameplay",
+        "RuleGame.Persistence"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

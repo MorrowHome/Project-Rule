@@ -1,0 +1,63 @@
+# ==============================================================================
+#  Unity 工程 .gitignore
+#  说明：以下模式不带前导斜杠，Unity 工程无论在仓库根还是子目录都生效
+# ==============================================================================
+
+# ---------- Unity 自动生成目录（绝对不要提交）----------
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+
+# ---------- Unity 自动生成文件 ----------
+sysinfo.txt
+*.stackdump
+crashlytics-build.properties
+
+# ---------- IDE / 编辑器生成 ----------
+.vs/
+.vscode/
+.idea/
+.gradle/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# ---------- 构建产物 ----------
+*.apk
+*.aab
+*.unitypackage
+*.app
+
+# ---------- 操作系统 ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# ---------- 不进仓库的本地内容 ----------
+归档文档/
+AGENTS.md
+
+# ==============================================================================
+#  以下内容【必须提交】，不要加进忽略列表：
+#    Assets/          全部游戏资源与代码
+#    Packages/        manifest.json、packages-lock.json
+#    ProjectSettings/ 工程设置（含序列化模式与版本控制模式）
+#    所有 *.meta 文件
+# ==============================================================================

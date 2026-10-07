@@ -1,0 +1,23 @@
+{
+    "name": "RuleGame.Editor",
+    "rootNamespace": "RuleGame.Editor",
+    "references": [
+        "RuleGame.Core",
+        "RuleGame.Infrastructure",
+        "RuleGame.Gameplay",
+        "RuleGame.Persistence",
+        "RuleGame.UI",
+        "RuleGame.Presentation"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

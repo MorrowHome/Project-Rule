@@ -1,0 +1,67 @@
+# ==============================================================================
+#  Git 属性配置
+# ==============================================================================
+
+# ---------- 默认：自动识别文本文件，仓库内统一为 LF ----------
+* text=auto
+
+# ---------- Unity 文本资源：走 UnityYAMLMerge 合并 ----------
+# 需先在 git config 里配置 merge.unityyamlmerge.driver（见下方步骤）
+*.unity       merge=unityyamlmerge
+*.prefab      merge=unityyamlmerge
+*.asset       merge=unityyamlmerge
+*.mat         merge=unityyamlmerge
+*.controller  merge=unityyamlmerge
+*.anim        merge=unityyamlmerge
+
+# ---------- 二进制资源：不做换行转换、不做 diff ----------
+# 图片
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.gif     binary
+*.bmp     binary
+*.tga     binary
+*.tif     binary
+*.tiff    binary
+*.psd     binary
+*.ai      binary
+*.xcf     binary
+*.exr     binary
+*.hdr     binary
+
+# 模型
+*.fbx     binary
+*.obj     binary
+*.blend   binary
+*.max     binary
+*.ma      binary
+*.mb      binary
+*.3ds     binary
+*.dae     binary
+
+# 音频
+*.wav     binary
+*.mp3     binary
+*.ogg     binary
+*.aif     binary
+*.aiff    binary
+*.flac    binary
+
+# 视频
+*.mp4     binary
+*.mov     binary
+*.avi     binary
+*.webm    binary
+
+# 字体
+*.ttf     binary
+*.otf     binary
+*.woff    binary
+*.woff2   binary
+
+# 原生插件
+*.dll     binary
+*.so      binary
+*.dylib   binary
+*.bundle  binary

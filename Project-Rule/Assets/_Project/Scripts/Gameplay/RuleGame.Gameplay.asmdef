@@ -1,0 +1,17 @@
+{
+    "name": "RuleGame.Gameplay",
+    "rootNamespace": "RuleGame.Gameplay",
+    "references": [
+        "RuleGame.Core",
+        "RuleGame.Infrastructure"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
