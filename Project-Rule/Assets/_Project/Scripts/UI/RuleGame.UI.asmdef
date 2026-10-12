@@ -5,7 +5,8 @@
         "RuleGame.Core",
         "RuleGame.Infrastructure",
         "RuleGame.Gameplay",
-        "RuleGame.Persistence"
+        "RuleGame.Persistence",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

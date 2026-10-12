@@ -1,0 +1,8 @@
+.lab-screen { position: absolute; left: 0; right: 0; top: 0; bottom: 0; color: #efede1;
+    -unity-font-definition: url("project://database/Assets/_Project/UI/Fonts/P4ChineseFont.asset"); }
+.lab-vitals { position: absolute; left: 32px; top: 24px; }
+.lab-life { font-size: 24px; -unity-font-style: bold; }
+.lab-energy { font-size: 18px; }
+.lab-rules { font-size: 15px; margin-top: 8px; white-space: normal; max-width: 600px; }
+.lab-controls { position: absolute; left: 32px; bottom: 24px; font-size: 15px; }
+.lab-reset { position: absolute; right: 32px; bottom: 24px; font-size: 13px; color: #c9c8bf; }

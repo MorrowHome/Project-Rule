@@ -1,0 +1,12 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="RuleWheelLab.uss" />
+    <ui:VisualElement class="lab-screen" picking-mode="Ignore">
+        <ui:VisualElement class="lab-vitals">
+            <ui:Label name="life" class="lab-life" />
+            <ui:Label name="energy" class="lab-energy" />
+            <ui:Label name="rules" class="lab-rules" />
+        </ui:VisualElement>
+        <ui:Label text="按住 Shift · 鼠标选词 · 左键确认 · 右键返回 · 松开取消" class="lab-controls" />
+        <ui:Label text="R：重置规则与能量" class="lab-reset" />
+    </ui:VisualElement>
+</ui:UXML>
