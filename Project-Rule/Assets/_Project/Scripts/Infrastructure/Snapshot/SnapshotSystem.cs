@@ -107,7 +107,7 @@ namespace RuleGame.Infrastructure.Snapshot
             return snap;
         }
 
-        public void Restore(Snapshot snap)
+        public void Restore(Snapshot snap, RestoreMode mode = RestoreMode.Full)
         {
             if (snap == null) return;
 
@@ -145,7 +145,21 @@ namespace RuleGame.Infrastructure.Snapshot
                 }
 
                 if (es.Status != null && body.TryGetComponent<IEntityStatus>(out IEntityStatus status))
-                    status.ApplyData(es.Status);
+                {
+                    if (mode == RestoreMode.KeepEnergy)
+                    {
+                        // 用实体**当前**的能量盖掉快照里那个，但不改动快照本身。
+                        // ⚠️ EntityStatusData 是 class：不 Clone 的话改的就是快照，
+                        // 而恒定的定点快照要反复用，第一次回溯就被污染了。
+                        EntityStatusData data = es.Status.Clone();
+                        data.Energy = status.Energy;
+                        status.ApplyData(data);
+                    }
+                    else
+                    {
+                        status.ApplyData(es.Status);
+                    }
+                }
             }
 
             // ④ 全部写完才广播（先写状态，再广播 —— 与规则系统同一条纪律）。

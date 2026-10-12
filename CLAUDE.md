@@ -91,8 +91,16 @@
 - ✅ P4：白盒 HUD、规则拼装 demo、五种重力接入（`Scenes/Level_01.unity`）
 - ⚠️ **P3 的组件还没有接进任何场景**（`Level_01.unity` 目前只有 P4 的 demo 控制器）。
   想验证玩法得先接线，接线前请注意下面两条
-- ✅ `RuleCatalog.asset` 已接 **19 条**规则：5 重力 + 5 摩擦 + 5 质量 + 4 伤害（覆盖 4 个属性）；
-  时间 / 因果两个属性的规则类尚未实现
+- ✅ `RuleCatalog.asset` 已接 **30 条**规则 —— **规则矩阵 6 属性 × 5 关系全部可达**。
+  6 个属性规则类都已实现（重力 / 时间 / 摩擦 / 质量 / 伤害 / 因果）
+- ✅ **伤害处理模块**（`Gameplay/Combat/DamageProcessor`）：全游戏唯一的伤害出口，
+  读 `IAttributeManager` 不读 `IRuleSystem`。含伤害缩放/反转/失效、因果（作用对象转换 /
+  随机倍率 / 随机对象 / 扩散）、以及**伤害挂账**的逐实体净额账本
+- ⚠️ **阵营只有两个值**（`Faction.Player` / `Faction.Enemy`，后者是默认值）：
+  玩家独一个阵营、没有友方，其余可攻击实体全是敌人。挂在 `EntityDamageable` 上。
+  **场景里需要把玩家对象的 `_faction` 手动设成 `Player`**，其余不用动
+- ⚠️ `CombatSystem` 的职责已收窄成**命中判定 + 事件宿主**；
+  `ApplyDamage` 收的是**基础值**（不是最终值），一样要过伤害处理模块
 - ⚠️ `PlayerController` 按 D1 用 **Kinematic 刚体**：位移走 `Rigidbody2D.Slide` 解算接触，
   重力自己读 `Physics2D.gravity` 积分。`MovePosition` 自身不做碰撞，**不要绕开 Slide 直接移动**
 - ⚠️ **暂停不能用 `Time.timeScale = 0`**（策划案 §3.1）。冷却等按帧推进的状态改由

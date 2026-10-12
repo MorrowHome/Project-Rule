@@ -9,7 +9,8 @@ namespace RuleGame.Infrastructure.Rules
     /// <remarks>
     /// <para><b>它不认识能量，也不认识冷却。</b>（架构约束 C4）</para>
     /// <para>费用检查与扣除在 <c>RuleReleaseService</c> 完成。</para>
-    /// <para>写入只能通过 <see cref="Request"/>，且必须经由 <c>RuleReleaseService</c>。</para>
+    /// <para>写入只能通过 <see cref="Request"/> 与 <see cref="Cancel"/>，
+    /// 且必须经由 <c>RuleReleaseService</c>。</para>
     /// </remarks>
     public interface IRuleSystem
     {
@@ -31,6 +32,23 @@ namespace RuleGame.Infrastructure.Rules
 
         /// <summary>查询一次释放的费用。该格位未定义时返回 <c>default</c>。</summary>
         RuleCost GetCost(AttributeId attr, RelationId rel);
+
+        // ------------------------------------------------------------------
+        //  主动结束
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// 主动结束某个属性当前生效的规则（玩家的能力）。
+        /// </summary>
+        /// <remarks>
+        /// <para><b>不消耗能量、不影响冷却</b> —— 取消免费，既不退款也不加罚。</para>
+        /// <para>走的是与「超时 / 被覆盖」同一条收尾路径：先让规则类把写在引擎上的外部状态撤掉
+        /// （<c>Clear()</c>），再清槽位，然后触发 <see cref="OnRuleExpired"/> 与
+        /// <see cref="OnRulesChanged"/>。</para>
+        /// <para>该属性没有生效中的规则时<b>什么也不做、也不广播</b>。</para>
+        /// </remarks>
+        /// <returns>确实结束了一条规则时返回 true。</returns>
+        bool Cancel(AttributeId attr);
 
         // ------------------------------------------------------------------
         //  重开关卡

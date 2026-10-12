@@ -23,5 +23,10 @@ namespace RuleGame.Core.Rules
         public void SetDamageInverted(bool v) { var x = Values; x.DamageInverted = v; Values = x; }
         public void SetDamageDisabled(bool v) { var x = Values; x.DamageDisabled = v; Values = x; }
         public void SetDamageDeferred(bool v) { var x = Values; x.DamageDeferred = v; Values = x; }
+        public void SetCausalityScale(float v)          { var x = Values; x.CausalityScale          = v; Values = x; }
+        public void SetCausalityInverted(bool v)        { var x = Values; x.CausalityInverted        = v; Values = x; }
+        public void SetCausalityRandom(bool v)          { var x = Values; x.CausalityRandom          = v; Values = x; }
+        public void SetCausalityRecoveryShared(bool v)  { var x = Values; x.CausalityRecoveryShared  = v; Values = x; }
+        public void SetCausalitySpread(bool v)          { var x = Values; x.CausalitySpread          = v; Values = x; }
     }
 }

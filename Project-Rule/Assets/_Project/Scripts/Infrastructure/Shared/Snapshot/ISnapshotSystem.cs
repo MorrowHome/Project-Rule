@@ -21,8 +21,14 @@ namespace RuleGame.Infrastructure.Snapshot
         /// <summary>采集当前世界状态。</summary>
         Snapshot Capture();
 
-        /// <summary>把快照内容写回，使世界回到该时刻。写完全部状态后才触发 <see cref="OnRestored"/>。</summary>
-        void Restore(Snapshot snap);
+        /// <summary>
+        /// 把快照内容写回，使世界回到该时刻。写完全部状态后才触发 <see cref="OnRestored"/>。
+        /// </summary>
+        /// <param name="mode">
+        /// 恢复范围。默认 <see cref="RestoreMode.Full"/>（关卡存档点）；
+        /// 时间系能力传 <see cref="RestoreMode.KeepEnergy"/> —— 回溯不退能量。
+        /// </param>
+        void Restore(Snapshot snap, RestoreMode mode = RestoreMode.Full);
 
         // ------------------------------------------------------------------
         //  环形缓冲（时间反转）
