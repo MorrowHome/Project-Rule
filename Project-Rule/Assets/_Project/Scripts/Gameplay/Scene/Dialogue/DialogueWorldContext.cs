@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RuleGame.Core.Rules;
+using RuleGame.Infrastructure.Dialogue;
 using RuleGame.Infrastructure.Rules;
 using UnityEngine;
 

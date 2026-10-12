@@ -1,6 +1,6 @@
 using RuleGame.Infrastructure.Rules;
 
-namespace RuleGame.Gameplay.Dialogue
+namespace RuleGame.Infrastructure.Dialogue
 {
     /// <summary>
     /// P1 存档系统的可选接入边界。只回答已经发生过的事，不推测未来规则。
