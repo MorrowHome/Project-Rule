@@ -4,6 +4,7 @@ using RuleGame.Gameplay.Player;
 using RuleGame.Gameplay.Scene.Rules;
 using RuleGame.Infrastructure.Interaction;
 using RuleGame.Infrastructure.Rules;
+using RuleGame.Infrastructure.Time;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -12,7 +13,8 @@ namespace RuleGame.UI.RuleWheel
 {
     /// <summary>
     /// 轮盘组合根。按住 Shift / 右扳机进入，鼠标或右摇杆选择，攻击键逐级确认。
-    /// 输入比 PlayerController 先处理；时间与镜头以令牌接管，关闭/禁用/失焦统一释放。
+    /// 输入与镜头以令牌接管；慢时间交给 P1 的 <c>TimeManager</c>（以 <c>TimeSource.UI</c> 来源合成），
+    /// 关闭 / 禁用 / 失焦统一释放。
     /// </summary>
     [DefaultExecutionOrder(-80), RequireComponent(typeof(UIDocument))]
     public sealed class RuleWheelPresenter : MonoBehaviour
@@ -20,7 +22,6 @@ namespace RuleGame.UI.RuleWheel
         [SerializeField] private PlayerController _player;
         [SerializeField] private RuleCatalog _catalog;
         [SerializeField] private MonoBehaviour _unlocks;
-        [SerializeField] private MonoBehaviour _timeSource;
         [SerializeField] private MonoBehaviour _cameraFocus;
         [SerializeField] private Camera _worldCamera;
         [SerializeField, Range(0.01f, 1f)] private float _selectionScale = 0.1f;
@@ -33,7 +34,9 @@ namespace RuleGame.UI.RuleWheel
         private RuleFan _fan;
         private Label _token, _feedback;
         private RuleSelectionSession _session;
-        private IDisposable _timeLease, _inputLease, _focusLease;
+        private ITimeManager _time;
+        private bool _timeScaleApplied;
+        private IDisposable _inputLease, _focusLease;
         private bool _waitForRelease;
         private float _nextAvailability;
         public bool IsOpen => Stage != RuleSelectionStage.Closed;
@@ -53,11 +56,13 @@ namespace RuleGame.UI.RuleWheel
         private void Start()
         {
             EntityStatus status = _player != null ? _player.GetComponent<EntityStatus>() : null;
+            _time = TimeManager.Instance;
             if (_root == null || _fan == null || _token == null || _feedback == null || status == null
                 || _catalog == null || RuleSystem.Instance == null || !(_unlocks is IRuleUnlocks)
-                || !(_timeSource is IRuleSelectionTimeSource) || !(_cameraFocus is IRuleSelectionFocus) || _worldCamera == null)
+                || _time == null || !(_cameraFocus is IRuleSelectionFocus) || _worldCamera == null)
             {
-                Debug.LogError("[RuleWheel] 请配置布局、P3 玩家、目录、解锁查询、时间来源和镜头接口。", this);
+                Debug.LogError("[RuleWheel] 请配置布局、P3 玩家、目录、解锁查询与镜头接口，"
+                    + "并确保 P1 的时间管理器（RuleSystemDriver.Awake 里初始化）已就绪。", this);
                 enabled = false;
                 return;
             }
@@ -70,8 +75,10 @@ namespace RuleGame.UI.RuleWheel
                 || _player.GetComponent<EntityStatus>().IsPaused) return false;
             try
             {
-                _timeLease = ((IRuleSelectionTimeSource)_timeSource).AcquireSelectionScale(_selectionScale);
-                if (_timeLease == null) return false;
+                // 慢时间走 P1 的 TimeManager：选择模式只是一路独立来源（TimeSource.UI），
+                // 与时间规则乘法合成；关闭时只移除这一路，轮盘不再自己保存 / 恢复全局倍率。
+                _time.PushScale(TimeSource.UI, _selectionScale);
+                _timeScaleApplied = true;
                 _inputLease = ((IRuleSelectionInputGate)_player).BlockGameplayInput();
                 _focusLease = ((IRuleSelectionFocus)_cameraFocus).AcquireSelectionFocus();
                 if (_focusLease == null) { ReleaseEffects(); return false; }
@@ -180,7 +187,7 @@ namespace RuleGame.UI.RuleWheel
         {
             _focusLease?.Dispose(); _focusLease = null;
             _inputLease?.Dispose(); _inputLease = null;
-            _timeLease?.Dispose(); _timeLease = null;
+            if (_timeScaleApplied) { _time?.RemoveScale(TimeSource.UI); _timeScaleApplied = false; }
         }
 
         private void OnDisable() => Close();

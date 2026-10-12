@@ -3,6 +3,7 @@ using System.IO;
 using RuleGame.Development.P3;
 using RuleGame.Gameplay.Player;
 using RuleGame.Gameplay.Scene.Rules;
+using RuleGame.Infrastructure.Time;
 using RuleGame.UI.RuleWheel;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -23,7 +24,7 @@ namespace RuleGame.Editor.RuleWheel
         private static Keyboard _keyboard;
         private static RenderTexture _surface;
         private static int _step, _cycle, _frames;
-        private static float _x, _fixedStep, _energy;
+        private static float _x, _energy;
         private static double _due;
         private static double _startupDeadline;
         private static bool _errors;
@@ -69,7 +70,6 @@ namespace RuleGame.Editor.RuleWheel
             _player = UnityEngine.Object.FindAnyObjectByType<PlayerController>();
             _wheel = UnityEngine.Object.FindAnyObjectByType<RuleWheelPresenter>();
             _keyboard = InputSystem.AddDevice<Keyboard>(); _keyboard.MakeCurrent();
-            _fixedStep = Time.fixedDeltaTime;
             _energy = _player.GetComponent<EntityStatus>().Energy;
             _surface = new RenderTexture(1280, 720, 24); _surface.Create();
             Camera.main.targetTexture = _surface;
@@ -127,7 +127,8 @@ namespace RuleGame.Editor.RuleWheel
                         break;
                     case 3:
                         Check(!_wheel.IsOpen && Mathf.Approximately(Time.timeScale, 1f)
-                            && Mathf.Approximately(Time.fixedDeltaTime, _fixedStep), "松开 Shift 没恢复 UI / 时间步长");
+                            && Mathf.Approximately(TimeManager.Instance.TimeScale, 1f),
+                            "松开 Shift 没恢复 UI / 时间倍率");
                         Check(Time.frameCount > _frames && (_player.transform.position.x - _x) * direction > 0.1f,
                             "取消选择后帧循环或移动仍被锁住");
                         Check(Mathf.Approximately(_player.GetComponent<EntityStatus>().Energy, _energy), "取消选择错误扣费");
@@ -141,7 +142,7 @@ namespace RuleGame.Editor.RuleWheel
                 }
                 _due = Time.unscaledTimeAsDouble + 0.35;
             }
-            catch (Exception error) { Finish(false, $"cycle={_cycle}, step={_step}, position={_player.transform.position}, timeScale={Time.timeScale}, fixedStep={Time.fixedDeltaTime}, expectedStep={_fixedStep}\n{error}"); }
+            catch (Exception error) { Finish(false, $"cycle={_cycle}, step={_step}, position={_player.transform.position}, timeScale={Time.timeScale}, managerScale={(TimeManager.Instance != null ? TimeManager.Instance.TimeScale : -1f)}\n{error}"); }
         }
 
         private static void Check(bool condition, string detail)

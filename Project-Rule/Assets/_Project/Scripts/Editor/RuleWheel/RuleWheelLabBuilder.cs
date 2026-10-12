@@ -78,7 +78,6 @@ namespace RuleGame.Editor.RuleWheel
                 RuleSelectionCamera focus = camera.gameObject.AddComponent<RuleSelectionCamera>();
                 Set(focus, "_target", player.transform);
                 Set(focus, "_normalFollow", camera.GetComponent<P3FollowCamera>());
-                RuleWheelLabTimeSource time = new GameObject("Lab time adapter - replace with P1").AddComponent<RuleWheelLabTimeSource>();
                 PanelSettings panel = AssetDatabase.LoadAssetAtPath<PanelSettings>(UIPath + "RuleWheelPanelSettings.asset");
                 if (panel == null)
                 {
@@ -93,7 +92,6 @@ namespace RuleGame.Editor.RuleWheel
                 Set(wheel, "_player", player);
                 Set(wheel, "_catalog", new SerializedObject(rules).FindProperty("_catalog").objectReferenceValue);
                 Set(wheel, "_unlocks", unlocks);
-                Set(wheel, "_timeSource", time);
                 Set(wheel, "_cameraFocus", focus);
                 Set(wheel, "_worldCamera", camera);
                 UIDocument labDocument = Document("Lab HUD", panel, "RuleWheelLab.uxml", 0);
