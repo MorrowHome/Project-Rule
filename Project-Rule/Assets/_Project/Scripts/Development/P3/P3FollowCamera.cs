@@ -26,6 +26,10 @@ namespace RuleGame.Development.P3
         [Tooltip("相对目标的取景偏移（一般把角色放画面偏下一点）。")]
         [SerializeField] private Vector2 _offset = new Vector2(0f, 0.5f);
 
+        [Tooltip("死区大小（世界单位）：目标在这个框内移动时摄像机不动。" +
+                 "没有死区的话摄像机会死贴每一次微小移动，画面不断漂 —— 这是「跟随感觉奇怪」的主因。")]
+        [SerializeField] private Vector2 _deadZone = new Vector2(1.2f, 1.6f);
+
         [Header("阻尼")]
         [Tooltip("横向追上目标所需时间（秒）。越小越跟手。")]
         [SerializeField] private float _smoothTimeX = 0.12f;
@@ -75,17 +79,13 @@ namespace RuleGame.Development.P3
 
             Vector2 targetPosition = _target.position;
 
-            // 用「目标这一帧移动了多少」推断朝向 —— 不依赖任何具体组件，敌人也能当目标
-            if (_initialized)
-            {
-                float dx = targetPosition.x - _lastTargetPosition.x;
-                if (Mathf.Abs(dx) > 0.0001f)
-                {
-                    float desiredLead = Mathf.Sign(dx) * _lookAhead;
-                    _leadX = Mathf.SmoothDamp(_leadX, desiredLead, ref _leadVelocity, _lookAheadSmoothTime, Mathf.Infinity, dt);
-                }
-            }
+            // 用「目标这一帧移动了多少」推断朝向 —— 不依赖任何具体组件，敌人也能当目标。
+            // 停下来时前瞻平滑回中；不然会一直保持「朝上次方向偏一段」的姿态。
+            float dx = _initialized ? targetPosition.x - _lastTargetPosition.x : 0f;
             _lastTargetPosition = targetPosition;
+
+            float desiredLead = Mathf.Abs(dx) > 0.0001f ? Mathf.Sign(dx) * _lookAhead : 0f;
+            _leadX = Mathf.SmoothDamp(_leadX, desiredLead, ref _leadVelocity, _lookAheadSmoothTime, Mathf.Infinity, dt);
 
             Vector2 desired = targetPosition + _offset + new Vector2(_leadX, 0f);
 
@@ -97,9 +97,18 @@ namespace RuleGame.Development.P3
                 return;
             }
 
+            // 死区：目标没走出这个框时摄像机原地不动；走出去了才追到「框边」而不是追目标本身。
+            // 这样小幅移动（走路时的上下起伏、微调站位）不会让整个画面跟着漂。
+            Vector2 delta = desired - (Vector2)transform.position;
+            float halfX = _deadZone.x * 0.5f;
+            float halfY = _deadZone.y * 0.5f;
+            delta.x = Mathf.Abs(delta.x) < halfX ? 0f : delta.x - Mathf.Sign(delta.x) * halfX;
+            delta.y = Mathf.Abs(delta.y) < halfY ? 0f : delta.y - Mathf.Sign(delta.y) * halfY;
+
+            Vector2 goal = (Vector2)transform.position + delta;
             Vector2 current = transform.position;
-            current.x = Mathf.SmoothDamp(current.x, desired.x, ref _velocity.x, _smoothTimeX, Mathf.Infinity, dt);
-            current.y = Mathf.SmoothDamp(current.y, desired.y, ref _velocity.y, _smoothTimeY, Mathf.Infinity, dt);
+            current.x = Mathf.SmoothDamp(current.x, goal.x, ref _velocity.x, _smoothTimeX, Mathf.Infinity, dt);
+            current.y = Mathf.SmoothDamp(current.y, goal.y, ref _velocity.y, _smoothTimeY, Mathf.Infinity, dt);
             transform.position = new Vector3(current.x, current.y, _keepZ);
         }
     }

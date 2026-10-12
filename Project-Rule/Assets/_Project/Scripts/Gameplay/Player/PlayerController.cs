@@ -150,6 +150,9 @@ namespace RuleGame.Gameplay.Player
             _rb.gravityScale = 0f;
             _rb.linearDamping = 0f;
             _rb.constraints = RigidbodyConstraints2D.FreezeRotation;           // 平台角色不翻滚
+            // 插值：物理是 50Hz 定步长，渲染帧率更高。不开插值的话 Transform 只在物理帧更新，
+            // 摄像机会很顺、角色却在"跳格子"（横向移动时最明显）。
+            _rb.interpolation = RigidbodyInterpolation2D.Interpolate;
             _rb.useFullKinematicContacts = true;                              // Kinematic 与静态体 / 推动物之间也要产生接触
 
             if (_status == null) _status = GetComponent<EntityStatus>();

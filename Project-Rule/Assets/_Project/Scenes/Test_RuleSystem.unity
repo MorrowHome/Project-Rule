@@ -634,7 +634,7 @@ Camera:
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
   m_TargetEye: 0
-  m_HDR: 1
+  m_HDR: 0
   m_AllowMSAA: 0
   m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
@@ -670,6 +670,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RuleGame.Development::RuleGame.Development.P3.P3FollowCamera
   _target: {fileID: 279477530}
   _offset: {x: 0, y: 0.5}
+  _deadZone: {x: 1.2, y: 1.6}
   _smoothTimeX: 0.12
   _smoothTimeY: 0.28
   _lookAhead: 1.2
