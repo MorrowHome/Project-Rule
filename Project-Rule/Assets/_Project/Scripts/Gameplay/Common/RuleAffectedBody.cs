@@ -231,6 +231,15 @@ namespace RuleGame.Gameplay.Common
             return Mathf.Max(ReferenceMass * ReferenceMass / _baseMass, MinMass);
         }
 
+        /// <summary>
+        /// 摩擦**大小**的缩放。规则「摩擦 × 反转」置位的 <c>FrictionInverted</c> 在这里**刻意不响应**。
+        /// </summary>
+        /// <remarks>
+        /// 反转的语义是「摩擦力的**方向**翻过来」，只对**有移动意图**的实体成立
+        /// （玩家 / 敌人的控制器把它读成「按右往左走」，见 <c>PlayerController</c>）。
+        /// 而动态物体（石头）没有意图：把它的接触摩擦方向翻过来 = 引擎持续同向加速 → 越滑越快、失控。
+        /// 所以这里只消费 <c>FrictionScale</c>；反转由各运动控制器自己实现。
+        /// </remarks>
         private void ApplyFriction(float scale)
         {
             if (_colliders.Length == 0) return;
