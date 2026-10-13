@@ -247,6 +247,9 @@ namespace RuleGame.Gameplay.Player
         /// 这里自动是 −1 —— 表现层不需要自己判断方向。</remarks>
         public float Facing => _facing;
 
+        /// <summary>本帧读到的**原始**移动输入（未经摩擦反转换算）。供调试浮层显示。</summary>
+        public Vector2 MoveInput => _moveInput;
+
         /// <summary>左侧是否贴着可蹬的竖墙（供调试浮层显示）。</summary>
         public bool WallLeft => _wallLeft;
 
@@ -324,10 +327,11 @@ namespace RuleGame.Gameplay.Player
                 _moveAction   = _inputActions.FindAction("Player/Move",   false);
                 _jumpAction   = _inputActions.FindAction("Player/Jump",   false);
                 _attackAction = _inputActions.FindAction("Player/Attack", false);
-                // ⚠️ 冲刺复用了输入资源里**没有任何代码使用**的 Player/Sprint（左 Shift /
-                //    手柄左摇杆按下）—— 这样不必动团队共享的 .inputactions。
-                //    等输入方案定稿，把它重命名成 Dash 再改这一行即可（详见 Doc/玩家动作设计.md §3.5）。
-                _dashAction   = _inputActions.FindAction("Player/Sprint", false);
+                // ⚠️ 冲刺复用输入资源里**没有任何代码使用**的 Player/Crouch（C 键 /
+                //    手柄 buttonEast）—— 这样不必动团队共享的 .inputactions。
+                //    等输入方案定稿，把它重命名成 Dash 再改这一行即可（详见 Doc/玩家动作设计.md §3.6）。
+                //    （曾用过 Player/Sprint=左 Shift，按你的意见换掉了。）
+                _dashAction   = _inputActions.FindAction("Player/Crouch", false);
             }
 
             _dashesLeft = _maxDashes;           // 起手就有冲刺，不必先落地一次

@@ -99,6 +99,15 @@ namespace RuleGame.Development.P3
             if (_player != null)
                 GUILayout.Label($"贴墙：左={_player.WallLeft} 右={_player.WallRight}"
                                 + (_player.IsWallSliding ? "  ← 缓慢下滑中" : ""));
+            if (_player != null)
+            {
+                // 排查「按键和移动方向对不上」：这里能同时看到**输入**和**换算后的朝向**。
+                // 按右时 Input 的 x 应该是正的；只有「摩擦 × 反转」生效时 Facing 才会与它反号。
+                Vector2 inp = _player.MoveInput;
+                GUILayout.Label($"输入：x={inp.x:F2}  朝向 Facing={_player.Facing:+0;-0;0}"
+                                + (Mathf.Sign(inp.x) * _player.Facing < 0f && Mathf.Abs(inp.x) > 0.01f
+                                   ? "  ← 输入与朝向反号（摩擦反转？）" : ""));
+            }
             GUILayout.Label($"暂停：{_status.IsPaused}");
             DrawLedger();
 
