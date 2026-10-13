@@ -218,7 +218,6 @@ MonoBehaviour:
   _combat: {fileID: 850425796}
   _attackDamage: 10
   _attackKnockback: 6
-  _attackCooldown: 0.25
   _attackBoxSize: {x: 1.2, y: 1}
   _attackOffset: 0.8
   _attackMask:

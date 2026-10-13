@@ -280,12 +280,6 @@ namespace RuleGame.Gameplay.Combat
         //  阵营
         // ==================================================================
 
-        /// <summary>
-        /// 从任意形式的实体引用上找阵营。
-        /// </summary>
-        /// <remarks>发起方传进来的类型不固定（<c>PlayerController</c> 传的是 <c>this</c>，
-        /// 调试工具传的是 <c>transform</c>），所以这里照 <c>EntityDamageable</c>
-        /// 解析击退方向的同一套写法处理。找不到时按 <see cref="Faction.Enemy"/>。</remarks>
         /// <summary>从任意形式的实体引用上找它自己的 <see cref="IDamageable"/>（因果反转要用）。</summary>
         private static IDamageable ResolveDamageable(object entity)
         {
@@ -305,6 +299,12 @@ namespace RuleGame.Gameplay.Combat
             }
         }
 
+        /// <summary>
+        /// 从任意形式的实体引用上找阵营。
+        /// </summary>
+        /// <remarks>发起方传进来的类型不固定（<c>PlayerController</c> 传的是 <c>this</c>，
+        /// 调试工具传的是 <c>transform</c>），所以这里照 <c>EntityDamageable</c>
+        /// 解析击退方向的同一套写法处理。找不到时按 <see cref="Faction.Enemy"/>。</remarks>
         private static Faction ResolveFaction(object entity)
         {
             switch (entity)
