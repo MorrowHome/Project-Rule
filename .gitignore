@@ -56,6 +56,11 @@ $RECYCLE.BIN/
 AGENTS.md
 CLAUDE.local.md
 
+# 百度网盘同步工具：cookie 与 14MB 二进制不进仓库，脚本与说明要进
+Tools/BaiduSync/config.json
+Tools/BaiduSync/.staging/
+Tools/BaiduSync/bin/
+
 # ==============================================================================
 #  以下内容【必须提交】，不要加进忽略列表：
 #    Assets/          全部游戏资源与代码
@@ -63,3 +68,7 @@ CLAUDE.local.md
 #    ProjectSettings/ 工程设置（含序列化模式与版本控制模式）
 #    所有 *.meta 文件
 # ==============================================================================
+
+# 美术源文件（psd / mp4 / 参考图）：不进仓库，Unity 也不该导入它们
+# 它们在 Project-Rule/ArtSource/，已在 Assets 之外；本行走仓库体积
+ArtSource/

@@ -5,4 +5,5 @@
   <Project Path="RuleGame.Development.csproj" />
   <Project Path="RuleGame.UI.csproj" />
   <Project Path="RuleGame.Editor.csproj" />
+  <Project Path="RuleGame.Presentation.csproj" />
 </Solution>
