@@ -1,11 +1,11 @@
 ﻿<Solution>
   <Project Path="YarnSpinner.Unity.csproj" />
+  <Project Path="RuleGame.Editor.csproj" />
   <Project Path="RuleGame.Core.csproj" />
   <Project Path="RuleGame.Infrastructure.csproj" />
   <Project Path="RuleGame.Gameplay.csproj" />
   <Project Path="RuleGame.UI.csproj" />
   <Project Path="YarnSpinner.Unity.Editor.csproj" />
-  <Project Path="RuleGame.Editor.csproj" />
   <Project Path="RuleGame.Development.csproj" />
   <Project Path="YarnSpinner.Unity.Tests.Editor.csproj" />
   <Project Path="RuleGame.Dialogue.csproj" />

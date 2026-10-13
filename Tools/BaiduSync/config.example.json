@@ -1,0 +1,10 @@
+{
+  "cookies": "BDUSS=粘贴你的BDUSS; STOKEN=粘贴你的STOKEN",
+  "remote_dir": "/我的资源/规则游戏/美术",
+  "local_dir": "Project-Rule/Assets/_Project/Art/Sprites",
+  "png_only": true,
+  "strip_remote_root": true,
+  "threads": 8,
+  "parallel_files": 3,
+  "extra_args": []
+}
