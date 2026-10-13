@@ -247,6 +247,27 @@ namespace RuleGame.Gameplay.Player
         private bool IsPaused => _status != null && _status.IsPaused;
 
         // ==================================================================
+        //  表现层事件
+        // ==================================================================
+        //
+        // ⚠️ 这些是**边沿事件**（一次性），不是状态 —— 状态用上面那些只读属性读。
+        //    分成两种是因为表现层两样都要：「现在是什么」（持续条件，每帧重写就够）
+        //    和「刚刚发生了什么」（一次性动作）。后者靠每帧采样很容易漏掉或重复计一次
+        //    （比如 0.33 秒的落地只有 4 个物理帧），所以直接从源头发事件。
+
+        /// <summary>起跳瞬间 —— 含地面跳、土狼跳、空中多段跳；用 <see cref="IsGrounded"/> 区分是哪一种。</summary>
+        public event Action OnJumped;
+
+        /// <summary>蹬墙跳瞬间。与 <see cref="OnJumped"/> 分开：它有两档推力、表现也不同。</summary>
+        public event Action OnWallJumped;
+
+        /// <summary>落地瞬间（接地判定 false → true）。</summary>
+        public event Action OnLanded;
+
+        /// <summary>冲刺开始瞬间（次数已扣、方向已定）。</summary>
+        public event Action OnDashed;
+
+        // ==================================================================
         //  生命周期
         // ==================================================================
 
@@ -351,9 +372,14 @@ namespace RuleGame.Gameplay.Player
 
             // ① 接地：查询刚体自身的全部碰撞体，不需要额外的地面检测子物体。
             //    放在移动之前，本帧的水平处理才能用到最新的接地状态。
+            bool wasGrounded = _grounded;
             _grounded  = ProbeGround();
             _wallLeft  = ProbeWall(Vector2.left);
             _wallRight = ProbeWall(Vector2.right);
+
+            // 落地边沿：属性给的是「有没有踩着」，这里补一个「这一帧刚踩上」——
+            // 表现层要播一次落地动作，需要精确的起点，靠每帧采样接地状态是拿不到的。
+            if (_grounded && !wasGrounded) OnLanded?.Invoke();
 
             // ② 跳数与土狼时间：与冲刺无关，一直推进 —— 冲刺结束的下一帧就要拿到正确的跳数
             if (_grounded)
@@ -472,6 +498,7 @@ namespace RuleGame.Gameplay.Player
                         _bufferLeft = 0f;                 // 一次输入只跳一段
                         _coyoteLeft = 0f;                 // 起跳后土狼窗口作废，否则按住方向就能连跳
                         _jumpsUsed  = Mathf.Min(_jumpsUsed + 1, MaxJumps);
+                        OnJumped?.Invoke();
                     }
                     else if (!Mathf.Approximately(wallPush, 0f))
                     {
@@ -483,6 +510,7 @@ namespace RuleGame.Gameplay.Player
                         _jumpsUsed  = 0;                  // 蹬墙刷新跳数 —— 一面墙就能一路爬上去
                         _coyoteLeft = 0f;
                         _bufferLeft = 0f;
+                        OnWallJumped?.Invoke();
                     }
                     else
                     {
@@ -497,6 +525,7 @@ namespace RuleGame.Gameplay.Player
                             _bufferLeft = 0f;             // 一次输入只跳一段
                             _coyoteLeft = 0f;
                             _jumpsUsed  = Mathf.Min(_jumpsUsed + 1, MaxJumps);
+                            OnJumped?.Invoke();
                         }
                     }
                 }
@@ -564,6 +593,7 @@ namespace RuleGame.Gameplay.Player
             if (!Mathf.Approximately(_dashDirection.x, 0f)) _facing = Mathf.Sign(_dashDirection.x);
             _dashLeft  = _dashDuration;
             _dashesLeft = Mathf.Max(_dashesLeft - 1, 0);
+            OnDashed?.Invoke();
         }
 
         /// <summary>冲刺结束：收住水平速度、开始冷却。</summary>
