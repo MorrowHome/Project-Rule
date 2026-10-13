@@ -142,10 +142,23 @@ namespace RuleGame.Gameplay.Player
         [SerializeField] private CombatSystem _combat;
         [SerializeField] private float     _attackDamage    = 10f;
         [SerializeField] private float     _attackKnockback = 6f;
-        [SerializeField] private float     _attackCooldown  = 0.25f;
         [SerializeField] private Vector2   _attackBoxSize   = new Vector2(1.2f, 1f);
         [SerializeField] private float     _attackOffset    = 0.8f;
         [SerializeField] private LayerMask _attackMask;
+
+        [Tooltip("起手：从按键到「判定开窗」的秒数。")]
+        [SerializeField] private float _attackWindup = 0.12f;
+
+        [Tooltip("生效：判定窗的时长。**只在开窗那一瞬做一次命中判定**，不做持续判定 —— " +
+                 "一刀砍两次会把无敌帧和伤害规则都算乱。")]
+        [SerializeField] private float _attackActive = 0.12f;
+
+        [Tooltip("收招：这段时间里**再按一次就接下一刀**，不按就收剑。" +
+                 "起手 / 生效段按下会先存着，到收招段再兑现（连段手感靠它）。")]
+        [SerializeField] private float _attackRecover = 0.30f;
+
+        [Tooltip("连段最多打几刀。1 = 只有一下，不接。")]
+        [SerializeField, Range(1, 4)] private int _maxCombo = 2;
 
         [Header("能量")]
         [Tooltip("每命中一个目标恢复的能量（策划案 §四：攻击小怪回能）。未命中不给。")]
@@ -174,7 +187,14 @@ namespace RuleGame.Gameplay.Player
         private float   _bufferLeft;
         private int     _jumpsUsed;             // 本次落地以来已用掉几段跳
         private float   _facing = 1f;
-        private float   _nextAttackTime;
+
+        /// <summary>连段的三个阶段。见 <c>Doc/美术与动画接入方案.md</c> §十。</summary>
+        private enum AttackPhase { None, Windup, Active, Recover }
+
+        private AttackPhase _attackPhase = AttackPhase.None;
+        private float   _attackTimer;
+        private int     _comboIndex = -1;      // 未出招时为 −1，出招后 0、1、2…
+        private bool    _attackBuffered;       // 起手 / 生效段按下 → 留到收招段兑现
 
         private bool    _dashQueued;            // 本视觉帧按下了冲刺
         private float   _dashLeft;              // 冲刺剩余秒数，> 0 表示正在冲刺
@@ -267,6 +287,16 @@ namespace RuleGame.Gameplay.Player
         /// <summary>冲刺开始瞬间（次数已扣、方向已定）。</summary>
         public event Action OnDashed;
 
+        /// <summary>
+        /// 挥出一刀 —— 连段的**第一下和之后每一下**都会发。
+        /// </summary>
+        /// <remarks>表现层用 <see cref="AttackComboIndex"/> 区分是起手还是接续
+        /// （起手播拔剑、接续播下一段）。</remarks>
+        public event Action OnAttacked;
+
+        /// <summary>当前连段打到第几刀（0 起数）；没在出招时是 −1。</summary>
+        public int AttackComboIndex => _comboIndex;
+
         // ==================================================================
         //  生命周期
         // ==================================================================
@@ -349,7 +379,7 @@ namespace RuleGame.Gameplay.Player
                 _dashQueued = true;
 
             if (_attackAction != null && _attackAction.WasPressedThisFrame())
-                DoAttack();
+                QueueAttack();
         }
 
         // ==================================================================
@@ -399,6 +429,9 @@ namespace RuleGame.Gameplay.Player
 
             // ③ 冲刺：次数 / 计时 / 冷却。
             UpdateDash(dt);
+
+            // ③′ 攻击连段：起手 → 生效（在这里开一次判定）→ 收招。
+            UpdateAttack(dt);
 
             // ④ 重力：自己积分（要的是加速度，所以累加，不交给 SlideMovement.gravity）。
             //    下落时再乘一次 _fallGravityMultiplier —— 落得比升得快，滞空更紧凑。
@@ -728,12 +761,88 @@ namespace RuleGame.Gameplay.Player
         //  攻击
         // ==================================================================
 
-        private void DoAttack()
+        /// <summary>按下攻击键。三种去向：起手 / 接下一刀 / 先存着。</summary>
+        private void QueueAttack()
+        {
+            // 空着 → 起手
+            if (_attackPhase == AttackPhase.None)
+            {
+                BeginSwing(0);
+                return;
+            }
+
+            // 收招段 → 接下一刀（打满了就丢掉这次输入）
+            if (_attackPhase == AttackPhase.Recover)
+            {
+                TryAdvanceCombo();
+                return;
+            }
+
+            // 起手 / 生效段 → 先存着，等进收招段再兑现。
+            // 不存的话连段就只能「卡在收招那一下」按，手感很差。
+            _attackBuffered = true;
+        }
+
+        /// <summary>能不能接下一刀。打满了返回 false。</summary>
+        private bool TryAdvanceCombo()
+        {
+            if (_comboIndex + 1 >= _maxCombo) return false;
+            BeginSwing(_comboIndex + 1);
+            return true;
+        }
+
+        private void BeginSwing(int index)
+        {
+            _comboIndex     = index;
+            _attackPhase    = AttackPhase.Windup;
+            _attackTimer    = _attackWindup;
+            _attackBuffered = false;
+
+            OnAttacked?.Invoke();      // 表现层据此播「拔剑」或「下一段」
+        }
+
+        /// <summary>
+        /// 推连段计时。<b>判定只在开窗那一瞬做一次</b>，之后是收招 —— 不做持续判定。
+        /// </summary>
+        /// <remarks>计时用 <c>fixedDeltaTime</c>，而暂停时 <see cref="FixedUpdate"/> 提前返回，
+        /// 所以连段天然冻结，不需要额外的暂停分支（与冲刺同理）。</remarks>
+        private void UpdateAttack(float dt)
+        {
+            if (_attackPhase == AttackPhase.None) return;
+
+            _attackTimer -= dt;
+            if (_attackTimer > 0f) return;
+
+            switch (_attackPhase)
+            {
+                case AttackPhase.Windup:
+                    PerformAttackHit();
+                    _attackPhase = AttackPhase.Active;
+                    _attackTimer = _attackActive;
+                    break;
+
+                case AttackPhase.Active:
+                    _attackPhase = AttackPhase.Recover;
+                    _attackTimer = _attackRecover;
+                    // 起手 / 生效段存下的那一下，现在兑现
+                    if (_attackBuffered)
+                    {
+                        _attackBuffered = false;
+                        TryAdvanceCombo();
+                    }
+                    break;
+
+                case AttackPhase.Recover:
+                    _comboIndex  = -1;
+                    _attackPhase = AttackPhase.None;
+                    break;
+            }
+        }
+
+        /// <summary>生效段的唯一命中判定。走正式伤害链路（传**基础值**，由伤害处理模块按规则算）。</summary>
+        private void PerformAttackHit()
         {
             if (_combat == null) return;
-            if (Time.time < _nextAttackTime) return;      // 攻击冷却：连点不会连打
-
-            _nextAttackTime = Time.time + _attackCooldown;
 
             // 发起方只组织「打哪儿、打多大」，最终伤害由伤害处理模块按当前规则算。
             Vector2 center = (Vector2)transform.position + new Vector2(_facing * _attackOffset, 0f);

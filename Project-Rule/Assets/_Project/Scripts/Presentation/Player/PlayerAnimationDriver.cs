@@ -51,6 +51,12 @@ namespace RuleGame.Presentation.Player
         public const string ParamHurt     = "Hurt";
         public const string ParamDie      = "Die";
 
+        /// <summary>起手一刀（连段的第一下）。</summary>
+        public const string ParamAttack     = "Attack";
+
+        /// <summary>连段的下一刀（收招前再按一次）。</summary>
+        public const string ParamAttackNext = "AttackNext";
+
         private static readonly int HSpeed          = Animator.StringToHash(ParamSpeed);
         private static readonly int HGrounded       = Animator.StringToHash(ParamGrounded);
         private static readonly int HDashing        = Animator.StringToHash(ParamDashing);
@@ -58,11 +64,13 @@ namespace RuleGame.Presentation.Player
         private static readonly int HGravityFlipped = Animator.StringToHash(ParamGravityFlipped);
         private static readonly int HRising         = Animator.StringToHash(ParamRising);
 
-        private static readonly int HJump     = Animator.StringToHash(ParamJump);
-        private static readonly int HWallJump = Animator.StringToHash(ParamWallJump);
-        private static readonly int HLand     = Animator.StringToHash(ParamLand);
-        private static readonly int HHurt     = Animator.StringToHash(ParamHurt);
-        private static readonly int HDie      = Animator.StringToHash(ParamDie);
+        private static readonly int HJump         = Animator.StringToHash(ParamJump);
+        private static readonly int HWallJump     = Animator.StringToHash(ParamWallJump);
+        private static readonly int HLand         = Animator.StringToHash(ParamLand);
+        private static readonly int HHurt         = Animator.StringToHash(ParamHurt);
+        private static readonly int HDie          = Animator.StringToHash(ParamDie);
+        private static readonly int HAttack       = Animator.StringToHash(ParamAttack);
+        private static readonly int HAttackNext   = Animator.StringToHash(ParamAttackNext);
 
         // ==================================================================
         //  序列化
@@ -100,6 +108,7 @@ namespace RuleGame.Presentation.Player
                 _player.OnJumped     += HandleJumped;
                 _player.OnWallJumped += HandleWallJumped;
                 _player.OnLanded     += HandleLanded;
+                _player.OnAttacked   += HandleAttacked;
             }
 
             if (_status != null)
@@ -116,6 +125,7 @@ namespace RuleGame.Presentation.Player
                 _player.OnJumped     -= HandleJumped;
                 _player.OnWallJumped -= HandleWallJumped;
                 _player.OnLanded     -= HandleLanded;
+                _player.OnAttacked   -= HandleAttacked;
             }
 
             if (_status != null) _status.OnHealthChanged -= HandleHealthChanged;
@@ -173,6 +183,16 @@ namespace RuleGame.Presentation.Player
         private void HandleJumped()     => SetTrigger(HJump);
         private void HandleWallJumped() => SetTrigger(HWallJump);
         private void HandleLanded()     => SetTrigger(HLand);
+
+        /// <summary>
+        /// 挥了一刀。第一次是「起手」（拔剑 → 第一段），之后每一下是「接续」（下一段）。
+        /// </summary>
+        /// <remarks>
+        /// 用两个触发器而不是一个，是因为 <c>AnyState → DrawSword</c> 的优先级高于一切 ——
+        /// 用一个 <c>Attack</c> 的话，连段中途再按会从拔剑重来。
+        /// </remarks>
+        private void HandleAttacked()
+            => SetTrigger(_player.AttackComboIndex <= 0 ? HAttack : HAttackNext);
 
         /// <summary>掉血 → 受伤；掉到 0 → 死亡。回血不触发任何东西。</summary>
         private void HandleHealthChanged(float current, float max)

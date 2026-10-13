@@ -112,6 +112,11 @@ namespace RuleGame.Editor.Animations
             c.AddParameter(PlayerAnimationDriver.ParamLand,     AnimatorControllerParameterType.Trigger);
             c.AddParameter(PlayerAnimationDriver.ParamHurt,     AnimatorControllerParameterType.Trigger);
             c.AddParameter(PlayerAnimationDriver.ParamDie,      AnimatorControllerParameterType.Trigger);
+
+            // 攻击：起手一个、接续一个。分成两个是因为 AnyState → 拔剑的优先级高于一切，
+            // 共用一个的话连段中途再按会从拔剑重来。
+            c.AddParameter(PlayerAnimationDriver.ParamAttack,     AnimatorControllerParameterType.Trigger);
+            c.AddParameter(PlayerAnimationDriver.ParamAttackNext, AnimatorControllerParameterType.Trigger);
         }
 
         private static void ClearParameters(AnimatorController c)
@@ -316,17 +321,18 @@ namespace RuleGame.Editor.Animations
         //  连线：战斗连段
         // ==================================================================
         //
-        // 结构照美术给的「使用说明」：起手拔剑 → 中间任意挥砍 → 收剑。
-        // ⚠️ 「起手由谁触发」在玩法侧（PlayerController 的连段状态机）—— 那一层还没做，
-        //    所以现在这些 state 是**就绪但没人进**。
+        // 结构照美术给的「使用说明」：**起手拔剑 → 中间任意挥砍 → 收手收剑**。
+        // 起手由 AnyState 的 Attack 触发（见 LinkAnyState），接续靠 AttackNext。
 
         private static void LinkCombat(Dictionary<string, AnimatorState> s)
         {
+            // 拔剑（4 帧）之后自动进第一段挥砍
             Link(s["DrawSword"], s["Slash1"], 0.05f, exitTime: true, at: 1f);
-            Link(s["DrawSword"], s["Sheathe"], 0.05f, exitTime: true, at: 1f);
 
-            Link(s["Slash1"], s["Slash2"], 0.05f, exitTime: true, at: 1f);
-            Link(s["Slash1"], s["SlashDown"], 0.05f, exitTime: true, at: 1f);
+            // 第一段：收招前再按一下 → 接第二段；不按 → 收剑。
+            // ⚠️ 不带 exitTime 的那条排在前面，所以按下时立刻接、不按下才等播完。
+            When(Link(s["Slash1"], s["Slash2"], 0.05f),
+                 AnimatorConditionMode.If, PlayerAnimationDriver.ParamAttackNext);
             Link(s["Slash1"], s["Sheathe"], 0.05f, exitTime: true, at: 1f);
 
             Link(s["Slash2"], s["Sheathe"], 0.05f, exitTime: true, at: 1f);
@@ -357,7 +363,8 @@ namespace RuleGame.Editor.Animations
         // ==================================================================
         //
         // ⚠️ **顺序 = 优先级**：Unity 按列表顺序求值，先满足的赢。
-        //    死亡 > 受击 > 冲刺 > 蹬墙 > 起跳 > 落地。
+        //    死亡 > 受击 > 冲刺 > 蹬墙 > 起跳 > 落地 > 攻击。
+        //    攻击排在最后：机动动作优先，免得一刀把冲刺 / 蹬墙取消掉。
 
         private static void LinkAnyState(AnimatorStateMachine sm, Dictionary<string, AnimatorState> s)
         {
@@ -386,6 +393,10 @@ namespace RuleGame.Editor.Animations
             t = sm.AddAnyStateTransition(s["Land"]);
             t.hasExitTime = false; t.duration = 0.05f; t.hasFixedDuration = true; t.canTransitionToSelf = false;
             When(t, AnimatorConditionMode.If, PlayerAnimationDriver.ParamLand);
+
+            t = sm.AddAnyStateTransition(s["DrawSword"]);
+            t.hasExitTime = false; t.duration = 0.05f; t.hasFixedDuration = true; t.canTransitionToSelf = false;
+            When(t, AnimatorConditionMode.If, PlayerAnimationDriver.ParamAttack);
         }
 
         // ==================================================================
