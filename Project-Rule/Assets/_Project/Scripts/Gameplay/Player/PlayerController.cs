@@ -278,8 +278,13 @@ namespace RuleGame.Gameplay.Player
         //    和「刚刚发生了什么」（一次性动作）。后者靠每帧采样很容易漏掉或重复计一次
         //    （比如 0.33 秒的落地只有 4 个物理帧），所以直接从源头发事件。
 
-        /// <summary>起跳瞬间 —— 含地面跳、土狼跳、空中多段跳；用 <see cref="IsGrounded"/> 区分是哪一种。</summary>
+        /// <summary>**地面跳 / 土狼跳**瞬间。</summary>
+        /// <remarks>二段跳走的是 <see cref="OnAirJumped"/>，不在这里发 —— 两者的表现不同
+        /// （一个是蹬地起跳、一个是空中再翻一下），合并成一个事件表现层就分不出来了。</remarks>
         public event Action OnJumped;
+
+        /// <summary>**空中段（二段跳）**瞬间：跳数还没用完时在空中再按一次跳。</summary>
+        public event Action OnAirJumped;
 
         /// <summary>蹬墙跳瞬间。与 <see cref="OnJumped"/> 分开：它有两档推力、表现也不同。</summary>
         public event Action OnWallJumped;
@@ -562,7 +567,7 @@ namespace RuleGame.Gameplay.Player
                             _bufferLeft = 0f;             // 一次输入只跳一段
                             _coyoteLeft = 0f;
                             _jumpsUsed  = Mathf.Min(_jumpsUsed + 1, MaxJumps);
-                            OnJumped?.Invoke();
+                            OnAirJumped?.Invoke();
                         }
                     }
                 }

@@ -46,6 +46,10 @@ namespace RuleGame.Presentation.Player
         public const string ParamRising         = "Rising";
 
         public const string ParamJump     = "Jump";
+
+        /// <summary>二段跳（空中段）。与 <see cref="ParamJump"/> 分开：起跳和空中那一下是两个动作。</summary>
+        public const string ParamAirJump  = "AirJump";
+
         public const string ParamWallJump = "WallJump";
         public const string ParamLand     = "Land";
         public const string ParamHurt     = "Hurt";
@@ -65,6 +69,7 @@ namespace RuleGame.Presentation.Player
         private static readonly int HRising         = Animator.StringToHash(ParamRising);
 
         private static readonly int HJump         = Animator.StringToHash(ParamJump);
+        private static readonly int HAirJump      = Animator.StringToHash(ParamAirJump);
         private static readonly int HWallJump     = Animator.StringToHash(ParamWallJump);
         private static readonly int HLand         = Animator.StringToHash(ParamLand);
         private static readonly int HHurt         = Animator.StringToHash(ParamHurt);
@@ -106,6 +111,7 @@ namespace RuleGame.Presentation.Player
             if (_player != null)
             {
                 _player.OnJumped     += HandleJumped;
+                _player.OnAirJumped  += HandleAirJumped;
                 _player.OnWallJumped += HandleWallJumped;
                 _player.OnLanded     += HandleLanded;
                 _player.OnAttacked   += HandleAttacked;
@@ -123,6 +129,7 @@ namespace RuleGame.Presentation.Player
             if (_player != null)
             {
                 _player.OnJumped     -= HandleJumped;
+                _player.OnAirJumped  -= HandleAirJumped;
                 _player.OnWallJumped -= HandleWallJumped;
                 _player.OnLanded     -= HandleLanded;
                 _player.OnAttacked   -= HandleAttacked;
@@ -198,6 +205,7 @@ namespace RuleGame.Presentation.Player
         // ==================================================================
 
         private void HandleJumped()     => SetTrigger(HJump);
+        private void HandleAirJumped()  => SetTrigger(HAirJump);
         private void HandleWallJumped() => SetTrigger(HWallJump);
         private void HandleLanded()     => SetTrigger(HLand);
 
