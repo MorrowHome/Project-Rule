@@ -61,6 +61,12 @@ Tools/BaiduSync/config.json
 Tools/BaiduSync/.staging/
 Tools/BaiduSync/bin/
 
+# ---------- Yarn Spinner 生成物 ----------
+# 包在导入时按**本机路径**重新生成：内容是 .ysls 命令/函数清单，
+# 里面写死了 "Project-Rule\Assets\..." 这类反斜杠路径，换目录/换机器就会 churn。
+# 注意：这不代表 ProjectSettings/ 整体不进仓库，只是这两个是纯派生物。
+Project-Rule/ProjectSettings/Packages/dev.yarnspinner/*-generated.ysls.json
+
 # ==============================================================================
 #  以下内容【必须提交】，不要加进忽略列表：
 #    Assets/          全部游戏资源与代码

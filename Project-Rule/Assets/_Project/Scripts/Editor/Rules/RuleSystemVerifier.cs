@@ -158,6 +158,57 @@ namespace RuleGame.Editor.Rules
             h.Check("未定义格位不会碰规则类", probe.ApplyCount == applyBefore + 1,
                     $"ApplyCount={probe.ApplyCount}");
 
+            // ==============================================================
+            //  ⑥ 主动结束（玩家能力）
+            // ==============================================================
+            h.Section("6 主动结束（Cancel）");
+
+            sys.Request(AttributeId.Mass, RelationId.Enhance, RuleSource.Player);
+            h.Check("铺垫：Mass/Enhance 生效中",
+                    sys.Table.IsActive(AttributeId.Mass, RelationId.Enhance), SlotText(sys));
+
+            int cancelClearBefore = probe.ClearCount;
+            expired.Clear();
+            changed = 0;
+
+            bool cancelled = sys.Cancel(AttributeId.Mass);
+            h.Check("Cancel 返回 true", cancelled, "false");
+            h.Check("槽位被清空", !sys.Table.IsActive(AttributeId.Mass), SlotText(sys));
+            h.Check("调了规则类的 Clear()（写在引擎上的外部状态要撤掉）",
+                    probe.ClearCount == cancelClearBefore + 1, $"ClearCount={probe.ClearCount}");
+            h.Check("触发 OnRuleExpired(Mass)",
+                    expired.Count == 1 && expired[0] == AttributeId.Mass,
+                    $"expired=[{string.Join(",", expired)}]");
+            h.Check("触发一次 OnRulesChanged", changed == 1, $"changed={changed}");
+
+            expired.Clear();
+            changed = 0;
+            bool cancelAgain = sys.Cancel(AttributeId.Mass);
+            h.Check("没有生效中的规则时返回 false", !cancelAgain, "true");
+            h.Check("空操作不广播 OnRuleExpired", expired.Count == 0, $"expired=[{string.Join(",", expired)}]");
+            h.Check("空操作不广播 OnRulesChanged", changed == 0, $"changed={changed}");
+
+            // 取消免费：经由 RuleReleaseService 走一遍，能量与冷却都不该动
+            var energyHost = new GameObject("CancelEnergyProbe");
+            var energyStatus = energyHost.AddComponent<RuleGame.Gameplay.Player.EntityStatus>();
+            var service = new RuleGame.Gameplay.Player.RuleReleaseService(
+                sys, energyStatus, RuleGame.Gameplay.Player.AllUnlockedRuleUnlocks.Instance);
+
+            sys.Request(AttributeId.Mass, RelationId.Weaken, RuleSource.Player);
+            float energyBefore = energyStatus.Energy;
+
+            bool viaService = service.TryCancel(AttributeId.Mass);
+            h.Check("RuleReleaseService.TryCancel 成功", viaService, "false");
+            h.Check("✅ 取消**不消耗能量**",
+                    Mathf.Abs(energyStatus.Energy - energyBefore) < RuleVerifyHarness.Tolerance,
+                    $"{energyBefore} → {energyStatus.Energy}");
+            h.Check("✅ 取消不开始冷却",
+                    !energyStatus.IsOnCooldown(AttributeId.Mass, RelationId.Weaken),
+                    energyStatus.GetCooldownRemaining(AttributeId.Mass, RelationId.Weaken).ToString("0.##"));
+            h.Check("取消后槽位为空", !sys.Table.IsActive(AttributeId.Mass), SlotText(sys));
+
+            Object.DestroyImmediate(energyHost);
+
             RuleSystem.Reset();
             foreach (RuleDef d in defs) Object.DestroyImmediate(d);
 

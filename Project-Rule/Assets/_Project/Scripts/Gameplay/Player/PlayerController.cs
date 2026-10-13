@@ -1,7 +1,9 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using RuleGame.Core.Rules;
 using RuleGame.Gameplay.Combat;
+using RuleGame.Infrastructure.Interaction;
 
 namespace RuleGame.Gameplay.Player
 {
@@ -21,7 +23,7 @@ namespace RuleGame.Gameplay.Player
     /// <para>物理运算写在 <see cref="FixedUpdate"/>（Unity 2D 物理要求）。</para>
     /// </remarks>
     [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
-    public class PlayerController : MonoBehaviour, IKnockbackReceiver
+    public class PlayerController : MonoBehaviour, IKnockbackReceiver, IRuleSelectionInputGate
     {
         // ==================================================================
         //  序列化字段
@@ -184,6 +186,29 @@ namespace RuleGame.Gameplay.Player
         private InputAction _jumpAction;
         private InputAction _attackAction;
         private InputAction _dashAction;
+        private int _inputBlocks;
+        private int _inputResumeFrame;
+
+        /// <summary>UI 仅接管输入；慢时间里的重力、碰撞与外部冲量仍走原 FixedUpdate。</summary>
+        public IDisposable BlockGameplayInput()
+        {
+            _inputBlocks++;
+            return new InputBlock(this);
+        }
+
+        private sealed class InputBlock : IDisposable
+        {
+            private PlayerController _owner;
+            public InputBlock(PlayerController owner) => _owner = owner;
+            public void Dispose()
+            {
+                if (_owner == null) return;
+                _owner._inputBlocks = Mathf.Max(0, _owner._inputBlocks - 1);
+                // 选择器在玩家 Update 前结束时，这一帧的攻击键仍属于 UI，不能再次挥刀。
+                _owner._inputResumeFrame = Time.frameCount + 1;
+                _owner = null;
+            }
+        }
 
         /// <summary>是否站在支撑面上（供踩踏判定与调试用）。</summary>
         public bool IsGrounded => _grounded;
@@ -282,7 +307,7 @@ namespace RuleGame.Gameplay.Player
 
         private void Update()
         {
-            if (IsPaused)
+            if (IsPaused || _inputBlocks > 0 || Time.frameCount < _inputResumeFrame)
             {
                 _moveInput = Vector2.zero;
                 _jumpQueued = false;
@@ -681,17 +706,10 @@ namespace RuleGame.Gameplay.Player
             _nextAttackTime = Time.time + _attackCooldown;
 
             // 发起方只组织「打哪儿、打多大」，最终伤害由伤害处理模块按当前规则算。
-            var attack = new AttackInfo
-            {
-                Attacker   = this,
-                Center     = (Vector2)transform.position + new Vector2(_facing * _attackOffset, 0f),
-                Size       = _attackBoxSize,
-                Mask       = _attackMask,
-                BaseDamage = _attackDamage,
-                Knockback  = _attackKnockback,
-            };
+            Vector2 center = (Vector2)transform.position + new Vector2(_facing * _attackOffset, 0f);
 
-            int hits = _combat.PerformAttack(attack);
+            int hits = _combat.PerformAttack(this, center, _attackBoxSize, _attackMask,
+                                             _attackDamage, _attackKnockback);
 
             // 能量恢复来源之一：命中即回，未命中不给（策划案 §四）。
             if (hits > 0 && _status != null)

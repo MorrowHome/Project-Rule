@@ -137,6 +137,10 @@ namespace RuleGame.Editor.Rules
             => MassRuleVerifier.Run()
              + "\n\n" + FrictionRuleVerifier.Run()
              + "\n\n" + DamageRuleVerifier.Run()
+             + "\n\n" + TimeRuleVerifier.Run()
+             + "\n\n" + TimeEffectVerifier.Run()
+             + "\n\n" + CausalityRuleVerifier.Run()
+             + "\n\n" + DamageProcessorVerifier.Run()
              + "\n\n" + RuleSystemVerifier.Run();
     }
 }

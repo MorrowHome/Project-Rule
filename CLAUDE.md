@@ -90,10 +90,11 @@
 - ✅ 规则系统核心（`RuleSystem` / `RuleTable` / `AttributeManager`），重力属性端到端跑通
 - ✅ 规则接口层下沉到 `Infrastructure/Shared/Rules/`（v3.0 冻结）
 - ✅ P3：`IEntityStatus` / `EntityStatus`、`RuleReleaseService`、`DamageRule`、`DamageInfo` / `IDamageable`、`CombatSystem`、`PlayerController`、`EntityDamageable` / `IKnockbackReceiver`
-- ✅ **伤害链路已拆成两块**（2026-10-12）：`CombatSystem` 只做命中判定（`PerformAttack(AttackInfo)`），
-  伤害结算独立成 **`DamageProcessor`**（唯一伤害出口：算多少 + 挂账账本 + 结算）。
-  → **要打伤害一律走 `combat.Damage.Apply(...)` 并传「基础伤害」**，不要自己先换算（会绕过伤害规则）；
-  要另开伤害出口也请先看 `Doc/接口与事件定义.md` §4.2
+- ✅ **伤害链路分两块**：`CombatSystem` 只做**命中判定 + 事件宿主**（`PerformAttack(...)` / `ApplyDamage(...)`），
+  伤害结算独立成 **`DamageProcessor`** —— **全游戏唯一的伤害出口**，读 `IAttributeManager` 不读 `IRuleSystem`。
+  含伤害缩放 / 反转 / 失效、因果（作用对象转换 / 随机倍率 / 随机对象 / 扩散），以及**伤害挂账**的逐实体净额账本。
+  → **要打伤害一律传「基础伤害」经 `CombatSystem`**，不要自己先换算（会绕过伤害规则）；
+  要另开伤害出口先看 `Doc/接口与事件定义.md` §4.2
 - ✅ **玩家动作集**（详见 `Doc/玩家动作设计.md`）：移动（加速度 + 按地面材质减速）、跳跃
   （coyote / buffer / 可变高度）、**多段跳**（`_maxAirJumps`）、**冲刺**（`_dashSpeed` / `_dashDuration` / `_maxDashes`）、
   **贴墙下滑**（`_wallSlideSpeed`）、**蹬墙跳**（`_wallJumpPushSpeed` / `_wallJumpUpSpeed`）。
@@ -115,8 +116,11 @@
 - ✅ **P3 的组件已接进 `Scenes/Test_RuleSystem.unity`**（`Systems` / `Ground`(层8) / `Player` / `Dummy`(层9)），
   Console 0 错误，可直接双击打开跑冒烟测试。`Level_01.unity` 目前仍只有 P4 的 demo 控制器。
   想验证玩法请用测试场景，接线前请注意下面几条
-- ✅ `RuleCatalog.asset` 已接 **19 条**规则：5 重力 + 5 摩擦 + 5 质量 + 4 伤害（覆盖 4 个属性）；
-  时间 / 因果两个属性的规则类尚未实现
+- ✅ `RuleCatalog.asset` 已接 **30 条**规则 —— **规则矩阵 6 属性 × 5 关系全部可达**。
+  6 个属性规则类都已实现（重力 / 时间 / 摩擦 / 质量 / 伤害 / 因果）
+- ⚠️ **阵营只有两个值**（`Faction.Player` / `Faction.Enemy`，后者是默认值）：
+  玩家独一个阵营、没有友方，其余可攻击实体全是敌人。挂在 `EntityDamageable` 上。
+  **场景里需要把玩家对象的 `_faction` 手动设成 `Player`**，其余不用动
 - ⚠️ `PlayerController` 按 D1 用 **Kinematic 刚体**：位移走 `Rigidbody2D.Slide` 解算接触，
   重力自己读 `Physics2D.gravity` 积分。`MovePosition` 自身不做碰撞，**不要绕开 Slide 直接移动**
 - ⚠️ **暂停不能用 `Time.timeScale = 0`**（策划案 §3.1）。冷却等按帧推进的状态改由

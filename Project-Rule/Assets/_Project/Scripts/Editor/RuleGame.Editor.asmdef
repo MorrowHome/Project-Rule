@@ -8,7 +8,8 @@
         "RuleGame.Persistence",
         "RuleGame.UI",
         "RuleGame.Presentation",
-        "RuleGame.Development"
+        "RuleGame.Development",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [
         "Editor"

@@ -9,16 +9,20 @@ namespace RuleGame.Gameplay.Combat
     /// </summary>
     /// <remarks>
     /// <para><b>抗性只写在这里</b> —— 规则系统与战斗系统都不认识任何实体的抗性（约束 C4）。</para>
-    /// <para>伤害数值已由施加方算好（含缩放 / 反转 / 失效，见 <c>DamageProcessor.ResolveAmount</c>），
-    /// 本类只做「承受方自己的事」。<c>Amount</c> 为负表示回血。</para>
+    /// <para>伤害数值已由<c>伤害处理模块</c>算好（含缩放 / 反转 / 失效 / 因果，
+    /// 见 <c>DamageProcessor</c>），本类只做「承受方自己的事」。<c>Amount</c> 为负表示回血。</para>
     /// <para>死亡只负责广播，不负责重开或结算 —— 那是关卡流程（P1）的事。</para>
     /// </remarks>
     [RequireComponent(typeof(EntityStatus))]
-    public class EntityDamageable : MonoBehaviour, IDamageable
+    public class EntityDamageable : MonoBehaviour, IDamageable, IFactionMember
     {
         // ==================================================================
         //  序列化字段
         // ==================================================================
+
+        [Header("阵营")]
+        [Tooltip("玩家挂 Player；其余一切可攻击实体都是 Enemy。默认 Enemy —— 现有场景不用改。")]
+        [SerializeField] private Faction _faction = Faction.Enemy;
 
         [Header("引用")]
         [Tooltip("生命来源。留空则自动取同一物体上的 EntityStatus。")]
@@ -47,6 +51,12 @@ namespace RuleGame.Gameplay.Combat
         private IKnockbackReceiver _knockbackReceiver;
         private float _invincibleUntil;
         private bool  _died;
+
+        /// <summary>
+        /// 阵营。伤害处理模块算因果扩散时用它过滤 —— **不打自己人**。
+        /// </summary>
+        /// <remarks>玩家独一个阵营、没有友方，所以这里只有两个值。</remarks>
+        public Faction Faction => _faction;
 
         /// <summary>无敌帧内（或已死亡）：再来伤害也不会结算。</summary>
         public bool IsInvincible => !_died && Time.time < _invincibleUntil;
@@ -83,6 +93,14 @@ namespace RuleGame.Gameplay.Combat
             if (damage.Amount < 0f)
             {
                 _status.ApplyHealthDelta(-damage.Amount);
+                return;
+            }
+
+            // 零伤害 = **纯击退**（伤害挂账期间那一下：只推不扣）。
+            // 击退照常，但不进无敌帧、不动生命 —— 它本来就不是一次伤害结算。
+            if (Mathf.Approximately(damage.Amount, 0f))
+            {
+                ApplyKnockback(damage);
                 return;
             }
 

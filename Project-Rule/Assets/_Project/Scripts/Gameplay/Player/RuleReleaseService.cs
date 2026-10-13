@@ -89,6 +89,17 @@ namespace RuleGame.Gameplay.Player
             return new RuleReleaseResult(RuleReleaseStatus.Success);
         }
 
+        /// <summary>
+        /// 主动结束某个属性当前生效的规则。
+        /// </summary>
+        /// <remarks>
+        /// <para><b>不消耗能量、不影响冷却、也不做任何预检</b> —— 取消是免费的。</para>
+        /// <para>放在本服务里而不是让调用方直接拿 <c>IRuleSystem</c>，
+        /// 是为了守住「写入一律经由判定中枢」这条规矩。</para>
+        /// </remarks>
+        /// <returns>确实结束了一条规则时返回 true。</returns>
+        public bool TryCancel(AttributeId attr) => _rules.Cancel(attr);
+
         private static RuleReleaseResult Fail(RuleReleaseStatus s) => new RuleReleaseResult(s);
     }
 }

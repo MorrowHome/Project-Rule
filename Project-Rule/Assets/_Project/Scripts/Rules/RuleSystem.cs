@@ -12,7 +12,7 @@ namespace RuleGame.Core.Rules
     /// <para>它**不认识能量，也不认识冷却**。费用检查与扣除在 <c>RuleReleaseService</c>。</para>
     /// <para>写入只能通过 <see cref="Request"/>，且必须经由 <c>RuleReleaseService</c>。</para>
     /// </remarks>
-    public class RuleSystem : IRuleSystem
+    public class RuleSystem : IRuleSystem, ITimeRewindControl
     {
         // ==================================================================
         //  单例
@@ -33,7 +33,24 @@ namespace RuleGame.Core.Rules
         public static void SetInstanceForTesting(RuleSystem instance) => _instance = instance;
 
         /// <summary>清空单例。切场景 / 退出时调用，让下次重新初始化。</summary>
-        public static void Reset() => _instance = null;
+        /// <remarks>
+        /// ⚠️ 它会**先把写在引擎上的效果撤掉**再断开引用。
+        /// 重力（<c>Physics2D.gravity</c>）、时间倍率（<c>Time.timeScale</c>）这类
+        /// 有引擎全局载体的东西**不会随单例消失而回滚** —— 不清就会跨场景泄漏
+        /// （下一关开局还是反重力 / 2 倍速）。属性管理器同理。
+        /// <para>这里**不广播事件**：拆除期订阅者可能已经被销毁了。</para>
+        /// </remarks>
+        public static void Reset()
+        {
+            if (_instance != null)
+            {
+                // 各规则类的 Clear() 都是幂等的，重复调用无害
+                foreach (var rule in _instance._rules.Values) rule.Clear();
+                _instance._table.ClearAll();
+                _instance._attrs.ResetToDefault();
+            }
+            _instance = null;
+        }
 
         // ==================================================================
         //  字段
@@ -43,6 +60,9 @@ namespace RuleGame.Core.Rules
         private readonly AttributeManager _attrs = new AttributeManager();
         private readonly Dictionary<AttributeId, AttributeRuleBase> _rules = new();
         private readonly IRuleCatalog _catalog;
+
+        /// <summary>留着具体类型，好把「时间恒定」的控制入口转出去。</summary>
+        private readonly TimeRule _timeRule;
 
         public IRuleTable        Table      => _table;
         public IAttributeManager Attributes => _attrs;
@@ -57,7 +77,48 @@ namespace RuleGame.Core.Rules
             _rules[AttributeId.Friction] = new FrictionRule(_attrs);
             _rules[AttributeId.Mass]     = new MassRule(_attrs);
             _rules[AttributeId.Damage]   = new DamageRule(_attrs);
+            _rules[AttributeId.Causality] = new CausalityRule(_attrs);
+
+            // 时间规则是唯一带「外部控制入口」的（恒定的回溯按键）。TimeManager /
+            // SnapshotSystem 由它自己懒取单例 —— 后者与 RuleSystem 构造期成环。
+            _timeRule = new TimeRule(_attrs, _table);
+            _rules[AttributeId.Time] = _timeRule;
         }
+
+        // ==================================================================
+        //  主动结束
+        // ==================================================================
+
+        /// <summary>
+        /// 主动结束某个属性当前生效的规则。
+        /// </summary>
+        /// <remarks>
+        /// <para>与「超时 / 被覆盖」共用同一条收尾路径：<c>Clear()</c> → 清槽位 → 广播。
+        /// 所以时间恒定开着的时候取消它，回溯窗口也会被正确关掉。</para>
+        /// <para>该属性本来就没有生效中的规则时返回 false，且**不广播** ——
+        /// 否则 UI 会被空操作刷一遍。</para>
+        /// </remarks>
+        public bool Cancel(AttributeId attr)
+        {
+            if (!_table.GetSlot(attr).HasValue) return false;
+
+            if (_rules.TryGetValue(attr, out var ruleClass)) ruleClass.Clear();
+            _table.Clear(attr);
+
+            OnRuleExpired?.Invoke(attr);
+            OnRulesChanged?.Invoke();
+            return true;
+        }
+
+        // ==================================================================
+        //  ITimeRewindControl（时间恒定的回溯窗口）
+        // ==================================================================
+
+        /// <inheritdoc />
+        public bool IsWindowOpen => _timeRule != null && _timeRule.IsWindowOpen;
+
+        /// <inheritdoc />
+        public bool TryRewind() => _timeRule != null && _timeRule.TryRewind();
 
         // ==================================================================
         //  写入入口
