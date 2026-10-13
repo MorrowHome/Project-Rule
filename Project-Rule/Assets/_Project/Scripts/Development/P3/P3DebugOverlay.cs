@@ -60,19 +60,15 @@ namespace RuleGame.Development.P3
         private void OnEnable()
         {
             if (_combat == null) return;
-            _combat.OnDamageApplied  += LogDamage;
-            _combat.OnEntityDied     += LogDeath;
-            _combat.OnDamageDeferred += LogDeferred;
-            _combat.OnDamageSettled  += LogSettled;
+            _combat.OnDamageApplied += LogDamage;
+            _combat.OnEntityDied    += LogDeath;
         }
 
         private void OnDisable()
         {
             if (_combat == null) return;
-            _combat.OnDamageApplied  -= LogDamage;
-            _combat.OnEntityDied     -= LogDeath;
-            _combat.OnDamageDeferred -= LogDeferred;
-            _combat.OnDamageSettled  -= LogSettled;
+            _combat.OnDamageApplied -= LogDamage;
+            _combat.OnEntityDied    -= LogDeath;
         }
 
         // ==================================================================
@@ -140,18 +136,18 @@ namespace RuleGame.Development.P3
         }
 
         /// <summary>
-        /// 挂账（伤害 × 恒定）期间欠了多少。正数是欠下的伤害，负数是多出来的治疗。
+        /// 挂账（伤害 × 恒定）窗口里，模块手里压着几笔还没结算的伤害。
         /// </summary>
-        /// <remarks>不开挂账窗口时账本恒为空，这里显示为 0。</remarks>
+        /// <remarks>不开挂账窗口时恒为 0。</remarks>
         private void DrawLedger()
         {
-            float net = _combat != null && _damageable != null
-                ? _combat.Damage.Ledger.GetNet(_damageable)
-                : 0f;
+            int pending = _combat != null && _combat.Processor != null
+                ? _combat.Processor.PendingCount
+                : 0;
 
-            if (Mathf.Approximately(net, 0f)) return;
+            if (pending <= 0) return;
 
-            GUILayout.Label($"欠账：{net:F1}（伤害 × 恒定 结束时一次性结算）");
+            GUILayout.Label($"挂账中：{pending} 笔（伤害 × 恒定 结束时一次性结算）");
         }
 
         private void DrawCooldowns()
@@ -205,8 +201,8 @@ namespace RuleGame.Development.P3
             // 先记「尝试」，再调用 —— 伤害为 0（伤害失效规则生效）时下面不会有任何事件进来，
             // 一眼就能看出「0 伤害不广播」是否成立。
             Push($"→ 尝试 {_testDamage:F1} 伤害 / 击退 {_testKnockback:F1}");
-            _combat.Damage.Apply(_attackFrom != null ? _attackFrom : transform,
-                                 _damageable, _testDamage, _testKnockback);
+            _combat.ApplyDamage(_attackFrom != null ? _attackFrom : transform,
+                                _damageable, _testDamage, _testKnockback);
         }
 
         private void TogglePause()
@@ -223,12 +219,6 @@ namespace RuleGame.Development.P3
 
         private void LogDamage(DamageInfo info)
             => Push($"命中 {Describe(info.Target)}：{info.Amount:F1} 伤害，击退 {info.Knockback:F1}");
-
-        private void LogDeferred(DamageInfo info)
-            => Push($"[挂账] {Describe(info.Target)} 记下 {info.Amount:F1}，未扣血");
-
-        private void LogSettled(DamageInfo info)
-            => Push($"[结算] {Describe(info.Target)} 一次落地 {info.Amount:F1}");
 
         private void LogDeath(object entity) => Push($"死亡：{Describe(entity)}");
 
