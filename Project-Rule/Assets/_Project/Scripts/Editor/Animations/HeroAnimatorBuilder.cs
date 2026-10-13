@@ -389,34 +389,56 @@ namespace RuleGame.Editor.Animations
         }
 
         // ==================================================================
-        //  贴墙下滑需要一个**会循环**的剪辑
+        //  贴墙下滑：定格在「贴墙那一帧」
         // ==================================================================
         //
-        // WallJump 那 21 帧是美术混装的（起跳 / 来回跳 / 滑墙 / 落地），而且不循环 ——
-        // 直接拿去当持续状态会冻在最后一帧（旧的代码驱动就是这个毛病）。
-        // 这里先克隆一份把「循环」打开顶上，等和美术定完切分点再换成真正的 WallSlide。
-        // 📌 只改循环标志，不动帧 —— 所以你之后调它不会影响 WallJump。
+        // 逐帧看过 WallJump 那 21 张：**它是一个前滚翻**（1–8 贴墙、9–21 整个人翻过去），
+        // 不是滑墙动画。整段拿去循环 = 在墙上原地翻滚，明显不对。
+        //
+        // 所以贴墙下滑改成**定格**：取贴墙那一帧，重复 N 次凑成一个合法时长的循环剪辑。
+        // 📌 想换姿势就改下面这个帧号；要真正的滑墙动画得让美术补一张。
+
+        /// <summary>贴墙下滑定格用 WallJump 序列里的第几帧（1 起数）。</summary>
+        private const int WallSlideSourceFrame = 3;
 
         private static void EnsureWallSlideClip()
         {
-            string source = ClipFolder + "/Hero_WallJump.anim";
             string target = ClipFolder + "/Hero_WallSlide.anim";
-            if (AssetDatabase.LoadAssetAtPath<AnimationClip>(target) != null) return;
+            string spritePath = "Assets/_Project/Art/Sprites/Hero/WallJump/Hero_WallJump_"
+                                + WallSlideSourceFrame.ToString("D2") + ".png";
 
-            if (!AssetDatabase.CopyAsset(source, target))
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
+            if (sprite == null)
             {
-                Debug.LogError("[HeroAnimatorBuilder] 复制失败：" + source + " → " + target);
+                Debug.LogError("[HeroAnimatorBuilder] 找不到贴墙帧：" + spritePath);
                 return;
             }
 
+            // 已存在就复用（保住 GUID，场景 / 控制器引用不会断），只覆盖曲线。
             var clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(target);
+            if (clip == null)
+            {
+                clip = new AnimationClip { name = "Hero_WallSlide", frameRate = 12f };
+                AssetDatabase.CreateAsset(clip, target);
+            }
+
+            const int KeyCount = 5;      // 同一张图重复几次：剪辑有合法时长，循环时看不出接缝
+
+            var binding = EditorCurveBinding.PPtrCurve("", typeof(SpriteRenderer), "m_Sprite");
+            var keys = new ObjectReferenceKeyframe[KeyCount];
+            for (int i = 0; i < KeyCount; i++)
+                keys[i] = new ObjectReferenceKeyframe { time = i / clip.frameRate, value = sprite };
+
+            AnimationUtility.SetObjectReferenceCurve(clip, binding, keys);
+
             AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(clip);
             settings.loopTime = true;
             AnimationUtility.SetAnimationClipSettings(clip, settings);
 
             EditorUtility.SetDirty(clip);
             AssetDatabase.SaveAssets();
-            Debug.Log("[HeroAnimatorBuilder] 生成 Hero_WallSlide.anim（WallJump 的循环版，等美术切分）。");
+            Debug.Log("[HeroAnimatorBuilder] 生成 Hero_WallSlide.anim（定格 WallJump 第 "
+                      + WallSlideSourceFrame + " 帧）。");
         }
     }
 }

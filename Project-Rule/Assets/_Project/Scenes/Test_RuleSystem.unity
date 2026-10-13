@@ -174,6 +174,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 856660bc8c5f43e0b6f663ab11ab1fdd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Combat.EntityDamageable
+  _faction: 1
   _status: {fileID: 279477526}
   _combat: {fileID: 850425796}
   _resistance: 0
@@ -195,14 +196,14 @@ MonoBehaviour:
   _inputActions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   _moveSpeedMax: 8
   _groundAccel: 200
-  _jumpSpeed: 13.6
+  _jumpSpeed: 16.5
   _maxAirJumps: 1
   _airJumpSpeed: 12.2
   _gravityScale: 3.83
   _fallGravityMultiplier: 2
   _maxFallSpeed: 30
   _frictionDecel: 40
-  _airAccel: 40
+  _airAccel: 42.3
   _airDrag: 3
   _jumpCutMultiplier: 0.45
   _coyoteTime: 0.1
@@ -348,7 +349,7 @@ MonoBehaviour:
   _animator: {fileID: 0}
   _renderer: {fileID: 0}
   _status: {fileID: 0}
-  _crossFade: 0.06
+  _crossFade: 0.081
   _runSpeedThreshold: 5
   _idleSpeedThreshold: 0.35
   _dashStateName: Push
@@ -2252,6 +2253,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 856660bc8c5f43e0b6f663ab11ab1fdd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Combat.EntityDamageable
+  _faction: 0
   _status: {fileID: 1459155489}
   _combat: {fileID: 850425796}
   _resistance: 0
