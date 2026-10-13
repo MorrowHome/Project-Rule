@@ -25,10 +25,13 @@ namespace RuleGame.Editor.Animations
         private const string ClipFolder     = "Assets/_Project/Art/Animations/Hero";
 
         // 参与重建的全部 state（名字 = 剪辑名去掉 Hero_ 前缀，也是动画参数要用的名字）
+        // ⚠️ 没有 Walk：角色加速快（_groundAccel=200，0→满速约 0.04 秒），
+        //    Walk 只会停**一个物理帧**就被 Run 顶掉 —— 看起来就是一次卡顿，不如不要。
+        //    剪辑 Hero_Walk.anim 还在，将来若加了「按住走路」再把它加回来。
         private static readonly string[] StateNames =
         {
             // 地面
-            "Idle", "Walk", "Run",
+            "Idle", "Run",
             // 空中
             "JumpStart", "Airborne", "Weightless", "WallSlide", "WallJump",
             // 其它机动
@@ -134,9 +137,8 @@ namespace RuleGame.Editor.Animations
             var layout = new Dictionary<string, Vector3>
             {
                 { "Idle",       new Vector3(   0f,    0f) },
-                { "Walk",       new Vector3( 220f,    0f) },
-                { "Run",        new Vector3( 440f,    0f) },
-                { "Land",       new Vector3( 660f,    0f) },
+                { "Run",        new Vector3( 220f,    0f) },
+                { "Land",       new Vector3( 440f,    0f) },
 
                 { "JumpStart",  new Vector3(   0f, -130f) },
                 { "Airborne",   new Vector3( 220f, -130f) },
@@ -223,23 +225,19 @@ namespace RuleGame.Editor.Animations
 
         private static void LinkLocomotion(Dictionary<string, AnimatorState> s)
         {
-            // Idle/Walk/Run 用**速度阈值过渡**，不是 Blend Tree。
-            // 理由：Blend Tree 靠「按权重插值曲线」工作，而精灵帧是对象引用曲线（Sprite），
-            // Unity 对它不做插值 —— 于是 Idle/Walk/Run 之间会变成**没有过渡的硬切**。
-            // 对 sprite 序列动画来说，transition + 交叉淡入才是真正「顺」的那条路。
+            // 地面只有 **Idle ⇄ Run** 两档，没有 Walk（理由见 StateNames 上面的说明）。
+            //
+            // 阈值用 IdleMax 而不是「>5 才算跑」：加速很快时，「>0.35 但还没到 5」那几帧
+            // 会卡在 Idle —— 看着就是**人动了、动画没跟上**。所以只要横向一有速度就切 Run。
+            //
+            // 用**速度阈值过渡**而不是 Blend Tree：Blend Tree 靠「按权重插值曲线」工作，
+            // 而精灵帧是对象引用曲线（Sprite），Unity 对它不做插值 —— 落在两档之间会变成
+            // 没有过渡的硬切。对 sprite 序列动画来说，transition + 交叉淡入才是顺的那条路。
             const float IdleMax = 0.35f;   // 低于它算站住
-            const float RunMin  = 5f;      // 高于它算跑（与旧代码的 _runSpeedThreshold 一致）
 
-            AnimatorState idle = s["Idle"], walk = s["Walk"], run = s["Run"];
+            AnimatorState idle = s["Idle"], run = s["Run"];
 
-            When(Link(idle, walk, 0.08f), AnimatorConditionMode.Greater, PlayerAnimationDriver.ParamSpeed, IdleMax);
-            When(Link(walk, idle, 0.10f), AnimatorConditionMode.Less,    PlayerAnimationDriver.ParamSpeed, IdleMax);
-
-            When(Link(walk, run,  0.08f), AnimatorConditionMode.Greater, PlayerAnimationDriver.ParamSpeed, RunMin);
-            When(Link(run,  walk, 0.10f), AnimatorConditionMode.Less,    PlayerAnimationDriver.ParamSpeed, RunMin);
-
-            // 直接跳档（Idle ↔ Run）：加速很快时中间那一档会一闪而过，不必非走 Walk
-            When(Link(idle, run,  0.08f), AnimatorConditionMode.Greater, PlayerAnimationDriver.ParamSpeed, RunMin);
+            When(Link(idle, run,  0.08f), AnimatorConditionMode.Greater, PlayerAnimationDriver.ParamSpeed, IdleMax);
             When(Link(run,  idle, 0.10f), AnimatorConditionMode.Less,    PlayerAnimationDriver.ParamSpeed, IdleMax);
         }
 
@@ -250,7 +248,7 @@ namespace RuleGame.Editor.Animations
         private static void LinkAir(Dictionary<string, AnimatorState> s)
         {
             // 离地 → 滞空（走下去、或在空中待着）
-            foreach (string name in new[] { "Idle", "Walk", "Run" })
+            foreach (string name in new[] { "Idle", "Run" })
             {
                 When(Link(s[name], s["Airborne"], 0.10f),
                      AnimatorConditionMode.IfNot, PlayerAnimationDriver.ParamGrounded);
@@ -299,10 +297,8 @@ namespace RuleGame.Editor.Animations
             When(dashOut, AnimatorConditionMode.IfNot, PlayerAnimationDriver.ParamDashing);
             When(dashOut, AnimatorConditionMode.If, PlayerAnimationDriver.ParamGrounded);
 
-            // 落地：4 帧的一次性动作，播完按当前速度回到地面运动档
-            When(Link(s["Land"], s["Run"],  0.08f, exitTime: true, at: 0.85f),
-                 AnimatorConditionMode.Greater, PlayerAnimationDriver.ParamSpeed, 5f);
-            When(Link(s["Land"], s["Walk"], 0.08f, exitTime: true, at: 0.85f),
+            // 落地：4 帧的一次性动作，播完按当前速度回到地面那一档
+            When(Link(s["Land"], s["Run"], 0.08f, exitTime: true, at: 0.85f),
                  AnimatorConditionMode.Greater, PlayerAnimationDriver.ParamSpeed, 0.35f);
             Link(s["Land"], s["Idle"], 0.08f, exitTime: true, at: 0.85f);
         }
