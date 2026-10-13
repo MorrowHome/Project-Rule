@@ -9,7 +9,7 @@ namespace RuleGame.Gameplay.Combat
     /// </summary>
     /// <remarks>
     /// <para><b>抗性只写在这里</b> —— 规则系统与战斗系统都不认识任何实体的抗性（约束 C4）。</para>
-    /// <para>伤害数值已由施加方算好（含缩放 / 反转 / 失效，见 <c>CombatSystem.ResolveAttackAmount</c>），
+    /// <para>伤害数值已由施加方算好（含缩放 / 反转 / 失效，见 <c>DamageProcessor.ResolveAmount</c>），
     /// 本类只做「承受方自己的事」。<c>Amount</c> 为负表示回血。</para>
     /// <para>死亡只负责广播，不负责重开或结算 —— 那是关卡流程（P1）的事。</para>
     /// </remarks>
