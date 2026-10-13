@@ -33,7 +33,9 @@ namespace RuleGame.Editor.Animations
             // 地面
             "Idle", "Run",
             // 空中
-            "JumpStart", "Airborne", "Weightless", "WallSlide", "WallJump",
+            // ⚠️ Airborne 是**二段跳**那一下的动作（5 帧），不是滞空 —— 它是一次性动作。
+            //     滞空用 Fall：定格 Airborne 第 1 帧（见 EnsureHeldFrameClips）。
+            "JumpStart", "Airborne", "Fall", "Weightless", "WallSlide", "WallJump",
             // 其它机动
             "Push", "Land",
             // 反应
@@ -59,7 +61,7 @@ namespace RuleGame.Editor.Animations
                 return;
             }
 
-            EnsureWallSlideClip();
+            EnsureHeldFrameClips();
 
             // 每次重建都先清空,保证结果是「声明决定」而不是「声明 + 上次残留」。
             ClearParameters(controller);
@@ -111,6 +113,7 @@ namespace RuleGame.Editor.Animations
 
             // 一次性事件：由玩法层的边沿事件发 Trigger
             c.AddParameter(PlayerAnimationDriver.ParamJump,     AnimatorControllerParameterType.Trigger);
+            c.AddParameter(PlayerAnimationDriver.ParamAirJump,  AnimatorControllerParameterType.Trigger);
             c.AddParameter(PlayerAnimationDriver.ParamWallJump, AnimatorControllerParameterType.Trigger);
             c.AddParameter(PlayerAnimationDriver.ParamLand,     AnimatorControllerParameterType.Trigger);
             c.AddParameter(PlayerAnimationDriver.ParamHurt,     AnimatorControllerParameterType.Trigger);
@@ -142,6 +145,7 @@ namespace RuleGame.Editor.Animations
 
                 { "JumpStart",  new Vector3(   0f, -130f) },
                 { "Airborne",   new Vector3( 220f, -130f) },
+                { "Fall",       new Vector3( 220f,  -70f) },
                 { "Weightless", new Vector3( 440f, -130f) },
                 { "WallSlide",  new Vector3( 660f, -130f) },
                 { "WallJump",   new Vector3( 880f, -130f) },
@@ -247,38 +251,44 @@ namespace RuleGame.Editor.Animations
 
         private static void LinkAir(Dictionary<string, AnimatorState> s)
         {
+            // ⚠️ 这里的底座是 **Fall（滞空）**，不是 Airborne。
+            //    Airborne 是**二段跳那一下**的动作，属于「一次性」，由 AnyState 的 AirJump 触发。
+
             // 离地 → 滞空（走下去、或在空中待着）
             foreach (string name in new[] { "Idle", "Run" })
             {
-                When(Link(s[name], s["Airborne"], 0.10f),
+                When(Link(s[name], s["Fall"], 0.10f),
                      AnimatorConditionMode.IfNot, PlayerAnimationDriver.ParamGrounded);
             }
 
-            // 起跳（地面跳 / 空中多段跳）统一由 AnyState 的 Jump 触发接管，这里不重复连。
+            // 起跳（地面跳）与二段跳统一由 AnyState 的 Jump / AirJump 触发接管，这里不重复连。
 
             // JumpStart 是 4 帧的一次性动作：靠 Has Exit Time 播完再进滞空，
             // 这样就**不会冻在最后一帧** —— 旧的代码驱动正是死在这里。
             // 两条出边：上升结束时提前走 / 播完兜底走。
-            When(Link(s["JumpStart"], s["Airborne"], 0.12f, exitTime: true, at: 0.9f),
+            When(Link(s["JumpStart"], s["Fall"], 0.12f, exitTime: true, at: 0.9f),
                  AnimatorConditionMode.IfNot, PlayerAnimationDriver.ParamRising);
-            Link(s["JumpStart"], s["Airborne"], 0.12f, exitTime: true, at: 1f);
+            Link(s["JumpStart"], s["Fall"], 0.12f, exitTime: true, at: 1f);
+
+            // 二段跳（Airborne）也是一次性动作：翻完回滞空。
+            Link(s["Airborne"], s["Fall"], 0.12f, exitTime: true, at: 1f);
 
             // 重力反转 ↔ 正常
-            When(Link(s["Airborne"], s["Weightless"], 0.12f),
+            When(Link(s["Fall"], s["Weightless"], 0.12f),
                  AnimatorConditionMode.If, PlayerAnimationDriver.ParamGravityFlipped);
-            When(Link(s["Weightless"], s["Airborne"], 0.12f),
+            When(Link(s["Weightless"], s["Fall"], 0.12f),
                  AnimatorConditionMode.IfNot, PlayerAnimationDriver.ParamGravityFlipped);
 
             // 贴墙下滑 ↔ 滞空
-            When(Link(s["Airborne"], s["WallSlide"], 0.08f),
+            When(Link(s["Fall"], s["WallSlide"], 0.08f),
                  AnimatorConditionMode.If, PlayerAnimationDriver.ParamWallSliding);
-            When(Link(s["WallSlide"], s["Airborne"], 0.08f),
+            When(Link(s["WallSlide"], s["Fall"], 0.08f),
                  AnimatorConditionMode.IfNot, PlayerAnimationDriver.ParamWallSliding);
 
             // 蹬墙跳是一次性动作（那 21 帧是一个前滚翻），播完回到滞空。
             // ⚠️ 不给出边的话角色会**永远停在这个 state 里** —— 已经踩到过一次：
             //    测试里蹬完墙 2.5 秒后仍在 WallJump。
-            Link(s["WallJump"], s["Airborne"], 0.12f, exitTime: true, at: 1f);
+            Link(s["WallJump"], s["Fall"], 0.12f, exitTime: true, at: 1f);
         }
 
         // ==================================================================
@@ -289,7 +299,7 @@ namespace RuleGame.Editor.Animations
         {
             // ⚠️ 退出必须**同时**要求 Dashing == false。只看接地的话，进入 Push 的那一帧
             //    （冲刺刚开始、Dashing 还是 true）就会立刻被这条过渡弹出去 —— 表现是「冲刺没有动画」。
-            AnimatorStateTransition dashOut = Link(s["Push"], s["Airborne"], 0.08f);
+            AnimatorStateTransition dashOut = Link(s["Push"], s["Fall"], 0.08f);
             When(dashOut, AnimatorConditionMode.IfNot, PlayerAnimationDriver.ParamDashing);
             When(dashOut, AnimatorConditionMode.IfNot, PlayerAnimationDriver.ParamGrounded);
 
@@ -386,6 +396,12 @@ namespace RuleGame.Editor.Animations
             t.hasExitTime = false; t.duration = 0.05f; t.hasFixedDuration = true; t.canTransitionToSelf = false;
             When(t, AnimatorConditionMode.If, PlayerAnimationDriver.ParamJump);
 
+            // 二段跳：和起跳分开（两个动作不一样），所以排在起跳后面独立一条。
+            // 两者不会同时触发 —— 玩法层一次跳跃只发其中一个事件。
+            t = sm.AddAnyStateTransition(s["Airborne"]);
+            t.hasExitTime = false; t.duration = 0.05f; t.hasFixedDuration = true; t.canTransitionToSelf = false;
+            When(t, AnimatorConditionMode.If, PlayerAnimationDriver.ParamAirJump);
+
             t = sm.AddAnyStateTransition(s["Land"]);
             t.hasExitTime = false; t.duration = 0.05f; t.hasFixedDuration = true; t.canTransitionToSelf = false;
             When(t, AnimatorConditionMode.If, PlayerAnimationDriver.ParamLand);
@@ -396,28 +412,43 @@ namespace RuleGame.Editor.Animations
         }
 
         // ==================================================================
-        //  贴墙下滑：定格在「贴墙那一帧」
+        //  定格帧剪辑（贴墙下滑 / 滞空）
         // ==================================================================
         //
-        // 逐帧看过 WallJump 那 21 张：**它是一个前滚翻**（1–8 贴墙、9–21 整个人翻过去），
-        // 不是滑墙动画。整段拿去循环 = 在墙上原地翻滚，明显不对。
-        //
-        // 所以贴墙下滑改成**定格**：取贴墙那一帧，重复 N 次凑成一个合法时长的循环剪辑。
-        // 📌 想换姿势就改下面这个帧号；要真正的滑墙动画得让美术补一张。
+        // 有些状态没有自己的素材，就**定格某张现成的帧**：把同一张图重复 N 次凑成一个
+        // 合法时长的循环剪辑。比借一整段动画好 —— 借整段 = 在原地放那整段动作。
+        // 📌 想换姿势就改下面的帧号；要真正的专属动画得让美术补图。
 
         /// <summary>贴墙下滑定格用 WallJump 序列里的第几帧（1 起数）。</summary>
         private const int WallSlideSourceFrame = 3;
 
-        private static void EnsureWallSlideClip()
+        /// <summary>滞空定格用 Airborne 序列里的第几帧（1 起数）。</summary>
+        private const int FallSourceFrame = 1;
+
+        /// <summary>同一张图重复几次。给剪辑一个合法时长，循环时看不出接缝。</summary>
+        private const int HeldKeyCount = 5;
+
+        private static void EnsureHeldFrameClips()
         {
-            string target = ClipFolder + "/Hero_WallSlide.anim";
-            string spritePath = "Assets/_Project/Art/Sprites/Hero/WallJump/Hero_WallJump_"
-                                + WallSlideSourceFrame.ToString("D2") + ".png";
+            EnsureHeldFrameClip("WallSlide", "WallJump", WallSlideSourceFrame);
+            EnsureHeldFrameClip("Fall",      "Airborne", FallSourceFrame);
+
+            // Airborne 现在是**二段跳**那一下的一次性动作，不能再循环 ——
+            // 循环的话人在空中会反复翻，停不下来。
+            EnsureOneShot("Airborne");
+        }
+
+        /// <summary>把 <c>&lt;源序列&gt;</c> 的第 <paramref name="frame"/> 帧定格成一个循环剪辑。</summary>
+        private static void EnsureHeldFrameClip(string targetName, string sourceSequence, int frame)
+        {
+            string target = ClipFolder + "/Hero_" + targetName + ".anim";
+            string spritePath = "Assets/_Project/Art/Sprites/Hero/" + sourceSequence
+                                + "/Hero_" + sourceSequence + "_" + frame.ToString("D2") + ".png";
 
             var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
             if (sprite == null)
             {
-                Debug.LogError("[HeroAnimatorBuilder] 找不到贴墙帧：" + spritePath);
+                Debug.LogError("[HeroAnimatorBuilder] 找不到定格帧：" + spritePath);
                 return;
             }
 
@@ -425,27 +456,43 @@ namespace RuleGame.Editor.Animations
             var clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(target);
             if (clip == null)
             {
-                clip = new AnimationClip { name = "Hero_WallSlide", frameRate = 12f };
+                clip = new AnimationClip { name = "Hero_" + targetName, frameRate = 12f };
                 AssetDatabase.CreateAsset(clip, target);
             }
 
-            const int KeyCount = 5;      // 同一张图重复几次：剪辑有合法时长，循环时看不出接缝
-
             var binding = EditorCurveBinding.PPtrCurve("", typeof(SpriteRenderer), "m_Sprite");
-            var keys = new ObjectReferenceKeyframe[KeyCount];
-            for (int i = 0; i < KeyCount; i++)
+            var keys = new ObjectReferenceKeyframe[HeldKeyCount];
+            for (int i = 0; i < HeldKeyCount; i++)
                 keys[i] = new ObjectReferenceKeyframe { time = i / clip.frameRate, value = sprite };
 
             AnimationUtility.SetObjectReferenceCurve(clip, binding, keys);
-
-            AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(clip);
-            settings.loopTime = true;
-            AnimationUtility.SetAnimationClipSettings(clip, settings);
+            SetLoopTime(clip, true);
 
             EditorUtility.SetDirty(clip);
             AssetDatabase.SaveAssets();
-            Debug.Log("[HeroAnimatorBuilder] 生成 Hero_WallSlide.anim（定格 WallJump 第 "
-                      + WallSlideSourceFrame + " 帧）。");
+            Debug.Log("[HeroAnimatorBuilder] 生成 Hero_" + targetName + ".anim（定格 "
+                      + sourceSequence + " 第 " + frame + " 帧）。");
+        }
+
+        /// <summary>把剪辑设成一次性（不循环）。已经是就什么都不做。</summary>
+        private static void EnsureOneShot(string clipName)
+        {
+            var clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(ClipFolder + "/Hero_" + clipName + ".anim");
+            if (clip == null)
+            {
+                Debug.LogWarning("[HeroAnimatorBuilder] 找不到剪辑：" + clipName);
+                return;
+            }
+            SetLoopTime(clip, false);
+            EditorUtility.SetDirty(clip);
+        }
+
+        private static void SetLoopTime(AnimationClip clip, bool loop)
+        {
+            AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(clip);
+            if (settings.loopTime == loop) return;
+            settings.loopTime = loop;
+            AnimationUtility.SetAnimationClipSettings(clip, settings);
         }
     }
 }
