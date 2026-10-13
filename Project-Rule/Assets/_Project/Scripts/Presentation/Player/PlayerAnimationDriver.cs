@@ -147,10 +147,27 @@ namespace RuleGame.Presentation.Player
             // 所以这里必须显式停，否则拼装界面一开角色还在原地跑。
             _animator.speed = (_status != null && _status.IsPaused) ? 0f : 1f;
 
-            // 朝向：Facing 已经是「换算后」的方向，「摩擦 × 反转」时自动是反的 —— 不用另外检测。
-            if (_renderer != null) _renderer.flipX = _player.Facing < 0f;
-
             PushContinuousParameters();
+        }
+
+        /// <summary>
+        /// 朝向**必须放在 LateUpdate**，不能和上面的参数一起写在 <c>Update</c> 里。
+        /// </summary>
+        /// <remarks>
+        /// <para><b>为什么</b>：Animator 的精灵换帧曲线绑定的是**同一个</b> <see cref="SpriteRenderer"/>。
+        /// 动画求值发生在 <c>Update</c> 之后，它会把整个绑定的渲染器属性集写回默认值 ——
+        /// 于是 <c>Update</c> 里刚设好的 <c>flipX</c> 被同一帧覆盖回 <c>false</c>，
+        /// 表现就是「往左走不翻面」（实测：把 Animator 停掉，手动写的 flipX 就能保持住）。
+        /// 放到 <c>LateUpdate</c> 就落在动画写入之后，不会再被吃掉。</para>
+        ///
+        /// <para>⚠️ 不要去改成「用 <c>localScale.x = -1</c> 翻面」：<c>Hero_Run</c> / <c>Hero_Airborne</c>
+        /// / <c>Hero_Die</c> 三个剪辑都在写 <c>localScale</c>，同样会被动画覆盖。</para>
+        ///
+        /// <para><c>Facing</c> 已经是「换算后」的方向，「摩擦 × 反转」时自动是反的 —— 不用另外检测。</para>
+        /// </remarks>
+        private void LateUpdate()
+        {
+            if (_renderer != null && _player != null) _renderer.flipX = _player.Facing < 0f;
         }
 
         // ==================================================================
