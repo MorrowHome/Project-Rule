@@ -35,6 +35,8 @@
 | `Doc/系统模块架构.md` | 系统与模块级架构（9 个系统、四层） |
 | `Doc/接口与事件定义.md` | **v3.0 接口冻结文档**（C# 接口签名、事件清单、依赖速查） |
 | `Doc/工程规范与目录结构方案.md` | 目录结构、asmdef、命名规范、四人分工 |
+| `Doc/玩家动作设计.md` | 玩家动作集（移动 / 跳跃 / 多段跳 / 冲刺 / 贴墙滑 / 蹬墙跳）的参数、状态机、规则交互 |
+| `Doc/美术与动画接入方案.md` | **美术资源目录与命名、精灵导入设置（PPU 640 / 轴心表）、动画驱动方式** |
 | `Doc/规则矩阵.json` | 30 个规则格位（6 属性 × 5 关系）+ 未定稿（`undecided`） |
 
 ## 架构：四层 + 单向依赖
@@ -88,9 +90,31 @@
 - ✅ 规则系统核心（`RuleSystem` / `RuleTable` / `AttributeManager`），重力属性端到端跑通
 - ✅ 规则接口层下沉到 `Infrastructure/Shared/Rules/`（v3.0 冻结）
 - ✅ P3：`IEntityStatus` / `EntityStatus`、`RuleReleaseService`、`DamageRule`、`DamageInfo` / `IDamageable`、`CombatSystem`、`PlayerController`、`EntityDamageable` / `IKnockbackReceiver`
+- ✅ **伤害链路已拆成两块**（2026-10-12）：`CombatSystem` 只做命中判定（`PerformAttack(AttackInfo)`），
+  伤害结算独立成 **`DamageProcessor`**（唯一伤害出口：算多少 + 挂账账本 + 结算）。
+  → **要打伤害一律走 `combat.Damage.Apply(...)` 并传「基础伤害」**，不要自己先换算（会绕过伤害规则）；
+  要另开伤害出口也请先看 `Doc/接口与事件定义.md` §4.2
+- ✅ **玩家动作集**（详见 `Doc/玩家动作设计.md`）：移动（加速度 + 按地面材质减速）、跳跃
+  （coyote / buffer / 可变高度）、**多段跳**（`_maxAirJumps`）、**冲刺**（`_dashSpeed` / `_dashDuration` / `_maxDashes`）、
+  **贴墙下滑**（`_wallSlideSpeed`）、**蹬墙跳**（`_wallJumpPushSpeed` / `_wallJumpUpSpeed`）。
+  每个能力都是**序列化字段 = 实体自己的能力**，不是玩家专属特权（敌人要就有）
+- ✅ **测试地形**：`Scenes/Test_RuleSystem.unity` 的 `Test_Geometry` 里是**两面墙的竖井**
+  （左壁 x≈26、右壁 x≈31，间距 4.4，y −2~14），加井顶落脚点、一块平台、三级台阶。
+  布局表与走法见 `Doc/玩家动作设计.md` 开头
+- ⚠️ **冲刺只管水平**：水平被冲刺接管，**竖直方向不积分重力、速度原样保留**
+  （空中冲刺是一条平直横线，不是斜向下）；且不受「摩擦 × 反转」影响
+- ⚠️ **贴墙下滑 ≠ 吸附**：人照样在往下掉，只是被压到 `_wallSlideSpeed`（6，约正常下落的 1/5）
+- ⚠️ **蹬墙跳是两档推力**：朝墙**外**按 → `_wallJumpPushSpeed`（9，跳出去、够跨到对面墙）；
+  朝墙按 / 不按 → `_wallClimbPushSpeed`（4，**只弹一点点**）。
+  **爬升档的推力必须小** —— 否则按着朝墙的方向也会被推飞，一面墙就爬不上去。
+  **想让一次跳得更远，优先调 `_wallJumpUpSpeed`（15）而不是加水平推力** ——
+  蹬得高 → 滞空久 → 水平距离白拿，弧线还更好看。
+  **起跳优先级：地面/土狼跳 > 蹬墙跳 > 空中跳**（顺序错了会导致「贴墙时二段跳抢先」）。
+  规则交互表与处理顺序表见 `Doc/玩家动作设计.md` §2.2 / §3.5 / §6 —— **改玩家动作前先读那份文档**
 - ✅ P4：白盒 HUD、规则拼装 demo、五种重力接入（`Scenes/Level_01.unity`）
-- ⚠️ **P3 的组件还没有接进任何场景**（`Level_01.unity` 目前只有 P4 的 demo 控制器）。
-  想验证玩法得先接线，接线前请注意下面两条
+- ✅ **P3 的组件已接进 `Scenes/Test_RuleSystem.unity`**（`Systems` / `Ground`(层8) / `Player` / `Dummy`(层9)），
+  Console 0 错误，可直接双击打开跑冒烟测试。`Level_01.unity` 目前仍只有 P4 的 demo 控制器。
+  想验证玩法请用测试场景，接线前请注意下面几条
 - ✅ `RuleCatalog.asset` 已接 **19 条**规则：5 重力 + 5 摩擦 + 5 质量 + 4 伤害（覆盖 4 个属性）；
   时间 / 因果两个属性的规则类尚未实现
 - ⚠️ `PlayerController` 按 D1 用 **Kinematic 刚体**：位移走 `Rigidbody2D.Slide` 解算接触，
