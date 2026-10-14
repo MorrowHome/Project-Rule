@@ -18,6 +18,7 @@ using RuleGame.Development.Enemy;
 using RuleGame.Development.RuleWheel;
 using RuleGame.UI.RuleWheel;
 using RuleGame.Infrastructure.Rules;
+using RuleGame.Infrastructure;
 
 namespace RuleGame.Editor.Enemy
 {
@@ -240,42 +241,71 @@ namespace RuleGame.Editor.Enemy
         private static GameObject CreatePlayerPrefab()
         {
             const string source = "Assets/_Project/Scenes/Test_RuleSystem.unity";
+            const string path = PrefabFolder + "/EnemyLabPlayer.prefab";
+            Scene previous = SceneManager.GetActiveScene();
             Scene scene = SceneManager.GetSceneByPath(source);
             bool opened = !scene.isLoaded;
             if (opened) scene = EditorSceneManager.OpenScene(source, OpenSceneMode.Additive);
+            try
+            {
             PlayerController sourcePlayer = Find<PlayerController>(scene);
             if (sourcePlayer == null) throw new InvalidOperationException("Test_RuleSystem 没有 PlayerController。");
-            // 在生成用场景创建对象并复制配置，不 Instantiate 到原场景，避免把原场景标脏。
-            GameObject copy = new GameObject("EnemyLabPlayer");
-            copy.AddComponent<Rigidbody2D>();
-            UnityEditorInternal.ComponentUtility.CopyComponent(sourcePlayer.GetComponent<Collider2D>());
-            UnityEditorInternal.ComponentUtility.PasteComponentAsNew(copy);
-            EntityStatus status = copy.AddComponent<EntityStatus>();
-            PlayerController controller = copy.AddComponent<PlayerController>();
-            var sourceSettings = new SerializedObject(sourcePlayer);
-            var destinationSettings = new SerializedObject(controller);
-            SerializedProperty property = sourceSettings.GetIterator();
-            bool enter = true;
-            while (property.NextVisible(enter))
+            // SaveAsPrefabAsset 不连接/修改源场景。完整保存子层级，保留当前主角的动画与内部引用。
+            PrefabUtility.SaveAsPrefabAsset(sourcePlayer.gameObject, path);
+            GameObject contents = PrefabUtility.LoadPrefabContents(path);
+            try
             {
-                enter = false;
-                if (property.name != "m_Script") destinationSettings.CopyFromSerializedProperty(property);
+                contents.name = "EnemyLabPlayer";
+                EntityStatus status = contents.GetComponent<EntityStatus>();
+                PlayerController controller = contents.GetComponent<PlayerController>();
+                EntityDamageable damageable = contents.GetComponent<EntityDamageable>();
+                if (damageable == null) damageable = contents.AddComponent<EntityDamageable>();
+                Set(controller, "_status", status); Set(damageable, "_status", status);
+                Set(controller, "_combat", null); Set(damageable, "_combat", null);
+                SetFloat(damageable, "_resistance", 0f); SetFloat(damageable, "_knockbackResistance", 0f);
+                var faction = new SerializedObject(damageable);
+                faction.FindProperty("_faction").intValue = (int)Faction.Player; faction.ApplyModifiedPropertiesWithoutUndo();
+                PrefabUtility.SaveAsPrefabAsset(contents, path);
             }
-            destinationSettings.ApplyModifiedPropertiesWithoutUndo();
-            Set(controller, "_status", status);
-            copy.AddComponent<RuleAffectedBody>();
-            EntityDamageable damageable = copy.AddComponent<EntityDamageable>();
-            Set(damageable, "_status", status);
-            SpriteRenderer renderer = copy.AddComponent<SpriteRenderer>();
-            renderer.enabled = true; renderer.sprite = _square; renderer.sharedMaterial = _material;
-            renderer.color = new Color(0.12f, 0.12f, 0.1f); renderer.sortingOrder = 6;
-            SetFloat(damageable, "_resistance", 1f); SetFloat(damageable, "_knockbackResistance", 1f);
-            Set(copy.GetComponent<PlayerController>(), "_combat", null); Set(damageable, "_combat", null);
-            var faction = new SerializedObject(damageable); faction.FindProperty("_faction").enumValueIndex = 0; faction.ApplyModifiedPropertiesWithoutUndo();
-            GameObject prefab = PrefabUtility.SaveAsPrefabAsset(copy, PrefabFolder + "/EnemyLabPlayer.prefab");
-            UnityEngine.Object.DestroyImmediate(copy);
-            if (opened) EditorSceneManager.CloseScene(scene, true);
-            return prefab;
+            finally { PrefabUtility.UnloadPrefabContents(contents); }
+            return AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            }
+            finally
+            {
+                if (opened) EditorSceneManager.CloseScene(scene, true);
+                if (previous.IsValid() && previous.isLoaded) SceneManager.SetActiveScene(previous);
+            }
+        }
+        /// <summary>只替换白盒主角并重接引用，不重建敌人配置、动画、地形与镜头。</summary>
+        public static void RefreshLabPlayers()
+        {
+            GameObject playerPrefab = CreatePlayerPrefab();
+            Scene previous = SceneManager.GetActiveScene();
+            foreach (EnemyKind kind in Enum.GetValues(typeof(EnemyKind)))
+            {
+                string path = SceneFolder + "/Test_Enemy_" + kind + ".unity";
+                Scene scene = SceneManager.GetSceneByPath(path);
+                bool opened = !scene.isLoaded;
+                if (opened) scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Additive);
+                try
+                {
+                    PlayerController oldPlayer = Find<PlayerController>(scene);
+                    Vector3 position = oldPlayer != null ? oldPlayer.transform.position : new Vector3(-6f, 0.6f, 0f);
+                    GameObject playerObject = (GameObject)PrefabUtility.InstantiatePrefab(playerPrefab, scene);
+                    playerObject.transform.position = position;
+                    PlayerController player = playerObject.GetComponent<PlayerController>();
+                    CombatSystem combat = Find<CombatSystem>(scene);
+                    Set(player, "_combat", combat); Set(playerObject.GetComponent<EntityDamageable>(), "_combat", combat);
+                    Find<EnemyActor>(scene).Target = player.transform;
+                    Set(Find<RuleWheelPresenter>(scene), "_player", player);
+                    Set(Find<RuleSelectionCamera>(scene), "_target", player.transform);
+                    Find<EnemyLabControls>(scene).Player = playerObject.GetComponent<EntityStatus>();
+                    if (oldPlayer != null) UnityEngine.Object.DestroyImmediate(oldPlayer.gameObject);
+                    EditorSceneManager.SaveScene(scene, path);
+                }
+                finally { if (opened) EditorSceneManager.CloseScene(scene, true); }
+            }
+            if (previous.IsValid() && previous.isLoaded) SceneManager.SetActiveScene(previous);
         }
         private static void BuildScene(EnemyKind kind, EnemyActor prefab, GameObject playerPrefab)
         {

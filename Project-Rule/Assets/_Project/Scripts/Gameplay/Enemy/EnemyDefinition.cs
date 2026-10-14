@@ -22,6 +22,8 @@ namespace RuleGame.Gameplay.Enemy
         public Vector2 BodySize = new Vector2(1.8f, 3f);
         public float Health = 100f;
         public float Damage = 10f;
+        public bool ContactDamage = true;
+        [Min(0.05f)] public float ContactInterval = 0.6f;
         public float Energy = 100f;
         public float EnergyRegen = 2f;
         public AttributeId RuleAttribute = AttributeId.Gravity;

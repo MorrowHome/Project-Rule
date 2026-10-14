@@ -39,6 +39,10 @@ namespace RuleGame.Gameplay.Enemy
         public event Action Restored;
         public event Action<EnemyActor> OnDefeated;
         private float _invulnerability;
+        private float _contactCooldown;
+        private BoxCollider2D _bodyCollider;
+        private readonly Collider2D[] _contacts = new Collider2D[8];
+        private readonly HashSet<IDamageable> _contactTargets = new HashSet<IDamageable>();
         private readonly HashSet<IDamageable> _swingTargets = new HashSet<IDamageable>();
         private readonly List<EnemyActor> _summons = new List<EnemyActor>();
         private RuleReleaseService _release;
@@ -47,6 +51,7 @@ namespace RuleGame.Gameplay.Enemy
         {
             Status = GetComponent<EntityStatus>();
             Motor = GetComponent<EnemyMotor>();
+            _bodyCollider = GetComponent<BoxCollider2D>();
         }
         private void Start()
         {
@@ -64,6 +69,30 @@ namespace RuleGame.Gameplay.Enemy
             if (!Defeated) Status.RestoreEnergy(Definition.EnergyRegen * dt);
             Brain.Tick(dt);
             Motor.Tick(dt);
+            TickContactDamage(dt);
+        }
+        private void TickContactDamage(float dt)
+        {
+            _contactCooldown = Mathf.Max(0f, _contactCooldown - dt);
+            if (Defeated || !Definition.ContactDamage || Combat == null || _contactCooldown > 0f
+                || _bodyCollider == null || !_bodyCollider.enabled) return;
+            // 用身体盒检查接触，不依赖 Kinematic 刚体是否触发碰撞回调。
+            // 身体接触与招式攻击共用战斗结算，持续重叠也不会每帧掉血。
+            var filter = new ContactFilter2D { useTriggers = false };
+            filter.SetLayerMask(PlayerMask);
+            Vector3 scale = transform.lossyScale;
+            Vector2 size = Vector2.Scale(_bodyCollider.size, new Vector2(Mathf.Abs(scale.x), Mathf.Abs(scale.y)));
+            Vector2 center = transform.TransformPoint(_bodyCollider.offset);
+            int count = Physics2D.OverlapBox(center, size, transform.eulerAngles.z, filter, _contacts);
+            _contactTargets.Clear();
+            for (int i = 0; i < count; i++)
+            {
+                var receiver = _contacts[i].GetComponentInParent<IDamageable>();
+                var faction = _contacts[i].GetComponentInParent<IFactionMember>();
+                if (receiver == null || faction?.Faction != Faction.Player || !_contactTargets.Add(receiver)) continue;
+                Combat.ApplyDamage(this, receiver, Definition.Damage, 5f);
+            }
+            if (_contactTargets.Count > 0) _contactCooldown = Mathf.Max(0.05f, Definition.ContactInterval);
         }
         private void OnDisable() => Motor?.Stop();
 
@@ -163,7 +192,7 @@ namespace RuleGame.Gameplay.Enemy
         {
             public object Brain;
             public Vector2 Velocity, Impulse;
-            public float Facing, Invulnerability;
+            public float Facing, Invulnerability, ContactCooldown;
             public bool Defeated;
             public EnemyActor[] Summons;
             public IDamageable[] SwingTargets;
@@ -172,12 +201,14 @@ namespace RuleGame.Gameplay.Enemy
         {
             Brain = Brain?.Capture(), Velocity = Motor.Velocity, Impulse = Motor.CaptureImpulse(),
             Facing = Facing, Invulnerability = _invulnerability, Defeated = Defeated, Summons = _summons.ToArray(),
+            ContactCooldown = _contactCooldown,
             SwingTargets = new List<IDamageable>(_swingTargets).ToArray()
         };
         public void RestoreSnapshotState(object state)
         {
             if (!(state is Data data)) return;
             Defeated = data.Defeated; Facing = data.Facing; _invulnerability = data.Invulnerability;
+            _contactCooldown = data.ContactCooldown;
             _summons.Clear(); _summons.AddRange(data.Summons);
             Brain?.Restore(data.Brain);
             _swingTargets.Clear();

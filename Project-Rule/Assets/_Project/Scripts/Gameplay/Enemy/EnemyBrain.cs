@@ -158,17 +158,16 @@ namespace RuleGame.Gameplay.Enemy
     public sealed class MinionBrain : EnemyBrain
     {
         private bool _commanded;
-        private float _nextContact;
         private Vector2 _home;
         protected override string[] ActionNames => new[] { "Walk", "Idle", "Hurt" };
         protected override string FirstAction => "Walk";
         public MinionBrain(EnemyActor actor) : base(actor) { _home = actor.transform.position; }
         public override void CommandAttack() => _commanded = true;
-        protected override object CaptureExtra() => new object[] { _commanded, _nextContact, _home };
+        protected override object CaptureExtra() => new object[] { _commanded, _home };
         protected override void RestoreExtra(object state)
         {
             if (!(state is object[] data)) return;
-            _commanded = (bool)data[0]; _nextContact = (float)data[1]; _home = (Vector2)data[2];
+            _commanded = (bool)data[0]; _home = (Vector2)data[1];
         }
         protected override void TickAction(string name)
         {
@@ -182,11 +181,6 @@ namespace RuleGame.Gameplay.Enemy
             }
             if (Config.Flying) Actor.Motor.Intent = Actor.TowardTarget;
             else WalkToTarget();
-            if (Age >= _nextContact && Actor.Distance < Config.BodySize.x * 0.5f + 0.55f)
-            {
-                Actor.Attack(Config.BodySize.x + 0.35f, true);
-                _nextContact = Age + 0.6f;
-            }
         }
     }
 }

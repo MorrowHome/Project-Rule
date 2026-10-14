@@ -176,8 +176,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RuleGame.Development::RuleGame.Development.Enemy.EnemyLabControls
   Enemy: {fileID: 1566107194}
-  Player: {fileID: 841919352}
+  Player: {fileID: 753694175}
   Font: {fileID: 12800000, guid: fe3c02df273c952408d013a1b86511fd, type: 3}
+  Invincible: 1
 --- !u!114 &429400468
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -288,7 +289,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5bb4bee0503ecac42822ca8b780b6daa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.RuleWheel.RuleSelectionCamera
-  _target: {fileID: 841919350}
+  _target: {fileID: 753694176}
   _normalFollow: {fileID: 0}
   _followOffset: {x: 0, y: 0.7}
   _selectionOffset: {x: 1.3, y: 0.35}
@@ -456,7 +457,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &841919349
+--- !u!1001 &753694173
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -521,15 +522,10 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d79a79f55ccf959459073188a4ad6f3b, type: 3}
---- !u!4 &841919350 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 278280146790032483, guid: d79a79f55ccf959459073188a4ad6f3b, type: 3}
-  m_PrefabInstance: {fileID: 841919349}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &841919351 stripped
+--- !u!114 &753694174 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1219979694521877792, guid: d79a79f55ccf959459073188a4ad6f3b, type: 3}
-  m_PrefabInstance: {fileID: 841919349}
+  m_PrefabInstance: {fileID: 753694173}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -537,10 +533,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8dff63cb7deb704d549990e1a8cd84fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Player.PlayerController
---- !u!114 &841919352 stripped
+--- !u!114 &753694175 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3480298681219015247, guid: d79a79f55ccf959459073188a4ad6f3b, type: 3}
-  m_PrefabInstance: {fileID: 841919349}
+  m_PrefabInstance: {fileID: 753694173}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -548,6 +544,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5b17e5f0fb818991d232565fec6e1d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Player.EntityStatus
+--- !u!4 &753694176 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 278280146790032483, guid: d79a79f55ccf959459073188a4ad6f3b, type: 3}
+  m_PrefabInstance: {fileID: 753694173}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1126129424
 GameObject:
   m_ObjectHideFlags: 0
@@ -717,7 +718,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2fd69dd317c7c44d861446ff785e609, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RuleGame.UI::RuleGame.UI.RuleWheel.RuleWheelPresenter
-  _player: {fileID: 841919351}
+  _player: {fileID: 753694174}
   _catalog: {fileID: 11400000, guid: 724cd972d9586554da8f8fcbe255a613, type: 2}
   _unlocks: {fileID: 429400466}
   _cameraFocus: {fileID: 517895817}
@@ -1055,7 +1056,7 @@ PrefabInstance:
     - target: {fileID: 1108386471410223553, guid: 0d5fc953299126441b3906a853d00930, type: 3}
       propertyPath: Target
       value: 
-      objectReference: {fileID: 841919350}
+      objectReference: {fileID: 0}
     - target: {fileID: 1229064352976238483, guid: 0d5fc953299126441b3906a853d00930, type: 3}
       propertyPath: m_Name
       value: BrickBoss
@@ -1121,7 +1122,6 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 429400469}
-  - {fileID: 841919349}
   - {fileID: 1566107193}
   - {fileID: 542413814}
   - {fileID: 1297333907}
@@ -1129,3 +1129,4 @@ SceneRoots:
   - {fileID: 1500255021}
   - {fileID: 517895819}
   - {fileID: 1226369867}
+  - {fileID: 753694173}

@@ -4,6 +4,7 @@ using RuleGame.Gameplay.Enemy;
 using RuleGame.Gameplay.Player;
 using RuleGame.Infrastructure.Time;
 using RuleGame.Infrastructure;
+using RuleGame.Gameplay.Combat;
 
 namespace RuleGame.Development.Enemy
 {
@@ -13,7 +14,14 @@ namespace RuleGame.Development.Enemy
         public EnemyActor Enemy;
         public EntityStatus Player;
         public Font Font;
+        public bool Invincible = true;
         private GUIStyle _style;
+        private void Start() => SetInvincible(Invincible);
+        public void SetInvincible(bool invincible)
+        {
+            Invincible = invincible;
+            Player?.GetComponent<EntityDamageable>()?.SetInvulnerable(invincible);
+        }
         private void Update()
         {
             Keyboard keyboard = Keyboard.current;
@@ -22,6 +30,7 @@ namespace RuleGame.Development.Enemy
             if (keyboard.f2Key.wasPressedThisFrame && Enemy.WeakPoint != null && Enemy.WeakPoint.Opened)
                 Enemy.WeakPoint.ApplyDamage(new DamageInfo { Amount = Enemy.Definition.ClockCoreHealth });
             if (keyboard.f3Key.wasPressedThisFrame) Restart();
+            if (keyboard.f5Key.wasPressedThisFrame) SetInvincible(!Invincible);
             if (keyboard.f4Key.wasPressedThisFrame)
             {
                 bool pause = TimeManager.Instance?.IsPaused != true;
@@ -48,9 +57,10 @@ namespace RuleGame.Development.Enemy
             if (_style == null) _style = new GUIStyle(GUI.skin.label) { font = Font, fontSize = 16, normal = { textColor = new Color(0.12f, 0.12f, 0.1f) } };
             GUILayout.BeginArea(new Rect(14f, 14f, 540f, 180f));
             GUILayout.Label($"{Enemy.Definition.DisplayName}  |  {Enemy.Brain.StateName}  |  阶段 {Enemy.Brain.Phase}", _style);
-            GUILayout.Label($"生命 {Enemy.Status.Health:0}/{Enemy.Definition.Health:0}    能量 {Enemy.Status.Energy:0}    主角无敌", _style);
+            GUILayout.Label($"生命 {Enemy.Status.Health:0}/{Enemy.Definition.Health:0}    能量 {Enemy.Status.Energy:0}", _style);
+            GUILayout.Label($"主角生命 {Player.Health:0}/{Player.HealthMax:0}    无敌{(Invincible ? "开启" : "关闭")}", _style);
             GUILayout.Label("F1 进入下一阶段   F2 击破露出的发条", _style);
-            GUILayout.Label("F3 重开白盒   F4 暂停   Shift 规则轮盘", _style);
+            GUILayout.Label("F3 重开   F4 暂停   F5 无敌开关   Shift 规则轮盘", _style);
             if (Enemy.Definition.Kind == EnemyKind.RabbitBoss) GUILayout.Label("兔子美术文件夹为空；当前展示白盒动作。", _style);
             GUILayout.EndArea();
         }
