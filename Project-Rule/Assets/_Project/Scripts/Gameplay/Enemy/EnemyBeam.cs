@@ -20,6 +20,12 @@ namespace RuleGame.Gameplay.Enemy
         private bool _inPool;
         private readonly Collider2D[] _hits = new Collider2D[8];
         public bool DiscardWhenMissing => true;
+        public EnemyActor Source => _source;
+        public Vector2 Direction => _direction;
+        public float Age => _age;
+        public float WarningDuration => _warning;
+        public float Width => _width;
+        public Vector2 Origin => _source.BeamOrigin != null ? (Vector2)_source.BeamOrigin.position : (Vector2)_source.transform.position;
         public static void Spawn(EnemyActor source, float angle, float width, float warning)
         {
             if (source.Defeated) return;
@@ -44,6 +50,7 @@ namespace RuleGame.Gameplay.Enemy
             beam._age = 0f; beam._hit = false; beam._inPool = false;
             beam._direction = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad));
             beam.gameObject.SetActive(true);
+            source.EmitFeedback(EnemyFeedbackKind.BeamSpawn, source.transform.position, beam._direction, beam);
         }
         private void Awake() => _line = GetComponent<LineRenderer>();
         private void OnEnable() => _inPool = false;
@@ -59,7 +66,7 @@ namespace RuleGame.Gameplay.Enemy
             if (_source == null || _source.Defeated || _age > _warning + 0.35f) { gameObject.SetActive(false); return; }
             _age += Time.fixedDeltaTime;
             if (_age < _warning || _hit) return;
-            Vector2 origin = _source.transform.position;
+            Vector2 origin = Origin;
             float length = Length(origin);
             var filter = new ContactFilter2D { useTriggers = false };
             filter.SetLayerMask(_source.PlayerMask);
@@ -83,7 +90,7 @@ namespace RuleGame.Gameplay.Enemy
         private void LateUpdate()
         {
             if (_source == null) return;
-            Vector2 origin = _source.transform.position;
+            Vector2 origin = Origin;
             _line.SetPosition(0, new Vector3(origin.x, origin.y, -0.5f));
             Vector2 end = origin + _direction * Length(origin);
             _line.SetPosition(1, new Vector3(end.x, end.y, -0.5f));

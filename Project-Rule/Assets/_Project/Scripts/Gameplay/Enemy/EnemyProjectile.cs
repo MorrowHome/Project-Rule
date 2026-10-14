@@ -19,6 +19,10 @@ namespace RuleGame.Gameplay.Enemy
         private bool _inPool;
         private readonly RaycastHit2D[] _hits = new RaycastHit2D[8];
         public bool DiscardWhenMissing => true;
+        public EnemyActor Source => _source;
+        public Vector2 Velocity => _velocity;
+        public float Radius => _radius;
+        public float Gravity => _gravity;
 
         public static void Spawn(EnemyActor source, Vector2 direction, float speed, float gravity, float radius)
         {
@@ -52,6 +56,7 @@ namespace RuleGame.Gameplay.Enemy
             var visual = source.GetComponentInChildren<SpriteRenderer>();
             if (visual != null) shot._renderer.sharedMaterial = visual.sharedMaterial;
             shot._renderer.color = gravity > 0f ? new Color(0.85f, 0.55f, 0.3f) : new Color(0.7f, 0.32f, 0.38f);
+            source.EmitFeedback(EnemyFeedbackKind.ProjectileSpawn, shot.transform.position, direction, shot);
         }
         private void Awake() { _body = GetComponent<Rigidbody2D>(); _renderer = GetComponent<SpriteRenderer>(); }
         private void OnEnable() => _inPool = false;
@@ -74,6 +79,7 @@ namespace RuleGame.Gameplay.Enemy
             int count = Physics2D.CircleCast(_body.position, _radius, _velocity.normalized, filter, _hits, _velocity.magnitude * dt);
             if (count > 0)
             {
+                _source.EmitFeedback(EnemyFeedbackKind.ProjectileImpact, _hits[0].point, -_velocity.normalized, this);
                 for (int i = 0; i < count; i++)
                 {
                     IDamageable receiver = _hits[i].collider.GetComponentInParent<IDamageable>();

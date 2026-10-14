@@ -108,6 +108,7 @@ GameObject:
   - component: {fileID: 8658968425657225305}
   - component: {fileID: 8332709062885044208}
   - component: {fileID: 1027201314715272575}
+  - component: {fileID: 2246026739557131903}
   m_Layer: 9
   m_Name: ClockBoss
   m_TagString: Untagged
@@ -263,6 +264,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   ProjectileSprite: {fileID: 21300000, guid: 36b2976af0b0e39468f739a7537ef56e, type: 3}
+  BeamOrigin: {fileID: 1519161152868293157}
   RuntimeSpawned: 0
   ArenaX: {x: -12, y: 12}
 --- !u!114 &8332709062885044208
@@ -297,6 +299,19 @@ MonoBehaviour:
   - {fileID: 1519161152868293157}
   - {fileID: 8568363113038921769}
   - {fileID: 6687927327850309458}
+--- !u!114 &2246026739557131903
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4648053914971970046}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b578e3c45961324dbd678da0c8515e1, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.Enemy.EnemyVfxPresenter
+  Profile: {fileID: 11400000, guid: d0c64e52ec27e074daec6784116a2996, type: 2}
 --- !u!1 &5425754997422501794
 GameObject:
   m_ObjectHideFlags: 0
