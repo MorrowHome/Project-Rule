@@ -73,6 +73,17 @@ namespace RuleGame.Gameplay.Player
         public event Action<float, float> OnHealthChanged;
         public event Action<AttributeId, RelationId, float> OnCooldownStarted;
 
+        /// <summary>新生成实体的初始生命/能量配置；只在首次初始化调用，回溯仍使用 ApplyData。</summary>
+        public void InitializeVitals(float healthMax, float energyMax)
+        {
+            _healthMax = Mathf.Max(1f, healthMax);
+            _energyMax = Mathf.Max(0f, energyMax);
+            _health = _healthMax;
+            _energy = _energyMax;
+            OnHealthChanged?.Invoke(_health, _healthMax);
+            OnEnergyChanged?.Invoke(_energy, _energyMax);
+        }
+
         // ==================================================================
         //  能量
         // ==================================================================

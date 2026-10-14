@@ -59,9 +59,12 @@ namespace RuleGame.Gameplay.Combat
         public Faction Faction => _faction;
 
         /// <summary>无敌帧内（或已死亡）：再来伤害也不会结算。</summary>
-        public bool IsInvincible => !_died && Time.time < _invincibleUntil;
+        public bool IsInvincible => !_died && (Invulnerable || Time.time < _invincibleUntil);
 
         public bool IsDead => _died;
+        /// <summary>外部显式控制的免伤开关；独立于受击无敌帧和抗性，不修改共享伤害计算。</summary>
+        public bool Invulnerable { get; private set; }
+        public void SetInvulnerable(bool invulnerable) => Invulnerable = invulnerable;
 
         // ==================================================================
         //  生命周期
@@ -95,6 +98,9 @@ namespace RuleGame.Gameplay.Combat
                 _status.ApplyHealthDelta(-damage.Amount);
                 return;
             }
+
+            // 包括挂账时的零伤害击退；回血仍按上面的负伤害路径处理。
+            if (Invulnerable) return;
 
             // 零伤害 = **纯击退**（伤害挂账期间那一下：只推不扣）。
             // 击退照常，但不进无敌帧、不动生命 —— 它本来就不是一次伤害结算。

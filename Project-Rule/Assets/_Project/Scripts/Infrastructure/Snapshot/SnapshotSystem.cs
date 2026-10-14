@@ -94,6 +94,9 @@ namespace RuleGame.Infrastructure.Snapshot
                 if (body.TryGetComponent<IEntityStatus>(out IEntityStatus status))
                     es.Status = status.ToData();
 
+                if (body.TryGetComponent<ISnapshotParticipant>(out ISnapshotParticipant module))
+                    es.ModuleState = module.CaptureSnapshotState();
+
                 snap.Entities.Add(es);
                 snap.ObjectStates.Add(new ObjectActiveState
                 {
@@ -110,6 +113,18 @@ namespace RuleGame.Infrastructure.Snapshot
         public void Restore(Snapshot snap, RestoreMode mode = RestoreMode.Full)
         {
             if (snap == null) return;
+
+            // 回到召唤/发射之前时，之后出生的临时实体不能继续留在世界里。
+            // 只处理主动声明的模块，静态关卡物体及已有调用方不受影响。
+            var present = new HashSet<Rigidbody2D>();
+            foreach (EntityState state in snap.Entities)
+                if (state.Entity?.Body != null) present.Add(state.Entity.Body);
+            var currentBodies = new List<Rigidbody2D>();
+            foreach (IRuleAffected entity in _registry.All)
+                if (entity.Body != null) currentBodies.Add(entity.Body);
+            foreach (Rigidbody2D body in currentBodies)
+                if (!present.Contains(body) && body.TryGetComponent<ISnapshotParticipant>(out ISnapshotParticipant module)
+                    && module.DiscardWhenMissing) body.gameObject.SetActive(false);
 
             // ① 对象激活状态：先把「该复活的」「该睡下的」都摆到位（架构 D15）。
             for (int i = 0; i < snap.ObjectStates.Count; i++)
@@ -160,6 +175,9 @@ namespace RuleGame.Infrastructure.Snapshot
                         status.ApplyData(es.Status);
                     }
                 }
+
+                if (es.ModuleState != null && body.TryGetComponent<ISnapshotParticipant>(out ISnapshotParticipant module))
+                    module.RestoreSnapshotState(es.ModuleState);
             }
 
             // ④ 全部写完才广播（先写状态，再广播 —— 与规则系统同一条纪律）。

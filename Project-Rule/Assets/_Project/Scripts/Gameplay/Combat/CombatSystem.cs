@@ -64,6 +64,14 @@ namespace RuleGame.Gameplay.Combat
         /// <returns>模块实际作用到的目标数；<b>0 表示这一击无效或打空</b>。</returns>
         public int PerformAttack(object attacker, Vector2 center, Vector2 size, LayerMask mask,
                                  float baseDamage, float knockback)
+            => PerformAttack(attacker, center, size, mask, baseDamage, knockback, null);
+
+        /// <summary>
+        /// 连续攻击窗口：发起方在每次挥刀前清空集合，窗口内按实体去重。
+        /// 原有单次判定接口保持不变；伤害、因果传播和挂账仍由 DamageProcessor 处理。
+        /// </summary>
+        public int PerformAttack(object attacker, Vector2 center, Vector2 size, LayerMask mask,
+                                 float baseDamage, float knockback, ISet<IDamageable> swingTargets)
         {
             DamageProcessor processor = Processor;
             if (processor == null) return 0;
@@ -78,8 +86,10 @@ namespace RuleGame.Gameplay.Combat
             {
                 // 一个目标可能有多个碰撞体：用 GetComponentInParent 找，并按目标去重
                 var damageable = _hits[i].GetComponentInParent<IDamageable>();
-                if (damageable == null || _hitTargets.Contains(damageable)) continue;
+                if (damageable == null || _hitTargets.Contains(damageable)
+                    || (swingTargets != null && swingTargets.Contains(damageable))) continue;
                 _hitTargets.Add(damageable);
+                swingTargets?.Add(damageable);
             }
 
             if (_hitTargets.Count == 0) return 0;           // 打空：连模块都不进
