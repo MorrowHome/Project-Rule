@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44ae8e38655c9174889977edd694ec6e, type: 3}
+  m_Name: RabbitBoss_Definition
+  m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Enemy.EnemyDefinition
+  Kind: 3
+  DisplayName: "\u6BDB\u7ED2\u5154\u5B50 Boss"
+  BodySize: {x: 2, y: 3}
+  Health: 100
+  Damage: 10
+  Energy: 100
+  EnergyRegen: 2
+  MoveSpeed: 2.5
+  AttackRange: 3.5
+  AttackCooldown: 1.8
+  HurtCooldown: 2
+  GravityScale: 1
+  Flying: 0
+  ImpactFraction: 0.6
+  RabbitCycle: 20
+  RabbitThrowInterval: 2
+  ClockHourInterval: 12
+  ClockCoreWindow: 3
+  ClockCoreHealth: 15
+  Timings: []

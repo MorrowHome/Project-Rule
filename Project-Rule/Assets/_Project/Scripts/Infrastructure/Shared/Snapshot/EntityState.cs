@@ -36,5 +36,8 @@ namespace RuleGame.Infrastructure.Snapshot
 
         /// <summary>实体状态数据（能量 / 生命 / 持有物）。实体没有 <see cref="IEntityStatus"/> 时为 null。</summary>
         public EntityStatusData Status;
+
+        /// <summary>可选的模块状态；内存快照使用，不作为磁盘存档格式。</summary>
+        public object ModuleState;
     }
 }
