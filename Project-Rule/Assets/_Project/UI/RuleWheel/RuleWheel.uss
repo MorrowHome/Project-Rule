@@ -31,3 +31,4 @@
     color: #efede1;
 }
 .hidden { display: none; }
+.wheel-root.facing-left .wheel-feedback { left: 66px; }

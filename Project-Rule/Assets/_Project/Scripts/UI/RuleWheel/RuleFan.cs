@@ -4,7 +4,7 @@ using UnityEngine.UIElements;
 
 namespace RuleGame.UI.RuleWheel
 {
-    /// <summary>右侧纸扇轮盘。扇区与命中计算共用角度参数，字块布局随 UXML 半径调整。</summary>
+    /// <summary>朝角色前方展开的纸扇轮盘。绘制、标签与命中共用角度及镜像参数。</summary>
     [UxmlElement]
     public partial class RuleFan : VisualElement
     {
@@ -19,6 +19,7 @@ namespace RuleGame.UI.RuleWheel
         private Label[] _labels = Array.Empty<Label>();
         public int SelectedIndex { get; private set; } = -1;
         public Vector2 Center => contentRect.size * 0.5f;
+        public bool Mirrored { get; private set; }
 
         public RuleFan()
         {
@@ -61,6 +62,19 @@ namespace RuleGame.UI.RuleWheel
             LayoutWords(); MarkDirtyRepaint();
         }
 
+        public void SetMirrored(bool mirrored)
+        {
+            if (Mirrored == mirrored) return;
+            Mirrored = mirrored;
+            LayoutWords(); MarkDirtyRepaint();
+        }
+
+        private Vector2 Direction(float angle)
+        {
+            float x = Mathf.Cos(angle * Mathf.Deg2Rad);
+            return new Vector2(Mirrored ? -x : x, Mathf.Sin(angle * Mathf.Deg2Rad));
+        }
+
         public void Select(int index)
         {
             if (index < 0 || index >= _words.Length) index = -1;
@@ -74,6 +88,8 @@ namespace RuleGame.UI.RuleWheel
         {
             Vector2 delta = localPoint - Center;
             if (delta.magnitude < InnerRadius || delta.magnitude > OuterRadius + 28f || _words.Length == 0) return -1;
+            // 先把左侧输入还原到同一套逻辑角度，鼠标和手柄保持相同的词条顺序。
+            if (Mirrored) delta.x = -delta.x;
             float angle = Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg;
             if (angle < StartAngle || angle > EndAngle) return -1;
             return Mathf.Min(_words.Length - 1, Mathf.FloorToInt((angle - StartAngle) / (EndAngle - StartAngle) * _words.Length));
@@ -83,7 +99,7 @@ namespace RuleGame.UI.RuleWheel
         {
             float angle = Mathf.Lerp(StartAngle, EndAngle, (index + 0.5f) / Mathf.Max(1, _words.Length));
             float radius = (InnerRadius + OuterRadius) * 0.5f;
-            return Center + new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad)) * radius;
+            return Center + Direction(angle) * radius;
         }
 
         private void LayoutWords()
@@ -111,10 +127,15 @@ namespace RuleGame.UI.RuleWheel
                 painter.strokeColor = new Color(0.12f, 0.12f, 0.11f);
                 painter.lineWidth = i == SelectedIndex ? 3f : 1.6f;
                 painter.BeginPath();
-                Vector2 inner = Center + new Vector2(Mathf.Cos(start * Mathf.Deg2Rad), Mathf.Sin(start * Mathf.Deg2Rad)) * InnerRadius;
+                // 只镜像几何和标签位置，不翻转 VisualElement，避免中文也被反向显示。
+                Vector2 inner = Center + Direction(start) * InnerRadius;
+                float visualStart = Mirrored ? 180f - start : start;
+                float visualEnd = Mirrored ? 180f - end : end;
                 painter.MoveTo(inner);
-                painter.Arc(Center, OuterRadius, Angle.Degrees(start), Angle.Degrees(end));
-                painter.Arc(Center, InnerRadius, Angle.Degrees(end), Angle.Degrees(start), ArcDirection.CounterClockwise);
+                painter.Arc(Center, OuterRadius, Angle.Degrees(visualStart), Angle.Degrees(visualEnd),
+                    Mirrored ? ArcDirection.CounterClockwise : ArcDirection.Clockwise);
+                painter.Arc(Center, InnerRadius, Angle.Degrees(visualEnd), Angle.Degrees(visualStart),
+                    Mirrored ? ArcDirection.Clockwise : ArcDirection.CounterClockwise);
                 painter.ClosePath();
                 painter.Fill(); painter.Stroke();
             }

@@ -44,6 +44,7 @@ namespace RuleGame.UI.RuleWheel
         private readonly bool[] _attributeAvailable = new bool[Attributes.Length];
         private readonly bool[] _relationAvailable = new bool[Relations.Length];
         private bool _selectionActive, _relationStick, _waitForStickNeutral;
+        private bool _facingLeft;
         public event Action SelectionOpened;
         public event Action<bool> SelectionClosed;
         public event Action<AttributeId> AttributePreviewed;
@@ -247,11 +248,15 @@ namespace RuleGame.UI.RuleWheel
 
         private void PositionWheel()
         {
+            _facingLeft = _player.Facing < 0f;
+            _fan.SetMirrored(_facingLeft);
+            _relationFan.SetMirrored(_facingLeft);
+            _root.EnableInClassList("facing-left", _facingLeft);
             Vector3 screen = _worldCamera.WorldToScreenPoint(_visualAnchor != null ? _visualAnchor.position : _player.transform.position);
             Vector2 actor = RuntimePanelUtils.ScreenToPanel(_document.panel, new Vector2(screen.x, _worldCamera.pixelHeight - screen.y));
             float width = float.IsNaN(_root.resolvedStyle.width) ? 650f : _root.resolvedStyle.width;
             float height = float.IsNaN(_root.resolvedStyle.height) ? 650f : _root.resolvedStyle.height;
-            float x = Mathf.Clamp(actor.x - width * .5f + (_visualAnchor != null ? 0f : _playerOffset.x),
+            float x = Mathf.Clamp(actor.x - width * .5f + (_visualAnchor != null ? 0f : _playerOffset.x * (_facingLeft ? -1f : 1f)),
                 20f, Mathf.Max(20f, _document.contentRect.width - width - 20f));
             float y = Mathf.Clamp(actor.y - height * 0.5f + _playerOffset.y, 20f, Mathf.Max(20f, _document.contentRect.height - height - 20f));
             _root.style.translate = new Translate(x, y);
