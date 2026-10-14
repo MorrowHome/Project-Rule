@@ -215,6 +215,7 @@ MonoBehaviour:
   _dashCooldown: 0.25
   _wallProbeDistance: 0.08
   _wallSlideSpeed: 6
+  _wallSlideImpactDecel: 60
   _wallJumpPushSpeed: 9
   _wallClimbPushSpeed: 4
   _wallJumpUpSpeed: 15
@@ -1224,7 +1225,7 @@ Transform:
   m_GameObject: {fileID: 707411569}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.5, z: 0}
+  m_LocalPosition: {x: -0.11, y: -0.49, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
