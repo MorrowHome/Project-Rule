@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 382a59f012ba8af45a48b3f5c0a431bd, type: 3}
+  m_Name: Gun3
+  m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.Enemy.EnemyVfxClip
+  Atlas: {fileID: 2800000, guid: 2d2263a42cda6d44e8604cec78143c4a, type: 3}
+  Grid: {x: 8, y: 8}
+  FrameCount: 52
+  FramesPerSecond: 30
+  FirstFrame: 2

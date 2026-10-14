@@ -24,6 +24,8 @@ namespace RuleGame.Gameplay.Enemy
         public EnemyWeakPoint WeakPoint;
         public LayerMask PlayerMask = 1;
         public Sprite ProjectileSprite;
+        [Tooltip("光束原点，例如闹钟表盘轴心；未设置时使用身体中心。")]
+        public Transform BeamOrigin;
         public bool RuntimeSpawned;
         public Vector2 ArenaX = new Vector2(-12f, 12f);
         public bool Defeated { get; private set; }
@@ -38,6 +40,8 @@ namespace RuleGame.Gameplay.Enemy
         public event Action AnimationChanged;
         public event Action Restored;
         public event Action<EnemyActor> OnDefeated;
+        public event Action<EnemyFeedback> Feedback;
+        private bool _strikeAnnounced;
         private float _invulnerability;
         private float _contactCooldown;
         private BoxCollider2D _bodyCollider;
@@ -102,6 +106,7 @@ namespace RuleGame.Gameplay.Enemy
             AnimationDuration = Mathf.Max(0.05f, duration);
             AnimationLoop = loop;
             _swingTargets.Clear();
+            _strikeAnnounced = false;
             Motor.Intent = Vector2.zero;
             Motor.SpeedMultiplier = 1f;
             AnimationChanged?.Invoke();
@@ -125,6 +130,7 @@ namespace RuleGame.Gameplay.Enemy
                 float next = Brain.ClampHealth(Status.Health - damage.Amount);
                 Status.ApplyHealthDelta(next - Status.Health);
                 _invulnerability = 0.12f;
+                EmitFeedback(EnemyFeedbackKind.Hit, transform.position, -TowardAttacker(damage.Attacker));
                 Brain.OnHit();
             }
             // 挂账产生的 0 伤害仍可击退；Boss 的免疫是实体属性，不在规则类里特判。
@@ -142,6 +148,12 @@ namespace RuleGame.Gameplay.Enemy
             if (Combat == null || Target == null) return;
             if (newPulse) _swingTargets.Clear();
             Vector2 center = (Vector2)transform.position + Vector2.right * Facing * reach * 0.55f;
+            // 持续判定窗不逐帧发特效；连斩的 newPulse 则每刀单独通知。
+            if (newPulse || !_strikeAnnounced)
+            {
+                _strikeAnnounced = true;
+                EmitFeedback(EnemyFeedbackKind.Strike, center, Vector2.right * Facing);
+            }
             Combat.PerformAttack(this, center, new Vector2(reach, Definition.BodySize.y * 0.8f),
                 PlayerMask, Definition.Damage, 5f, _swingTargets);
         }
@@ -152,8 +164,12 @@ namespace RuleGame.Gameplay.Enemy
         public bool CastRule()
         {
             if (_release == null || RuleSystem.Instance == null) return false;
-            return _release.TryRelease(Definition.RuleAttribute, Definition.RuleRelation, RuleSource.Enemy).Succeeded;
+            bool released = _release.TryRelease(Definition.RuleAttribute, Definition.RuleRelation, RuleSource.Enemy).Succeeded;
+            if (released) EmitFeedback(EnemyFeedbackKind.RuleCast, transform.position, Motor.Up);
+            return released;
         }
+        public void EmitFeedback(EnemyFeedbackKind kind, Vector3 position, Vector2 direction, Component subject = null)
+            => Feedback?.Invoke(new EnemyFeedback(kind, position, direction, subject));
         public void SpawnMinions(bool flying, int count)
         {
             EnemyActor prefab = flying ? FlyingMinionPrefab : MinionPrefab;
@@ -168,6 +184,7 @@ namespace RuleGame.Gameplay.Enemy
                 child.Target = Target; child.Combat = Combat; child.Summoner = this; child.RuntimeSpawned = true;
                 _summons.Add(child);
             }
+            if (count > 0) EmitFeedback(EnemyFeedbackKind.Summon, transform.position, Motor.Up);
         }
         private void PruneSummons() => _summons.RemoveAll(item => item == null || !item.gameObject.activeInHierarchy || item.Defeated);
         public int SummonCount { get { PruneSummons(); return _summons.Count; } }
@@ -194,6 +211,7 @@ namespace RuleGame.Gameplay.Enemy
             public Vector2 Velocity, Impulse;
             public float Facing, Invulnerability, ContactCooldown;
             public bool Defeated;
+            public bool StrikeAnnounced;
             public EnemyActor[] Summons;
             public IDamageable[] SwingTargets;
         }
@@ -202,6 +220,7 @@ namespace RuleGame.Gameplay.Enemy
             Brain = Brain?.Capture(), Velocity = Motor.Velocity, Impulse = Motor.CaptureImpulse(),
             Facing = Facing, Invulnerability = _invulnerability, Defeated = Defeated, Summons = _summons.ToArray(),
             ContactCooldown = _contactCooldown,
+            StrikeAnnounced = _strikeAnnounced,
             SwingTargets = new List<IDamageable>(_swingTargets).ToArray()
         };
         public void RestoreSnapshotState(object state)
@@ -214,6 +233,7 @@ namespace RuleGame.Gameplay.Enemy
             _swingTargets.Clear();
             foreach (IDamageable target in data.SwingTargets) _swingTargets.Add(target);
             Motor.Restore(data.Velocity, data.Impulse);
+            _strikeAnnounced = data.StrikeAnnounced;
             Restored?.Invoke();
         }
     }

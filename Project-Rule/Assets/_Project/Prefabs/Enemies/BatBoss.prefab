@@ -122,6 +122,7 @@ GameObject:
   - component: {fileID: 3800937781391079822}
   - component: {fileID: 6199317252960886509}
   - component: {fileID: 8214306968833532498}
+  - component: {fileID: 5011009455633358081}
   m_Layer: 9
   m_Name: BatBoss
   m_TagString: Untagged
@@ -273,6 +274,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   ProjectileSprite: {fileID: 21300000, guid: 36b2976af0b0e39468f739a7537ef56e, type: 3}
+  BeamOrigin: {fileID: 0}
   RuntimeSpawned: 0
   ArenaX: {x: -12, y: 12}
 --- !u!114 &8214306968833532498
@@ -290,3 +292,16 @@ MonoBehaviour:
   _applyFriction: 1
   _applyMass: 1
   _frictionSource: {fileID: 0}
+--- !u!114 &5011009455633358081
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5452065899031636610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b578e3c45961324dbd678da0c8515e1, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.Enemy.EnemyVfxPresenter
+  Profile: {fileID: 11400000, guid: 6d6be93a2783c8548a3e879199e9dcbb, type: 2}
