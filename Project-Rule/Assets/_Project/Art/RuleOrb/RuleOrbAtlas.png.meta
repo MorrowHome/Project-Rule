@@ -1,0 +1,561 @@
+fileFormatVersion: 2
+guid: 29a87fadcf3ed3e4a959d931c7e99f77
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 3054836274108681768
+    second: RuleOrbAtlas_0
+  - first:
+      213: -5153553591123178580
+    second: RuleOrbAtlas_1
+  - first:
+      213: -5786327912353525396
+    second: RuleOrbAtlas_2
+  - first:
+      213: -8912416694593363409
+    second: RuleOrbAtlas_3
+  - first:
+      213: -1041187183874311344
+    second: RuleOrbAtlas_4
+  - first:
+      213: -8539109337286672364
+    second: RuleOrbAtlas_5
+  - first:
+      213: -2057696501478743340
+    second: RuleOrbAtlas_6
+  - first:
+      213: -5863861927444154654
+    second: RuleOrbAtlas_7
+  - first:
+      213: -361117640739558263
+    second: RuleOrbAtlas_8
+  - first:
+      213: 4957438413533564589
+    second: RuleOrbAtlas_9
+  - first:
+      213: -2042273075273535907
+    second: RuleOrbAtlas_10
+  - first:
+      213: -7606353454491674428
+    second: RuleOrbAtlas_11
+  - first:
+      213: 6732657266914270655
+    second: RuleOrbAtlas_12
+  - first:
+      213: -6706581785409207587
+    second: RuleOrbAtlas_13
+  - first:
+      213: -3403512828650211614
+    second: RuleOrbAtlas_14
+  - first:
+      213: 2111390818921012776
+    second: RuleOrbAtlas_15
+  - first:
+      213: 4736269102913909228
+    second: RuleOrbAtlas_16
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 0
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 2
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: RuleOrbAtlas_0
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 1547
+        width: 232
+        height: 281
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82ec935f765f46a20800000000000000
+      internalID: 3054836274108681768
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RuleOrbAtlas_1
+      rect:
+        serializedVersion: 2
+        x: 652
+        y: 1547
+        width: 234
+        height: 280
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cab0a264056ea78b0800000000000000
+      internalID: -5153553591123178580
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RuleOrbAtlas_2
+      rect:
+        serializedVersion: 2
+        x: 1163
+        y: 1547
+        width: 232
+        height: 280
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c619d36cb65d2bfa0800000000000000
+      internalID: -5786327912353525396
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RuleOrbAtlas_3
+      rect:
+        serializedVersion: 2
+        x: 1674
+        y: 1548
+        width: 233
+        height: 280
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f22608c7c3cb05480800000000000000
+      internalID: -8912416694593363409
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RuleOrbAtlas_4
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 1163
+        width: 235
+        height: 280
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 05b7b70d5c5fc81f0800000000000000
+      internalID: -1041187183874311344
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RuleOrbAtlas_5
+      rect:
+        serializedVersion: 2
+        x: 653
+        y: 1163
+        width: 233
+        height: 280
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4108ec4cc4dfe7980800000000000000
+      internalID: -8539109337286672364
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RuleOrbAtlas_6
+      rect:
+        serializedVersion: 2
+        x: 1160
+        y: 1163
+        width: 235
+        height: 280
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4d2abcd1fe79173e0800000000000000
+      internalID: -2057696501478743340
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RuleOrbAtlas_7
+      rect:
+        serializedVersion: 2
+        x: 1670
+        y: 1163
+        width: 235
+        height: 280
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2e6f0c225a06f9ea0800000000000000
+      internalID: -5863861927444154654
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RuleOrbAtlas_8
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 779
+        width: 354
+        height: 281
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 98c67954b6d0dfaf0800000000000000
+      internalID: -361117640739558263
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RuleOrbAtlas_9
+      rect:
+        serializedVersion: 2
+        x: 535
+        y: 779
+        width: 351
+        height: 281
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dae4b82b8fb5cc440800000000000000
+      internalID: 4957438413533564589
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RuleOrbAtlas_10
+      rect:
+        serializedVersion: 2
+        x: 1046
+        y: 781
+        width: 349
+        height: 279
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d5ee9fd557368a3e0800000000000000
+      internalID: -2042273075273535907
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RuleOrbAtlas_11
+      rect:
+        serializedVersion: 2
+        x: 1559
+        y: 779
+        width: 348
+        height: 281
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c855f455ddc07690800000000000000
+      internalID: -7606353454491674428
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RuleOrbAtlas_12
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 395
+        width: 235
+        height: 280
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fbd90e4fc143f6d50800000000000000
+      internalID: 6732657266914270655
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RuleOrbAtlas_13
+      rect:
+        serializedVersion: 2
+        x: 651
+        y: 395
+        width: 232
+        height: 280
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dd2449f266f6de2a0800000000000000
+      internalID: -6706581785409207587
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RuleOrbAtlas_14
+      rect:
+        serializedVersion: 2
+        x: 1162
+        y: 396
+        width: 236
+        height: 280
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2e6b1db6d1b44c0d0800000000000000
+      internalID: -3403512828650211614
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RuleOrbAtlas_15
+      rect:
+        serializedVersion: 2
+        x: 1675
+        y: 395
+        width: 235
+        height: 280
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82edecf53ca2d4d10800000000000000
+      internalID: 2111390818921012776
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RuleOrbAtlas_16
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 11
+        width: 229
+        height: 281
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ce177dfb7ab9ab140800000000000000
+      internalID: 4736269102913909228
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    outline: []
+    customData:
+    physicsShape: []
+    bones: []
+    spriteID:
+    internalID: 0
+    vertices: []
+    indices:
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      RuleOrbAtlas_0: 3054836274108681768
+      RuleOrbAtlas_1: -5153553591123178580
+      RuleOrbAtlas_10: -2042273075273535907
+      RuleOrbAtlas_11: -7606353454491674428
+      RuleOrbAtlas_12: 6732657266914270655
+      RuleOrbAtlas_13: -6706581785409207587
+      RuleOrbAtlas_14: -3403512828650211614
+      RuleOrbAtlas_15: 2111390818921012776
+      RuleOrbAtlas_16: 4736269102913909228
+      RuleOrbAtlas_2: -5786327912353525396
+      RuleOrbAtlas_3: -8912416694593363409
+      RuleOrbAtlas_4: -1041187183874311344
+      RuleOrbAtlas_5: -8539109337286672364
+      RuleOrbAtlas_6: -2057696501478743340
+      RuleOrbAtlas_7: -5863861927444154654
+      RuleOrbAtlas_8: -361117640739558263
+      RuleOrbAtlas_9: 4957438413533564589
+  mipmapLimitGroupName:
+  pSDRemoveMatte: 0
+  userData:
+  assetBundleName:
+  assetBundleVariant:

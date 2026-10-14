@@ -107,7 +107,7 @@ namespace RuleGame.Editor.RuleWheel
                         InputSystem.QueueStateEvent(_keyboard, new KeyboardState(move, Key.LeftShift));
                         break;
                     case 2:
-                        Check(_wheel.Stage == RuleSelectionStage.Attribute && Mathf.Approximately(Time.timeScale, 0.1f), "Shift 未打开属性轮盘");
+                        Check(_wheel.Stage == RuleSelectionStage.Attribute && Mathf.Approximately(Time.timeScale, RuleWheelPresenter.DefaultSelectionScale), "Shift 未打开属性轮盘");
                         if (SessionState.GetBool(PreviewOnly, false))
                         {
                             Screenshot("attribute.png");
@@ -116,8 +116,8 @@ namespace RuleGame.Editor.RuleWheel
                         }
                         if (_cycle % 2 == 1)
                         {
-                            _wheel.SelectIndex(0);
-                            Check(_wheel.ConfirmSelection() && _wheel.Stage == RuleSelectionStage.Relation, "无法进入关系阶段");
+                            _wheel.SelectAttributeIndex(0);
+                            Check(_wheel.Stage == RuleSelectionStage.Relation, "悬停没有展开关系轮盘");
                         }
                         if (_cycle == 0) Screenshot("attribute.png");
                         if (_cycle == 1) Screenshot("relation.png");

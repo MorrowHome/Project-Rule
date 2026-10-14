@@ -12,11 +12,13 @@ namespace RuleGame.UI.RuleWheel
         [UxmlAttribute] public float InnerRadius { get; set; } = 102f;
         [UxmlAttribute] public float StartAngle { get; set; } = -84f;
         [UxmlAttribute] public float EndAngle { get; set; } = 84f;
+        [UxmlAttribute] public float WordWidth { get; set; } = 88f;
+        [UxmlAttribute] public float WordHeight { get; set; } = 36f;
         private string[] _words = Array.Empty<string>();
         private bool[] _available = Array.Empty<bool>();
         private Label[] _labels = Array.Empty<Label>();
         public int SelectedIndex { get; private set; } = -1;
-        private Vector2 Center => new Vector2(20f, contentRect.height * 0.5f);
+        public Vector2 Center => contentRect.size * 0.5f;
 
         public RuleFan()
         {
@@ -52,8 +54,16 @@ namespace RuleGame.UI.RuleWheel
             MarkDirtyRepaint();
         }
 
+        public void SetArc(float start, float end)
+        {
+            if (Mathf.Approximately(StartAngle, start) && Mathf.Approximately(EndAngle, end)) return;
+            StartAngle = start; EndAngle = end;
+            LayoutWords(); MarkDirtyRepaint();
+        }
+
         public void Select(int index)
         {
+            if (index < 0 || index >= _words.Length) index = -1;
             if (index == SelectedIndex) return;
             SelectedIndex = index;
             for (int i = 0; i < _labels.Length; i++) _labels[i].EnableInClassList("selected", i == index);
@@ -82,8 +92,8 @@ namespace RuleGame.UI.RuleWheel
             {
                 Vector2 point = OptionPoint(i);
                 // 只把算法计算的位置写入运行时；字体、字块尺寸与配色仍由 USS 控制。
-                _labels[i].style.left = point.x - 44f;
-                _labels[i].style.top = point.y - 18f;
+                _labels[i].style.left = point.x - WordWidth * .5f;
+                _labels[i].style.top = point.y - WordHeight * .5f;
             }
         }
 

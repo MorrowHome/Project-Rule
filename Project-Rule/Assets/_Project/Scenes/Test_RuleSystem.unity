@@ -135,6 +135,7 @@ GameObject:
   - component: {fileID: 279477523}
   - component: {fileID: 279477531}
   - component: {fileID: 279477532}
+  - component: {fileID: 279477533}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -353,6 +354,18 @@ MonoBehaviour:
   _animator: {fileID: 0}
   _renderer: {fileID: 0}
   _status: {fileID: 0}
+--- !u!114 &279477533
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 279477522}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 983fb798f0ea2174593564c6bc079e38, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: RuleGame.Development::RuleGame.Development.RuleWheel.RuleWheelLabUnlocks
 --- !u!1 &305151820
 GameObject:
   m_ObjectHideFlags: 0
@@ -783,6 +796,7 @@ GameObject:
   - component: {fileID: 519420029}
   - component: {fileID: 519420030}
   - component: {fileID: 519420033}
+  - component: {fileID: 519420034}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -927,6 +941,24 @@ MonoBehaviour:
   _smoothTimeY: 0.28
   _lookAhead: 1.2
   _lookAheadSmoothTime: 0.25
+--- !u!114 &519420034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5bb4bee0503ecac42822ca8b780b6daa, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.RuleWheel.RuleSelectionCamera
+  _target: {fileID: 279477530}
+  _normalFollow: {fileID: 519420033}
+  _followOffset: {x: 0, y: 0.7}
+  _selectionOffset: {x: 1.3, y: 0.35}
+  _selectionSize: 2.8
+  _transitionTime: 0.18
 --- !u!1 &619394800
 GameObject:
   m_ObjectHideFlags: 0
@@ -2575,6 +2607,95 @@ Transform:
   - {fileID: 1258276963}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1881555394
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1881555397}
+  - component: {fileID: 1881555396}
+  - component: {fileID: 1881555395}
+  - component: {fileID: 1881555398}
+  m_Layer: 0
+  m_Name: Rule Wheel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1881555395
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1881555394}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2fd69dd317c7c44d861446ff785e609, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: RuleGame.UI::RuleGame.UI.RuleWheel.RuleWheelPresenter
+  _player: {fileID: 279477525}
+  _catalog: {fileID: 11400000, guid: 724cd972d9586554da8f8fcbe255a613, type: 2}
+  _unlocks: {fileID: 279477533}
+  _cameraFocus: {fileID: 519420034}
+  _worldCamera: {fileID: 519420031}
+  _selectionScale: 0.001
+  _playerOffset: {x: 70, y: 0}
+--- !u!114 &1881555396
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1881555394}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name:
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
+  m_PanelSettings: {fileID: 11400000, guid: 0602237f7e073a942879f9b2b33ab152, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: 497c0610052840847a0972ac9158e605, type: 3}
+  m_SortingOrder: 100
+  m_Position: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}
+--- !u!4 &1881555397
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1881555394}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1881555398
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1881555394}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e225e27a527a12b469a0375de9efb27a, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.RuleWheel.RuleSelectionOrbView
+  _art: {fileID: 11400000, guid: 9c570e4d34fea6f43a2207b644fdf9e4, type: 2}
 --- !u!1 &2121580300
 GameObject:
   m_ObjectHideFlags: 0
@@ -2728,3 +2849,4 @@ SceneRoots:
   - {fileID: 693912153}
   - {fileID: 1863408706}
   - {fileID: 1058222439}
+  - {fileID: 1881555397}

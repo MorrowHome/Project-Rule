@@ -4,8 +4,10 @@
     color: #20201d;
     -unity-font-definition: url("project://database/Assets/_Project/UI/Fonts/P4ChineseFont.asset");
 }
-.wheel-root { position: absolute; width: 260px; height: 410px; }
-.rule-fan { position: absolute; left: 0; top: 0; width: 240px; height: 410px; }
+.wheel-root { position: absolute; width: 650px; height: 650px; }
+.rule-fan { position: absolute; left: 0; top: 0; width: 650px; height: 650px; }
+.relation-group { position: absolute; left: 0; top: 0; width: 650px; height: 650px; }
+.relation-fan { position: absolute; left: 0; top: 0; width: 650px; height: 650px; }
 .wheel-word {
     position: absolute;
     width: 88px; height: 36px;
@@ -20,21 +22,12 @@
 .wheel-word.selected { color: #efede1; }
 .wheel-word.unavailable { color: #62625c; }
 .wheel-word.unavailable.selected { color: #20201d; }
-.selected-token {
-    position: absolute;
-    left: -12px; top: 184px;
-    min-width: 80px; height: 42px;
-    margin: 0; padding: 5px 8px;
-    background-color: #20201d;
-    color: #efede1;
-    -unity-text-align: middle-center;
-    font-size: 20px;
-    -unity-font-style: bold;
-}
 .wheel-feedback {
-    position: absolute; left: 40px; bottom: 0;
-    margin: 0; padding: 0;
-    font-size: 16px;
-    color: #20201d;
+    position: absolute; left: 350px; top: 610px;
+    width: 234px; min-height: 30px;
+    margin: 0; padding: 4px 0;
+    font-size: 18px;
+    -unity-font-style: bold;
+    color: #efede1;
 }
 .hidden { display: none; }
