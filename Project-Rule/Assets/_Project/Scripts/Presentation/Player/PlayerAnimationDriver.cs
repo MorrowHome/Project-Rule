@@ -181,56 +181,7 @@ namespace RuleGame.Presentation.Player
         /// </remarks>
         private void LateUpdate()
         {
-            if (_renderer == null || _player == null) return;
-
-            int state = _animator != null ? _animator.GetCurrentAnimatorStateInfo(0).shortNameHash : 0;
-
-            // 「朝左就翻」再叠一层「这个状态在图集里本身是反的」——两者异或。
-            // 见 MirroredStateNames 上面那段说明。
-            _renderer.flipX = (_player.Facing < 0f) ^ IsMirroredState(state);
-        }
-
-        // ==================================================================
-        //  图集镜像补偿
-        // ==================================================================
-        //
-        // ⚠️ 这是一块**临时补丁**，为了配合 Hero_Animation_Sheet_Transparent_UnityGrid 那张图集。
-        //
-        // 背景：21 个剪辑都切到了那张图集，但图集里有 17 个序列**被镜像了**（实测：拿每一格和
-        // 对应的单张 Hero_*.png 比像素，这些序列「镜像后的差」远小于「原样的差」）。剩下
-        // Idle / Airborne / JumpStart / Land 是正的。同一张图一半正一半反，所以只在代码里
-        // 统一翻一次是修不好的 —— 那会把正的那 4 个弄反，**必须逐状态判断**。
-        //
-        // 为什么放在 flipX（布尔）而不是 localScale.x：布尔镜像切换是**一帧硬翻**，2D 里正常；
-        // 用负 scale 则会在 Idle(+1) ↔ Run(−1) 交叉淡入时**从 −1 插值经过 0**，
-        // 人被拍扁再翻过去 —— 就是那个「纸片人翻转」。
-        //
-        // 📌 什么时候能删掉它：图集重新导出成**全部朝右**之后，把 Mirror 表清空即可
-        //    （留空数组 = 退化成纯 `Facing < 0`）。**换素材时先看这张表还对不对。**
-
-        /// <summary>图集里被镜像、需要额外翻一次的状态名。</summary>
-        private static readonly string[] MirroredStateNames =
-        {
-            "Run", "Die", "DrawSword", "Hurt", "OrbHold", "PickupBoth", "PickupOne",
-            "PullOut", "Push", "PutBack", "Sheathe", "Slash1", "Slash2", "SlashDown",
-            "Throw", "WallJump", "Weightless",
-        };
-
-        private static int[] _mirroredHashes;
-
-        private static bool IsMirroredState(int stateHash)
-        {
-            if (_mirroredHashes == null)
-            {
-                _mirroredHashes = new int[MirroredStateNames.Length];
-                for (int i = 0; i < MirroredStateNames.Length; i++)
-                    _mirroredHashes[i] = Animator.StringToHash(MirroredStateNames[i]);
-            }
-
-            for (int i = 0; i < _mirroredHashes.Length; i++)
-                if (_mirroredHashes[i] == stateHash) return true;
-
-            return false;
+            if (_renderer != null && _player != null) _renderer.flipX = _player.Facing < 0f;
         }
 
         // ==================================================================
