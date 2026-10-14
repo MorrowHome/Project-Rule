@@ -296,16 +296,47 @@ namespace RuleGame.Editor.Enemy
                     PlayerController player = playerObject.GetComponent<PlayerController>();
                     CombatSystem combat = Find<CombatSystem>(scene);
                     Set(player, "_combat", combat); Set(playerObject.GetComponent<EntityDamageable>(), "_combat", combat);
-                    Find<EnemyActor>(scene).Target = player.transform;
+                    Set(Find<EnemyActor>(scene), "Target", player.transform);
                     Set(Find<RuleWheelPresenter>(scene), "_player", player);
                     Set(Find<RuleSelectionCamera>(scene), "_target", player.transform);
-                    Find<EnemyLabControls>(scene).Player = playerObject.GetComponent<EntityStatus>();
+                    Set(Find<EnemyLabControls>(scene), "Player", playerObject.GetComponent<EntityStatus>());
                     if (oldPlayer != null) UnityEngine.Object.DestroyImmediate(oldPlayer.gameObject);
                     EditorSceneManager.SaveScene(scene, path);
                 }
                 finally { if (opened) EditorSceneManager.CloseScene(scene, true); }
             }
             if (previous.IsValid() && previous.isLoaded) SceneManager.SetActiveScene(previous);
+        }
+        /// <summary>修复已经生成的白盒接线；SerializedObject 会把引用记录为 Prefab 覆盖。</summary>
+        public static void RepairLabReferences()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("请先退出 Play。");
+            Scene previous = SceneManager.GetActiveScene();
+            try
+            {
+                foreach (EnemyKind kind in Enum.GetValues(typeof(EnemyKind)))
+                {
+                    string path = SceneFolder + "/Test_Enemy_" + kind + ".unity";
+                    Scene scene = SceneManager.GetSceneByPath(path);
+                    bool opened = !scene.isLoaded;
+                    if (opened) scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Additive);
+                    try
+                    {
+                        PlayerController player = Find<PlayerController>(scene);
+                        EnemyActor enemy = Find<EnemyActor>(scene);
+                        if (player == null || enemy == null) throw new InvalidOperationException("白盒缺少主角/敌人：" + path);
+                        CombatSystem combat = Find<CombatSystem>(scene);
+                        Set(enemy, "Target", player.transform); Set(enemy, "Combat", combat);
+                        Set(player, "_combat", combat); Set(player.GetComponent<EntityDamageable>(), "_combat", combat);
+                        Set(Find<RuleWheelPresenter>(scene), "_player", player);
+                        Set(Find<RuleSelectionCamera>(scene), "_target", player.transform);
+                        Set(Find<EnemyLabControls>(scene), "Player", player.GetComponent<EntityStatus>());
+                        EditorSceneManager.SaveScene(scene, path);
+                    }
+                    finally { if (opened) EditorSceneManager.CloseScene(scene, true); }
+                }
+            }
+            finally { if (previous.IsValid() && previous.isLoaded) SceneManager.SetActiveScene(previous); }
         }
         private static void BuildScene(EnemyKind kind, EnemyActor prefab, GameObject playerPrefab)
         {
@@ -325,7 +356,7 @@ namespace RuleGame.Editor.Enemy
                 Set(player, "_combat", combat); Set(playerObject.GetComponent<EntityDamageable>(), "_combat", combat);
                 EnemyActor enemy = ((GameObject)PrefabUtility.InstantiatePrefab(prefab.gameObject, scene)).GetComponent<EnemyActor>();
                 enemy.transform.position = new Vector3(5f, enemy.Definition.Flying ? 4f : enemy.Definition.BodySize.y * 0.5f + 0.1f, 0f);
-                enemy.Target = player.transform; enemy.Combat = combat;
+                Set(enemy, "Target", player.transform); Set(enemy, "Combat", combat);
                 if (kind == EnemyKind.BatMinion) enemy.Summoner = null; // 单独白盒直接追击，Boss 召唤时则等待指令。
                 Geometry("Floor", new Vector3(0f, -1f, 0f), new Vector2(30f, 2f));
                 Geometry("LeftWall", new Vector3(-15f, 5f, 0f), new Vector2(1f, 12f));

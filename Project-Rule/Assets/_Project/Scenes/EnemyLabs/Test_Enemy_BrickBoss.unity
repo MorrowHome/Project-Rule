@@ -1056,7 +1056,7 @@ PrefabInstance:
     - target: {fileID: 1108386471410223553, guid: 0d5fc953299126441b3906a853d00930, type: 3}
       propertyPath: Target
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 753694176}
     - target: {fileID: 1229064352976238483, guid: 0d5fc953299126441b3906a853d00930, type: 3}
       propertyPath: m_Name
       value: BrickBoss

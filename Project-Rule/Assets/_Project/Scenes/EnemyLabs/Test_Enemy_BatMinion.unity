@@ -1096,7 +1096,7 @@ PrefabInstance:
     - target: {fileID: 8721085266057344802, guid: 91877c42531decc49aada88ee0bb9293, type: 3}
       propertyPath: Target
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 753694176}
     - target: {fileID: 9014711446049571874, guid: 91877c42531decc49aada88ee0bb9293, type: 3}
       propertyPath: m_Name
       value: BatMinion
