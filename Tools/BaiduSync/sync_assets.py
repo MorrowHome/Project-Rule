@@ -281,6 +281,7 @@ def main() -> int:
     ap.add_argument("--config", type=Path, default=DEFAULT_CONFIG,
                     help="配置文件路径（默认 Tools/BaiduSync/config.json）")
     ap.add_argument("--remote", help="临时覆盖远端目录，不改配置文件")
+    ap.add_argument("--to", help="临时覆盖本地目标目录，不改配置文件")
     ap.add_argument("--dry-run", action="store_true",
                     help="只测远端目录能不能读到，不下载不落地")
     ap.add_argument("--refresh", action="store_true",
@@ -306,7 +307,7 @@ def main() -> int:
         )
 
     remote = args.remote or cfg["remote_dir"]
-    local = resolve_local(cfg["local_dir"])
+    local = resolve_local(args.to or cfg["local_dir"])
 
     if args.install_only:
         print("[跳过] 登录与下载，直接安装暂存区里已有的内容")

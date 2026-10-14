@@ -39,6 +39,10 @@ namespace RuleGame.Presentation.Player
         //    所以改名只需要改这一处，图和代码不会各说各话。
 
         public const string ParamSpeed          = "Speed";
+
+        /// <summary>是否按着左右方向键。`Idle ⇄ Run` 用它判定，**不用速度**。</summary>
+        public const string ParamMoving         = "Moving";
+
         public const string ParamGrounded       = "Grounded";
         public const string ParamDashing        = "Dashing";
         public const string ParamWallSliding    = "WallSliding";
@@ -62,6 +66,7 @@ namespace RuleGame.Presentation.Player
         public const string ParamAttackNext = "AttackNext";
 
         private static readonly int HSpeed          = Animator.StringToHash(ParamSpeed);
+        private static readonly int HMoving         = Animator.StringToHash(ParamMoving);
         private static readonly int HGrounded       = Animator.StringToHash(ParamGrounded);
         private static readonly int HDashing        = Animator.StringToHash(ParamDashing);
         private static readonly int HWallSliding    = Animator.StringToHash(ParamWallSliding);
@@ -170,11 +175,62 @@ namespace RuleGame.Presentation.Player
         /// <para>⚠️ 不要去改成「用 <c>localScale.x = -1</c> 翻面」：<c>Hero_Run</c> / <c>Hero_Airborne</c>
         /// / <c>Hero_Die</c> 三个剪辑都在写 <c>localScale</c>，同样会被动画覆盖。</para>
         ///
+        /// <para>⚠️ 素材原生朝右，所以朝左（<c>Facing &lt; 0</c>）时才翻。</para>
+        ///
         /// <para><c>Facing</c> 已经是「换算后」的方向，「摩擦 × 反转」时自动是反的 —— 不用另外检测。</para>
         /// </remarks>
         private void LateUpdate()
         {
-            if (_renderer != null && _player != null) _renderer.flipX = _player.Facing < 0f;
+            if (_renderer == null || _player == null) return;
+
+            int state = _animator != null ? _animator.GetCurrentAnimatorStateInfo(0).shortNameHash : 0;
+
+            // 「朝左就翻」再叠一层「这个状态在图集里本身是反的」——两者异或。
+            // 见 MirroredStateNames 上面那段说明。
+            _renderer.flipX = (_player.Facing < 0f) ^ IsMirroredState(state);
+        }
+
+        // ==================================================================
+        //  图集镜像补偿
+        // ==================================================================
+        //
+        // ⚠️ 这是一块**临时补丁**，为了配合 Hero_Animation_Sheet_Transparent_UnityGrid 那张图集。
+        //
+        // 背景：21 个剪辑都切到了那张图集，但图集里有 17 个序列**被镜像了**（实测：拿每一格和
+        // 对应的单张 Hero_*.png 比像素，这些序列「镜像后的差」远小于「原样的差」）。剩下
+        // Idle / Airborne / JumpStart / Land 是正的。同一张图一半正一半反，所以只在代码里
+        // 统一翻一次是修不好的 —— 那会把正的那 4 个弄反，**必须逐状态判断**。
+        //
+        // 为什么放在 flipX（布尔）而不是 localScale.x：布尔镜像切换是**一帧硬翻**，2D 里正常；
+        // 用负 scale 则会在 Idle(+1) ↔ Run(−1) 交叉淡入时**从 −1 插值经过 0**，
+        // 人被拍扁再翻过去 —— 就是那个「纸片人翻转」。
+        //
+        // 📌 什么时候能删掉它：图集重新导出成**全部朝右**之后，把 Mirror 表清空即可
+        //    （留空数组 = 退化成纯 `Facing < 0`）。**换素材时先看这张表还对不对。**
+
+        /// <summary>图集里被镜像、需要额外翻一次的状态名。</summary>
+        private static readonly string[] MirroredStateNames =
+        {
+            "Run", "Die", "DrawSword", "Hurt", "OrbHold", "PickupBoth", "PickupOne",
+            "PullOut", "Push", "PutBack", "Sheathe", "Slash1", "Slash2", "SlashDown",
+            "Throw", "WallJump", "Weightless",
+        };
+
+        private static int[] _mirroredHashes;
+
+        private static bool IsMirroredState(int stateHash)
+        {
+            if (_mirroredHashes == null)
+            {
+                _mirroredHashes = new int[MirroredStateNames.Length];
+                for (int i = 0; i < MirroredStateNames.Length; i++)
+                    _mirroredHashes[i] = Animator.StringToHash(MirroredStateNames[i]);
+            }
+
+            for (int i = 0; i < _mirroredHashes.Length; i++)
+                if (_mirroredHashes[i] == stateHash) return true;
+
+            return false;
         }
 
         // ==================================================================
@@ -188,6 +244,10 @@ namespace RuleGame.Presentation.Player
             // 地面 Blend 用的水平速度。**不做归一化** —— 阈值直接写「米/秒」更好读，
             // 也和 PlayerController 里 _moveSpeedMax 是同一个量纲。
             _animator.SetFloat(HSpeed, Mathf.Abs(velocity.x));
+
+            // `Idle ⇄ Run` 看的是**有没有按方向键**，不是速度：速度快慢在冰面滑行、被击退、
+            // 冲刺收尾时都会骗人 —— 那几种情况下人没在按方向，动画却会一直跑。
+            _animator.SetBool(HMoving, Mathf.Abs(_player.MoveInput.x) > 0.01f);
 
             _animator.SetBool(HGrounded, _player.IsGrounded);
             _animator.SetBool(HDashing,  _player.IsDashing);

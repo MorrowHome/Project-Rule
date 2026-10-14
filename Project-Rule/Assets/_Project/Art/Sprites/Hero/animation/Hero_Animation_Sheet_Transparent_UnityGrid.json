@@ -1,0 +1,4470 @@
+{
+  "image": "Hero_Animation_Sheet_Transparent_UnityGrid.png",
+  "size": {
+    "width": 15725,
+    "height": 14950
+  },
+  "format": "PNG RGBA, transparent",
+  "grid_slice": {
+    "method": "Grid by Cell Size",
+    "columns": 17,
+    "rows": 26,
+    "cell_width": 925,
+    "cell_height": 575,
+    "offset_x": 0,
+    "offset_y": 0,
+    "padding_x": 0,
+    "padding_y": 0
+  },
+  "label_column": 0,
+  "frames_per_row": 16,
+  "reference": {
+    "animation": "Idle",
+    "median_visible_height_px": 697,
+    "median_bbox_center_x_px": 573.0,
+    "median_bbox_bottom_y_px": 718
+  },
+  "display_scale_after_idle_normalization": 0.53,
+  "scale_policy": "one uniform scale per animation; no per-frame scaling",
+  "frame_numbers_drawn": false,
+  "animations": [
+    {
+      "name": "Idle",
+      "frame_count": 7,
+      "row_start": 0,
+      "rows": 1,
+      "scale_to_idle": 1.0,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_Idle_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 0,
+            "x": 925,
+            "y": 0,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 309,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 307,
+            "height": 369
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_Idle_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 0,
+            "x": 1850,
+            "y": 0,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 313,
+            "y": 193
+          },
+          "sprite_size": {
+            "width": 299,
+            "height": 370
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_Idle_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 0,
+            "x": 2775,
+            "y": 0,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 311,
+            "y": 193
+          },
+          "sprite_size": {
+            "width": 303,
+            "height": 370
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_Idle_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 0,
+            "x": 3700,
+            "y": 0,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 309,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 306,
+            "height": 369
+          }
+        },
+        {
+          "index": 5,
+          "source": "Hero_Idle_05.png",
+          "grid_cell": {
+            "column": 5,
+            "row": 0,
+            "x": 4625,
+            "y": 0,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 310,
+            "y": 195
+          },
+          "sprite_size": {
+            "width": 304,
+            "height": 368
+          }
+        },
+        {
+          "index": 6,
+          "source": "Hero_Idle_06.png",
+          "grid_cell": {
+            "column": 6,
+            "row": 0,
+            "x": 5550,
+            "y": 0,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 306,
+            "y": 195
+          },
+          "sprite_size": {
+            "width": 313,
+            "height": 368
+          }
+        },
+        {
+          "index": 7,
+          "source": "Hero_Idle_07.png",
+          "grid_cell": {
+            "column": 7,
+            "row": 0,
+            "x": 6475,
+            "y": 0,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 306,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 313,
+            "height": 369
+          }
+        }
+      ]
+    },
+    {
+      "name": "Airborne",
+      "frame_count": 5,
+      "row_start": 1,
+      "rows": 1,
+      "scale_to_idle": 1.7,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_Airborne_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 1,
+            "x": 925,
+            "y": 575,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 241,
+            "y": 198
+          },
+          "sprite_size": {
+            "width": 442,
+            "height": 365
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_Airborne_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 1,
+            "x": 1850,
+            "y": 575,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 251,
+            "y": 198
+          },
+          "sprite_size": {
+            "width": 423,
+            "height": 365
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_Airborne_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 1,
+            "x": 2775,
+            "y": 575,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 270,
+            "y": 142
+          },
+          "sprite_size": {
+            "width": 385,
+            "height": 421
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_Airborne_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 1,
+            "x": 3700,
+            "y": 575,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 276,
+            "y": 159
+          },
+          "sprite_size": {
+            "width": 373,
+            "height": 404
+          }
+        },
+        {
+          "index": 5,
+          "source": "Hero_Airborne_05.png",
+          "grid_cell": {
+            "column": 5,
+            "row": 1,
+            "x": 4625,
+            "y": 575,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 263,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 399,
+            "height": 369
+          }
+        }
+      ]
+    },
+    {
+      "name": "Die",
+      "frame_count": 32,
+      "row_start": 2,
+      "rows": 2,
+      "scale_to_idle": 1.3200757575757576,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_Die_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 2,
+            "x": 925,
+            "y": 1150,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 289,
+            "y": 143
+          },
+          "sprite_size": {
+            "width": 347,
+            "height": 420
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_Die_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 2,
+            "x": 1850,
+            "y": 1150,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 246,
+            "y": 164
+          },
+          "sprite_size": {
+            "width": 433,
+            "height": 399
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_Die_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 2,
+            "x": 2775,
+            "y": 1150,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 243,
+            "y": 183
+          },
+          "sprite_size": {
+            "width": 438,
+            "height": 380
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_Die_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 2,
+            "x": 3700,
+            "y": 1150,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 261,
+            "y": 177
+          },
+          "sprite_size": {
+            "width": 402,
+            "height": 386
+          }
+        },
+        {
+          "index": 5,
+          "source": "Hero_Die_05.png",
+          "grid_cell": {
+            "column": 5,
+            "row": 2,
+            "x": 4625,
+            "y": 1150,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 269,
+            "y": 180
+          },
+          "sprite_size": {
+            "width": 386,
+            "height": 383
+          }
+        },
+        {
+          "index": 6,
+          "source": "Hero_Die_06.png",
+          "grid_cell": {
+            "column": 6,
+            "row": 2,
+            "x": 5550,
+            "y": 1150,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 273,
+            "y": 173
+          },
+          "sprite_size": {
+            "width": 379,
+            "height": 390
+          }
+        },
+        {
+          "index": 7,
+          "source": "Hero_Die_07.png",
+          "grid_cell": {
+            "column": 7,
+            "row": 2,
+            "x": 6475,
+            "y": 1150,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 275,
+            "y": 169
+          },
+          "sprite_size": {
+            "width": 375,
+            "height": 394
+          }
+        },
+        {
+          "index": 8,
+          "source": "Hero_Die_08.png",
+          "grid_cell": {
+            "column": 8,
+            "row": 2,
+            "x": 7400,
+            "y": 1150,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 275,
+            "y": 170
+          },
+          "sprite_size": {
+            "width": 374,
+            "height": 393
+          }
+        },
+        {
+          "index": 9,
+          "source": "Hero_Die_09.png",
+          "grid_cell": {
+            "column": 9,
+            "row": 2,
+            "x": 8325,
+            "y": 1150,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 276,
+            "y": 186
+          },
+          "sprite_size": {
+            "width": 372,
+            "height": 377
+          }
+        },
+        {
+          "index": 10,
+          "source": "Hero_Die_10.png",
+          "grid_cell": {
+            "column": 10,
+            "row": 2,
+            "x": 9250,
+            "y": 1150,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 270,
+            "y": 196
+          },
+          "sprite_size": {
+            "width": 385,
+            "height": 367
+          }
+        },
+        {
+          "index": 11,
+          "source": "Hero_Die_11.png",
+          "grid_cell": {
+            "column": 11,
+            "row": 2,
+            "x": 10175,
+            "y": 1150,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 254,
+            "y": 199
+          },
+          "sprite_size": {
+            "width": 417,
+            "height": 364
+          }
+        },
+        {
+          "index": 12,
+          "source": "Hero_Die_12.png",
+          "grid_cell": {
+            "column": 12,
+            "row": 2,
+            "x": 11100,
+            "y": 1150,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 275,
+            "y": 195
+          },
+          "sprite_size": {
+            "width": 374,
+            "height": 368
+          }
+        },
+        {
+          "index": 13,
+          "source": "Hero_Die_13.png",
+          "grid_cell": {
+            "column": 13,
+            "row": 2,
+            "x": 12025,
+            "y": 1150,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 282,
+            "y": 193
+          },
+          "sprite_size": {
+            "width": 360,
+            "height": 370
+          }
+        },
+        {
+          "index": 14,
+          "source": "Hero_Die_14.png",
+          "grid_cell": {
+            "column": 14,
+            "row": 2,
+            "x": 12950,
+            "y": 1150,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 284,
+            "y": 192
+          },
+          "sprite_size": {
+            "width": 357,
+            "height": 371
+          }
+        },
+        {
+          "index": 15,
+          "source": "Hero_Die_15.png",
+          "grid_cell": {
+            "column": 15,
+            "row": 2,
+            "x": 13875,
+            "y": 1150,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 283,
+            "y": 192
+          },
+          "sprite_size": {
+            "width": 359,
+            "height": 371
+          }
+        },
+        {
+          "index": 16,
+          "source": "Hero_Die_16.png",
+          "grid_cell": {
+            "column": 16,
+            "row": 2,
+            "x": 14800,
+            "y": 1150,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 282,
+            "y": 193
+          },
+          "sprite_size": {
+            "width": 361,
+            "height": 370
+          }
+        },
+        {
+          "index": 17,
+          "source": "Hero_Die_17.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 3,
+            "x": 925,
+            "y": 1725,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 280,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 364,
+            "height": 369
+          }
+        },
+        {
+          "index": 18,
+          "source": "Hero_Die_18.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 3,
+            "x": 1850,
+            "y": 1725,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 279,
+            "y": 195
+          },
+          "sprite_size": {
+            "width": 367,
+            "height": 368
+          }
+        },
+        {
+          "index": 19,
+          "source": "Hero_Die_19.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 3,
+            "x": 2775,
+            "y": 1725,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 278,
+            "y": 196
+          },
+          "sprite_size": {
+            "width": 369,
+            "height": 367
+          }
+        },
+        {
+          "index": 20,
+          "source": "Hero_Die_20.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 3,
+            "x": 3700,
+            "y": 1725,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 270,
+            "y": 201
+          },
+          "sprite_size": {
+            "width": 384,
+            "height": 362
+          }
+        },
+        {
+          "index": 21,
+          "source": "Hero_Die_21.png",
+          "grid_cell": {
+            "column": 5,
+            "row": 3,
+            "x": 4625,
+            "y": 1725,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 230,
+            "y": 237
+          },
+          "sprite_size": {
+            "width": 465,
+            "height": 326
+          }
+        },
+        {
+          "index": 22,
+          "source": "Hero_Die_22.png",
+          "grid_cell": {
+            "column": 6,
+            "row": 3,
+            "x": 5550,
+            "y": 1725,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 224,
+            "y": 311
+          },
+          "sprite_size": {
+            "width": 476,
+            "height": 252
+          }
+        },
+        {
+          "index": 23,
+          "source": "Hero_Die_23.png",
+          "grid_cell": {
+            "column": 7,
+            "row": 3,
+            "x": 6475,
+            "y": 1725,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 213,
+            "y": 316
+          },
+          "sprite_size": {
+            "width": 498,
+            "height": 247
+          }
+        },
+        {
+          "index": 24,
+          "source": "Hero_Die_24.png",
+          "grid_cell": {
+            "column": 8,
+            "row": 3,
+            "x": 7400,
+            "y": 1725,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 220,
+            "y": 316
+          },
+          "sprite_size": {
+            "width": 484,
+            "height": 247
+          }
+        },
+        {
+          "index": 25,
+          "source": "Hero_Die_25.png",
+          "grid_cell": {
+            "column": 9,
+            "row": 3,
+            "x": 8325,
+            "y": 1725,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 220,
+            "y": 316
+          },
+          "sprite_size": {
+            "width": 485,
+            "height": 247
+          }
+        },
+        {
+          "index": 26,
+          "source": "Hero_Die_26.png",
+          "grid_cell": {
+            "column": 10,
+            "row": 3,
+            "x": 9250,
+            "y": 1725,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 219,
+            "y": 316
+          },
+          "sprite_size": {
+            "width": 486,
+            "height": 247
+          }
+        },
+        {
+          "index": 27,
+          "source": "Hero_Die_27.png",
+          "grid_cell": {
+            "column": 11,
+            "row": 3,
+            "x": 10175,
+            "y": 1725,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 205,
+            "y": 247
+          },
+          "sprite_size": {
+            "width": 514,
+            "height": 316
+          }
+        },
+        {
+          "index": 28,
+          "source": "Hero_Die_28.png",
+          "grid_cell": {
+            "column": 12,
+            "row": 3,
+            "x": 11100,
+            "y": 1725,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 208,
+            "y": 248
+          },
+          "sprite_size": {
+            "width": 509,
+            "height": 315
+          }
+        },
+        {
+          "index": 29,
+          "source": "Hero_Die_29.png",
+          "grid_cell": {
+            "column": 13,
+            "row": 3,
+            "x": 12025,
+            "y": 1725,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 207,
+            "y": 205
+          },
+          "sprite_size": {
+            "width": 511,
+            "height": 358
+          }
+        },
+        {
+          "index": 30,
+          "source": "Hero_Die_30.png",
+          "grid_cell": {
+            "column": 14,
+            "row": 3,
+            "x": 12950,
+            "y": 1725,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 212,
+            "y": 190
+          },
+          "sprite_size": {
+            "width": 500,
+            "height": 373
+          }
+        },
+        {
+          "index": 31,
+          "source": "Hero_Die_31.png",
+          "grid_cell": {
+            "column": 15,
+            "row": 3,
+            "x": 13875,
+            "y": 1725,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 210,
+            "y": 161
+          },
+          "sprite_size": {
+            "width": 504,
+            "height": 402
+          }
+        },
+        {
+          "index": 32,
+          "source": "Hero_Die_32.png",
+          "grid_cell": {
+            "column": 16,
+            "row": 3,
+            "x": 14800,
+            "y": 1725,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 240,
+            "y": 173
+          },
+          "sprite_size": {
+            "width": 444,
+            "height": 390
+          }
+        }
+      ]
+    },
+    {
+      "name": "DrawSword",
+      "frame_count": 4,
+      "row_start": 4,
+      "rows": 1,
+      "scale_to_idle": 1.1568464730290458,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_DrawSword_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 4,
+            "x": 925,
+            "y": 2300,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 233,
+            "y": 190
+          },
+          "sprite_size": {
+            "width": 459,
+            "height": 373
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_DrawSword_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 4,
+            "x": 1850,
+            "y": 2300,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 337,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 251,
+            "height": 369
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_DrawSword_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 4,
+            "x": 2775,
+            "y": 2300,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 337,
+            "y": 193
+          },
+          "sprite_size": {
+            "width": 251,
+            "height": 370
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_DrawSword_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 4,
+            "x": 3700,
+            "y": 2300,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 304,
+            "y": 196
+          },
+          "sprite_size": {
+            "width": 316,
+            "height": 367
+          }
+        }
+      ]
+    },
+    {
+      "name": "Hurt",
+      "frame_count": 7,
+      "row_start": 5,
+      "rows": 1,
+      "scale_to_idle": 1.2228070175438597,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_Hurt_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 5,
+            "x": 925,
+            "y": 2875,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 302,
+            "y": 173
+          },
+          "sprite_size": {
+            "width": 321,
+            "height": 390
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_Hurt_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 5,
+            "x": 1850,
+            "y": 2875,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 273,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 379,
+            "height": 369
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_Hurt_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 5,
+            "x": 2775,
+            "y": 2875,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 250,
+            "y": 202
+          },
+          "sprite_size": {
+            "width": 424,
+            "height": 361
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_Hurt_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 5,
+            "x": 3700,
+            "y": 2875,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 277,
+            "y": 202
+          },
+          "sprite_size": {
+            "width": 371,
+            "height": 361
+          }
+        },
+        {
+          "index": 5,
+          "source": "Hero_Hurt_05.png",
+          "grid_cell": {
+            "column": 5,
+            "row": 5,
+            "x": 4625,
+            "y": 2875,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 273,
+            "y": 202
+          },
+          "sprite_size": {
+            "width": 378,
+            "height": 361
+          }
+        },
+        {
+          "index": 6,
+          "source": "Hero_Hurt_06.png",
+          "grid_cell": {
+            "column": 6,
+            "row": 5,
+            "x": 5550,
+            "y": 2875,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 290,
+            "y": 175
+          },
+          "sprite_size": {
+            "width": 345,
+            "height": 388
+          }
+        },
+        {
+          "index": 7,
+          "source": "Hero_Hurt_07.png",
+          "grid_cell": {
+            "column": 7,
+            "row": 5,
+            "x": 6475,
+            "y": 2875,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 301,
+            "y": 181
+          },
+          "sprite_size": {
+            "width": 323,
+            "height": 382
+          }
+        }
+      ]
+    },
+    {
+      "name": "JumpStart",
+      "frame_count": 4,
+      "row_start": 6,
+      "rows": 1,
+      "scale_to_idle": 1.6634844868735084,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_JumpStart_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 6,
+            "x": 925,
+            "y": 3450,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 296,
+            "y": 164
+          },
+          "sprite_size": {
+            "width": 333,
+            "height": 399
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_JumpStart_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 6,
+            "x": 1850,
+            "y": 3450,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 276,
+            "y": 195
+          },
+          "sprite_size": {
+            "width": 373,
+            "height": 368
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_JumpStart_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 6,
+            "x": 2775,
+            "y": 3450,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 255,
+            "y": 192
+          },
+          "sprite_size": {
+            "width": 415,
+            "height": 371
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_JumpStart_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 6,
+            "x": 3700,
+            "y": 3450,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 241,
+            "y": 213
+          },
+          "sprite_size": {
+            "width": 443,
+            "height": 350
+          }
+        }
+      ]
+    },
+    {
+      "name": "Land",
+      "frame_count": 4,
+      "row_start": 7,
+      "rows": 1,
+      "scale_to_idle": 1.5895096921322691,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_Land_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 7,
+            "x": 925,
+            "y": 4025,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 285,
+            "y": 200
+          },
+          "sprite_size": {
+            "width": 355,
+            "height": 363
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_Land_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 7,
+            "x": 1850,
+            "y": 4025,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 287,
+            "y": 208
+          },
+          "sprite_size": {
+            "width": 351,
+            "height": 355
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_Land_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 7,
+            "x": 2775,
+            "y": 4025,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 295,
+            "y": 187
+          },
+          "sprite_size": {
+            "width": 335,
+            "height": 376
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_Land_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 7,
+            "x": 3700,
+            "y": 4025,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 303,
+            "y": 183
+          },
+          "sprite_size": {
+            "width": 318,
+            "height": 380
+          }
+        }
+      ]
+    },
+    {
+      "name": "OrbHold",
+      "frame_count": 4,
+      "row_start": 8,
+      "rows": 1,
+      "scale_to_idle": 1.1063492063492064,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_OrbHold_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 8,
+            "x": 925,
+            "y": 4600,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 234,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 456,
+            "height": 369
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_OrbHold_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 8,
+            "x": 1850,
+            "y": 4600,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 234,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 456,
+            "height": 369
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_OrbHold_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 8,
+            "x": 2775,
+            "y": 4600,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 235,
+            "y": 195
+          },
+          "sprite_size": {
+            "width": 455,
+            "height": 368
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_OrbHold_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 8,
+            "x": 3700,
+            "y": 4600,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 235,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 455,
+            "height": 369
+          }
+        }
+      ]
+    },
+    {
+      "name": "PickupBoth",
+      "frame_count": 7,
+      "row_start": 9,
+      "rows": 1,
+      "scale_to_idle": 1.169463087248322,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_PickupBoth_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 9,
+            "x": 925,
+            "y": 5175,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 328,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 268,
+            "height": 369
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_PickupBoth_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 9,
+            "x": 1850,
+            "y": 5175,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 304,
+            "y": 197
+          },
+          "sprite_size": {
+            "width": 317,
+            "height": 366
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_PickupBoth_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 9,
+            "x": 2775,
+            "y": 5175,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 192,
+            "y": 164
+          },
+          "sprite_size": {
+            "width": 540,
+            "height": 399
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_PickupBoth_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 9,
+            "x": 3700,
+            "y": 5175,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 269,
+            "y": 305
+          },
+          "sprite_size": {
+            "width": 387,
+            "height": 258
+          }
+        },
+        {
+          "index": 5,
+          "source": "Hero_PickupBoth_05.png",
+          "grid_cell": {
+            "column": 5,
+            "row": 9,
+            "x": 4625,
+            "y": 5175,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 283,
+            "y": 250
+          },
+          "sprite_size": {
+            "width": 358,
+            "height": 313
+          }
+        },
+        {
+          "index": 6,
+          "source": "Hero_PickupBoth_06.png",
+          "grid_cell": {
+            "column": 6,
+            "row": 9,
+            "x": 5550,
+            "y": 5175,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 345,
+            "y": 188
+          },
+          "sprite_size": {
+            "width": 234,
+            "height": 375
+          }
+        },
+        {
+          "index": 7,
+          "source": "Hero_PickupBoth_07.png",
+          "grid_cell": {
+            "column": 7,
+            "row": 9,
+            "x": 6475,
+            "y": 5175,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 335,
+            "y": 185
+          },
+          "sprite_size": {
+            "width": 254,
+            "height": 378
+          }
+        }
+      ]
+    },
+    {
+      "name": "PickupOne",
+      "frame_count": 7,
+      "row_start": 10,
+      "rows": 1,
+      "scale_to_idle": 1.169463087248322,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_PickupOne_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 10,
+            "x": 925,
+            "y": 5750,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 328,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 268,
+            "height": 369
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_PickupOne_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 10,
+            "x": 1850,
+            "y": 5750,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 304,
+            "y": 197
+          },
+          "sprite_size": {
+            "width": 317,
+            "height": 366
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_PickupOne_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 10,
+            "x": 2775,
+            "y": 5750,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 192,
+            "y": 164
+          },
+          "sprite_size": {
+            "width": 540,
+            "height": 399
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_PickupOne_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 10,
+            "x": 3700,
+            "y": 5750,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 269,
+            "y": 305
+          },
+          "sprite_size": {
+            "width": 387,
+            "height": 258
+          }
+        },
+        {
+          "index": 5,
+          "source": "Hero_PickupOne_05.png",
+          "grid_cell": {
+            "column": 5,
+            "row": 10,
+            "x": 4625,
+            "y": 5750,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 283,
+            "y": 250
+          },
+          "sprite_size": {
+            "width": 358,
+            "height": 313
+          }
+        },
+        {
+          "index": 6,
+          "source": "Hero_PickupOne_06.png",
+          "grid_cell": {
+            "column": 6,
+            "row": 10,
+            "x": 5550,
+            "y": 5750,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 345,
+            "y": 188
+          },
+          "sprite_size": {
+            "width": 234,
+            "height": 375
+          }
+        },
+        {
+          "index": 7,
+          "source": "Hero_PickupOne_07.png",
+          "grid_cell": {
+            "column": 7,
+            "row": 10,
+            "x": 6475,
+            "y": 5750,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 335,
+            "y": 185
+          },
+          "sprite_size": {
+            "width": 254,
+            "height": 378
+          }
+        }
+      ]
+    },
+    {
+      "name": "PullOut",
+      "frame_count": 8,
+      "row_start": 11,
+      "rows": 1,
+      "scale_to_idle": 1.1482701812191103,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_PullOut_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 11,
+            "x": 925,
+            "y": 6325,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 310,
+            "y": 193
+          },
+          "sprite_size": {
+            "width": 304,
+            "height": 370
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_PullOut_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 11,
+            "x": 1850,
+            "y": 6325,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 309,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 307,
+            "height": 369
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_PullOut_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 11,
+            "x": 2775,
+            "y": 6325,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 309,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 306,
+            "height": 369
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_PullOut_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 11,
+            "x": 3700,
+            "y": 6325,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 200,
+            "y": 158
+          },
+          "sprite_size": {
+            "width": 525,
+            "height": 405
+          }
+        },
+        {
+          "index": 5,
+          "source": "Hero_PullOut_05.png",
+          "grid_cell": {
+            "column": 5,
+            "row": 11,
+            "x": 4625,
+            "y": 6325,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 308,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 308,
+            "height": 369
+          }
+        },
+        {
+          "index": 6,
+          "source": "Hero_PullOut_06.png",
+          "grid_cell": {
+            "column": 6,
+            "row": 11,
+            "x": 5550,
+            "y": 6325,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 310,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 305,
+            "height": 369
+          }
+        },
+        {
+          "index": 7,
+          "source": "Hero_PullOut_07.png",
+          "grid_cell": {
+            "column": 7,
+            "row": 11,
+            "x": 6475,
+            "y": 6325,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 307,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 311,
+            "height": 369
+          }
+        },
+        {
+          "index": 8,
+          "source": "Hero_PullOut_08.png",
+          "grid_cell": {
+            "column": 8,
+            "row": 11,
+            "x": 7400,
+            "y": 6325,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 307,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 310,
+            "height": 369
+          }
+        }
+      ]
+    },
+    {
+      "name": "Push",
+      "frame_count": 17,
+      "row_start": 12,
+      "rows": 2,
+      "scale_to_idle": 1.1636060100166945,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_Push_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 12,
+            "x": 925,
+            "y": 6900,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 309,
+            "y": 191
+          },
+          "sprite_size": {
+            "width": 306,
+            "height": 372
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_Push_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 12,
+            "x": 1850,
+            "y": 6900,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 311,
+            "y": 192
+          },
+          "sprite_size": {
+            "width": 302,
+            "height": 371
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_Push_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 12,
+            "x": 2775,
+            "y": 6900,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 222,
+            "y": 182
+          },
+          "sprite_size": {
+            "width": 481,
+            "height": 381
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_Push_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 12,
+            "x": 3700,
+            "y": 6900,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 319,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 287,
+            "height": 369
+          }
+        },
+        {
+          "index": 5,
+          "source": "Hero_Push_05.png",
+          "grid_cell": {
+            "column": 5,
+            "row": 12,
+            "x": 4625,
+            "y": 6900,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 318,
+            "y": 193
+          },
+          "sprite_size": {
+            "width": 288,
+            "height": 370
+          }
+        },
+        {
+          "index": 6,
+          "source": "Hero_Push_06.png",
+          "grid_cell": {
+            "column": 6,
+            "row": 12,
+            "x": 5550,
+            "y": 6900,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 323,
+            "y": 193
+          },
+          "sprite_size": {
+            "width": 279,
+            "height": 370
+          }
+        },
+        {
+          "index": 7,
+          "source": "Hero_Push_07.png",
+          "grid_cell": {
+            "column": 7,
+            "row": 12,
+            "x": 6475,
+            "y": 6900,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 326,
+            "y": 193
+          },
+          "sprite_size": {
+            "width": 273,
+            "height": 370
+          }
+        },
+        {
+          "index": 8,
+          "source": "Hero_Push_08.png",
+          "grid_cell": {
+            "column": 8,
+            "row": 12,
+            "x": 7400,
+            "y": 6900,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 284,
+            "y": 202
+          },
+          "sprite_size": {
+            "width": 356,
+            "height": 361
+          }
+        },
+        {
+          "index": 9,
+          "source": "Hero_Push_09.png",
+          "grid_cell": {
+            "column": 9,
+            "row": 12,
+            "x": 8325,
+            "y": 6900,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 275,
+            "y": 202
+          },
+          "sprite_size": {
+            "width": 374,
+            "height": 361
+          }
+        },
+        {
+          "index": 10,
+          "source": "Hero_Push_10.png",
+          "grid_cell": {
+            "column": 10,
+            "row": 12,
+            "x": 9250,
+            "y": 6900,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 266,
+            "y": 207
+          },
+          "sprite_size": {
+            "width": 392,
+            "height": 356
+          }
+        },
+        {
+          "index": 11,
+          "source": "Hero_Push_11.png",
+          "grid_cell": {
+            "column": 11,
+            "row": 12,
+            "x": 10175,
+            "y": 6900,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 269,
+            "y": 206
+          },
+          "sprite_size": {
+            "width": 386,
+            "height": 357
+          }
+        },
+        {
+          "index": 12,
+          "source": "Hero_Push_12.png",
+          "grid_cell": {
+            "column": 12,
+            "row": 12,
+            "x": 11100,
+            "y": 6900,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 277,
+            "y": 204
+          },
+          "sprite_size": {
+            "width": 371,
+            "height": 359
+          }
+        },
+        {
+          "index": 13,
+          "source": "Hero_Push_13.png",
+          "grid_cell": {
+            "column": 13,
+            "row": 12,
+            "x": 12025,
+            "y": 6900,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 284,
+            "y": 203
+          },
+          "sprite_size": {
+            "width": 356,
+            "height": 360
+          }
+        },
+        {
+          "index": 14,
+          "source": "Hero_Push_14.png",
+          "grid_cell": {
+            "column": 14,
+            "row": 12,
+            "x": 12950,
+            "y": 6900,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 291,
+            "y": 199
+          },
+          "sprite_size": {
+            "width": 342,
+            "height": 364
+          }
+        },
+        {
+          "index": 15,
+          "source": "Hero_Push_15.png",
+          "grid_cell": {
+            "column": 15,
+            "row": 12,
+            "x": 13875,
+            "y": 6900,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 295,
+            "y": 196
+          },
+          "sprite_size": {
+            "width": 335,
+            "height": 367
+          }
+        },
+        {
+          "index": 16,
+          "source": "Hero_Push_16.png",
+          "grid_cell": {
+            "column": 16,
+            "row": 12,
+            "x": 14800,
+            "y": 6900,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 303,
+            "y": 192
+          },
+          "sprite_size": {
+            "width": 318,
+            "height": 371
+          }
+        },
+        {
+          "index": 17,
+          "source": "Hero_Push_17.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 13,
+            "x": 925,
+            "y": 7475,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 309,
+            "y": 192
+          },
+          "sprite_size": {
+            "width": 306,
+            "height": 371
+          }
+        }
+      ]
+    },
+    {
+      "name": "PutBack",
+      "frame_count": 5,
+      "row_start": 14,
+      "rows": 1,
+      "scale_to_idle": 1.1482701812191103,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_PutBack_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 14,
+            "x": 925,
+            "y": 8050,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 308,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 309,
+            "height": 369
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_PutBack_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 14,
+            "x": 1850,
+            "y": 8050,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 309,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 307,
+            "height": 369
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_PutBack_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 14,
+            "x": 2775,
+            "y": 8050,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 200,
+            "y": 158
+          },
+          "sprite_size": {
+            "width": 525,
+            "height": 405
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_PutBack_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 14,
+            "x": 3700,
+            "y": 8050,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 308,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 309,
+            "height": 369
+          }
+        },
+        {
+          "index": 5,
+          "source": "Hero_PutBack_05.png",
+          "grid_cell": {
+            "column": 5,
+            "row": 14,
+            "x": 4625,
+            "y": 8050,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 310,
+            "y": 193
+          },
+          "sprite_size": {
+            "width": 304,
+            "height": 370
+          }
+        }
+      ]
+    },
+    {
+      "name": "Run",
+      "frame_count": 4,
+      "row_start": 15,
+      "rows": 1,
+      "scale_to_idle": 1.295539033457249,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_Run_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 15,
+            "x": 925,
+            "y": 8625,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 263,
+            "y": 193
+          },
+          "sprite_size": {
+            "width": 398,
+            "height": 370
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_Run_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 15,
+            "x": 1850,
+            "y": 8625,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 273,
+            "y": 200
+          },
+          "sprite_size": {
+            "width": 379,
+            "height": 363
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_Run_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 15,
+            "x": 2775,
+            "y": 8625,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 270,
+            "y": 191
+          },
+          "sprite_size": {
+            "width": 385,
+            "height": 372
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_Run_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 15,
+            "x": 3700,
+            "y": 8625,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 267,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 390,
+            "height": 369
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sheathe",
+      "frame_count": 6,
+      "row_start": 16,
+      "rows": 1,
+      "scale_to_idle": 1.1597337770382696,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_Sheathe_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 16,
+            "x": 925,
+            "y": 9200,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 304,
+            "y": 195
+          },
+          "sprite_size": {
+            "width": 317,
+            "height": 368
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_Sheathe_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 16,
+            "x": 1850,
+            "y": 9200,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 331,
+            "y": 195
+          },
+          "sprite_size": {
+            "width": 262,
+            "height": 368
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_Sheathe_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 16,
+            "x": 2775,
+            "y": 9200,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 263,
+            "y": 192
+          },
+          "sprite_size": {
+            "width": 399,
+            "height": 371
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_Sheathe_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 16,
+            "x": 3700,
+            "y": 9200,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 336,
+            "y": 193
+          },
+          "sprite_size": {
+            "width": 252,
+            "height": 370
+          }
+        },
+        {
+          "index": 5,
+          "source": "Hero_Sheathe_05.png",
+          "grid_cell": {
+            "column": 5,
+            "row": 16,
+            "x": 4625,
+            "y": 9200,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 328,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 269,
+            "height": 369
+          }
+        },
+        {
+          "index": 6,
+          "source": "Hero_Sheathe_06.png",
+          "grid_cell": {
+            "column": 6,
+            "row": 16,
+            "x": 5550,
+            "y": 9200,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 307,
+            "y": 189
+          },
+          "sprite_size": {
+            "width": 310,
+            "height": 374
+          }
+        }
+      ]
+    },
+    {
+      "name": "Slash1",
+      "frame_count": 8,
+      "row_start": 17,
+      "rows": 1,
+      "scale_to_idle": 1.1934931506849316,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_Slash1_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 17,
+            "x": 925,
+            "y": 9775,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 194,
+            "y": 208
+          },
+          "sprite_size": {
+            "width": 536,
+            "height": 355
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_Slash1_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 17,
+            "x": 1850,
+            "y": 9775,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 227,
+            "y": 170
+          },
+          "sprite_size": {
+            "width": 471,
+            "height": 393
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_Slash1_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 17,
+            "x": 2775,
+            "y": 9775,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 156,
+            "y": 190
+          },
+          "sprite_size": {
+            "width": 612,
+            "height": 373
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_Slash1_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 17,
+            "x": 3700,
+            "y": 9775,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 159,
+            "y": 182
+          },
+          "sprite_size": {
+            "width": 606,
+            "height": 381
+          }
+        },
+        {
+          "index": 5,
+          "source": "Hero_Slash1_05.png",
+          "grid_cell": {
+            "column": 5,
+            "row": 17,
+            "x": 4625,
+            "y": 9775,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 192,
+            "y": 197
+          },
+          "sprite_size": {
+            "width": 540,
+            "height": 366
+          }
+        },
+        {
+          "index": 6,
+          "source": "Hero_Slash1_06.png",
+          "grid_cell": {
+            "column": 6,
+            "row": 17,
+            "x": 5550,
+            "y": 9775,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 83,
+            "y": 199
+          },
+          "sprite_size": {
+            "width": 759,
+            "height": 364
+          }
+        },
+        {
+          "index": 7,
+          "source": "Hero_Slash1_07.png",
+          "grid_cell": {
+            "column": 7,
+            "row": 17,
+            "x": 6475,
+            "y": 9775,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 206,
+            "y": 212
+          },
+          "sprite_size": {
+            "width": 512,
+            "height": 351
+          }
+        },
+        {
+          "index": 8,
+          "source": "Hero_Slash1_08.png",
+          "grid_cell": {
+            "column": 8,
+            "row": 17,
+            "x": 7400,
+            "y": 9775,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 233,
+            "y": 156
+          },
+          "sprite_size": {
+            "width": 459,
+            "height": 407
+          }
+        }
+      ]
+    },
+    {
+      "name": "Slash2",
+      "frame_count": 17,
+      "row_start": 18,
+      "rows": 2,
+      "scale_to_idle": 1.1426229508196721,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_Slash2_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 18,
+            "x": 925,
+            "y": 10350,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 294,
+            "y": 198
+          },
+          "sprite_size": {
+            "width": 337,
+            "height": 365
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_Slash2_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 18,
+            "x": 1850,
+            "y": 10350,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 191,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 543,
+            "height": 369
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_Slash2_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 18,
+            "x": 2775,
+            "y": 10350,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 176,
+            "y": 185
+          },
+          "sprite_size": {
+            "width": 572,
+            "height": 378
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_Slash2_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 18,
+            "x": 3700,
+            "y": 10350,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 286,
+            "y": 189
+          },
+          "sprite_size": {
+            "width": 352,
+            "height": 374
+          }
+        },
+        {
+          "index": 5,
+          "source": "Hero_Slash2_05.png",
+          "grid_cell": {
+            "column": 5,
+            "row": 18,
+            "x": 4625,
+            "y": 10350,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 160,
+            "y": 198
+          },
+          "sprite_size": {
+            "width": 605,
+            "height": 365
+          }
+        },
+        {
+          "index": 6,
+          "source": "Hero_Slash2_06.png",
+          "grid_cell": {
+            "column": 6,
+            "row": 18,
+            "x": 5550,
+            "y": 10350,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 165,
+            "y": 191
+          },
+          "sprite_size": {
+            "width": 595,
+            "height": 372
+          }
+        },
+        {
+          "index": 7,
+          "source": "Hero_Slash2_07.png",
+          "grid_cell": {
+            "column": 7,
+            "row": 18,
+            "x": 6475,
+            "y": 10350,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 121,
+            "y": 185
+          },
+          "sprite_size": {
+            "width": 683,
+            "height": 378
+          }
+        },
+        {
+          "index": 8,
+          "source": "Hero_Slash2_08.png",
+          "grid_cell": {
+            "column": 8,
+            "row": 18,
+            "x": 7400,
+            "y": 10350,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 152,
+            "y": 171
+          },
+          "sprite_size": {
+            "width": 620,
+            "height": 392
+          }
+        },
+        {
+          "index": 9,
+          "source": "Hero_Slash2_09.png",
+          "grid_cell": {
+            "column": 9,
+            "row": 18,
+            "x": 8325,
+            "y": 10350,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 169,
+            "y": 174
+          },
+          "sprite_size": {
+            "width": 586,
+            "height": 389
+          }
+        },
+        {
+          "index": 10,
+          "source": "Hero_Slash2_10.png",
+          "grid_cell": {
+            "column": 10,
+            "row": 18,
+            "x": 9250,
+            "y": 10350,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 150,
+            "y": 203
+          },
+          "sprite_size": {
+            "width": 625,
+            "height": 360
+          }
+        },
+        {
+          "index": 11,
+          "source": "Hero_Slash2_11.png",
+          "grid_cell": {
+            "column": 11,
+            "row": 18,
+            "x": 10175,
+            "y": 10350,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 270,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 385,
+            "height": 369
+          }
+        },
+        {
+          "index": 12,
+          "source": "Hero_Slash2_12.png",
+          "grid_cell": {
+            "column": 12,
+            "row": 18,
+            "x": 11100,
+            "y": 10350,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 308,
+            "y": 145
+          },
+          "sprite_size": {
+            "width": 309,
+            "height": 418
+          }
+        },
+        {
+          "index": 13,
+          "source": "Hero_Slash2_13.png",
+          "grid_cell": {
+            "column": 13,
+            "row": 18,
+            "x": 12025,
+            "y": 10350,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 153,
+            "y": 232
+          },
+          "sprite_size": {
+            "width": 618,
+            "height": 331
+          }
+        },
+        {
+          "index": 14,
+          "source": "Hero_Slash2_14.png",
+          "grid_cell": {
+            "column": 14,
+            "row": 18,
+            "x": 12950,
+            "y": 10350,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 110,
+            "y": 229
+          },
+          "sprite_size": {
+            "width": 704,
+            "height": 334
+          }
+        },
+        {
+          "index": 15,
+          "source": "Hero_Slash2_15.png",
+          "grid_cell": {
+            "column": 15,
+            "row": 18,
+            "x": 13875,
+            "y": 10350,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 178,
+            "y": 235
+          },
+          "sprite_size": {
+            "width": 568,
+            "height": 328
+          }
+        },
+        {
+          "index": 16,
+          "source": "Hero_Slash2_16.png",
+          "grid_cell": {
+            "column": 16,
+            "row": 18,
+            "x": 14800,
+            "y": 10350,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 162,
+            "y": 214
+          },
+          "sprite_size": {
+            "width": 600,
+            "height": 349
+          }
+        },
+        {
+          "index": 17,
+          "source": "Hero_Slash2_17.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 19,
+            "x": 925,
+            "y": 10925,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 308,
+            "y": 145
+          },
+          "sprite_size": {
+            "width": 309,
+            "height": 418
+          }
+        }
+      ]
+    },
+    {
+      "name": "SlashDown",
+      "frame_count": 14,
+      "row_start": 20,
+      "rows": 1,
+      "scale_to_idle": 1.5454545454545454,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_SlashDown_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 20,
+            "x": 925,
+            "y": 11500,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 315,
+            "y": 205
+          },
+          "sprite_size": {
+            "width": 295,
+            "height": 358
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_SlashDown_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 20,
+            "x": 1850,
+            "y": 11500,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 290,
+            "y": 263
+          },
+          "sprite_size": {
+            "width": 344,
+            "height": 300
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_SlashDown_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 20,
+            "x": 2775,
+            "y": 11500,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 272,
+            "y": 285
+          },
+          "sprite_size": {
+            "width": 380,
+            "height": 278
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_SlashDown_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 20,
+            "x": 3700,
+            "y": 11500,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 296,
+            "y": 180
+          },
+          "sprite_size": {
+            "width": 333,
+            "height": 383
+          }
+        },
+        {
+          "index": 5,
+          "source": "Hero_SlashDown_05.png",
+          "grid_cell": {
+            "column": 5,
+            "row": 20,
+            "x": 4625,
+            "y": 11500,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 268,
+            "y": 160
+          },
+          "sprite_size": {
+            "width": 389,
+            "height": 403
+          }
+        },
+        {
+          "index": 6,
+          "source": "Hero_SlashDown_06.png",
+          "grid_cell": {
+            "column": 6,
+            "row": 20,
+            "x": 5550,
+            "y": 11500,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 259,
+            "y": 175
+          },
+          "sprite_size": {
+            "width": 407,
+            "height": 388
+          }
+        },
+        {
+          "index": 7,
+          "source": "Hero_SlashDown_07.png",
+          "grid_cell": {
+            "column": 7,
+            "row": 20,
+            "x": 6475,
+            "y": 11500,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 261,
+            "y": 193
+          },
+          "sprite_size": {
+            "width": 403,
+            "height": 370
+          }
+        },
+        {
+          "index": 8,
+          "source": "Hero_SlashDown_08.png",
+          "grid_cell": {
+            "column": 8,
+            "row": 20,
+            "x": 7400,
+            "y": 11500,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 247,
+            "y": 200
+          },
+          "sprite_size": {
+            "width": 430,
+            "height": 363
+          }
+        },
+        {
+          "index": 9,
+          "source": "Hero_SlashDown_09.png",
+          "grid_cell": {
+            "column": 9,
+            "row": 20,
+            "x": 8325,
+            "y": 11500,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 211,
+            "y": 63
+          },
+          "sprite_size": {
+            "width": 503,
+            "height": 500
+          }
+        },
+        {
+          "index": 10,
+          "source": "Hero_SlashDown_10.png",
+          "grid_cell": {
+            "column": 10,
+            "row": 20,
+            "x": 9250,
+            "y": 11500,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 225,
+            "y": 156
+          },
+          "sprite_size": {
+            "width": 474,
+            "height": 407
+          }
+        },
+        {
+          "index": 11,
+          "source": "Hero_SlashDown_11.png",
+          "grid_cell": {
+            "column": 11,
+            "row": 20,
+            "x": 10175,
+            "y": 11500,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 233,
+            "y": 220
+          },
+          "sprite_size": {
+            "width": 458,
+            "height": 343
+          }
+        },
+        {
+          "index": 12,
+          "source": "Hero_SlashDown_12.png",
+          "grid_cell": {
+            "column": 12,
+            "row": 20,
+            "x": 11100,
+            "y": 11500,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 277,
+            "y": 207
+          },
+          "sprite_size": {
+            "width": 371,
+            "height": 356
+          }
+        },
+        {
+          "index": 13,
+          "source": "Hero_SlashDown_13.png",
+          "grid_cell": {
+            "column": 13,
+            "row": 20,
+            "x": 12025,
+            "y": 11500,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 299,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 327,
+            "height": 369
+          }
+        },
+        {
+          "index": 14,
+          "source": "Hero_SlashDown_14.png",
+          "grid_cell": {
+            "column": 14,
+            "row": 20,
+            "x": 12950,
+            "y": 11500,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 296,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 333,
+            "height": 369
+          }
+        }
+      ]
+    },
+    {
+      "name": "Throw",
+      "frame_count": 8,
+      "row_start": 21,
+      "rows": 1,
+      "scale_to_idle": 1.1444991789819376,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_Throw_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 21,
+            "x": 925,
+            "y": 12075,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 310,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 305,
+            "height": 369
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_Throw_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 21,
+            "x": 1850,
+            "y": 12075,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 310,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 305,
+            "height": 369
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_Throw_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 21,
+            "x": 2775,
+            "y": 12075,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 311,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 303,
+            "height": 369
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_Throw_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 21,
+            "x": 3700,
+            "y": 12075,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 313,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 299,
+            "height": 369
+          }
+        },
+        {
+          "index": 5,
+          "source": "Hero_Throw_05.png",
+          "grid_cell": {
+            "column": 5,
+            "row": 21,
+            "x": 4625,
+            "y": 12075,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 319,
+            "y": 190
+          },
+          "sprite_size": {
+            "width": 287,
+            "height": 373
+          }
+        },
+        {
+          "index": 6,
+          "source": "Hero_Throw_06.png",
+          "grid_cell": {
+            "column": 6,
+            "row": 21,
+            "x": 5550,
+            "y": 12075,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 311,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 302,
+            "height": 369
+          }
+        },
+        {
+          "index": 7,
+          "source": "Hero_Throw_07.png",
+          "grid_cell": {
+            "column": 7,
+            "row": 21,
+            "x": 6475,
+            "y": 12075,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 315,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 295,
+            "height": 369
+          }
+        },
+        {
+          "index": 8,
+          "source": "Hero_Throw_08.png",
+          "grid_cell": {
+            "column": 8,
+            "row": 21,
+            "x": 7400,
+            "y": 12075,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 298,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 328,
+            "height": 369
+          }
+        }
+      ]
+    },
+    {
+      "name": "Walk",
+      "frame_count": 9,
+      "row_start": 22,
+      "rows": 1,
+      "scale_to_idle": 1.1463815789473684,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_Walk_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 22,
+            "x": 925,
+            "y": 12650,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 309,
+            "y": 193
+          },
+          "sprite_size": {
+            "width": 307,
+            "height": 370
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_Walk_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 22,
+            "x": 1850,
+            "y": 12650,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 306,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 312,
+            "height": 369
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_Walk_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 22,
+            "x": 2775,
+            "y": 12650,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 303,
+            "y": 193
+          },
+          "sprite_size": {
+            "width": 318,
+            "height": 370
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_Walk_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 22,
+            "x": 3700,
+            "y": 12650,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 311,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 303,
+            "height": 369
+          }
+        },
+        {
+          "index": 5,
+          "source": "Hero_Walk_05.png",
+          "grid_cell": {
+            "column": 5,
+            "row": 22,
+            "x": 4625,
+            "y": 12650,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 309,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 306,
+            "height": 369
+          }
+        },
+        {
+          "index": 6,
+          "source": "Hero_Walk_06.png",
+          "grid_cell": {
+            "column": 6,
+            "row": 22,
+            "x": 5550,
+            "y": 12650,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 310,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 304,
+            "height": 369
+          }
+        },
+        {
+          "index": 7,
+          "source": "Hero_Walk_07.png",
+          "grid_cell": {
+            "column": 7,
+            "row": 22,
+            "x": 6475,
+            "y": 12650,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 306,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 312,
+            "height": 369
+          }
+        },
+        {
+          "index": 8,
+          "source": "Hero_Walk_08.png",
+          "grid_cell": {
+            "column": 8,
+            "row": 22,
+            "x": 7400,
+            "y": 12650,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 303,
+            "y": 193
+          },
+          "sprite_size": {
+            "width": 318,
+            "height": 370
+          }
+        },
+        {
+          "index": 9,
+          "source": "Hero_Walk_09.png",
+          "grid_cell": {
+            "column": 9,
+            "row": 22,
+            "x": 8325,
+            "y": 12650,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 311,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 303,
+            "height": 369
+          }
+        }
+      ]
+    },
+    {
+      "name": "WallJump",
+      "frame_count": 21,
+      "row_start": 23,
+      "rows": 2,
+      "scale_to_idle": 1.6477541371158393,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_WallJump_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 23,
+            "x": 925,
+            "y": 13225,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 305,
+            "y": 181
+          },
+          "sprite_size": {
+            "width": 314,
+            "height": 382
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_WallJump_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 23,
+            "x": 1850,
+            "y": 13225,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 202,
+            "y": 116
+          },
+          "sprite_size": {
+            "width": 520,
+            "height": 447
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_WallJump_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 23,
+            "x": 2775,
+            "y": 13225,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 255,
+            "y": 259
+          },
+          "sprite_size": {
+            "width": 415,
+            "height": 304
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_WallJump_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 23,
+            "x": 3700,
+            "y": 13225,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 293,
+            "y": 141
+          },
+          "sprite_size": {
+            "width": 339,
+            "height": 422
+          }
+        },
+        {
+          "index": 5,
+          "source": "Hero_WallJump_05.png",
+          "grid_cell": {
+            "column": 5,
+            "row": 23,
+            "x": 4625,
+            "y": 13225,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 274,
+            "y": 208
+          },
+          "sprite_size": {
+            "width": 376,
+            "height": 355
+          }
+        },
+        {
+          "index": 6,
+          "source": "Hero_WallJump_06.png",
+          "grid_cell": {
+            "column": 6,
+            "row": 23,
+            "x": 5550,
+            "y": 13225,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 261,
+            "y": 211
+          },
+          "sprite_size": {
+            "width": 402,
+            "height": 352
+          }
+        },
+        {
+          "index": 7,
+          "source": "Hero_WallJump_07.png",
+          "grid_cell": {
+            "column": 7,
+            "row": 23,
+            "x": 6475,
+            "y": 13225,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 299,
+            "y": 194
+          },
+          "sprite_size": {
+            "width": 327,
+            "height": 369
+          }
+        },
+        {
+          "index": 8,
+          "source": "Hero_WallJump_08.png",
+          "grid_cell": {
+            "column": 8,
+            "row": 23,
+            "x": 7400,
+            "y": 13225,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 295,
+            "y": 186
+          },
+          "sprite_size": {
+            "width": 334,
+            "height": 377
+          }
+        },
+        {
+          "index": 9,
+          "source": "Hero_WallJump_09.png",
+          "grid_cell": {
+            "column": 9,
+            "row": 23,
+            "x": 8325,
+            "y": 13225,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 229,
+            "y": 239
+          },
+          "sprite_size": {
+            "width": 466,
+            "height": 324
+          }
+        },
+        {
+          "index": 10,
+          "source": "Hero_WallJump_10.png",
+          "grid_cell": {
+            "column": 10,
+            "row": 23,
+            "x": 9250,
+            "y": 13225,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 175,
+            "y": 12
+          },
+          "sprite_size": {
+            "width": 575,
+            "height": 551
+          }
+        },
+        {
+          "index": 11,
+          "source": "Hero_WallJump_11.png",
+          "grid_cell": {
+            "column": 11,
+            "row": 23,
+            "x": 10175,
+            "y": 13225,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 16,
+            "y": 40
+          },
+          "sprite_size": {
+            "width": 893,
+            "height": 523
+          }
+        },
+        {
+          "index": 12,
+          "source": "Hero_WallJump_12.png",
+          "grid_cell": {
+            "column": 12,
+            "row": 23,
+            "x": 11100,
+            "y": 13225,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 285,
+            "y": 213
+          },
+          "sprite_size": {
+            "width": 354,
+            "height": 350
+          }
+        },
+        {
+          "index": 13,
+          "source": "Hero_WallJump_13.png",
+          "grid_cell": {
+            "column": 13,
+            "row": 23,
+            "x": 12025,
+            "y": 13225,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 295,
+            "y": 186
+          },
+          "sprite_size": {
+            "width": 334,
+            "height": 377
+          }
+        },
+        {
+          "index": 14,
+          "source": "Hero_WallJump_14.png",
+          "grid_cell": {
+            "column": 14,
+            "row": 23,
+            "x": 12950,
+            "y": 13225,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 229,
+            "y": 239
+          },
+          "sprite_size": {
+            "width": 466,
+            "height": 324
+          }
+        },
+        {
+          "index": 15,
+          "source": "Hero_WallJump_15.png",
+          "grid_cell": {
+            "column": 15,
+            "row": 23,
+            "x": 13875,
+            "y": 13225,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 175,
+            "y": 12
+          },
+          "sprite_size": {
+            "width": 575,
+            "height": 551
+          }
+        },
+        {
+          "index": 16,
+          "source": "Hero_WallJump_16.png",
+          "grid_cell": {
+            "column": 16,
+            "row": 23,
+            "x": 14800,
+            "y": 13225,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 261,
+            "y": 213
+          },
+          "sprite_size": {
+            "width": 402,
+            "height": 350
+          }
+        },
+        {
+          "index": 17,
+          "source": "Hero_WallJump_17.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 24,
+            "x": 925,
+            "y": 13800,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 299,
+            "y": 199
+          },
+          "sprite_size": {
+            "width": 326,
+            "height": 364
+          }
+        },
+        {
+          "index": 18,
+          "source": "Hero_WallJump_18.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 24,
+            "x": 1850,
+            "y": 13800,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 269,
+            "y": 205
+          },
+          "sprite_size": {
+            "width": 387,
+            "height": 358
+          }
+        },
+        {
+          "index": 19,
+          "source": "Hero_WallJump_19.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 24,
+            "x": 2775,
+            "y": 13800,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 278,
+            "y": 161
+          },
+          "sprite_size": {
+            "width": 368,
+            "height": 402
+          }
+        },
+        {
+          "index": 20,
+          "source": "Hero_WallJump_20.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 24,
+            "x": 3700,
+            "y": 13800,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 280,
+            "y": 195
+          },
+          "sprite_size": {
+            "width": 364,
+            "height": 368
+          }
+        },
+        {
+          "index": 21,
+          "source": "Hero_WallJump_21.png",
+          "grid_cell": {
+            "column": 5,
+            "row": 24,
+            "x": 4625,
+            "y": 13800,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 285,
+            "y": 169
+          },
+          "sprite_size": {
+            "width": 355,
+            "height": 394
+          }
+        }
+      ]
+    },
+    {
+      "name": "Weightless",
+      "frame_count": 14,
+      "row_start": 25,
+      "rows": 1,
+      "scale_to_idle": 1.5506117908787542,
+      "frames": [
+        {
+          "index": 1,
+          "source": "Hero_Weightless_01.png",
+          "grid_cell": {
+            "column": 1,
+            "row": 25,
+            "x": 925,
+            "y": 14375,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 308,
+            "y": 187
+          },
+          "sprite_size": {
+            "width": 308,
+            "height": 376
+          }
+        },
+        {
+          "index": 2,
+          "source": "Hero_Weightless_02.png",
+          "grid_cell": {
+            "column": 2,
+            "row": 25,
+            "x": 1850,
+            "y": 14375,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 321,
+            "y": 182
+          },
+          "sprite_size": {
+            "width": 283,
+            "height": 381
+          }
+        },
+        {
+          "index": 3,
+          "source": "Hero_Weightless_03.png",
+          "grid_cell": {
+            "column": 3,
+            "row": 25,
+            "x": 2775,
+            "y": 14375,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 311,
+            "y": 189
+          },
+          "sprite_size": {
+            "width": 302,
+            "height": 374
+          }
+        },
+        {
+          "index": 4,
+          "source": "Hero_Weightless_04.png",
+          "grid_cell": {
+            "column": 4,
+            "row": 25,
+            "x": 3700,
+            "y": 14375,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 284,
+            "y": 231
+          },
+          "sprite_size": {
+            "width": 356,
+            "height": 332
+          }
+        },
+        {
+          "index": 5,
+          "source": "Hero_Weightless_05.png",
+          "grid_cell": {
+            "column": 5,
+            "row": 25,
+            "x": 4625,
+            "y": 14375,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 269,
+            "y": 302
+          },
+          "sprite_size": {
+            "width": 387,
+            "height": 261
+          }
+        },
+        {
+          "index": 6,
+          "source": "Hero_Weightless_06.png",
+          "grid_cell": {
+            "column": 6,
+            "row": 25,
+            "x": 5550,
+            "y": 14375,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 287,
+            "y": 203
+          },
+          "sprite_size": {
+            "width": 351,
+            "height": 360
+          }
+        },
+        {
+          "index": 7,
+          "source": "Hero_Weightless_07.png",
+          "grid_cell": {
+            "column": 7,
+            "row": 25,
+            "x": 6475,
+            "y": 14375,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 297,
+            "y": 182
+          },
+          "sprite_size": {
+            "width": 330,
+            "height": 381
+          }
+        },
+        {
+          "index": 8,
+          "source": "Hero_Weightless_08.png",
+          "grid_cell": {
+            "column": 8,
+            "row": 25,
+            "x": 7400,
+            "y": 14375,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 314,
+            "y": 173
+          },
+          "sprite_size": {
+            "width": 297,
+            "height": 390
+          }
+        },
+        {
+          "index": 9,
+          "source": "Hero_Weightless_09.png",
+          "grid_cell": {
+            "column": 9,
+            "row": 25,
+            "x": 8325,
+            "y": 14375,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 272,
+            "y": 195
+          },
+          "sprite_size": {
+            "width": 381,
+            "height": 368
+          }
+        },
+        {
+          "index": 10,
+          "source": "Hero_Weightless_10.png",
+          "grid_cell": {
+            "column": 10,
+            "row": 25,
+            "x": 9250,
+            "y": 14375,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 287,
+            "y": 203
+          },
+          "sprite_size": {
+            "width": 350,
+            "height": 360
+          }
+        },
+        {
+          "index": 11,
+          "source": "Hero_Weightless_11.png",
+          "grid_cell": {
+            "column": 11,
+            "row": 25,
+            "x": 10175,
+            "y": 14375,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 287,
+            "y": 203
+          },
+          "sprite_size": {
+            "width": 350,
+            "height": 360
+          }
+        },
+        {
+          "index": 12,
+          "source": "Hero_Weightless_12.png",
+          "grid_cell": {
+            "column": 12,
+            "row": 25,
+            "x": 11100,
+            "y": 14375,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 308,
+            "y": 196
+          },
+          "sprite_size": {
+            "width": 309,
+            "height": 367
+          }
+        },
+        {
+          "index": 13,
+          "source": "Hero_Weightless_13.png",
+          "grid_cell": {
+            "column": 13,
+            "row": 25,
+            "x": 12025,
+            "y": 14375,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 301,
+            "y": 192
+          },
+          "sprite_size": {
+            "width": 323,
+            "height": 371
+          }
+        },
+        {
+          "index": 14,
+          "source": "Hero_Weightless_14.png",
+          "grid_cell": {
+            "column": 14,
+            "row": 25,
+            "x": 12950,
+            "y": 14375,
+            "width": 925,
+            "height": 575
+          },
+          "sprite_offset_in_cell": {
+            "x": 308,
+            "y": 187
+          },
+          "sprite_size": {
+            "width": 308,
+            "height": 376
+          }
+        }
+      ]
+    }
+  ]
+}

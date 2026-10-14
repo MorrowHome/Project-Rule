@@ -105,6 +105,7 @@ namespace RuleGame.Editor.Animations
         {
             // 持续条件：每帧重写
             c.AddParameter(PlayerAnimationDriver.ParamSpeed,          AnimatorControllerParameterType.Float);
+            c.AddParameter(PlayerAnimationDriver.ParamMoving,         AnimatorControllerParameterType.Bool);
             c.AddParameter(PlayerAnimationDriver.ParamGrounded,       AnimatorControllerParameterType.Bool);
             c.AddParameter(PlayerAnimationDriver.ParamDashing,        AnimatorControllerParameterType.Bool);
             c.AddParameter(PlayerAnimationDriver.ParamWallSliding,    AnimatorControllerParameterType.Bool);
@@ -231,18 +232,20 @@ namespace RuleGame.Editor.Animations
         {
             // 地面只有 **Idle ⇄ Run** 两档，没有 Walk（理由见 StateNames 上面的说明）。
             //
-            // 阈值用 IdleMax 而不是「>5 才算跑」：加速很快时，「>0.35 但还没到 5」那几帧
-            // 会卡在 Idle —— 看着就是**人动了、动画没跟上**。所以只要横向一有速度就切 Run。
+            // 条件用 **Moving（有没有按方向键）**，不是速度。
             //
-            // 用**速度阈值过渡**而不是 Blend Tree：Blend Tree 靠「按权重插值曲线」工作，
-            // 而精灵帧是对象引用曲线（Sprite），Unity 对它不做插值 —— 落在两档之间会变成
-            // 没有过渡的硬切。对 sprite 序列动画来说，transition + 交叉淡入才是顺的那条路。
-            const float IdleMax = 0.35f;   // 低于它算站住
-
+            // 为什么不用速度：速度会被三种情况骗到 ——
+            //   ① 冰面滑行：松开方向后人还在滑，按速度切就会一直播 Run；
+            //   ② 被击退 / 冲刺收尾：没人按方向，横向速度却很大；
+            //   ③ 起步那一帧：速度还是 0，但人已经按下了，动画会慢半拍。
+            // 用输入就没有这些歧义：**动画跟着「玩家在做什么」，不是跟着「物理结果」**。
+            //
+            // 另外也不该用 Blend Tree：Blend Tree 靠「按权重插值曲线」工作，而精灵帧是对象引用
+            // 曲线（Sprite），Unity 对它不做插值 —— 落在两档之间就是硬切。transition + 交叉淡入才对。
             AnimatorState idle = s["Idle"], run = s["Run"];
 
-            When(Link(idle, run,  0.08f), AnimatorConditionMode.Greater, PlayerAnimationDriver.ParamSpeed, IdleMax);
-            When(Link(run,  idle, 0.10f), AnimatorConditionMode.Less,    PlayerAnimationDriver.ParamSpeed, IdleMax);
+            When(Link(idle, run,  0.08f), AnimatorConditionMode.If,    PlayerAnimationDriver.ParamMoving);
+            When(Link(run,  idle, 0.10f), AnimatorConditionMode.IfNot, PlayerAnimationDriver.ParamMoving);
         }
 
         // ==================================================================
@@ -285,9 +288,11 @@ namespace RuleGame.Editor.Animations
             When(Link(s["WallSlide"], s["Fall"], 0.08f),
                  AnimatorConditionMode.IfNot, PlayerAnimationDriver.ParamWallSliding);
 
-            // 蹬墙跳是一次性动作（那 21 帧是一个前滚翻），播完回到滞空。
-            // ⚠️ 不给出边的话角色会**永远停在这个 state 里** —— 已经踩到过一次：
-            //    测试里蹬完墙 2.5 秒后仍在 WallJump。
+            // 蹬墙上升时保留翻滚动画；上升结束后按贴墙输入进入下滑或滞空。
+            When(Link(s["WallJump"], s["WallSlide"], 0.08f),
+                 AnimatorConditionMode.If, PlayerAnimationDriver.ParamWallSliding);
+            When(Link(s["WallJump"], s["Fall"], 0.12f),
+                 AnimatorConditionMode.IfNot, PlayerAnimationDriver.ParamRising);
             Link(s["WallJump"], s["Fall"], 0.12f, exitTime: true, at: 1f);
         }
 

@@ -66,6 +66,8 @@ namespace RuleGame.Gameplay.Player
                  "所以「冰面」= 给地面挂一个摩擦很小的 PhysicsMaterial2D。")]
         [SerializeField] private float _frictionDecel = 40f;
 
+        private const float MinimumTurnBrakeDecel = 12f;
+
         [Tooltip("空中水平加速度：能左右改向，但不瞬移。0 = 空中完全锁死横向速度；" +
                  "调到 1000 左右约等于「空中和地面一样跟手」。")]
         [SerializeField] private float _airAccel = 40f;
@@ -105,6 +107,10 @@ namespace RuleGame.Gameplay.Player
         [Tooltip("贴墙时的下滑速度上限。远低于 _maxFallSpeed —— 贴墙是「缓慢下滑」，不是「挂在墙上」。" +
                  "调大 = 贴墙停留时间短、掉得快；调小 = 有更多时间看准再蹬。")]
         [SerializeField] private float _wallSlideSpeed = 6f;
+
+        [Tooltip("贴到墙那一瞬间，下落速度被「墙面摩擦」吃掉的快慢（单位/秒²）。" +
+                 "调大 = 一碰墙就被截停（越接近瞬间夹住）；调小 = 先冲下去一点再被拉住。")]
+        [SerializeField] private float _wallSlideImpactDecel = 60f;
 
         [Tooltip("【朝墙外按】时弹离墙壁的水平速度 —— 「跳出去」用。")]
         [SerializeField] private float _wallJumpPushSpeed = 9f;
@@ -458,15 +464,21 @@ namespace RuleGame.Gameplay.Player
             if (alongUp < -_maxFallSpeed)
                 _velocity -= _up * (alongUp + _maxFallSpeed);
 
-            // ④′ 贴墙下滑：空中贴着竖墙时，把下落速度压到 _wallSlideSpeed。
-            //     ⚠️ 这不是「吸附」—— 人**照样在往下掉**，只是掉得慢；松开墙立刻恢复正常下落。
-            //        所以它给出时间在竖井里看准了再往反方向蹬，而不是把人挂住不动。
-            _wallSliding = !_grounded && !IsDashing && (_wallLeft || _wallRight);
-            if (_wallSliding)
+            // ④′ 贴墙下滑：贴到墙那一瞬间，下落速度被**墙面摩擦**吃掉 —— 不是瞬间夹住，
+            //     而是按 _wallSlideImpactDecel 在很短的时间里收到 _wallSlideSpeed，之后等速缓降。
+            //
+            //     摩擦力只作用在「比缓降速度更快」的下落上；比它慢的不去动它，
+            //     交给重力自己慢慢加速到该速度再来接住。
+            float alongWall = Vector2.Dot(_velocity, _up);
+            bool pressingIntoWall = (_wallLeft && _moveInput.x < -0.01f)
+                                 || (_wallRight && _moveInput.x > 0.01f);
+            _wallSliding = !_grounded && !IsDashing && alongWall <= 0f && pressingIntoWall;
+
+            if (_wallSliding && alongWall < -_wallSlideSpeed)
             {
-                float alongWall = Vector2.Dot(_velocity, _up);
-                if (alongWall < -_wallSlideSpeed)
-                    _velocity -= _up * (alongWall + _wallSlideSpeed);
+                float absorbed = Mathf.MoveTowards(alongWall, -_wallSlideSpeed,
+                                                   _wallSlideImpactDecel * dt);
+                _velocity = SetAlong(_velocity, _up, absorbed);
             }
 
             // ⑤ 水平：冲刺接管，否则按住方向时朝最大速度「加速」（不是瞬间给速度）
@@ -477,6 +489,8 @@ namespace RuleGame.Gameplay.Player
             }
             else if (_grounded)
             {
+                float frictionScale = FrictionScale;
+                float friction = _groundFriction * frictionScale;
                 if (Mathf.Abs(_moveInput.x) > 0.01f)
                 {
                     // 摩擦反转（摩擦 × 反转）：摩擦力的方向翻转 → 地面把你往「按键的反方向」送，
@@ -485,14 +499,25 @@ namespace RuleGame.Gameplay.Player
                     // 改的是世界给你的力，不是你的按键映射（策划案 D3）。
                     float direction = ResolveMoveDirection(_moveInput.x, FrictionInverted);
                     _facing = Mathf.Sign(direction);
-                    _velocity.x = Mathf.MoveTowards(_velocity.x, direction * _moveSpeedMax, _groundAccel * dt);
+
+                    // 反向输入先按抓地力刹到零，再加速反向；低摩擦面因此保留惯性。
+                    if (_velocity.x * direction < -0.01f)
+                    {
+                        float turnBrake = Mathf.Max(_frictionDecel * _groundFriction,
+                                                   MinimumTurnBrakeDecel) * frictionScale;
+                        _velocity.x = Mathf.MoveTowards(_velocity.x, 0f, turnBrake * dt);
+                    }
+                    else
+                    {
+                        _velocity.x = Mathf.MoveTowards(_velocity.x, direction * _moveSpeedMax,
+                                                        _groundAccel * dt);
+                    }
                 }
                 else
                 {
                     // 减速度 = 基准 × 脚下地面材质的摩擦 × 摩擦规则缩放。
                     // 两者相乘：地形可以做成冰面，规则也能把整个世界变成冰面。
                     // ⚠️ 反转**不翻这里的符号** —— 减速力反向会变成"越滑越快"，直接失控。
-                    float friction = _groundFriction * FrictionScale;
                     _velocity.x = Mathf.MoveTowards(_velocity.x, 0f, _frictionDecel * friction * dt);
                 }
             }
