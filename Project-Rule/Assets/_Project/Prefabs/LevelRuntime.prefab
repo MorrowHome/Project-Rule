@@ -135,9 +135,9 @@ MonoBehaviour:
   _inputActions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   _moveSpeedMax: 8
   _groundAccel: 200
-  _jumpSpeed: 14
+  _jumpSpeed: 16.5
   _maxAirJumps: 1
-  _airJumpSpeed: 10.24
+  _airJumpSpeed: 12.2
   _gravityScale: 3.83
   _fallGravityMultiplier: 2
   _maxFallSpeed: 30
@@ -154,6 +154,7 @@ MonoBehaviour:
   _dashCooldown: 0.25
   _wallProbeDistance: 0.08
   _wallSlideSpeed: 6
+  _wallSlideImpactDecel: 60
   _wallJumpPushSpeed: 9
   _wallClimbPushSpeed: 4
   _wallJumpUpSpeed: 15
