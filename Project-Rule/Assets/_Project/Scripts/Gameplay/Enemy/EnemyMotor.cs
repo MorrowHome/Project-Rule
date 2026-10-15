@@ -67,13 +67,16 @@ namespace RuleGame.Gameplay.Enemy
                 }
             }
             _impulse = Vector2.MoveTowards(_impulse, Vector2.zero, 24f * dt);
-            var slide = _body.Slide(velocity + _impulse, dt, new Rigidbody2D.SlideMovement
+            var movement = new Rigidbody2D.SlideMovement
             {
                 surfaceUp = Up, surfaceSlideAngle = 60f, gravitySlipAngle = 0f,
                 gravity = Vector2.zero, maxIterations = 6, useLayerMask = true,
                 // 玩家身体只参与位移阻挡，不作为接地或悬崖探测的支撑面。
                 layerMask = SolidMask | _actor.PlayerMask, useAttachedTriggers = false, useSimulationMove = true
-            });
+            };
+            // 飞行实体不能使用 Slide 的默认贴地吸附，否则落地后向上飞仍会被拉回地面。
+            if (config.Flying) movement.surfaceAnchor = Vector2.zero;
+            var slide = _body.Slide(velocity + _impulse, dt, movement);
             if (slide.slideHit.collider != null)
             {
                 Vector2 normal = slide.slideHit.normal;

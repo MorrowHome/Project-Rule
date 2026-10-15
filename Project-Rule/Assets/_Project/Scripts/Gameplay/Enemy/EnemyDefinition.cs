@@ -34,7 +34,7 @@ namespace RuleGame.Gameplay.Enemy
         public float AttackRange = 3.5f;
         public float AttackCooldown = 1.8f;
         [Header("Boss 进攻后的喘息")]
-        [Tooltip("一套攻击结束后停止移动与新攻击的时间，不随阶段加速缩短。已有投射物继续飞行。")]
+        [Tooltip("一套攻击结束后不再出招的时间；地面 Boss 原地休息，蝙蝠高空巡飞。不随阶段加速缩短。")]
         [Min(0.1f)] public float BossRestDuration = 1.8f;
         [Tooltip("发条连续发射这么多轮指针后休息；同一物理帧多根指针算一轮。")]
         [Min(1)] public int ClockBeamVolleysBeforeRest = 2;
@@ -65,6 +65,13 @@ namespace RuleGame.Gameplay.Enemy
         [Min(0.5f)] public float BatEvadeCooldown = 2.5f;
         [Min(0.1f)] public float BatEvadeDuration = 0.65f;
         [Min(0.1f)] public float BatRecoverDuration = 0.45f;
+        [Header("蝙蝠休息巡飞")]
+        [Tooltip("休息目标高度占场地高度的比例，仍受身体与场地边界限制。")]
+        [Range(0.5f, 0.95f)] public float BatRestHeightRatio = 0.8f;
+        [Tooltip("以进入休息的位置为中心，向两侧来回飞行的距离。")]
+        [Min(0.5f)] public float BatRestPatrolDistance = 2.5f;
+        [Tooltip("休息巡飞相对基础飞行速度的倍率，不随阶段加速。")]
+        [Range(0.1f, 1f)] public float BatRestSpeedMultiplier = 0.85f;
         public float ImpactFraction = 0.6f;
         public float RabbitCycle = 20f;
         public float RabbitThrowInterval = 2f;

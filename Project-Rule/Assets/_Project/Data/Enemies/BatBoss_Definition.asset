@@ -17,11 +17,18 @@ MonoBehaviour:
   BodySize: {x: 2.5, y: 2.8}
   Health: 300
   Damage: 10
+  ContactDamage: 1
+  ContactInterval: 0.6
+  ContactPadding: 0.05
   Energy: 100
   EnergyRegen: 2
+  RuleAttribute: 0
+  RuleRelation: 4
   MoveSpeed: 5.5
   AttackRange: 3.5
   AttackCooldown: 1.1
+  BossRestDuration: 3.2
+  ClockBeamVolleysBeforeRest: 2
   PreferredDistance: 5
   SpacingTolerance: 0.6
   RangedRange: 9
@@ -41,6 +48,9 @@ MonoBehaviour:
   BatEvadeCooldown: 2.5
   BatEvadeDuration: 0.65
   BatRecoverDuration: 0.45
+  BatRestHeightRatio: 0.8
+  BatRestPatrolDistance: 2.5
+  BatRestSpeedMultiplier: 0.85
   ImpactFraction: 0.6
   RabbitCycle: 20
   RabbitThrowInterval: 2

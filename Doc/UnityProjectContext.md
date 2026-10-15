@@ -51,8 +51,8 @@ manifest 已有 Coplay Unity MCP，仓库 `.mcp.json` 指向 `localhost:8080/mcp
 
 本机现已安装项目要求的 Unity `6000.6.4f1`。本次在 `/tmp/rule-bat-flight-20261015` 中复制相关一方运行源码、原版 UnityHFSM 2.3.0、真实蝙蝠定义/动画及精灵，使用同一版本运行隔离 Play Mode。输入程序集复制自当前工程 Library，未修改项目包依赖、项目设置或主角动画资源。
 
-- `BatFlightValidation.RunBatch`：17 项通过，检查真实位移、第一阶段俯冲、预警与锁定方向、恢复、撤离、边界、暂停、快照，以及 DashWindup 的四帧配置、实际精灵播放与休息时的实际悬停。
-- `BossCombatValidation.RunBatch`：118 项通过，包含阶段节奏、破韧打断、俯冲方向快照与短展翅动作断言，以及四种 Boss 的休息窗口、暂停、快照、反击受伤和指针停火。
+- `BatFlightValidation.RunBatch`：21 项通过，检查真实位移、第一阶段俯冲、预警与锁定方向、恢复、撤离、边界、暂停、快照，以及 DashWindup 的四帧配置、实际精灵播放与休息时实际上升、高空往返、停火、边界和暂停。
+- `BossCombatValidation.RunBatch`：119 项通过，包含阶段节奏、破韧打断、俯冲方向快照与短展翅动作断言，以及四种 Boss 的休息窗口、暂停、快照、反击受伤和指针停火。
 - `BossBodyCollisionValidation.RunBatch`：9 项通过，覆盖新版玩家移动模块的身体阻挡、冲刺、反向脱离、迎面、接触伤害和触发器。
 - 当前完整 `Test_Enemy_BatBoss` 白盒已进入 Play 观察到一阶段 Recover/Fly、飞行与攻击特效，主角无敌关闭并正常掉血；测试后退出 Play。Editor.log 未发现 C# 编译错误。未执行 Player 构建或完整难度平衡验收。
 
@@ -60,7 +60,7 @@ manifest 已有 Coplay Unity MCP，仓库 `.mcp.json` 指向 `localhost:8080/mcp
 
 日志位于 `/tmp/rule-bat-windup-validation.log`、`/tmp/rule-bat-windup-brains.log`、`/tmp/rule-bat-body-validation.log`，各验证器的计数结果保存在隔离工程 `Logs/`。`git diff --check` 已通过；未改动同事的 Hero 图集、动画剪辑和 Animator Controller。
 
-2026-10-16 增加统一 `Rest`：一套攻击后停下休息，`BossRestDuration` 默认 1.8 秒且不随阶段缩短。发条默认两轮指针后休息，由 `ClockBeamVolleysBeforeRest` 调整；指针时钟在休息中冻结。兔子每轮投掷后休息，蝙蝠攻击后悬停且不因玩家逼近提前逃走。破韧恢复继续剩余休息；阶段和死亡优先。生成工具同步配置。新增验证日志为 `/tmp/rule-boss-rest-combat.log`、`/tmp/rule-bat-rest-flight.log` 和 `/tmp/rule-boss-rest-body.log`。
+2026-10-16 增加统一 `Rest`：一套攻击后不再出招，`BossRestDuration` 地面默认 1.8 秒、蝙蝠默认 3.2 秒，均不随阶段缩短。发条默认两轮指针后休息，由 `ClockBeamVolleysBeforeRest` 调整；指针时钟在休息中冻结。兔子每轮投掷后休息，蝙蝠攻击后升至场地高度的 80%，围绕休息起点左右各 2.5 米往返，速度为基础巡航的 0.85 倍；不追踪玩家、不出招。高度、距离和速度均在 Inspector 配置，巡飞端点与方向参加快照。破韧恢复继续剩余休息；阶段和死亡优先。同时关闭飞行实体的 Slide 贴地吸附，修复落地后有上升速度却无法升空的问题。地面实体的吸附行为不变。生成工具同步配置。新增验证日志为 `/tmp/rule-bat-rest-patrol-combat.log`、`/tmp/rule-bat-rest-patrol-flight.log` 和 `/tmp/rule-bat-rest-patrol-body.log`。
 
 ## 证据
 

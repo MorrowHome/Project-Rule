@@ -26,6 +26,9 @@ namespace RuleGame.Editor.Enemy
         private static object _snapshot;
         private static SpriteRenderer _visual;
         private static EnemySpriteSequence _windupClip, _spreadClip;
+        private static bool _trackingRest, _restTurned, _restBounded = true;
+        private static float _restMinX, _restMaxX, _restPeakY, _restLastDirection;
+        private static int _restAttacks;
         private static string Output => Path.GetFullPath(Path.Combine(Application.dataPath, "../Logs/BatFlightValidation.txt"));
 
         public static void RunBatch()
@@ -72,6 +75,12 @@ namespace RuleGame.Editor.Enemy
             _visual = visual.AddComponent<SpriteRenderer>();
             var animator = visual.AddComponent<EnemySpriteAnimator>(); animator.Actor = _bat; animator.AnimationSet = animations;
             go.SetActive(true); _body = go.GetComponent<Rigidbody2D>(); _start = _body.position;
+            _bat.Feedback += cue =>
+            {
+                if (_bat.Brain?.StateName == "Rest" && (cue.Kind == EnemyFeedbackKind.Strike
+                    || cue.Kind == EnemyFeedbackKind.ProjectileSpawn || cue.Kind == EnemyFeedbackKind.RuleCast
+                    || cue.Kind == EnemyFeedbackKind.Summon)) _restAttacks++;
+            };
             _deadline = EditorApplication.timeSinceStartup + 35;
             _due = Time.fixedTime + 0.65f;
             EditorApplication.update += Tick;
@@ -82,6 +91,22 @@ namespace RuleGame.Editor.Enemy
             if (EditorApplication.timeSinceStartup > _deadline) { Finish("飞行验证超时，状态=" + _bat.Brain?.StateName); return; }
             if (_bat.Brain == null) return;
             _peakSpeed = Mathf.Max(_peakSpeed, _bat.Motor.Velocity.magnitude);
+            if (_trackingRest && _bat.Brain.StateName == "Rest")
+            {
+                _restMinX = Mathf.Min(_restMinX, _body.position.x); _restMaxX = Mathf.Max(_restMaxX, _body.position.x);
+                _restPeakY = Mathf.Max(_restPeakY, _body.position.y);
+                Vector2 margin = _bat.Definition.BodySize * .5f;
+                _restBounded &= _body.position.x - margin.x >= _bat.ArenaX.x - .05f
+                    && _body.position.x + margin.x <= _bat.ArenaX.y + .05f
+                    && _body.position.y + margin.y <= _bat.ArenaY.y + .05f;
+                float altitude = Mathf.Lerp(_bat.ArenaY.x, _bat.ArenaY.y, _bat.Definition.BatRestHeightRatio);
+                if (_body.position.y > altitude - .6f && Mathf.Abs(_bat.Motor.Velocity.x) > .5f)
+                {
+                    float direction = Mathf.Sign(_bat.Motor.Velocity.x);
+                    if (_restLastDirection != 0 && _restLastDirection != direction) _restTurned = true;
+                    _restLastDirection = direction;
+                }
+            }
             if (Time.fixedTime < _due) return;
             try
             {
@@ -114,15 +139,27 @@ namespace RuleGame.Editor.Enemy
                         _step++; break;
                     case 4:
                         if (_bat.Brain.StateName != "Rest") return;
-                        Check(_bat.Motor.Intent == Vector2.zero && _bat.Definition.BossRestDuration >= 1.8f,
-                            "真实蝙蝠攻击后进入可配置的完整休息窗口");
+                        Check(_bat.Motor.Intent.y > 0f && _bat.Definition.BossRestDuration >= 3.2f,
+                            "真实蝙蝠攻击后进入可配置的高空巡飞休息窗口");
+                        _trackingRest = true; _restMinX = _restMaxX = _body.position.x; _restPeakY = _body.position.y;
+                        _bat.Target.position = new Vector3(30, .6f, 0); Physics2D.SyncTransforms();
                         _savedPosition = _body.position; _due = Time.fixedTime + .3f; _step = 40; break;
                     case 40:
-                        Check(_bat.Brain.StateName == "Rest" && Vector2.Distance(_body.position, _savedPosition) < .02f,
-                            "休息时实际悬停，不继续高速撤离");
-                        _step = 41; break;
+                        Check(_bat.Brain.StateName == "Rest" && _body.position.y > _savedPosition.y + .4f,
+                            "休息时实际飞向高处，玩家换位不会改变巡飞路线");
+                        _savedPosition = _body.position; _age = _bat.Brain.RestRemaining;
+                        TimeManager.Instance.SetPaused(true); _due = Time.fixedTime + .2f; _step = 400; break;
+                    case 400:
+                        Check(Mathf.Approximately(_age, _bat.Brain.RestRemaining) && Vector2.Distance(_body.position, _savedPosition) < .01f,
+                            "暂停冻结休息巡飞与休息时钟");
+                        TimeManager.Instance.SetPaused(false); _step = 41; break;
                     case 41:
                         if (_bat.Brain.StateName != "Fly") return;
+                        _trackingRest = false;
+                        Check(_restPeakY >= Mathf.Lerp(_bat.ArenaY.x, _bat.ArenaY.y, _bat.Definition.BatRestHeightRatio) - .6f,
+                            "休息巡飞抵达场地高处");
+                        Check(_restMaxX - _restMinX > 1f && _restTurned, "高处巡飞会实际往返，不是原地悬停");
+                        Check(_restAttacks == 0 && _restBounded, "休息全程不出招且身体保持在场地边界内");
                         _bat.Target.position = _bat.transform.position + Vector3.right * 2.1f;
                         Physics2D.SyncTransforms(); _step = 5; break;
                     case 5:

@@ -208,8 +208,9 @@ namespace RuleGame.Editor.Enemy
                     a.Definition.BossRestDuration = 1.8f;
                     Target(a, 3); AdvanceTo(a, "Rest");
                     string label = a.Definition.Kind.ToString();
-                    Check(a.Motor.Intent == Vector2.zero && a.Motor.Velocity == Vector2.zero,
-                        label + " 完成一套攻击后停下休息");
+                    bool bat = a.Definition.Kind == EnemyKind.BatBoss;
+                    Check(bat ? a.Motor.Intent.y > 0f : a.Motor.Intent == Vector2.zero && a.Motor.Velocity == Vector2.zero,
+                        label + (bat ? " 完成攻击后上升至休息航线" : " 完成一套攻击后停下休息"));
                     a.Combat = new GameObject("RestCombat_" + label).AddComponent<RuleGame.Gameplay.Combat.CombatSystem>();
                     int attacks = 0;
                     a.Feedback += cue =>
@@ -220,19 +221,26 @@ namespace RuleGame.Editor.Enemy
                     };
                     Target(a, 0.1f);
                     for (int i = 0; i < 10; i++) Step(a);
-                    Check(a.Brain.StateName == "Rest" && attacks == 0 && a.Motor.Intent == Vector2.zero,
-                        label + " 玩家贴近也不提前进攻、撤离或施法");
+                    Check(a.Brain.StateName == "Rest" && attacks == 0 && (bat || a.Motor.Intent == Vector2.zero),
+                        label + " 玩家贴近也不提前进攻或施法");
                     float remaining = a.Brain.RestRemaining;
                     a.Status.SetPaused(true); Step(a, 10); a.Status.SetPaused(false);
                     Check(Mathf.Approximately(a.Brain.RestRemaining, remaining), label + " 暂停冻结休息计时");
                     object saved = a.CaptureSnapshotState(); Step(a, 0.3f); a.RestoreSnapshotState(saved);
                     Check(a.Brain.StateName == "Rest" && Mathf.Approximately(a.Brain.RestRemaining, remaining),
                         label + " 快照恢复休息进度");
+                    if (bat)
+                    {
+                        Step(a); Vector2 intent = a.Motor.Intent;
+                        a.RestoreSnapshotState(saved); Step(a);
+                        Check(a.Motor.Intent == intent, "快照恢复高空休息巡飞路线与方向");
+                        a.RestoreSnapshotState(saved);
+                    }
                     float health = a.Status.Health;
                     a.ApplyDamage(new DamageInfo { Amount = 10f });
                     Check(a.Status.Health == health - 10f && a.Brain.StateName == "Rest", label + " 休息中可以正常承受反击");
                     a.Brain.OnHit(30f); Step(a, .46f);
-                    Check(a.Brain.StateName == "Rest" && a.Motor.Intent == Vector2.zero, label + " 破韧恢复不会跳过剩余休息");
+                    Check(a.Brain.StateName == "Rest" && (bat || a.Motor.Intent == Vector2.zero), label + " 破韧恢复不会跳过剩余休息");
                     float left = a.Brain.RestRemaining;
                     Step(a, left - .05f);
                     Check(a.Brain.StateName == "Rest" && attacks == 0, label + " 保留完整休息窗口");

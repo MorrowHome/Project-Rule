@@ -10,6 +10,8 @@ namespace RuleGame.Gameplay.Enemy
         private int _orbitSide = 1;
         private Vector2 _destination, _dashDirection, _lastTargetPosition, _targetVelocity, _lastFlightPosition;
         private Transform _trackedTarget;
+        private Vector2 _restLeft, _restRight;
+        private int _restDirection = 1;
         protected override string FirstAction => "Fly";
         protected override string[] ActionNames => new[]
         {
@@ -45,6 +47,14 @@ namespace RuleGame.Gameplay.Enemy
             base.EnterAction(name);
             switch (name)
             {
+                case "Rest":
+                    float height = Mathf.Lerp(Actor.ArenaY.x, Actor.ArenaY.y, Mathf.Clamp01(Config.BatRestHeightRatio));
+                    float span = Mathf.Max(0.5f, Config.BatRestPatrolDistance);
+                    _restLeft = ClampPoint(new Vector2(Position.x - span, height));
+                    _restRight = ClampPoint(new Vector2(Position.x + span, height));
+                    _restDirection = _orbitSide;
+                    TickRest();
+                    break;
                 case "Fly":
                 case "Idle":
                     Actor.Cue("Fly", Actor.Duration("Fly"), true);
@@ -179,6 +189,20 @@ namespace RuleGame.Gameplay.Enemy
             _orbitSide = -_orbitSide;
             RestAfterAttack("Fly", Mathf.Max(0.2f, Config.AttackCooldown / Tempo));
         }
+        protected override void TickRest()
+        {
+            // 休息路线以起点和场地为准，不追踪玩家，也不触发攻击或近身撤离。
+            float ahead = Position.x + Actor.Motor.Velocity.x * 0.15f;
+            if (_restDirection > 0 && ahead >= _restRight.x - 0.2f) _restDirection = -1;
+            else if (_restDirection < 0 && ahead <= _restLeft.x + 0.2f) _restDirection = 1;
+            Vector2 point = _restDirection > 0 ? _restRight : _restLeft;
+            float vertical = Mathf.Clamp((point.y - Position.y) / 1.2f, -1f, 1f);
+            float horizontal = _restRight.x - _restLeft.x > 0.4f ? _restDirection : 0f;
+            if (Position.y < point.y - 0.6f) horizontal *= 0.35f;
+            Actor.Motor.Intent = BoundIntent(Vector2.ClampMagnitude(new Vector2(horizontal, vertical), 1f));
+            Actor.Motor.SpeedMultiplier = Mathf.Clamp(Config.BatRestSpeedMultiplier, 0.1f, 1f);
+            Actor.FaceDirection(Actor.Motor.Intent);
+        }
         private void ChooseFlightPoint()
         {
             Vector2 target = HasTarget ? (Vector2)Actor.Target.position : Position;
@@ -221,13 +245,16 @@ namespace RuleGame.Gameplay.Enemy
             public int Side;
             public Vector2 Destination, Direction, TargetPosition, TargetVelocity, FlightPosition;
             public Transform Target;
+            public Vector2 RestLeft, RestRight;
+            public int RestDirection;
         }
         protected override object CaptureExtra() => new FlightData
         {
             Summon = _nextSummon, Point = _nextPoint, Rule = _nextRule, Dash = _nextDash,
             Evade = _nextEvade, Waypoint = _nextWaypoint, Side = _orbitSide, Destination = _destination,
             Direction = _dashDirection, TargetPosition = _lastTargetPosition, TargetVelocity = _targetVelocity,
-            FlightPosition = _lastFlightPosition, Target = _trackedTarget
+            FlightPosition = _lastFlightPosition, Target = _trackedTarget,
+            RestLeft = _restLeft, RestRight = _restRight, RestDirection = _restDirection
         };
         protected override void RestoreExtra(object state)
         {
@@ -237,6 +264,7 @@ namespace RuleGame.Gameplay.Enemy
             _destination = data.Destination; _dashDirection = data.Direction;
             _lastTargetPosition = data.TargetPosition; _targetVelocity = data.TargetVelocity;
             _lastFlightPosition = data.FlightPosition; _trackedTarget = data.Target;
+            _restLeft = data.RestLeft; _restRight = data.RestRight; _restDirection = data.RestDirection;
         }
     }
 }

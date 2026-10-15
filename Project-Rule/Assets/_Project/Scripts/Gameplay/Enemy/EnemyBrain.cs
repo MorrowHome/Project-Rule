@@ -59,8 +59,8 @@ namespace RuleGame.Gameplay.Enemy
             if (IsBoss)
                 Actions.AddState("Rest", new State(onEnter: _ => EnterAction("Rest"), onLogic: _ =>
                 {
-                    Actor.Motor.Intent = Vector2.zero;
-                    if (!IsResting) Go(_restReturn);
+                    if (IsResting) TickRest();
+                    else Go(_restReturn);
                 }));
             Actions.SetStartState(FirstAction);
             Root.AddState("Alive", Actions);
@@ -182,6 +182,7 @@ namespace RuleGame.Gameplay.Enemy
             Go("Rest");
         }
         protected virtual void TickGlobal() { }
+        protected virtual void TickRest() => Actor.Motor.Intent = Vector2.zero;
         protected virtual void TickTransition() { }
         protected virtual void AfterTransition(string name) { }
         protected abstract void TickAction(string name);
