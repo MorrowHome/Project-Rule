@@ -53,7 +53,7 @@ namespace RuleGame.Presentation.Enemy
             switch (_actor.AnimationName)
             {
                 case "HammerPlayer": case "HammerGround": case "Throw": case "Slash":
-                case "JumpShake": case "WingSpread": case "Roar": case "Magic":
+                case "JumpShake": case "WingSpread": case "DashWindup": case "Roar": case "Magic":
                     Play(Profile.Charge, transform.position, Profile.CastSize * .55f, Profile.Accent,
                         0f, transform, Mathf.Max(.15f, _actor.AnimationDuration * _actor.Definition.ImpactFraction));
                     break;

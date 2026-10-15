@@ -6,14 +6,12 @@ namespace RuleGame.Gameplay.Enemy
     public sealed class BrickBossBrain : EnemyBrain
     {
         private readonly bool[] _thresholds = new bool[3];
-        private float _decideUntil;
         protected override string[] ActionNames => new[] { "Idle", "Walk", "HammerPlayer", "HammerGround", "Throw", "Hurt" };
         public BrickBossBrain(EnemyActor actor) : base(actor) { }
-        protected override object CaptureExtra() => new object[] { (bool[])_thresholds.Clone(), _decideUntil };
+        protected override object CaptureExtra() => (bool[])_thresholds.Clone();
         protected override void RestoreExtra(object state)
         {
-            if (!(state is object[] data)) return;
-            System.Array.Copy((bool[])data[0], _thresholds, 3); _decideUntil = (float)data[1];
+            if (state is bool[] data) System.Array.Copy(data, _thresholds, 3);
         }
         protected override void TickGlobal()
         {
@@ -35,24 +33,20 @@ namespace RuleGame.Gameplay.Enemy
         {
             if (name == "Angry") { Actor.CastRule(); Transition("Split", Phase); }
         }
-        protected override void EnterAction(string name)
-        {
-            base.EnterAction(name);
-            if (name == "Idle") _decideUntil = Age + 0.55f;
-        }
         protected override void TickAction(string name)
         {
             switch (name)
             {
                 case "Idle":
-                    if (Actor.Target == null || Age < _decideUntil) return;
-                    if (Actor.Distance > 12f) { Go("Walk"); return; }
-                    if (Age < NextAttack) return;
-                    Go(Actor.Distance < Config.AttackRange ? "HammerPlayer" : Actor.Distance < 7f ? "HammerGround" : "Throw");
-                    break;
                 case "Walk":
-                    WalkToTarget();
-                    if (Actor.Distance < 10f) Go("Idle");
+                    if (HasTarget && Age >= NextAttack && CombatDistance <= RangedRange)
+                    {
+                        bool level = Mathf.Abs(Actor.Target.position.y - Actor.transform.position.y) <= Config.BodySize.y * 0.5f;
+                        Go(TargetInMeleeRange ? "HammerPlayer"
+                            : level && CombatDistance <= RangedRange * 0.7f ? "HammerGround" : "Throw");
+                        return;
+                    }
+                    KeepDistance("Walk", Config.AttackRange * 0.85f);
                     break;
                 case "HammerPlayer":
                     if (Impact()) Actor.Attack(Config.AttackRange, true);

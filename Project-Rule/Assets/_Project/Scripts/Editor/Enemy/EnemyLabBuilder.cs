@@ -151,6 +151,20 @@ namespace RuleGame.Editor.Enemy
                     Frames = frames, ClockFaceCenters = centers, FrameRate = manifest.frameRate, FacesRight = entry.facesRight
                 });
             }
+            if (kind == EnemyKind.BatBoss)
+            {
+                EnemySpriteSequence spread = sequences.Find(sequence => sequence.Action == "WingSpread");
+                if (spread != null)
+                {
+                    // 只取抬翼的前四帧；不能把反复拍翼的完整施法动作压进短促俯冲预警。
+                    var frames = new Sprite[Mathf.Min(4, spread.Frames.Length)];
+                    Array.Copy(spread.Frames, frames, frames.Length);
+                    sequences.Add(new EnemySpriteSequence
+                    {
+                        Action = "DashWindup", Frames = frames, FrameRate = spread.FrameRate, FacesRight = spread.FacesRight
+                    });
+                }
+            }
             set.Sequences = sequences.ToArray();
             EditorUtility.SetDirty(set); AssetDatabase.SaveAssetIfDirty(set);
             return set;
@@ -167,8 +181,20 @@ namespace RuleGame.Editor.Enemy
                 : kind == EnemyKind.BatMinion ? new Vector2(1f, 1.05f)
                 : kind == EnemyKind.BatBoss ? new Vector2(2.5f, 2.8f)
                 : kind == EnemyKind.BrickBoss ? new Vector2(2f, 3.2f) : new Vector2(2f, 3f);
-            definition.MoveSpeed = kind == EnemyKind.BrickMinion ? 4.5f : kind == EnemyKind.BatMinion ? 5f : kind == EnemyKind.BrickBoss ? 1.8f : 2.5f;
+            definition.MoveSpeed = kind == EnemyKind.BrickMinion ? 4.5f : kind == EnemyKind.BatMinion ? 5f
+                : kind == EnemyKind.BrickBoss ? 1.8f : kind == EnemyKind.BatBoss ? 5.5f : 2.5f;
+            definition.FlightAcceleration = kind == EnemyKind.BatBoss ? 70f : 24f;
+            definition.AttackCooldown = kind == EnemyKind.BatBoss ? 1.1f : 1.8f;
             definition.Energy = 100f; definition.EnergyRegen = 2f;
+            bool boss = kind != EnemyKind.BrickMinion && kind != EnemyKind.BatMinion;
+            definition.HurtCooldown = boss ? 4f : 2f;
+            definition.BossHurtDuration = 0.45f;
+            definition.StaggerDamageThreshold = kind == EnemyKind.BrickBoss ? 20f : kind == EnemyKind.BatBoss ? 40f : 30f;
+            definition.StaggerResetDelay = 1.5f;
+            definition.PreferredDistance = 5f;
+            definition.SpacingTolerance = 0.6f;
+            definition.RangedRange = 9f;
+            definition.RetreatSpeedMultiplier = 0.8f;
             definition.RuleAttribute = kind == EnemyKind.ClockBoss ? AttributeId.Time : AttributeId.Gravity;
             definition.RuleRelation = RelationId.Weaken;
             var timings = new List<EnemyActionTiming>();

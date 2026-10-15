@@ -19,12 +19,28 @@ MonoBehaviour:
   Damage: 10
   Energy: 100
   EnergyRegen: 2
-  MoveSpeed: 2.5
+  MoveSpeed: 5.5
   AttackRange: 3.5
-  AttackCooldown: 1.8
-  HurtCooldown: 2
+  AttackCooldown: 1.1
+  PreferredDistance: 5
+  SpacingTolerance: 0.6
+  RangedRange: 9
+  RetreatSpeedMultiplier: 0.8
+  StaggerDamageThreshold: 40
+  StaggerResetDelay: 1.5
+  HurtCooldown: 4
+  BossHurtDuration: 0.45
   GravityScale: 1
   Flying: 1
+  FlightAcceleration: 70
+  BatOrbitDistance: 4.5
+  BatHoverHeight: 3
+  BatDashCooldown: 4
+  BatDashWindup: 0.5
+  BatDashDuration: 0.65
+  BatEvadeCooldown: 2.5
+  BatEvadeDuration: 0.65
+  BatRecoverDuration: 0.45
   ImpactFraction: 0.6
   RabbitCycle: 20
   RabbitThrowInterval: 2

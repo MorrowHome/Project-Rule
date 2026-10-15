@@ -41,7 +41,8 @@ namespace RuleGame.Gameplay.Enemy
                 float rotationPeriod = Config.ClockHourInterval * (i + 1);
                 Actor.Beam(90f - Age / rotationPeriod * 360f, 0.1f + i * 0.1f);
             }
-            if (Age >= _nextHour && StateName != "Charge" && StateName != "JumpShake")
+            if (HasTarget && CombatDistance <= RangedRange && Age >= _nextHour && Age >= NextAttack
+                && (StateName == "Idle" || StateName == "Walk"))
             {
                 _nextHour = Age + Config.ClockHourInterval;
                 Go("JumpShake");
@@ -78,8 +79,15 @@ namespace RuleGame.Gameplay.Enemy
         {
             switch (name)
             {
-                case "Idle": if (Actor.Distance > Config.AttackRange) Go("Walk"); break;
-                case "Walk": WalkToTarget(); if (Actor.Distance < Config.AttackRange) Go("Idle"); break;
+                case "Idle":
+                case "Walk":
+                    if (TargetInMeleeRange && Age >= NextAttack)
+                    {
+                        Go("JumpShake");
+                        return;
+                    }
+                    KeepDistance("Walk", Mathf.Min(Config.PreferredDistance, RangedRange));
+                    break;
                 case "JumpShake": if (Finished) { Actor.CastRule(); Go("Charge"); } break;
                 case "Charge":
                     Actor.Motor.SpeedMultiplier = 3.5f;
@@ -87,7 +95,7 @@ namespace RuleGame.Gameplay.Enemy
                     if (Actor.transform.position.x < Actor.ArenaX.x) _chargeFacing = 1f;
                     Actor.Motor.Intent = Vector2.right * _chargeFacing;
                     Actor.Attack(2.5f);
-                    if (Finished) Go("Idle");
+                    if (Finished) RestAfterAttack();
                     break;
                 case "Hurt": if (Finished) Go("Idle"); break;
             }

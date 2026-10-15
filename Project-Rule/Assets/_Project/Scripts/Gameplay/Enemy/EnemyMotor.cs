@@ -46,12 +46,13 @@ namespace RuleGame.Gameplay.Enemy
             float direction = Intent.x;
             var attributes = RuleSystem.Instance?.Attributes;
             if (Grounded && attributes != null && attributes.Values.FrictionInverted) direction = -direction;
-            float acceleration = 35f;
+            float acceleration = config.Flying ? Mathf.Max(35f, config.FlightAcceleration) : 35f;
             if (Grounded && attributes != null)
                 acceleration *= Mathf.Max(0.02f, attributes.Values.FrictionScale);
             velocity.x = Mathf.MoveTowards(velocity.x, direction * config.MoveSpeed * SpeedMultiplier, acceleration * dt);
             if (config.Flying && !_actor.Defeated)
-                velocity.y = Mathf.MoveTowards(velocity.y, Intent.y * config.MoveSpeed * SpeedMultiplier, 24f * dt);
+                velocity.y = Mathf.MoveTowards(velocity.y, Intent.y * config.MoveSpeed * SpeedMultiplier,
+                    Mathf.Max(1f, config.FlightAcceleration) * dt);
             else
             {
                 velocity += Physics2D.gravity * config.GravityScale * dt;
@@ -70,7 +71,8 @@ namespace RuleGame.Gameplay.Enemy
             {
                 surfaceUp = Up, surfaceSlideAngle = 60f, gravitySlipAngle = 0f,
                 gravity = Vector2.zero, maxIterations = 6, useLayerMask = true,
-                layerMask = SolidMask, useAttachedTriggers = false, useSimulationMove = true
+                // 玩家身体只参与位移阻挡，不作为接地或悬崖探测的支撑面。
+                layerMask = SolidMask | _actor.PlayerMask, useAttachedTriggers = false, useSimulationMove = true
             });
             if (slide.slideHit.collider != null)
             {

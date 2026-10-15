@@ -152,7 +152,7 @@ namespace RuleGame.Gameplay.Player
                 maxIterations     = 4,                   // 拐角要几次叠代才滑得干净
                 surfaceAnchor     = anchored ? -contact.Up * tuning.SurfaceAnchorDistance : Vector2.zero,
                 useLayerMask      = true,
-                layerMask         = tuning.SolidLayer,
+                layerMask         = tuning.SolidLayer | tuning.BodyBlockLayer,
                 useAttachedTriggers = false,
                 useSimulationMove = true,                // 交给模拟步生效：暂停（不 Simulate）时自然静止
             };

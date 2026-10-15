@@ -28,11 +28,14 @@ namespace RuleGame.Gameplay.Enemy
         public Transform BeamOrigin;
         public bool RuntimeSpawned;
         public Vector2 ArenaX = new Vector2(-12f, 12f);
+        [Tooltip("飞行敌人的场地高度范围，身体边缘会留在范围内。")]
+        public Vector2 ArenaY = new Vector2(0f, 10f);
         public bool Defeated { get; private set; }
         public float Facing { get; private set; } = -1f;
         public EntityStatus Status { get; private set; }
         public EnemyMotor Motor { get; private set; }
         public EnemyBrain Brain { get; private set; }
+        public bool HasTarget => Target != null && Target.gameObject.activeInHierarchy;
         public Faction Faction => Faction.Enemy;
         public string AnimationName { get; private set; } = "Idle";
         public float AnimationDuration { get; private set; } = 1f;
@@ -86,6 +89,7 @@ namespace RuleGame.Gameplay.Enemy
             filter.SetLayerMask(PlayerMask);
             Vector3 scale = transform.lossyScale;
             Vector2 size = Vector2.Scale(_bodyCollider.size, new Vector2(Mathf.Abs(scale.x), Mathf.Abs(scale.y)));
+            size += Vector2.one * (Mathf.Max(0f, Definition.ContactPadding) * 2f);
             Vector2 center = transform.TransformPoint(_bodyCollider.offset);
             int count = Physics2D.OverlapBox(center, size, transform.eulerAngles.z, filter, _contacts);
             _contactTargets.Clear();
@@ -113,11 +117,15 @@ namespace RuleGame.Gameplay.Enemy
         }
         public void FaceTarget()
         {
-            if (Target != null && Mathf.Abs(Target.position.x - transform.position.x) > 0.1f)
+            if (HasTarget && Mathf.Abs(Target.position.x - transform.position.x) > 0.1f)
                 Facing = Mathf.Sign(Target.position.x - transform.position.x);
         }
-        public float Distance => Target == null ? float.PositiveInfinity : Vector2.Distance(transform.position, Target.position);
-        public Vector2 TowardTarget => Target == null ? Vector2.zero : ((Vector2)(Target.position - transform.position)).normalized;
+        public void FaceDirection(Vector2 direction)
+        {
+            if (Mathf.Abs(direction.x) > 0.1f) Facing = Mathf.Sign(direction.x);
+        }
+        public float Distance => !HasTarget ? float.PositiveInfinity : Vector2.Distance(transform.position, Target.position);
+        public Vector2 TowardTarget => !HasTarget ? Vector2.zero : ((Vector2)(Target.position - transform.position)).normalized;
         public float Duration(string action, float fallback = 0.8f) => Definition.Duration(action, fallback);
 
         public void ApplyDamage(in DamageInfo damage)
@@ -128,10 +136,11 @@ namespace RuleGame.Gameplay.Enemy
             if (damage.Amount > 0f)
             {
                 float next = Brain.ClampHealth(Status.Health - damage.Amount);
+                float appliedDamage = Mathf.Max(0f, Status.Health - next);
                 Status.ApplyHealthDelta(next - Status.Health);
                 _invulnerability = 0.12f;
                 EmitFeedback(EnemyFeedbackKind.Hit, transform.position, -TowardAttacker(damage.Attacker));
-                Brain.OnHit();
+                Brain.OnHit(appliedDamage);
             }
             // 挂账产生的 0 伤害仍可击退；Boss 的免疫是实体属性，不在规则类里特判。
             if (Definition.Kind == EnemyKind.BrickMinion || Definition.Kind == EnemyKind.BatMinion)
@@ -145,7 +154,7 @@ namespace RuleGame.Gameplay.Enemy
         }
         public void Attack(float reach, bool newPulse = false)
         {
-            if (Combat == null || Target == null) return;
+            if (Combat == null || !HasTarget) return;
             if (newPulse) _swingTargets.Clear();
             Vector2 center = (Vector2)transform.position + Vector2.right * Facing * reach * 0.55f;
             // 持续判定窗不逐帧发特效；连斩的 newPulse 则每刀单独通知。
@@ -158,9 +167,13 @@ namespace RuleGame.Gameplay.Enemy
                 PlayerMask, Definition.Damage, 5f, _swingTargets);
         }
         public void Shoot(Vector2 direction, float speed = 8f, float gravity = 0f, float radius = 0.22f)
-            => EnemyProjectile.Spawn(this, direction, speed, gravity, radius);
+        {
+            if (HasTarget) EnemyProjectile.Spawn(this, direction, speed, gravity, radius);
+        }
         public void Beam(float angle, float width, float warning = 0.65f)
-            => EnemyBeam.Spawn(this, angle, width, warning);
+        {
+            if (HasTarget) EnemyBeam.Spawn(this, angle, width, warning);
+        }
         public bool CastRule()
         {
             if (_release == null || RuleSystem.Instance == null) return false;

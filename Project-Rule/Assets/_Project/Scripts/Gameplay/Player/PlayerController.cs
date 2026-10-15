@@ -151,6 +151,8 @@ namespace RuleGame.Gameplay.Player
         [Header("碰撞")]
         [Tooltip("阻挡移动、并用于接地判定的层。地形与墙体都放这里。")]
         [SerializeField] private LayerMask _solidLayer;
+        [Tooltip("仅阻挡身体移动的层，不授予接地和蹬墙。默认 Enemy（层 9）。")]
+        [SerializeField] private LayerMask _bodyBlockLayer = 1 << 9;
 
         [Tooltip("接地探测距离（米）。")]
         [SerializeField] private float _groundProbeDistance = 0.08f;
@@ -630,6 +632,7 @@ namespace RuleGame.Gameplay.Player
             WallJumpUpSpeed      = _wallJumpUpSpeed,
 
             SolidLayer           = _solidLayer,
+            BodyBlockLayer       = _bodyBlockLayer,
             GroundProbeDistance  = _groundProbeDistance,
             SurfaceAnchorDistance = _surfaceAnchorDistance,
             SurfaceSlideAngle    = _surfaceSlideAngle,

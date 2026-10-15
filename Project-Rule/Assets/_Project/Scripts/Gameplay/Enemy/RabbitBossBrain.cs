@@ -31,7 +31,7 @@ namespace RuleGame.Gameplay.Enemy
                 Transition("Flip", 2, 0.8f);
                 return;
             }
-            if (Age < _magicCheck) return;
+            if (Age < _magicCheck || StateName == "Hurt" || !HasTarget) return;
             _magicCheck = Age + 5f;
             _random ^= _random << 13; _random ^= _random >> 17; _random ^= _random << 5;
             if (Actor.Status.Energy <= 50f || (_random & 1) == 0) return;
@@ -63,18 +63,35 @@ namespace RuleGame.Gameplay.Enemy
                 case "Throw":
                 case "HideThrow":
                     if (_cycle >= Config.RabbitCycle) { Go(name == "Throw" ? "Hide" : "Pop"); return; }
-                    if (Impact(0.35f)) Actor.Shoot(Actor.TowardTarget + Vector2.up * 0.45f, 8f, 0.6f);
-                    if (name == "Throw" && Elapsed > 0.7f && Elapsed < 0.9f) WalkToTarget();
+                    if (HasTarget && CombatDistance <= RangedRange && Impact(0.35f))
+                        Actor.Shoot(Actor.TowardTarget + Vector2.up * (TargetInMeleeRange ? 0.1f : 0.45f), 8f, 0.6f);
+                    // 藏身时保持原位；出头时在出手后的恢复段拉开距离或追入射程。
+                    if (name == "Throw" && (Pulses > 0 || CombatDistance > RangedRange))
+                        PositionForThrow();
                     else Actor.Motor.Intent = Vector2.zero;
                     if (Finished) Go(name);
                     break;
                 case "FlipThrow":
-                    if (Impact(0.4f))
+                    if (HasTarget && CombatDistance <= RangedRange && Impact(0.4f))
                         for (int i = -1; i <= 1; i++) Actor.Shoot(Actor.TowardTarget + Vector2.up * (i * 0.35f), 8f, 0.2f);
+                    if (Pulses > 0 || CombatDistance > RangedRange) PositionForThrow();
                     if (Finished) Go(name);
                     break;
                 case "Hurt": if (Finished) Go(_flipped ? "FlipThrow" : "Throw"); break;
             }
+        }
+        private void PositionForThrow()
+        {
+            if (!HasTarget) { Actor.Motor.Intent = Vector2.zero; return; }
+            Actor.FaceTarget();
+            float difference = CombatDistance - Mathf.Min(Config.PreferredDistance, RangedRange);
+            float direction = Mathf.Abs(difference) > Config.SpacingTolerance ? Mathf.Sign(difference) : 0f;
+            float movement = Actor.Facing * direction;
+            float margin = Config.BodySize.x * 0.5f + 0.15f;
+            if ((movement < 0f && Actor.transform.position.x <= Actor.ArenaX.x + margin)
+                || (movement > 0f && Actor.transform.position.x >= Actor.ArenaX.y - margin)) movement = 0f;
+            Actor.Motor.Intent = Vector2.right * movement;
+            Actor.Motor.SpeedMultiplier = direction < 0f ? Config.RetreatSpeedMultiplier : 1f;
         }
     }
 }

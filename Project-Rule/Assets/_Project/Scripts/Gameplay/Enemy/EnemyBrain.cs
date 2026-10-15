@@ -16,12 +16,20 @@ namespace RuleGame.Gameplay.Enemy
         protected float Age, Elapsed, NextAttack, NextHurt, TransitionDuration;
         protected string TransitionName;
         protected int NextPhase, Pulses;
+        private float _staggerDamage, _lastStaggerHit;
         public int Phase { get; protected set; } = 1;
         public float Delta { get; private set; }
         public float ActionElapsed => Elapsed;
         public float SimulationAge => Age;
         public string StateName => Root.ActiveStateName == "Alive" ? Actions.ActiveStateName : TransitionName;
         public virtual bool DamageLocked => false;
+        protected bool HasTarget => Actor.HasTarget;
+        protected bool IsBoss => Config.Kind != EnemyKind.BrickMinion && Config.Kind != EnemyKind.BatMinion;
+        protected float CombatDistance => !HasTarget ? float.PositiveInfinity : Config.Flying
+            ? Actor.Distance : Mathf.Abs(Actor.Target.position.x - Actor.transform.position.x);
+        protected bool TargetInMeleeRange => HasTarget && CombatDistance <= Config.AttackRange
+            && Mathf.Abs(Actor.Target.position.y - Actor.transform.position.y) <= Config.BodySize.y * 0.4f;
+        protected float RangedRange => Mathf.Max(Config.AttackRange + Config.SpacingTolerance, Config.RangedRange);
         protected abstract string[] ActionNames { get; }
         protected virtual string FirstAction => "Idle";
         protected EnemyBrain(EnemyActor actor) { Actor = actor; }
@@ -72,6 +80,7 @@ namespace RuleGame.Gameplay.Enemy
         }
         public void Tick(float dt)
         {
+            if (dt <= 0f || Actor.Status.IsPaused) return;
             Delta = dt; Age += dt; Elapsed += dt;
             bool end = Actor.Status.Health <= 0f || (Config.Kind == EnemyKind.RabbitBoss && Actor.Status.Health < 20f);
             if (end && Root.ActiveStateName != "Dead")
@@ -86,20 +95,53 @@ namespace RuleGame.Gameplay.Enemy
         {
             Elapsed = 0f; Pulses = 0;
             Actor.FaceTarget();
-            Actor.Cue(name, Actor.Duration(name), name == "Idle" || name == "Walk" || name == "Fly");
+            float duration = name == "Hurt" && IsBoss
+                ? Mathf.Min(Actor.Duration(name), Mathf.Max(0.05f, Config.BossHurtDuration)) : Actor.Duration(name);
+            Actor.Cue(name, duration, name == "Idle" || name == "Walk" || name == "Fly");
+            // 从受击恢复后开始完整冷却，长受击动画不能吃掉保护窗口。
+            if (name == "Hurt") NextHurt = Age + (IsBoss ? duration : 0f) + Mathf.Max(0f, Config.HurtCooldown);
         }
         protected void Go(string action) => Actions.RequestStateChange(action, true);
         protected void Transition(string name, int phase, float duration = -1f)
         {
+            _staggerDamage = 0f;
             TransitionName = name; NextPhase = phase;
             TransitionDuration = duration > 0f ? duration : Actor.Duration(name);
             Root.RequestStateChange("Transition", true);
         }
         protected void WalkToTarget()
         {
-            if (Actor.Target == null) { Actor.Motor.Intent = Vector2.zero; return; }
+            if (!HasTarget) { Actor.Motor.Intent = Vector2.zero; return; }
             Actor.FaceTarget();
             Actor.Motor.Intent = Vector2.right * Actor.Facing;
+        }
+        /// <summary>移动中使用更窄的停止区间，避免距离边缘反复启停；后撤仍面朝目标。</summary>
+        protected void KeepDistance(string movement, float preferredDistance)
+        {
+            if (!HasTarget)
+            {
+                if (StateName != "Idle") Go("Idle");
+                Actor.Motor.Intent = Vector2.zero;
+                return;
+            }
+            float tolerance = Mathf.Max(0.1f, Config.SpacingTolerance);
+            float desired = Mathf.Max(tolerance, preferredDistance);
+            float stopBand = StateName == movement ? tolerance * 0.35f : tolerance;
+            float difference = CombatDistance - desired;
+            Actor.FaceTarget();
+            Vector2 intent = Mathf.Abs(difference) <= stopBand ? Vector2.zero
+                : Config.Flying ? Actor.TowardTarget * Mathf.Sign(difference)
+                : Vector2.right * Actor.Facing * Mathf.Sign(difference);
+            if (difference < -stopBand && intent.sqrMagnitude < 0.001f) intent = Vector2.left * Actor.Facing;
+            // 不主动退到场地边界外；贴边时留在原位选招。
+            float margin = Config.BodySize.x * 0.5f + 0.15f;
+            if ((intent.x < 0f && Actor.transform.position.x <= Actor.ArenaX.x + margin)
+                || (intent.x > 0f && Actor.transform.position.x >= Actor.ArenaX.y - margin)) intent.x = 0f;
+            string action = intent.sqrMagnitude > 0.001f ? movement : "Idle";
+            if (StateName != action) Go(action);
+            Actor.FaceTarget();
+            Actor.Motor.Intent = intent;
+            Actor.Motor.SpeedMultiplier = difference < 0f ? Config.RetreatSpeedMultiplier : 1f;
         }
         protected bool Impact(float fraction = -1f)
         {
@@ -119,19 +161,26 @@ namespace RuleGame.Gameplay.Enemy
         protected abstract void TickAction(string name);
         public virtual float ClampHealth(float health) => Mathf.Max(0f, health);
         public virtual void CommandAttack() { }
-        public virtual void OnHit()
+        public virtual void OnHit(float damage)
         {
-            if (Actor.Status.Health > 0f && Root.ActiveStateName == "Alive" && Age >= NextHurt)
+            if (damage <= 0f || Actor.Status.Health <= 0f || Root.ActiveStateName != "Alive"
+                || StateName == "Hurt" || Age < NextHurt) return;
+            if (IsBoss)
             {
-                NextHurt = Age + Config.HurtCooldown;
-                Go("Hurt");
+                if (Age - _lastStaggerHit > Mathf.Max(0.1f, Config.StaggerResetDelay)) _staggerDamage = 0f;
+                _lastStaggerHit = Age;
+                _staggerDamage += damage;
+                if (_staggerDamage < Mathf.Max(1f, Config.StaggerDamageThreshold)) return;
             }
+            _staggerDamage = 0f;
+            Go("Hurt");
         }
 
         private sealed class Data
         {
             public string Root, Action, Transition;
             public float Age, Elapsed, Attack, Hurt, Duration;
+            public float StaggerDamage, LastStaggerHit;
             public int Phase, NextPhase, Pulses;
             public object Extra;
         }
@@ -139,16 +188,19 @@ namespace RuleGame.Gameplay.Enemy
         {
             Root = Root.ActiveStateName, Action = Actions.ActiveStateName, Transition = TransitionName,
             Age = Age, Elapsed = Elapsed, Attack = NextAttack, Hurt = NextHurt, Duration = TransitionDuration,
-            Phase = Phase, NextPhase = NextPhase, Pulses = Pulses, Extra = CaptureExtra()
+            Phase = Phase, NextPhase = NextPhase, Pulses = Pulses, Extra = CaptureExtra(),
+            StaggerDamage = _staggerDamage, LastStaggerHit = _lastStaggerHit
         };
         public void Restore(object state)
         {
             if (!(state is Data data)) return;
             TransitionName = data.Transition; TransitionDuration = data.Duration;
+            Phase = data.Phase;
             Root.RequestStateChange(data.Root, true);
             if (data.Root == "Alive") Actions.RequestStateChange(data.Action, true);
             Age = data.Age; Elapsed = data.Elapsed; NextAttack = data.Attack; NextHurt = data.Hurt;
             Phase = data.Phase; NextPhase = data.NextPhase; Pulses = data.Pulses;
+            _staggerDamage = data.StaggerDamage; _lastStaggerHit = data.LastStaggerHit;
             RestoreExtra(data.Extra);
         }
         protected virtual object CaptureExtra() => null;
