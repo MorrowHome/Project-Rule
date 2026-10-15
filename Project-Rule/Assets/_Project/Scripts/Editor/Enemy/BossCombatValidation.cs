@@ -87,7 +87,7 @@ namespace RuleGame.Editor.Enemy
                 Target(a, 3.1f); Step(a); Target(a, 3.35f); Step(a);
                 Check(a.Brain.StateName == "Idle" && a.Motor.Intent == Vector2.zero, "距离边缘不反复启停");
             });
-            Add(EnemyKind.BatBoss, a => { Target(a, 2); Step(a); Check(a.Brain.StateName == "Evade" && a.Motor.SpeedMultiplier > 1, "蝙蝠近距主动脱离"); });
+            Add(EnemyKind.BatBoss, a => { Target(a, 2); Step(a); Check(a.Brain.StateName == "Slash", "蝙蝠近身优先斩击，不先逃走"); });
             Add(EnemyKind.BatBoss, a => { Target(a, 6); Step(a); Check(a.Brain.StateName == "Fly" && a.Motor.Intent.sqrMagnitude > 0, "蝙蝠先空中换位"); });
             Add(EnemyKind.BatBoss, a => { Target(a, 11); Step(a); Check(a.Brain.StateName == "Fly" && a.Motor.Intent.x > 0, "蝙蝠远距飞行追击"); });
             Add(EnemyKind.BatBoss, a => { Target(a, 2, 6); Step(a); Check(a.Brain.StateName != "Slash", "蝙蝠不向高差过大目标空斩"); });

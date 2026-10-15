@@ -12,10 +12,11 @@ namespace RuleGame.Gameplay.Enemy
         private Transform _trackedTarget;
         private Vector2 _restLeft, _restRight;
         private int _restDirection = 1;
+        private bool _preferMelee = true;
         protected override string FirstAction => "Fly";
         protected override string[] ActionNames => new[]
         {
-            "Idle", "Fly", "Evade", "Windup", "Dash", "Recover", "Slash", "Shake", "Roar", "WingSpread", "Point", "Hurt"
+            "Idle", "Fly", "Approach", "Evade", "Windup", "Dash", "Recover", "Slash", "Shake", "Roar", "WingSpread", "Point", "Hurt"
         };
         public BatBossBrain(EnemyActor actor) : base(actor) { }
         private float Tempo => 1f + (Phase - 1) * 0.15f;
@@ -60,6 +61,10 @@ namespace RuleGame.Gameplay.Enemy
                     Actor.Cue("Fly", Actor.Duration("Fly"), true);
                     ChooseFlightPoint();
                     break;
+                case "Approach":
+                    Actor.Cue("Fly", Actor.Duration("Fly"), true);
+                    ApproachTarget();
+                    break;
                 case "Evade":
                     _nextEvade = Age + Mathf.Max(0.5f, Config.BatEvadeCooldown / Tempo);
                     Vector2 away = HasTarget ? Position - (Vector2)Actor.Target.position : Vector2.right * _orbitSide;
@@ -96,8 +101,9 @@ namespace RuleGame.Gameplay.Enemy
             if (name != "Weak") return;
             _nextDash = Age + 0.8f;
             NextAttack = Age + 0.35f;
+            _preferMelee = true;
             _orbitSide = -_orbitSide;
-            Go("Fly");
+            Go("Approach");
         }
 
         protected override void TickAction(string name)
@@ -112,6 +118,7 @@ namespace RuleGame.Gameplay.Enemy
             {
                 case "Idle":
                 case "Fly":
+                    if (Age >= NextAttack && TargetInMeleeRange) { Go("Slash"); return; }
                     if (Actor.Distance < Config.AttackRange * 0.8f && Age >= _nextEvade)
                     { Go("Evade"); return; }
                     if (Age >= NextAttack && Actor.Distance <= RangedRange)
@@ -134,9 +141,20 @@ namespace RuleGame.Gameplay.Enemy
                     }
                     SteerTo(_destination, Tempo);
                     break;
+                case "Approach":
+                    // 高空休息后主动降至玩家侧面。近身阶段不因玩家靠近就立即撤离。
+                    if (Age >= NextAttack)
+                    {
+                        if (TargetInMeleeRange) { Go("Slash"); return; }
+                        if (Actor.Distance <= RangedRange && ((!_preferMelee && Elapsed >= .35f)
+                            || Elapsed >= Mathf.Max(.5f, Config.BatApproachDuration)))
+                        { ChooseRangedAttack(); return; }
+                    }
+                    ApproachTarget();
+                    break;
                 case "Evade":
                     Actor.FaceTarget(); SteerTo(_destination, 1.7f * Tempo);
-                    if (Finished || (Position - _destination).sqrMagnitude < 0.2f) Go("Fly");
+                    if (Finished || (Position - _destination).sqrMagnitude < 0.2f) Go("Approach");
                     break;
                 case "Windup":
                     Actor.Motor.Intent = Vector2.zero;
@@ -186,8 +204,28 @@ namespace RuleGame.Gameplay.Enemy
 
         private void FinishAttack()
         {
+            _preferMelee = StateName != "Slash";
             _orbitSide = -_orbitSide;
-            RestAfterAttack("Fly", Mathf.Max(0.2f, Config.AttackCooldown / Tempo));
+            RestAfterAttack("Approach", Mathf.Max(0.2f, Config.AttackCooldown / Tempo));
+        }
+        private void ApproachTarget()
+        {
+            if (!HasTarget) { Actor.Motor.Stop(); return; }
+            Vector2 target = Actor.Target.position;
+            float side = Mathf.Abs(Position.x - target.x) > .1f ? Mathf.Sign(Position.x - target.x) : _orbitSide;
+            _destination = ClampPoint(target + Vector2.right * (side * Mathf.Max(.5f, Config.BatApproachDistance))
+                + Actor.Motor.Up * Mathf.Max(0f, Config.BatApproachHeight));
+            SteerTo(_destination, Mathf.Max(.5f, Config.BatApproachSpeedMultiplier) * Tempo);
+        }
+        private void ChooseRangedAttack()
+        {
+            if (Phase >= 2 && Actor.Status.Energy >= Config.Energy - .01f && Age >= _nextRule)
+            { _nextRule = Age + 8f; Go("WingSpread"); return; }
+            if (Phase >= 2 && Actor.SummonCount > 0 && Age >= _nextPoint)
+            { _nextPoint = Age + 8f; Go("Point"); return; }
+            if (Phase >= 2 && Age >= _nextSummon && Actor.SummonCount < 3)
+            { _nextSummon = Age + 12f; _nextPoint = Age + 3f; Go("Roar"); return; }
+            Go(Age >= _nextDash ? "Windup" : "Shake");
         }
         protected override void TickRest()
         {
@@ -247,6 +285,7 @@ namespace RuleGame.Gameplay.Enemy
             public Transform Target;
             public Vector2 RestLeft, RestRight;
             public int RestDirection;
+            public bool PreferMelee;
         }
         protected override object CaptureExtra() => new FlightData
         {
@@ -254,7 +293,7 @@ namespace RuleGame.Gameplay.Enemy
             Evade = _nextEvade, Waypoint = _nextWaypoint, Side = _orbitSide, Destination = _destination,
             Direction = _dashDirection, TargetPosition = _lastTargetPosition, TargetVelocity = _targetVelocity,
             FlightPosition = _lastFlightPosition, Target = _trackedTarget,
-            RestLeft = _restLeft, RestRight = _restRight, RestDirection = _restDirection
+            RestLeft = _restLeft, RestRight = _restRight, RestDirection = _restDirection, PreferMelee = _preferMelee
         };
         protected override void RestoreExtra(object state)
         {
@@ -265,6 +304,7 @@ namespace RuleGame.Gameplay.Enemy
             _lastTargetPosition = data.TargetPosition; _targetVelocity = data.TargetVelocity;
             _lastFlightPosition = data.FlightPosition; _trackedTarget = data.Target;
             _restLeft = data.RestLeft; _restRight = data.RestRight; _restDirection = data.RestDirection;
+            _preferMelee = data.PreferMelee;
         }
     }
 }

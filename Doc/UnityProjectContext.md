@@ -64,6 +64,8 @@ manifest 已有 Coplay Unity MCP，仓库 `.mcp.json` 指向 `localhost:8080/mcp
 
 2026-10-16 三种地面 Boss 重做战术：积木新增 Advance 压近与分裂后有限连招、起手锁定投掷；发条改为瞄准/错位/分叉激光，预警站定，响铃锁定短冲撞，受阻或到边界后休息；兔子近身藏身撤退、墙角高抛，快弹/高抛交替，翻转后有限散射。新参数在 EnemyDefinition 对应三个分组。兔子素材仍为空，藏身用半透明占位表现，不加无敌或穿人。遵照本轮要求只运行 `BossCombatValidation.RunTacticsBatch` 做必要的定向验证，28 项通过且编译通过，不重跑前述历史完整套件。日志 `/tmp/rule-three-boss-tactics.log`，计数 `Logs/BossTacticsValidation.txt`。前述 119/21/9 是战术重做前的历史结果。
 
+2026-10-16 蝙蝠新增 Approach：高空休息结束后主动降至玩家侧面，近身优先连斩；近战后轮换远程或阶段招式，不再一直停留在高处，也不再刚接近就先撤离。距离/高度/尝试时长/速度均可调，近战偏好参加快照。EnemyDefinitionEditor 将全部 65 个参数、枚举选项和动作时长列表中文化，保留原字段名、Undo、多选与数值范围。本轮只运行蝙蝠相关的 22 项物理/行为检查并通过编译，未重复运行三 Boss 或全量验证。日志 `/tmp/rule-bat-approach-inspector.log`。用户同期在本地调整了三份 Definition、两份 Boss Prefab、字体和项目设置，未纳入本轮代码提交。
+
 ## 证据
 
 `CLAUDE.md`、`Doc/系统模块架构.md`、`Doc/敌人系统接入.md`；工程内 `Packages/manifest.json`、`ProjectSettings/{ProjectVersion.txt,QualitySettings.asset,GraphicsSettings.asset,EditorBuildSettings.asset,ProjectSettings.asset}`；一方 `.asmdef`；`Scripts/Gameplay/Enemy/*.cs`、`Gameplay/Player/EntityStatus.cs`、`PlayerController.cs`、`RuleReleaseService.cs`、`Scripts/Editor/Enemy/EnemyLabBuilder.cs`、`Scripts/Rules/RuleSystemDriver.cs`。

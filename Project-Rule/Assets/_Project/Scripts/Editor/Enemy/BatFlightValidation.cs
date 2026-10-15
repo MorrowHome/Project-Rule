@@ -22,7 +22,7 @@ namespace RuleGame.Editor.Enemy
         private static int _step, _passed;
         private static float _due, _windupAt, _peakSpeed, _age;
         private static double _deadline;
-        private static Vector2 _start, _evadeStart, _savedPosition, _savedVelocity;
+        private static Vector2 _start, _savedPosition, _savedVelocity;
         private static object _snapshot;
         private static SpriteRenderer _visual;
         private static EnemySpriteSequence _windupClip, _spreadClip;
@@ -154,20 +154,26 @@ namespace RuleGame.Editor.Enemy
                             "暂停冻结休息巡飞与休息时钟");
                         TimeManager.Instance.SetPaused(false); _step = 41; break;
                     case 41:
-                        if (_bat.Brain.StateName != "Fly") return;
+                        if (_bat.Brain.StateName != "Approach") return;
                         _trackingRest = false;
                         Check(_restPeakY >= Mathf.Lerp(_bat.ArenaY.x, _bat.ArenaY.y, _bat.Definition.BatRestHeightRatio) - .6f,
                             "休息巡飞抵达场地高处");
                         Check(_restMaxX - _restMinX > 1f && _restTurned, "高处巡飞会实际往返，不是原地悬停");
                         Check(_restAttacks == 0 && _restBounded, "休息全程不出招且身体保持在场地边界内");
-                        _bat.Target.position = _bat.transform.position + Vector3.right * 2.1f;
-                        Physics2D.SyncTransforms(); _step = 5; break;
+                        _bat.Target.position = new Vector3(0, .6f, 0);
+                        _savedPosition = _body.position;
+                        Physics2D.SyncTransforms(); _due = Time.fixedTime + .5f; _step = 5; break;
                     case 5:
-                        if (_bat.Brain.StateName != "Evade") return;
-                        Check(_bat.Motor.SpeedMultiplier > 1f, "玩家逼近时主动高速撤离");
-                        _evadeStart = _body.position; _due = Time.fixedTime + 0.35f; _step++; break;
+                        Check(_bat.Brain.StateName == "Approach" && _body.position.y < _savedPosition.y - .8f,
+                            "高空巡飞结束后主动下降接近地面玩家");
+                        Check(Vector2.Distance(_body.position, _bat.Target.position) < Vector2.Distance(_savedPosition, _bat.Target.position),
+                            "接近阶段实际缩短与玩家距离");
+                        _step++; break;
                     case 6:
-                        Check(Vector2.Distance(_body.position, _evadeStart) > 1f, "撤离实际改变空间位置");
+                        if (_bat.Brain.StateName != "Slash") return;
+                        Check(_bat.Distance <= _bat.Definition.AttackRange
+                            && Mathf.Abs(_body.position.y - _bat.Target.position.y) <= _bat.Definition.BodySize.y * .4f + .05f,
+                            "降至玩家可接战高度后发动近战，不提前逃走");
                         _bat.Target.position = new Vector3(30, 20, 0); Physics2D.SyncTransforms();
                         _due = Time.fixedTime + 3f; _step++; break;
                     case 7:

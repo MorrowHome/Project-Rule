@@ -84,6 +84,12 @@ namespace RuleGame.Gameplay.Enemy
         [Min(0.5f)] public float BatEvadeCooldown = 2.5f;
         [Min(0.1f)] public float BatEvadeDuration = 0.65f;
         [Min(0.1f)] public float BatRecoverDuration = 0.45f;
+        [Header("蝙蝠主动近身")]
+        [Min(0.5f)] public float BatApproachDistance = 2.5f;
+        [Tooltip("接近主角时的高度差，较低的值便于近战；身体仍受地面与场地边界限制。")]
+        [Min(0f)] public float BatApproachHeight = 0.8f;
+        [Min(0.5f)] public float BatApproachDuration = 2.4f;
+        [Min(0.5f)] public float BatApproachSpeedMultiplier = 1.15f;
         [Header("蝙蝠休息巡飞")]
         [Tooltip("休息目标高度占场地高度的比例，仍受身体与场地边界限制。")]
         [Range(0.5f, 0.95f)] public float BatRestHeightRatio = 0.8f;
