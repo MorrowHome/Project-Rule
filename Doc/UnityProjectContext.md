@@ -70,6 +70,8 @@ manifest 已有 Coplay Unity MCP，仓库 `.mcp.json` 指向 `localhost:8080/mcp
 
 2026-10-16 排查时钟冲撞起点跳变：用户本地 ClockBoss_Definition 已设 Time × Revert，JumpShake 完成后 CastRule 会同步回溯整个世界，包括施法者的位置、Brain 动作与锁定方向；旧回调随后无条件 Go(Charge) 会覆盖恢复结果，甚至使用快照中尚未锁定的零方向。ClockBossBrain 增加不随时间回退的恢复修订计数，施法期间发生恢复就结束旧回调，按恢复后的动作继续决策；未改变时间反转语义或用户资产配置。使用真实 TimeRevert 规则、费用服务和 SnapshotSystem，先复现旧位置 Idle 被强制替换为 Charge，修复后 RunClockRewindBatch 的 8 项检查通过，包含成功回溯/扣费、恢复动作、重新响铃选向，以及缓冲不足时从当时位置正常冲撞/不扣费。日志 /tmp/rule-clock-rewind-{baseline,fixed}.log。仅做这组定向验证，未重跑完整战斗套件。
 
+2026-10-16 时钟按三阶段重整独立指针：一阶段时针，二阶段加分针，击破既有弱点窗口后第三阶段加秒针。旧实现计时被身体动作/其他激光预警阻塞，显示另用全局时钟且先显示秒针占位；现在各针自己倒计时、只在自身出手时重置，解锁时从完整周期起算，显示直接读取 Brain 的对应进度。休息和阶段过渡统一冻结，身体忙时到期只保留一次待发，不积压补射。沿用 ClockHourInterval=12，新增 ClockMinuteInterval=6 与 ClockSecondInterval=3，Inspector 中文化，既有资源槽位顺序保持不变。RunClockHandsBatch 在 Unity 6000.6.4f1 隔离 Play Mode 中 30 项通过（含上一轮真实时间反转的 8 项），覆盖三阶段解锁/实际资源槽位、独立出手与预警不互阻、显示角度/暂停/快照、身体动作计时、休息和弱点失败路线；只运行该定向组，未重跑其他 Boss 或全量战斗。日志 /tmp/rule-clock-hands.log，结果 Logs/ClockHandsValidation.txt。同期其他任务正在修改兔子素材与相关源码，本次只提交时钟相关内容；EnemyLabBuilder 仅取三项周期默认值的独立改动。
+
 ## 证据
 
 `CLAUDE.md`、`Doc/系统模块架构.md`、`Doc/敌人系统接入.md`；工程内 `Packages/manifest.json`、`ProjectSettings/{ProjectVersion.txt,QualitySettings.asset,GraphicsSettings.asset,EditorBuildSettings.asset,ProjectSettings.asset}`；一方 `.asmdef`；`Scripts/Gameplay/Enemy/*.cs`、`Gameplay/Player/EntityStatus.cs`、`PlayerController.cs`、`RuleReleaseService.cs`、`Scripts/Editor/Enemy/EnemyLabBuilder.cs`、`Scripts/Rules/RuleSystemDriver.cs`。

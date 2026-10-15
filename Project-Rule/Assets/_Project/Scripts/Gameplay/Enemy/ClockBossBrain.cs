@@ -5,7 +5,9 @@ namespace RuleGame.Gameplay.Enemy
     /// <summary>瞄准激光与错位封路，预警后沿锁定路线冲撞；保留发条弱点与失败回溯。</summary>
     public sealed class ClockBossBrain : EnemyBrain
     {
-        private readonly float[] _hands = { 0.8f, 1.5f, 2.2f };
+        // 固定逻辑顺序：时针、分针、秒针。只由 Brain 推进，显示层不另开计时。
+        private readonly float[] _hands = new float[3];
+        private int _unlockedHands = 1;
         private float _nextHour;
         private float _chargeFacing;
         private int _beamVolleys;
@@ -13,8 +15,24 @@ namespace RuleGame.Gameplay.Enemy
         private uint _restoreRevision;
         protected override string[] ActionNames => new[] { "Idle", "Walk", "JumpShake", "Charge", "Hurt" };
         public override bool DamageLocked => Root.ActiveStateName == "Transition";
-        public ClockBossBrain(EnemyActor actor) : base(actor) { _nextHour = 2.4f; }
-        protected override object CaptureExtra() => new object[] { (float[])_hands.Clone(), _nextHour, _chargeFacing, _beamVolleys, _aimUntil };
+        public ClockBossBrain(EnemyActor actor) : base(actor)
+        {
+            _nextHour = 2.4f;
+            for (int i = 0; i < _hands.Length; i++) _hands[i] = HandInterval(i);
+        }
+        public float HandInterval(int hand) => Mathf.Max(.3f, hand == 0 ? Config.ClockHourInterval
+            : hand == 1 ? Config.ClockMinuteInterval : Config.ClockSecondInterval);
+        public float HandProgress(int hand) => hand >= 0 && hand < _unlockedHands
+            ? Mathf.Clamp01(1f - _hands[hand] / HandInterval(hand)) : 0f;
+        private void UnlockHands()
+        {
+            while (_unlockedHands < Phase)
+            {
+                _hands[_unlockedHands] = HandInterval(_unlockedHands);
+                _unlockedHands++;
+            }
+        }
+        protected override object CaptureExtra() => new object[] { (float[])_hands.Clone(), _nextHour, _chargeFacing, _beamVolleys, _aimUntil, _unlockedHands };
         protected override void RestoreExtra(object state)
         {
             if (!(state is object[] data)) return;
@@ -23,6 +41,7 @@ namespace RuleGame.Gameplay.Enemy
             System.Array.Copy((float[])data[0], _hands, 3); _nextHour = (float)data[1]; _chargeFacing = (float)data[2];
             _beamVolleys = (int)data[3];
             _aimUntil = (float)data[4];
+            _unlockedHands = (int)data[5];
         }
         public override float ClampHealth(float health)
         {
@@ -32,36 +51,37 @@ namespace RuleGame.Gameplay.Enemy
         protected override void TickGlobal()
         {
             if (Root.ActiveStateName != "Alive") return;
-            if (Phase == 1 && Actor.Status.Health <= Config.Health * 2f / 3f + 0.01f) Phase = 2;
+            if (Phase == 1 && Actor.Status.Health <= Config.Health * 2f / 3f + 0.01f)
+            {
+                Phase = 2;
+                UnlockHands();
+            }
             if (Phase == 2 && Actor.Status.Health <= Config.Health / 3f + 0.01f)
             {
                 Actor.WeakPoint?.Open(Config.ClockCoreHealth);
                 Transition("Stun", 2, Config.ClockCoreWindow);
                 return;
             }
-            // 休息时冻结指针出手时钟，结束后继续剩余间隔，不补发积压的激光。
+            // 每根已解锁的针独立倒计时。响铃、冲撞、受击和其他针预警都不会重置它。
+            // 休息及阶段过渡统一冻结；身体忙时到期的针只等待一次，不累计连发。
             if (IsResting || StateName == "Rest") return;
-            // 预警、冲撞与普通受击期间不叠加新激光；远处先靠近有效作战范围。
+            for (int i = 0; i < _unlockedHands; i++) _hands[i] = Mathf.Max(0f, _hands[i] - Delta);
             if (!HasTarget || CombatDistance > RangedRange + 2f || (StateName != "Idle" && StateName != "Walk")) return;
-            if (Age < _aimUntil) return;
-            if (TargetInMeleeRange && Age >= NextAttack && Age >= _nextHour)
-            {
-                Go("JumpShake");
-                return;
-            }
             bool volley = false;
-            for (int i = 0; i < Phase; i++)
+            if (_beamVolleys < Mathf.Max(1, Config.ClockBeamVolleysBeforeRest))
             {
-                if (_beamVolleys >= Mathf.Max(1, Config.ClockBeamVolleysBeforeRest)) break;
-                _hands[i] -= Delta;
-                if (_hands[i] > 0f) continue;
-                _hands[i] += 2f + i;
-                FireHand(i);
-                volley = true;
+                for (int i = 0; i < _unlockedHands; i++)
+                {
+                    if (_hands[i] > 0f) continue;
+                    _hands[i] = HandInterval(i);
+                    FireHand(i);
+                    volley = true;
+                }
             }
             if (volley) { _beamVolleys++; return; }
-            if (_beamVolleys >= Mathf.Max(1, Config.ClockBeamVolleysBeforeRest)
-                && (StateName == "Idle" || StateName == "Walk"))
+            // 预警只限制身体移动/冲撞，不阻塞其他指针自己的倒计时和到期出手。
+            if (Age < _aimUntil) return;
+            if (_beamVolleys >= Mathf.Max(1, Config.ClockBeamVolleysBeforeRest))
             {
                 if (Age >= _nextHour && CombatDistance <= RangedRange
                     && Mathf.Abs(Actor.Target.position.y - Actor.transform.position.y) <= Config.BodySize.y * .6f)
@@ -97,6 +117,7 @@ namespace RuleGame.Gameplay.Enemy
         }
         protected override void AfterTransition(string name)
         {
+            if (name == "Recover") UnlockHands();
             if (name == "Stun")
             {
                 Actor.WeakPoint?.Close();
@@ -105,7 +126,6 @@ namespace RuleGame.Gameplay.Enemy
             else if (name == "Rewind")
             {
                 Actor.Status.ApplyHealthDelta(Config.Health * 0.6f - Actor.Status.Health);
-                _hands[0] = 0.8f; _hands[1] = 1.5f;
                 _beamVolleys = 0; _nextHour = Age + 1f;
             }
         }

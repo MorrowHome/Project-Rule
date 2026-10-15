@@ -22,6 +22,7 @@ namespace RuleGame.Editor.Enemy
     {
         private const string Pending = "RuleGame.Enemy.CombatValidation";
         private const string Tactics = "RuleGame.Enemy.TacticsValidation";
+        private const string ClockHands = "RuleGame.Enemy.ClockHandsValidation";
         private const string ClockRewind = "RuleGame.Enemy.ClockRewindValidation";
         private const string SnapshotCamera = "RuleGame.Enemy.SnapshotCameraValidation";
         private static readonly List<EnemyActor> Actors = new List<EnemyActor>();
@@ -31,6 +32,12 @@ namespace RuleGame.Editor.Enemy
         private static bool _tactics;
         private static string Output => Environment.GetEnvironmentVariable("RULE_BOSS_OUTPUT")
             ?? Path.GetFullPath(Path.Combine(Application.dataPath, _tactics ? "../Logs/BossTacticsValidation.txt" : "../Logs/BossCombatValidation.txt"));
+
+        public static void RunClockHandsBatch()
+        {
+            SessionState.SetBool(ClockHands, true);
+            RunBatch();
+        }
 
         public static void RunClockRewindBatch()
         {
@@ -71,11 +78,18 @@ namespace RuleGame.Editor.Enemy
         private static void Begin()
         {
             TimeManager.Initialize(); WorldRegistry.Initialize();
-            if (SessionState.GetBool(ClockRewind, false))
+            if (SessionState.GetBool(ClockRewind, false) || SessionState.GetBool(ClockHands, false))
                 RuleSystem.Initialize(new TimeRevertCatalog());
             else RuleSystem.Initialize(ScriptableObject.CreateInstance<RuleCatalog>());
             _deadline = EditorApplication.timeSinceStartup + 30;
             _tactics = SessionState.GetBool(Tactics, false);
+            if (SessionState.GetBool(ClockHands, false))
+            {
+                AddClockHandCases();
+                AddClockRewindCases();
+                EditorApplication.update += AwaitReady;
+                return;
+            }
             if (SessionState.GetBool(ClockRewind, false))
             {
                 AddClockRewindCases();
@@ -322,6 +336,144 @@ namespace RuleGame.Editor.Enemy
             EditorApplication.update += AwaitReady;
         }
 
+        private static void AddClockHandCase(Action<EnemyActor> test)
+            => Add(EnemyKind.ClockBoss, test, config =>
+            {
+                config.ClockHourInterval = 2f;
+                config.ClockMinuteInterval = 1.2f;
+                config.ClockSecondInterval = .6f;
+                config.ClockBeamVolleysBeforeRest = 100;
+            });
+        private static void ClockPhaseTwo(EnemyActor actor)
+        {
+            actor.Status.ApplyHealthDelta(666f - actor.Status.Health);
+            Step(actor);
+        }
+        private static void ClockOpenCore(EnemyActor actor)
+        {
+            var core = new GameObject("ClockValidationCore");
+            core.AddComponent<BoxCollider2D>();
+            core.AddComponent<SpriteRenderer>();
+            actor.WeakPoint = core.AddComponent<EnemyWeakPoint>();
+            actor.WeakPoint.Owner = actor;
+            actor.Status.ApplyHealthDelta(330f - actor.Status.Health);
+            Step(actor);
+        }
+        private static ClockHandView CreateClockHandView(EnemyActor actor)
+        {
+            var go = new GameObject("ClockHands"); go.SetActive(false);
+            var view = go.AddComponent<ClockHandView>(); view.Actor = actor;
+            view.Hands = new Transform[3];
+            for (int i = 0; i < 3; i++)
+            {
+                view.Hands[i] = new GameObject("Hand" + i).transform;
+                view.Hands[i].SetParent(go.transform);
+            }
+            go.SetActive(true);
+            view.SendMessage("LateUpdate");
+            return view;
+        }
+        private static void AddClockHandCases()
+        {
+            AddClockHandCase(a =>
+            {
+                var brain = (ClockBossBrain)a.Brain;
+                var view = CreateClockHandView(a);
+                Check(view.Hands[2].gameObject.activeSelf && !view.Hands[1].gameObject.activeSelf && !view.Hands[0].gameObject.activeSelf,
+                    "一阶段只显示真正的时针资源");
+                Step(a, .3f); float hour = brain.HandProgress(0);
+                ClockPhaseTwo(a); view.SendMessage("LateUpdate");
+                Check(a.Brain.Phase == 2 && view.Hands[2].gameObject.activeSelf && view.Hands[1].gameObject.activeSelf && !view.Hands[0].gameObject.activeSelf,
+                    "二阶段保留时针并加入分针");
+                Check(brain.HandProgress(0) > hour && brain.HandProgress(1) < .05f && brain.HandProgress(2) == 0f,
+                    "解锁分针从自身周期起算，不重置时针或预跑秒针");
+                ClockOpenCore(a);
+                float h = brain.HandProgress(0), m = brain.HandProgress(1);
+                a.WeakPoint.ApplyDamage(new DamageInfo { Amount = a.Definition.ClockCoreHealth });
+                Step(a); Step(a, .61f); view.SendMessage("LateUpdate");
+                Check(a.Brain.Phase == 3 && view.Hands[0].gameObject.activeSelf && view.Hands[1].gameObject.activeSelf && view.Hands[2].gameObject.activeSelf,
+                    "击破发条进入三阶段才加入秒针");
+                Check(brain.HandProgress(0) == h && brain.HandProgress(1) == m && brain.HandProgress(2) == 0f,
+                    "阶段过渡冻结旧指针，秒针不继承全局时间");
+            });
+            AddClockHandCase(a =>
+            {
+                ClockPhaseTwo(a); Target(a, 6);
+                var brain = (ClockBossBrain)a.Brain;
+                var widths = new List<float>();
+                a.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.BeamSpawn) widths.Add(((EnemyBeam)cue.Subject).Width); };
+                Step(a, 1.19f);
+                Check(widths.Count == 1 && Mathf.Approximately(widths[0], .18f), "分针先按自己的周期发射");
+                float hour = brain.HandProgress(0);
+                Step(a, .8f);
+                Check(widths.Count == 2 && Mathf.Approximately(widths[1], .1f), "时针在分针预警期间仍可独立到期出手");
+                Check(hour > .5f && brain.HandProgress(1) > .6f, "单针出手不清空另一根的剩余进度");
+                var view = CreateClockHandView(a);
+                Quaternion rotation = view.Hands[1].localRotation;
+                object saved = a.CaptureSnapshotState();
+                float h = brain.HandProgress(0), m = brain.HandProgress(1);
+                a.Status.SetPaused(true); Step(a, 5); a.Status.SetPaused(false);
+                Check(brain.HandProgress(0) == h && brain.HandProgress(1) == m, "暂停冻结每根针的独立计时");
+                Step(a, .2f); a.RestoreSnapshotState(saved); view.SendMessage("LateUpdate");
+                Check(brain.HandProgress(0) == h && brain.HandProgress(1) == m && Quaternion.Angle(rotation, view.Hands[1].localRotation) < .01f,
+                    "快照恢复各针计时与对应显示角度");
+            });
+            AddClockHandCase(a =>
+            {
+                ClockPhaseTwo(a); ClockOpenCore(a);
+                a.WeakPoint.ApplyDamage(new DamageInfo { Amount = a.Definition.ClockCoreHealth });
+                Step(a); Step(a, .61f); Target(a, 6);
+                var brain = (ClockBossBrain)a.Brain;
+                int beams = 0, hours = 0;
+                a.Feedback += cue =>
+                {
+                    if (cue.Kind != EnemyFeedbackKind.BeamSpawn) return;
+                    beams++;
+                    if (Mathf.Approximately(((EnemyBeam)cue.Subject).Width, .1f)) hours++;
+                };
+                Step(a, .61f);
+                Check(beams == 2 && hours == 0, "三阶段秒针按快周期触发双线封路");
+                Step(a, .6f);
+                Check(beams == 5 && brain.HandProgress(0) > .6f, "秒针二次触发时分针独立加入，时针仍继续计时");
+                Step(a, .8f);
+                Check(hours == 1 && beams == 8, "三根针均能按自身周期攻击，不被最快针抢占");
+                int before = beams; Step(a, 50f);
+                Check(beams - before == 4, "长帧每根针最多触发一次，不补发积压连射");
+            });
+            AddClockHandCase(a =>
+            {
+                Target(a, 2); Step(a, 2.4f); Step(a, 1.06f);
+                var brain = (ClockBossBrain)a.Brain;
+                Check(a.Brain.StateName == "JumpShake", "激光收尾后身体仍可响铃");
+                float before = brain.HandProgress(0); Step(a, .3f);
+                Check(brain.HandProgress(0) > before, "响铃身体动作期间独立指针继续计时");
+                Step(a, 1.8f);
+                Check(a.Brain.StateName == "Charge" && brain.HandProgress(0) == 1f, "身体忙时到期指针保留一次待发，不覆盖冲撞");
+            });
+            AddClockHandCase(a =>
+            {
+                a.Definition.ClockBeamVolleysBeforeRest = 1;
+                Target(a, 6, 4); Step(a, 2.01f); Step(a, 1.06f);
+                var brain = (ClockBossBrain)a.Brain;
+                Check(a.Brain.StateName == "Rest", "独立指针攻击仍保留完整休息窗口");
+                float progress = brain.HandProgress(0);
+                Step(a, .2f);
+                Check(brain.HandProgress(0) == progress, "休息统一冻结指针，不在后台积压攻击");
+                Step(a, .31f); Step(a, .1f);
+                Check(a.Brain.StateName != "Rest" && brain.HandProgress(0) > progress, "休息后继续各自剩余进度");
+            });
+            AddClockHandCase(a =>
+            {
+                ClockPhaseTwo(a); Step(a, .3f);
+                var brain = (ClockBossBrain)a.Brain;
+                float h = brain.HandProgress(0), m = brain.HandProgress(1);
+                ClockOpenCore(a); Step(a, a.Definition.ClockCoreWindow + .01f); Step(a, 1f);
+                Check(a.Brain.Phase == 2 && a.Status.Health == 600f && brain.HandProgress(2) == 0f,
+                    "发条窗口失败仍回到二阶段，不提前解锁秒针");
+                Check(brain.HandProgress(0) == h && brain.HandProgress(1) == m, "失败恢复生命不重置已有指针周期");
+            });
+        }
+
         private sealed class TimeRevertCatalog : IRuleCatalog
         {
             private readonly RuleDef _definition = AssetDatabase.LoadAssetAtPath<RuleDef>("Assets/_Project/Data/Rules/TimeRevert.asset");
@@ -499,7 +651,7 @@ namespace RuleGame.Editor.Enemy
             {
                 EnemyBeam beam = null;
                 a.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.BeamSpawn) beam = (EnemyBeam)cue.Subject; };
-                Target(a, 6); Step(a, .81f);
+                Target(a, 6); Step(a, a.Definition.ClockHourInterval + .01f);
                 Check(beam != null && beam.Direction.x > .9f && beam.WarningDuration >= .7f, "发条瞄准激光保留预警");
                 Vector2 direction = beam.Direction; Target(a, -6); Step(a, .1f);
                 Check(beam.Direction == direction, "激光预警后不追着玩家转向");
@@ -516,7 +668,7 @@ namespace RuleGame.Editor.Enemy
             {
                 int beams = 0;
                 a.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.BeamSpawn) beams++; };
-                Target(a, 6); Step(a, .81f); Step(a, 2.01f);
+                Target(a, 6); Step(a, a.Definition.ClockHourInterval + .01f); Step(a, a.Definition.ClockHourInterval + .01f);
                 Step(a, a.Definition.ClockBeamWarning + .36f);
                 Check(beams == 2 && a.Brain.StateName == "JumpShake", "两轮激光后抓机会进入响铃冲撞");
                 Step(a, .2f);
@@ -577,7 +729,7 @@ namespace RuleGame.Editor.Enemy
                 });
         }
 
-        private static void Add(EnemyKind kind, Action<EnemyActor> test)
+        private static void Add(EnemyKind kind, Action<EnemyActor> test, Action<EnemyDefinition> configure = null)
         {
             var config = ScriptableObject.CreateInstance<EnemyDefinition>();
             config.Kind = kind; config.Health = 1000; config.HurtCooldown = 4;
@@ -590,6 +742,7 @@ namespace RuleGame.Editor.Enemy
                 new EnemyActionTiming { Action = "Pop", Duration = 0.2f },
                 new EnemyActionTiming { Action = "Split", Duration = 1 }
             };
+            configure?.Invoke(config);
             var go = new GameObject("BossValidation_" + Actors.Count); go.layer = 9; go.SetActive(false);
             var actor = go.AddComponent<EnemyActor>(); actor.Definition = config;
             actor.Target = new GameObject("Target_" + Actors.Count).transform;
@@ -626,7 +779,7 @@ namespace RuleGame.Editor.Enemy
         private static void Step(EnemyActor actor, float dt = 0.02f) => actor.Brain.Tick(dt);
         private static void AdvanceTo(EnemyActor actor, string state)
         {
-            for (int i = 0; i < 600 && actor.Brain.StateName != state; i++) Step(actor);
+            for (int i = 0; i < 2000 && actor.Brain.StateName != state; i++) Step(actor);
             Check(actor.Brain.StateName == state, "能够进入 " + state);
         }
         private static void Check(bool passed, string name)
@@ -640,6 +793,7 @@ namespace RuleGame.Editor.Enemy
             SessionState.SetBool(Tactics, false);
             SessionState.SetBool(SnapshotCamera, false);
             SessionState.SetBool(ClockRewind, false);
+            SessionState.SetBool(ClockHands, false);
             if (error != null) { _failed++; Debug.LogError(error); }
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(Output)));
             File.WriteAllText(Output, $"Passed: {_passed}\nFailed: {_failed}\n{error}\n");

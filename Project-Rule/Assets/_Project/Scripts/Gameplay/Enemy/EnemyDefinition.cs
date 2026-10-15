@@ -100,7 +100,11 @@ namespace RuleGame.Gameplay.Enemy
         public float ImpactFraction = 0.6f;
         public float RabbitCycle = 20f;
         public float RabbitThrowInterval = 2f;
-        public float ClockHourInterval = 12f;
+        [Header("时钟独立指针")]
+        [Tooltip("时针、分针、秒针各自转完一圈后攻击；休息和阶段过渡冻结，出手只重置对应指针。")]
+        [Min(0.3f)] public float ClockHourInterval = 12f;
+        [Min(0.3f)] public float ClockMinuteInterval = 6f;
+        [Min(0.3f)] public float ClockSecondInterval = 3f;
         public float ClockCoreWindow = 3f;
         public float ClockCoreHealth = 15f;
         public EnemyActionTiming[] Timings = Array.Empty<EnemyActionTiming>();

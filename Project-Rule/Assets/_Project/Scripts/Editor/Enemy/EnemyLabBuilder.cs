@@ -190,6 +190,9 @@ namespace RuleGame.Editor.Enemy
             definition.BatRestPatrolDistance = 2.5f;
             definition.BatRestSpeedMultiplier = 0.85f;
             definition.ClockBeamVolleysBeforeRest = 2;
+            definition.ClockHourInterval = 12f;
+            definition.ClockMinuteInterval = 6f;
+            definition.ClockSecondInterval = 3f;
             definition.Energy = 100f; definition.EnergyRegen = 2f;
             bool boss = kind != EnemyKind.BrickMinion && kind != EnemyKind.BatMinion;
             definition.HurtCooldown = boss ? 4f : 2f;
