@@ -8,19 +8,34 @@ using RuleGame.Infrastructure.Interaction;
 namespace RuleGame.Gameplay.Player
 {
     /// <summary>
-    /// 玩家移动控制。Kinematic 刚体 + <see cref="Rigidbody2D.Slide"/> 自行解算碰撞。
+    /// 玩家移动控制。<b>只做编排</b>：接线、按顺序调用七个职能类、把它们的结论翻译成事件。
     /// </summary>
     /// <remarks>
     /// <para><b>为什么是 Kinematic</b>（架构决策 D1）：移动完全由代码决定，手感可控。
     /// 代价是引擎不再替我们挡住静态地形 —— <c>MovePosition</c> 自己不处理碰撞 ——
-    /// 所以位移必须走 <see cref="Rigidbody2D.Slide"/>：它按 <c>surfaceUp</c> 解析接触面角度、
-    /// 在设定斜率内沿面滑行、并多次叠代处理拐角。</para>
+    /// 所以位移必须走 <c>Rigidbody2D.Slide</c>。刚体配置与 Slide 都归
+    /// <see cref="MotionMover"/>。</para>
     /// <para><b>重力自己积分</b>，并且直接读 <c>Physics2D.gravity</c>：重力规则改的是这个全局值，
-    /// 本类无需改一行就会跟着变 —— 「规则作用于世界本身」就是这样落地的。
-    /// 重力<b>不能</b>交给 <c>SlideMovement.gravity</c>：那只会得到匀速下落，没有加速度。</para>
-    /// <para><c>surfaceUp</c> 取当前重力的反方向。于是「重力反转」之后天花板就是新的地面，
-    /// 接地判定与起跳方向会自动跟着翻；「重力失效」时沿用上一次的方向，避免方向退化成零向量。</para>
-    /// <para>物理运算写在 <see cref="FixedUpdate"/>（Unity 2D 物理要求）。</para>
+    /// 本类无需改一行就会跟着变 —— 「规则作用于世界本身」就是这样落地的。</para>
+    /// <para><b>七个职能类</b>（都住在本目录，都是普通 C# 类，构造函数注入）：</para>
+    /// <list type="bullet">
+    /// <item><see cref="PlayerInput"/> —— 输入与门禁，产出本帧意图</item>
+    /// <item><see cref="ContactSensor"/> —— 接地 / 左右墙 / 脚下摩擦 / 「上」方向</item>
+    /// <item><see cref="JumpSolver"/> —— 土狼时间、跳跃缓冲、三档起跳优先级</item>
+    /// <item><see cref="DashSolver"/> —— 冲刺计时、次数、冷却、方向</item>
+    /// <item><see cref="AttackSolver"/> —— 攻击连段三阶段（判定本身留在本类）</item>
+    /// <item><see cref="VelocitySolver"/> —— 速度解算，**无状态纯函数**</item>
+    /// <item><see cref="MotionMover"/> —— **唯一持有速度的地方**，位移与碰撞响应</item>
+    /// </list>
+    /// <para>依赖是单向的：本类认识它们，它们互相不认识，只通过「传进去的参数、返回来的结果」交接。
+    /// 所以规则读值（<see cref="FrictionScale"/> / <see cref="FrictionInverted"/>）留在本类 ——
+    /// <see cref="VelocitySolver"/> 因此**不认识规则系统**。</para>
+    /// <para><b>边沿走返回，状态走属性</b>：一次性动作（起跳、起冲、挥刀、落地）靠返回值带出来，
+    /// 持续条件（接地、剩几段跳、连段打到第几刀）走只读属性。</para>
+    /// <para>⚠️ 类名与公开面**冻结**：三个资产（<c>LevelRuntime.prefab</c> /
+    /// <c>Test_RuleSystem.unity</c> / <c>Test_RuleWheel.unity</c>）序列化了本组件，
+    /// <c>PlayerAnimationDriver</c> / <c>P3DebugOverlay</c> / <c>RuleWheelPresenter</c> 等
+    /// 六个文件引用它。重构只搬内脏，不换壳。</para>
     /// </remarks>
     [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
     public class PlayerController : MonoBehaviour, IKnockbackReceiver, IRuleSelectionInputGate
@@ -28,6 +43,9 @@ namespace RuleGame.Gameplay.Player
         // ==================================================================
         //  序列化字段
         // ==================================================================
+        //
+        // ⚠️ 字段名与顺序**不要动**：三个资产里存着这些值的现值，
+        //    改名等于让它们全部回落到代码默认值。
 
         [Header("输入")]
         [Tooltip("拖入 Assets/_Project/Settings/InputSystem_Actions.inputactions")]
@@ -66,8 +84,6 @@ namespace RuleGame.Gameplay.Player
                  "所以「冰面」= 给地面挂一个摩擦很小的 PhysicsMaterial2D。")]
         [SerializeField] private float _frictionDecel = 40f;
 
-        private const float MinimumTurnBrakeDecel = 12f;
-
         [Tooltip("空中水平加速度：能左右改向，但不瞬移。0 = 空中完全锁死横向速度；" +
                  "调到 1000 左右约等于「空中和地面一样跟手」。")]
         [SerializeField] private float _airAccel = 40f;
@@ -101,6 +117,10 @@ namespace RuleGame.Gameplay.Player
         [SerializeField] private float _dashCooldown = 0.25f;
 
         [Header("蹬墙跳")]
+        [Tooltip("**贴墙能力总开关**（贴墙下滑 + 蹬墙跳）。这是**这个实体自己的能力**，" +
+                 "不是玩家特权 —— 敌人配一下就有、关掉就没有。")]
+        [SerializeField] private bool _wallClimbEnabled = true;
+
         [Tooltip("横向墙面探测距离（米）。")]
         [SerializeField] private float _wallProbeDistance = 0.08f;
 
@@ -133,8 +153,10 @@ namespace RuleGame.Gameplay.Player
         [Tooltip("贴地吸附距离：下坡时把角色按回地面，0 = 关闭。")]
         [SerializeField] private float _surfaceAnchorDistance = 0.05f;
 
-        [Tooltip("可沿其滑行的最大坡面角度。竖直墙是 90°，所以必须小于 90 才会被挡住。")]
-        [SerializeField] private float _surfaceSlideAngle = 89f;
+        [Tooltip("可沿其滑行的最大坡面角度（引擎限制 0~90）。**必须给 90**。" +
+                 "给小于 90 的值时，竖直墙（90°）会把整个滑动取消 —— 不是只挡住顶墙那一份，" +
+                 "而是把沿墙下滑的竖直分量一起丢掉，表现为「速度满速但位置不动」。")]
+        [SerializeField] private float _surfaceSlideAngle = 90f;
 
         [Header("击退")]
         [Tooltip("外部冲量每秒的衰减量。")]
@@ -171,118 +193,26 @@ namespace RuleGame.Gameplay.Player
         [SerializeField] private float _energyPerHit = 4f;
 
         // ==================================================================
-        //  运行时状态
+        //  职能类
         // ==================================================================
 
-        private readonly RaycastHit2D[] _groundHits = new RaycastHit2D[4];
-        private readonly RaycastHit2D[] _wallHits   = new RaycastHit2D[4];
-
-        private Rigidbody2D _rb;
-        private Vector2 _velocity;          // 自己维护的速度：重力 / 输入 / 跳跃
-        private Vector2 _externalVelocity;  // 击退等外部冲量，独立衰减，不掺进重力与摩擦
-        private Vector2 _moveInput;
-        private Vector2 _up = Vector2.up;   // 当前「上」方向 = 重力反方向
-        private bool    _jumpQueued;
-        private bool    _jumpCutQueued;
-        private bool    _grounded;
-        private bool    _wallLeft;              // 左侧贴着可蹬的竖墙
-        private bool    _wallRight;             // 右侧贴着可蹬的竖墙
-        private bool    _wallSliding;           // 正在贴墙缓慢下滑
-        private float   _groundFriction = 1f;   // 脚下这块地的摩擦系数（来自它的 PhysicsMaterial2D）
-        private float   _coyoteLeft;
-        private float   _bufferLeft;
-        private int     _jumpsUsed;             // 本次落地以来已用掉几段跳
-        private float   _facing = 1f;
-
-        /// <summary>连段的三个阶段。见 <c>Doc/美术与动画接入方案.md</c> §十。</summary>
-        private enum AttackPhase { None, Windup, Active, Recover }
-
-        private AttackPhase _attackPhase = AttackPhase.None;
-        private float   _attackTimer;
-        private int     _comboIndex = -1;      // 未出招时为 −1，出招后 0、1、2…
-        private bool    _attackBuffered;       // 起手 / 生效段按下 → 留到收招段兑现
-
-        private bool    _dashQueued;            // 本视觉帧按下了冲刺
-        private float   _dashLeft;              // 冲刺剩余秒数，> 0 表示正在冲刺
-        private Vector2 _dashDirection;
-        private int     _dashesLeft;            // 还能冲几次，落地回满
-        private float   _dashCooldownLeft;
-
-        private InputAction _moveAction;
-        private InputAction _jumpAction;
-        private InputAction _attackAction;
-        private InputAction _dashAction;
-        private int _inputBlocks;
-        private int _inputResumeFrame;
-
-        /// <summary>UI 仅接管输入；慢时间里的重力、碰撞与外部冲量仍走原 FixedUpdate。</summary>
-        public IDisposable BlockGameplayInput()
-        {
-            _inputBlocks++;
-            return new InputBlock(this);
-        }
-
-        private sealed class InputBlock : IDisposable
-        {
-            private PlayerController _owner;
-            public InputBlock(PlayerController owner) => _owner = owner;
-            public void Dispose()
-            {
-                if (_owner == null) return;
-                _owner._inputBlocks = Mathf.Max(0, _owner._inputBlocks - 1);
-                // 选择器在玩家 Update 前结束时，这一帧的攻击键仍属于 UI，不能再次挥刀。
-                _owner._inputResumeFrame = Time.frameCount + 1;
-                _owner = null;
-            }
-        }
-
-        /// <summary>是否站在支撑面上（供踩踏判定与调试用）。</summary>
-        public bool IsGrounded => _grounded;
-
-        /// <summary>
-        /// 当前速度（自己维护的那个，<b>不含</b>击退等外部冲量）。
-        /// </summary>
-        /// <remarks>给表现层用（动画判上升/下降、跑步快慢）。玩法逻辑不要读它做判断 ——
-        /// 那样会把「速度怎么算」泄漏到外面。</remarks>
-        public Vector2 Velocity => _velocity;
-
-        /// <summary>
-        /// 当前朝向：+1 右，−1 左。
-        /// </summary>
-        /// <remarks>取的是**换算后**的方向，所以「摩擦 × 反转」生效时按右往左走，
-        /// 这里自动是 −1 —— 表现层不需要自己判断方向。</remarks>
-        public float Facing => _facing;
-
-        /// <summary>本帧读到的**原始**移动输入（未经摩擦反转换算）。供调试浮层显示。</summary>
-        public Vector2 MoveInput => _moveInput;
-
-        /// <summary>左侧是否贴着可蹬的竖墙（供调试浮层显示）。</summary>
-        public bool WallLeft => _wallLeft;
-
-        /// <summary>右侧是否贴着可蹬的竖墙（供调试浮层显示）。</summary>
-        public bool WallRight => _wallRight;
-
-        /// <summary>是否正在贴墙缓慢下滑（供调试浮层显示）。</summary>
-        public bool IsWallSliding => _wallSliding;
-
-        /// <summary>总跳数上限 = 第一段 + 空中段。</summary>
-        public int MaxJumps => 1 + _maxAirJumps;
-
-        /// <summary>本次落地以来还剩几段跳（供 HUD / 调试浮层显示）。</summary>
-        public int JumpsLeft => Mathf.Max(MaxJumps - _jumpsUsed, 0);
-
-        /// <summary>暂停中不读输入、不推进物理。</summary>
-        /// <remarks>暂停状态由 <c>EntityStatus.SetPaused</c> 驱动 —— 暂停持有者（P1 的时间管理器）负责调用。</remarks>
-        private bool IsPaused => _status != null && _status.IsPaused;
+        private PlayerInput   _input;
+        private ContactSensor _contacts;
+        private JumpSolver    _jump;
+        private DashSolver    _dash;
+        private AttackSolver  _attack;
+        private MotionMover   _mover;
 
         // ==================================================================
         //  表现层事件
         // ==================================================================
         //
-        // ⚠️ 这些是**边沿事件**（一次性），不是状态 —— 状态用上面那些只读属性读。
+        // ⚠️ 这些是**边沿事件**（一次性），不是状态 —— 状态用下面那些只读属性读。
         //    分成两种是因为表现层两样都要：「现在是什么」（持续条件，每帧重写就够）
         //    和「刚刚发生了什么」（一次性动作）。后者靠每帧采样很容易漏掉或重复计一次
         //    （比如 0.33 秒的落地只有 4 个物理帧），所以直接从源头发事件。
+        //
+        //    事件名与签名**冻结**：PlayerAnimationDriver 订阅着它们。
 
         /// <summary>**地面跳 / 土狼跳**瞬间。</summary>
         /// <remarks>二段跳走的是 <see cref="OnAirJumped"/>，不在这里发 —— 两者的表现不同
@@ -308,64 +238,32 @@ namespace RuleGame.Gameplay.Player
         /// （起手播拔剑、接续播下一段）。</remarks>
         public event Action OnAttacked;
 
-        /// <summary>当前连段打到第几刀（0 起数）；没在出招时是 −1。</summary>
-        public int AttackComboIndex => _comboIndex;
-
         // ==================================================================
         //  生命周期
         // ==================================================================
 
         private void Awake()
         {
-            _rb = GetComponent<Rigidbody2D>();
-
-            // Kinematic + 自己解算（见类注释）。gravityScale 置 0：重力在 FixedUpdate 里自己积分。
-            _rb.bodyType = RigidbodyType2D.Kinematic;
-            _rb.gravityScale = 0f;
-            _rb.linearDamping = 0f;
-            _rb.constraints = RigidbodyConstraints2D.FreezeRotation;           // 平台角色不翻滚
-            // 插值：物理是 50Hz 定步长，渲染帧率更高。不开插值的话 Transform 只在物理帧更新，
-            // 摄像机会很顺、角色却在"跳格子"（横向移动时最明显）。
-            _rb.interpolation = RigidbodyInterpolation2D.Interpolate;
-            _rb.useFullKinematicContacts = true;                              // Kinematic 与静态体 / 推动物之间也要产生接触
-
             if (_status == null) _status = GetComponent<EntityStatus>();
 
-            UpdateUp();                                                       // 起手就有正确的「上」方向
+            var body = GetComponent<Rigidbody2D>();
 
-            if (_inputActions != null)
-            {
-                _moveAction   = _inputActions.FindAction("Player/Move",   false);
-                _jumpAction   = _inputActions.FindAction("Player/Jump",   false);
-                _attackAction = _inputActions.FindAction("Player/Attack", false);
-                // ⚠️ 冲刺复用输入资源里**没有任何代码使用**的 Player/Crouch（C 键 /
-                //    手柄 buttonEast）—— 这样不必动团队共享的 .inputactions。
-                //    等输入方案定稿，把它重命名成 Dash 再改这一行即可（详见 Doc/玩家动作设计.md §3.6）。
-                //    （曾用过 Player/Sprint=左 Shift，按你的意见换掉了。）
-                _dashAction   = _inputActions.FindAction("Player/Crouch", false);
-            }
+            _input    = new PlayerInput(_inputActions);
+            _contacts = new ContactSensor(body);
+            _jump     = new JumpSolver();
+            _dash     = new DashSolver();
+            _attack   = new AttackSolver();
+            _mover    = new MotionMover(body);          // 刚体的 Kinematic 配置在这里面
 
-            _dashesLeft = _maxDashes;           // 起手就有冲刺，不必先落地一次
+            _dash.Reset(BuildTuning());                 // 起手就有冲刺，不必先落地一次
 
-            if (_moveAction == null)
+            if (!_input.IsReady)
                 Debug.LogWarning("[PlayerController] 未找到输入动作，请把 InputSystem_Actions 拖到 _inputActions。", this);
         }
 
-        private void OnEnable()
-        {
-            _moveAction?.Enable();
-            _jumpAction?.Enable();
-            _attackAction?.Enable();
-            _dashAction?.Enable();
-        }
+        private void OnEnable()  => _input?.Enable();
 
-        private void OnDisable()
-        {
-            _moveAction?.Disable();
-            _jumpAction?.Disable();
-            _attackAction?.Disable();
-            _dashAction?.Disable();
-        }
+        private void OnDisable() => _input?.Disable();
 
         // ==================================================================
         //  输入（视觉帧）
@@ -373,28 +271,8 @@ namespace RuleGame.Gameplay.Player
 
         private void Update()
         {
-            if (IsPaused || _inputBlocks > 0 || Time.frameCount < _inputResumeFrame)
-            {
-                _moveInput = Vector2.zero;
-                _jumpQueued = false;
-                _jumpCutQueued = false;
-                _dashQueued = false;
-                return;
-            }
-
-            _moveInput = _moveAction?.ReadValue<Vector2>() ?? Vector2.zero;
-
-            if (_jumpAction != null && _jumpAction.WasPressedThisFrame())
-                _jumpQueued = true;
-
-            if (_jumpAction != null && _jumpAction.WasReleasedThisFrame())
-                _jumpCutQueued = true;      // 可变跳跃高度：松键那一刻削速
-
-            if (_dashAction != null && _dashAction.WasPressedThisFrame())
-                _dashQueued = true;
-
-            if (_attackAction != null && _attackAction.WasPressedThisFrame())
-                QueueAttack();
+            // 暂停 / 被 UI 接管 / 门禁刚释放的恢复帧 —— 三种都不读键，并清空粘滞标记。
+            _input.Tick(IsPaused || _input.IsSuppressed);
         }
 
         // ==================================================================
@@ -403,483 +281,142 @@ namespace RuleGame.Gameplay.Player
 
         private void FixedUpdate()
         {
+            // 暂停：速度清零、整帧不跑。冲刺计时与连段计时因此天然冻结
+            //（文档 §5）—— 不需要额外的暂停分支。
             if (IsPaused)
             {
-                // 暂停期间清空速度：否则重力会在暂停的每一帧继续堆积，
-                // 恢复的瞬间一次性位移出去。
-                _velocity         = Vector2.zero;
-                _externalVelocity = Vector2.zero;
+                _mover.Halt();
                 return;
             }
 
             float dt = Time.fixedDeltaTime;
-            UpdateUp();
 
-            // ① 接地：查询刚体自身的全部碰撞体，不需要额外的地面检测子物体。
-            //    放在移动之前，本帧的水平处理才能用到最新的接地状态。
-            bool wasGrounded = _grounded;
-            _grounded  = ProbeGround();
-            _wallLeft  = ProbeWall(Vector2.left);
-            _wallRight = ProbeWall(Vector2.right);
+            // 参数每物理帧重打包一次（运行期改字段立刻生效），这一帧内共用同一份。
+            MotionTuning tuning = BuildTuning();
 
-            // 落地边沿：属性给的是「有没有踩着」，这里补一个「这一帧刚踩上」——
-            // 表现层要播一次落地动作，需要精确的起点，靠每帧采样接地状态是拿不到的。
-            if (_grounded && !wasGrounded) OnLanded?.Invoke();
+            // ① 接触：Sense 内部先解出「上」方向（探测得先知道哪边是下），再扫地面与左右墙。
+            PlayerInput.State   input   = _input.Sample();
+            ContactSensor.State contact = _contacts.Sense(tuning);
+            if (contact.JustLanded) OnLanded?.Invoke();
 
-            // ② 跳数与土狼时间：与冲刺无关，一直推进 —— 冲刺结束的下一帧就要拿到正确的跳数
-            if (_grounded)
+            // ③ 冲刺：计时 / 次数 / 冷却 / 方向。Dashing 是后面几步的总开关。
+            DashSolver.Decision dash = _dash.Advance(tuning, input, contact, _mover.Facing, dt);
+            if (dash.Started) OnDashed?.Invoke();
+
+            // ③′ 攻击连段：起手 → 生效 → 收招。判定本身留在本类（要用 CombatSystem 与位置）。
+            AttackSolver.Decision attack = _attack.Advance(tuning, input.AttackPressed, dt);
+            if (attack.Swing)  OnAttacked?.Invoke();
+            if (attack.Strike) PerformAttackHit();
+
+            // ②⑦⑧ 跳跃：跳数与土狼时间一直推进；冲刺期间只推进计数、不消费输入。
+            JumpSolver.Decision jump = _jump.Solve(tuning, input, contact, dash.Dashing, dt);
+            switch (jump.Kind)
             {
-                _coyoteLeft = _coyoteTime;
-                _jumpsUsed  = 0;                      // 落地回满跳数
-            }
-            else
-            {
-                _coyoteLeft -= dt;
-
-                // 土狼窗口一关，第一段跳就当作已用掉 —— 从平台走下来之后只剩空中段。
-                // ⚠️ 窗口**内**不受这条影响：那时第一段 + 空中段都还在，
-                //    所以「走下来再跳」和「站着跳」拿到的是同样的跳数。
-                if (_coyoteLeft <= 0f) _jumpsUsed = Mathf.Max(_jumpsUsed, 1);
+                case JumpSolver.JumpKind.Ground: OnJumped?.Invoke();     break;
+                case JumpSolver.JumpKind.Wall:   OnWallJumped?.Invoke(); break;
+                case JumpSolver.JumpKind.Air:    OnAirJumped?.Invoke();  break;
             }
 
-            // ③ 冲刺：次数 / 计时 / 冷却。
-            UpdateDash(dt);
+            // ④④′⑤⑥⑦⑧ 速度解算：纯计算。速度从参数进、从返回值出。
+            var frame = new MotionFrame(tuning, input, contact, jump, dash,
+                                        Physics2D.gravity, _mover.Facing,
+                                        FrictionScale, FrictionInverted);
 
-            // ③′ 攻击连段：起手 → 生效（在这里开一次判定）→ 收招。
-            UpdateAttack(dt);
+            _mover.Apply(VelocitySolver.Solve(_mover.Velocity, frame, dt));   // 唯一一次写速度
 
-            // ④ 重力：自己积分（要的是加速度，所以累加，不交给 SlideMovement.gravity）。
-            //    下落时再乘一次 _fallGravityMultiplier —— 落得比升得快，滞空更紧凑。
-            //    ⚠️ 冲刺期间**不积分**：再叠一份下落加速度，空中冲刺会变成一条又陡又快的斜线，
-            //       非常突兀。停掉积分后竖直速度**原样保留**（不归零、也不加速）——
-            //       这正是「冲刺不动竖直方向的大小」：它不给你加竖直速度，也不拿走你的。
-            if (!IsDashing)
-            {
-                bool falling = Vector2.Dot(_velocity, _up) < 0f;
-                _velocity += Physics2D.gravity * (_gravityScale * (falling ? _fallGravityMultiplier : 1f)) * dt;
-            }
-
-            // 下落速度上限（终端速度）：长距离下落不会一路加速，读起来更稳
-            float alongUp = Vector2.Dot(_velocity, _up);
-            if (alongUp < -_maxFallSpeed)
-                _velocity -= _up * (alongUp + _maxFallSpeed);
-
-            // ④′ 贴墙下滑：贴到墙那一瞬间，下落速度被**墙面摩擦**吃掉 —— 不是瞬间夹住，
-            //     而是按 _wallSlideImpactDecel 在很短的时间里收到 _wallSlideSpeed，之后等速缓降。
-            //
-            //     摩擦力只作用在「比缓降速度更快」的下落上；比它慢的不去动它，
-            //     交给重力自己慢慢加速到该速度再来接住。
-            float alongWall = Vector2.Dot(_velocity, _up);
-            bool pressingIntoWall = (_wallLeft && _moveInput.x < -0.01f)
-                                 || (_wallRight && _moveInput.x > 0.01f);
-            _wallSliding = !_grounded && !IsDashing && alongWall <= 0f && pressingIntoWall;
-
-            if (_wallSliding && alongWall < -_wallSlideSpeed)
-            {
-                float absorbed = Mathf.MoveTowards(alongWall, -_wallSlideSpeed,
-                                                   _wallSlideImpactDecel * dt);
-                _velocity = SetAlong(_velocity, _up, absorbed);
-            }
-
-            // ⑤ 水平：冲刺接管，否则按住方向时朝最大速度「加速」（不是瞬间给速度）
-            if (IsDashing)
-            {
-                // 冲刺**只改水平速度**：竖直方向的大小不动（那是重力与跳跃的领地）。
-                _velocity.x = _dashDirection.x * _dashSpeed;
-            }
-            else if (_grounded)
-            {
-                float frictionScale = FrictionScale;
-                float friction = _groundFriction * frictionScale;
-                if (Mathf.Abs(_moveInput.x) > 0.01f)
-                {
-                    // 摩擦反转（摩擦 × 反转）：摩擦力的方向翻转 → 地面把你往「按键的反方向」送，
-                    // 于是按右就往左走。**只作用于接地时** —— 语义是摩擦力的方向，空中没有摩擦。
-                    // 所以跳跃可以「逃出」反转区。这也是它与被砍掉的「方向」属性的区别：
-                    // 改的是世界给你的力，不是你的按键映射（策划案 D3）。
-                    float direction = ResolveMoveDirection(_moveInput.x, FrictionInverted);
-                    _facing = Mathf.Sign(direction);
-
-                    // 反向输入先按抓地力刹到零，再加速反向；低摩擦面因此保留惯性。
-                    if (_velocity.x * direction < -0.01f)
-                    {
-                        float turnBrake = Mathf.Max(_frictionDecel * _groundFriction,
-                                                   MinimumTurnBrakeDecel) * frictionScale;
-                        _velocity.x = Mathf.MoveTowards(_velocity.x, 0f, turnBrake * dt);
-                    }
-                    else
-                    {
-                        _velocity.x = Mathf.MoveTowards(_velocity.x, direction * _moveSpeedMax,
-                                                        _groundAccel * dt);
-                    }
-                }
-                else
-                {
-                    // 减速度 = 基准 × 脚下地面材质的摩擦 × 摩擦规则缩放。
-                    // 两者相乘：地形可以做成冰面，规则也能把整个世界变成冰面。
-                    // ⚠️ 反转**不翻这里的符号** —— 减速力反向会变成"越滑越快"，直接失控。
-                    _velocity.x = Mathf.MoveTowards(_velocity.x, 0f, _frictionDecel * friction * dt);
-                }
-            }
-            else if (Mathf.Abs(_moveInput.x) > 0.01f)
-            {
-                _facing = Mathf.Sign(_moveInput.x);
-                _velocity.x = Mathf.MoveTowards(_velocity.x, _moveInput.x * _moveSpeedMax, _airAccel * dt);
-            }
-            else
-            {
-                _velocity.x = Mathf.MoveTowards(_velocity.x, 0f, _airDrag * dt);
-            }
-
-            // ⑥ 贴地时抵消朝地面累积的速度
-            if (_grounded && Vector2.Dot(_velocity, _up) < 0f)
-                _velocity -= _up * Vector2.Dot(_velocity, _up);
-
-            // ⑦ 跳跃：输入缓冲（落地前提前按也算数）+ 多段跳
-            //    冲刺期间整块不跑：冲刺中按下的跳跃会被**留到冲刺结束那一刻**兑现
-            //    （跳跃缓冲通常短于冲刺剩余时间，衔接不上就是正常放弃）。
-            if (!IsDashing)
-            {
-                if (_jumpQueued)
-                {
-                    _bufferLeft = _jumpBuffer;
-                    _jumpQueued = false;
-                }
-                else if (_bufferLeft > 0f)
-                {
-                    _bufferLeft -= dt;
-                }
-
-                if (_bufferLeft > 0f)
-                {
-                    // 优先级：地面 / 土狼跳  >  蹬墙跳  >  空中跳
-                    // ⚠️ 蹬墙必须排在**空中跳之前**：否则贴着墙、跳数还没用完时，
-                    //    空中跳会抢先把这一下吃掉，玩家得先把二段跳耗完才蹬得上墙 —— 反直觉。
-                    bool  groundJump = _grounded || _coyoteLeft > 0f;
-                    float wallPush   = ResolveWallJumpPush(_wallLeft, _wallRight, _moveInput.x, _grounded,
-                                                           _wallJumpPushSpeed, _wallClimbPushSpeed);
-
-                    if (groundJump)
-                    {
-                        _velocity   = SetAlong(_velocity, _up, _jumpSpeed);
-                        _bufferLeft = 0f;                 // 一次输入只跳一段
-                        _coyoteLeft = 0f;                 // 起跳后土狼窗口作废，否则按住方向就能连跳
-                        _jumpsUsed  = Mathf.Min(_jumpsUsed + 1, MaxJumps);
-                        OnJumped?.Invoke();
-                    }
-                    else if (!Mathf.Approximately(wallPush, 0f))
-                    {
-                        // 蹬墙跳：朝墙外弹开 + 向上。竖直方向用 SetAlong 沿当前「上」写，
-                        // 所以重力反转时它照样是「离开墙、朝世界的上方去」。
-                        _velocity   = new Vector2(wallPush, 0f);
-                        _velocity   = SetAlong(_velocity, _up, _wallJumpUpSpeed);
-                        _facing     = Mathf.Sign(wallPush);   // 朝向跟着弹开方向转，攻击判定才对得上前方
-                        _jumpsUsed  = 0;                  // 蹬墙刷新跳数 —— 一面墙就能一路爬上去
-                        _coyoteLeft = 0f;
-                        _bufferLeft = 0f;
-                        OnWallJumped?.Invoke();
-                    }
-                    else
-                    {
-                        // 走到这里必然离地且土狼窗口已过，所以这个判据只可能给出空中段的速度。
-                        float airSpeed = ResolveJumpSpeed(_grounded, _coyoteLeft > 0f,
-                                                          _jumpsUsed, MaxJumps, _jumpSpeed, _airJumpSpeed);
-
-                        // 跳数为 0 时**不清掉缓冲** —— 留到落地那一刻兑现，这就是跳跃缓冲。
-                        if (airSpeed > 0f)
-                        {
-                            _velocity   = SetAlong(_velocity, _up, airSpeed);
-                            _bufferLeft = 0f;             // 一次输入只跳一段
-                            _coyoteLeft = 0f;
-                            _jumpsUsed  = Mathf.Min(_jumpsUsed + 1, MaxJumps);
-                            OnAirJumped?.Invoke();
-                        }
-                    }
-                }
-
-                // ⑧ 可变跳跃高度：提前松键就把上升速度削掉，跳得矮一些
-                if (_jumpCutQueued)
-                {
-                    float along = Vector2.Dot(_velocity, _up);
-                    if (along > 0f) _velocity = SetAlong(_velocity, _up, along * _jumpCutMultiplier);
-                    _jumpCutQueued = false;
-                }
-            }
-
-            // ⑨ 击退：外部速度独立衰减
-            _externalVelocity = Vector2.MoveTowards(_externalVelocity, Vector2.zero, _knockbackDecay * dt);
-
-            // ⑩ 位移交给 Slide 解算接触（Kinematic 的 MovePosition 自己不处理碰撞）
-            var result = _rb.Slide(_velocity + _externalVelocity, dt, BuildSlideMovement());
-
-            // ⑪ 撞墙 / 撞顶：Slide 把用不掉的速度还回来，清掉对应分量，避免贴着墙持续挤压
-            if (Mathf.Abs(result.remainingVelocity.x) > 0.001f) _velocity.x = 0f;
-            if (Mathf.Abs(result.remainingVelocity.y) > 0.001f) _velocity.y = 0f;
+            // ⑧⑨⑩ 击退衰减 → Slide 解算接触 → 撞墙撞顶清分量
+            _mover.Move(tuning, contact, dt);
         }
 
         // ==================================================================
-        //  冲刺
+        //  对外只读状态
         // ==================================================================
+        //
+        // ⚠️ 全部对「协作对象还不存在」做了保护。
+        //    这些属性在 **Awake 之前**就会被读到：编辑模式的 gizmo、P3DebugOverlay 的 OnGUI、
+        //    以及 play 模式切换的那一瞬间（域刚重载完、Awake 还没跑）。
+        //    重构前它们读的是普通字段，默认值天然安全；现在解引用协作对象，不加保护就是 NRE。
+        //    ⚠️ 保护方式是**返回安全默认值，不是惰性创建** —— `new MotionMover(...)` 会去配置
+        //       刚体（bodyType / interpolation），在编辑模式里读一下属性就改场景，那是脏场景。
+
+        /// <summary>是否站在支撑面上（供踩踏判定与调试用）。</summary>
+        public bool IsGrounded => _contacts != null && _contacts.Grounded;
+
+        /// <summary>
+        /// 当前速度（自己维护的那个，<b>不含</b>击退等外部冲量）。
+        /// </summary>
+        /// <remarks>给表现层用（动画判上升/下降、跑步快慢）。玩法逻辑不要读它做判断 ——
+        /// 那样会把「速度怎么算」泄漏到外面。</remarks>
+        public Vector2 Velocity => _mover != null ? _mover.Velocity : Vector2.zero;
+
+        /// <summary>
+        /// 当前朝向：+1 右，−1 左。
+        /// </summary>
+        /// <remarks>取的是**换算后**的方向，所以「摩擦 × 反转」生效时按右往左走，
+        /// 这里自动是 −1 —— 表现层不需要自己判断方向。</remarks>
+        public float Facing => _mover != null ? _mover.Facing : 1f;
+
+        /// <summary>本帧读到的**原始**移动输入（未经摩擦反转换算）。供调试浮层显示。</summary>
+        public Vector2 MoveInput => _input != null ? _input.Move : Vector2.zero;
+
+        /// <summary>左侧是否贴着可蹬的竖墙（供调试浮层显示）。</summary>
+        public bool WallLeft => _contacts != null && _contacts.WallLeft;
+
+        /// <summary>右侧是否贴着可蹬的竖墙（供调试浮层显示）。</summary>
+        public bool WallRight => _contacts != null && _contacts.WallRight;
+
+        /// <summary>是否正在贴墙缓慢下滑（供调试浮层显示）。</summary>
+        public bool IsWallSliding => _mover != null && _mover.WallSliding;
+
+        /// <summary>总跳数上限 = 第一段 + 空中段。</summary>
+        public int MaxJumps => JumpSolver.MaxJumps(_maxAirJumps);
+
+        /// <summary>本次落地以来还剩几段跳（供 HUD / 调试浮层显示）。</summary>
+        public int JumpsLeft => Mathf.Max(MaxJumps - (_jump != null ? _jump.JumpsUsed : 0), 0);
 
         /// <summary>正在冲刺。</summary>
-        public bool IsDashing => _dashLeft > 0f;
+        public bool IsDashing => _dash != null && _dash.IsDashing;
 
         /// <summary>还能冲几次（供 HUD / 调试浮层显示）。</summary>
-        public int DashesLeft => _dashesLeft;
+        public int DashesLeft => _dash != null ? _dash.DashesLeft : 0;
 
         /// <summary>冲刺次数上限。</summary>
         public int MaxDashes => _maxDashes;
 
-        /// <summary>
-        /// 冲刺的次数 / 计时 / 冷却。速度的接管在 <see cref="FixedUpdate"/> 里。
-        /// </summary>
-        /// <remarks>
-        /// 冲刺**不做输入缓冲**：冲不了就是冲不了（次数用尽 / 正在冲刺 / 冷却中），
-        /// 请求直接丢掉。它是主动选择，不像跳跃那样需要迁就落地时机。
-        /// </remarks>
-        private void UpdateDash(float dt)
-        {
-            if (_dashCooldownLeft > 0f) _dashCooldownLeft -= dt;
+        /// <summary>当前连段打到第几刀（0 起数）；没在出招时是 −1。</summary>
+        public int AttackComboIndex => _attack != null ? _attack.ComboIndex : -1;
 
-            // 落地回满。冲刺**贴地滑行**时也满足这条 —— 所以同一次冲刺期间会被反复回满，
-            // 靠「正在冲刺」这个条件挡住重复触发（见 CanDash）。
-            if (_grounded) _dashesLeft = _maxDashes;
+        /// <summary>暂停中不读输入、不推进物理。</summary>
+        /// <remarks>暂停状态由 <c>EntityStatus.SetPaused</c> 驱动 —— 暂停持有者（P1 的时间管理器）负责调用。</remarks>
+        private bool IsPaused => _status != null && _status.IsPaused;
 
-            if (_dashLeft > 0f)
-            {
-                _dashLeft -= dt;
-                if (_dashLeft <= 0f) EndDash();
-            }
+        // ==================================================================
+        //  输入门禁
+        // ==================================================================
 
-            if (!_dashQueued) return;
-            _dashQueued = false;
-
-            if (!CanDash(_dashesLeft, _dashLeft, _dashCooldownLeft)) return;
-
-            _dashDirection = ResolveDashDirection(_moveInput, _facing);
-            if (!Mathf.Approximately(_dashDirection.x, 0f)) _facing = Mathf.Sign(_dashDirection.x);
-            _dashLeft  = _dashDuration;
-            _dashesLeft = Mathf.Max(_dashesLeft - 1, 0);
-            OnDashed?.Invoke();
-        }
-
-        /// <summary>冲刺结束：收住水平速度、开始冷却。</summary>
-        private void EndDash()
-        {
-            _dashLeft         = 0f;
-            _velocity.x      *= _dashExitSpeedScale;   // **只收水平** —— 竖直速度不归冲刺管
-            _dashCooldownLeft = _dashCooldown;
-        }
-
-        /// <summary>
-        /// 能不能起冲。<b>三个条件缺一不可</b>：还有次数、没在冲、冷却已过。
-        /// </summary>
-        /// <remarks>抽成纯函数是为了可测，与 <see cref="ResolveJumpSpeed"/> 同一个理由。</remarks>
-        public static bool CanDash(int dashesLeft, float dashTimeLeft, float cooldownLeft)
-            => dashesLeft > 0 && dashTimeLeft <= 0f && cooldownLeft <= 0f;
-
-        /// <summary>
-        /// 冲刺方向：**只有左右两向**。有横向输入就按它，没有就朝当前朝向。
-        /// </summary>
-        /// <remarks>
-        /// <para>竖直方向恒为 0 —— 冲刺**不动**垂直速度，那是重力与跳跃的领地。
-        /// 所以冲刺期间角色照样会被重力拉下去 / 被跳跃顶上去，冲刺只负责「横着推一把」。</para>
-        /// <para>⚠️ 这里读的是**原始输入**，不经过 <see cref="ResolveMoveDirection"/> ——
-        /// 「摩擦 × 反转」翻的是**地面给的力**，冲刺是自己推自己，不该被翻。
-        /// 详见 <c>Doc/玩家动作设计.md</c> §3.4。</para>
-        /// </remarks>
-        public static Vector2 ResolveDashDirection(Vector2 moveInput, float facing)
-        {
-            bool pressing = Mathf.Abs(moveInput.x) > 0.01f;
-            float sign = pressing ? Mathf.Sign(moveInput.x) : (facing >= 0f ? 1f : -1f);
-            return new Vector2(sign, 0f);
-        }
-
-        /// <summary>每次物理帧的 Slide 配置。</summary>
-        private Rigidbody2D.SlideMovement BuildSlideMovement()
-        {
-            // 上升途中不加吸附，否则起跳会被按回地面。
-            bool anchored = _grounded && Vector2.Dot(_velocity, _up) <= 0.01f;
-
-            return new Rigidbody2D.SlideMovement
-            {
-                surfaceUp         = _up,
-                surfaceSlideAngle = _surfaceSlideAngle,
-                gravitySlipAngle  = 0f,                  // 不沿斜面自动下滑
-                gravity           = Vector2.zero,        // 重力已在 ① 自己积分
-                maxIterations     = 4,                   // 拐角要几次叠代才滑得干净
-                surfaceAnchor     = anchored ? -_up * _surfaceAnchorDistance : Vector2.zero,
-                useLayerMask      = true,
-                layerMask         = _solidLayer,
-                useAttachedTriggers = false,
-                useSimulationMove = true,                // 交给模拟步生效：暂停（不 Simulate）时自然静止
-            };
-        }
-
-        /// <summary>沿当前「上」方向的反向做一次碰撞体扫描，看脚下有没有支撑面。</summary>
-        /// <remarks>顺带记住脚下这块地的摩擦系数（<see cref="_groundFriction"/>），供减速使用。</remarks>
-        private bool ProbeGround()
-        {
-            _groundFriction = 1f;      // 没探到面、或那块地没挂材质 → 按普通地面算
-
-            var filter = new ContactFilter2D { useTriggers = false };
-            filter.SetLayerMask(_solidLayer);
-
-            int count = _rb.Cast(-_up, filter, _groundHits, _groundProbeDistance);
-            for (int i = 0; i < count; i++)
-            {
-                // 只有法线朝着「上」的接触才算支撑面；墙面法线是水平的，会被排除。
-                if (Vector2.Dot(_groundHits[i].normal, _up) <= 0.5f) continue;
-
-                // 地形用 PhysicsMaterial2D 表达材质：冰面给个小的 friction 即可。
-                var material = _groundHits[i].collider.sharedMaterial;
-                if (material != null) _groundFriction = material.friction;
-
-                return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// 朝 <paramref name="direction"/> 做一次碰撞体扫描，看贴不贴着一面**竖着的墙**。
-        /// </summary>
-        /// <remarks>
-        /// <para>只认竖墙：接触面的法线要**基本垂直于「上」**。法线朝上/朝下的是地面或天花板，
-        /// 不算墙 —— 否则站在地上也会被判成「贴着墙」。</para>
-        /// <para>⚠️ 还要确认这面墙**真的在探测的那一侧**。<c>Rigidbody2D.Cast</c> 在形状已经
-        /// 与某个碰撞体接触时，会把它当成 <c>distance = 0</c> 的命中返回，**不管你朝哪个方向扫**。
-        /// 于是贴着右墙时「朝左扫」也会命中那面右墙 —— 不判方向的话两侧都会报「有墙」，
-        /// 玩家按左就会往右弹、直接弹进墙里。判据：法线要**顶着**扫描方向。</para>
-        /// <para>方向用世界坐标的左右，不用 <see cref="_up"/> 推出来的「左右」：
-        /// 重力反转翻的是上下，不翻左右，所以墙永远是竖的。</para>
-        /// </remarks>
-        private bool ProbeWall(Vector2 direction)
-        {
-            var filter = new ContactFilter2D { useTriggers = false };
-            filter.SetLayerMask(_solidLayer);
-
-            int count = _rb.Cast(direction, filter, _wallHits, _wallProbeDistance);
-            for (int i = 0; i < count; i++)
-            {
-                Vector2 normal = _wallHits[i].normal;
-
-                if (Mathf.Abs(Vector2.Dot(normal, _up)) > 0.5f) continue;   // 地面 / 天花板
-                if (Vector2.Dot(normal, direction) > -0.5f) continue;       // 在另一侧，不是这面
-
-                return true;
-            }
-            return false;
-        }
-
-        /// <summary>「上」方向 = 重力反方向；重力失效（零向量）时沿用上一次的方向。</summary>
-        private void UpdateUp()
-        {
-            if (Physics2D.gravity.sqrMagnitude > 0.0001f)
-                _up = -Physics2D.gravity.normalized;
-        }
-
-        /// <summary>把速度沿 <paramref name="axis"/> 的分量设为 <paramref name="value"/>，其余分量不动。</summary>
-        private static Vector2 SetAlong(Vector2 velocity, Vector2 axis, float value)
-            => velocity - axis * Vector2.Dot(velocity, axis) + axis * value;
+        /// <summary>UI 仅接管输入；慢时间里的重力、碰撞与外部冲量仍走原 FixedUpdate。</summary>
+        public IDisposable BlockGameplayInput() => _input.Block();
 
         // ==================================================================
         //  击退
         // ==================================================================
 
         /// <summary>外部冲量入口（击退）。见 <see cref="IKnockbackReceiver"/>。</summary>
-        /// <remarks><b>不能</b>直接写 <c>Rigidbody2D.linearVelocity</c>：本类每个物理帧都会整体
-        /// 覆盖速度，那样写进去的冲量活不过一帧。</remarks>
-        public void AddImpulse(Vector2 impulse) => _externalVelocity += impulse;
+        public void AddImpulse(Vector2 impulse) => _mover.AddImpulse(impulse);
 
         // ==================================================================
-        //  攻击
+        //  攻击判定
         // ==================================================================
-
-        /// <summary>按下攻击键。三种去向：起手 / 接下一刀 / 先存着。</summary>
-        private void QueueAttack()
-        {
-            // 空着 → 起手
-            if (_attackPhase == AttackPhase.None)
-            {
-                BeginSwing(0);
-                return;
-            }
-
-            // 收招段 → 接下一刀（打满了就丢掉这次输入）
-            if (_attackPhase == AttackPhase.Recover)
-            {
-                TryAdvanceCombo();
-                return;
-            }
-
-            // 起手 / 生效段 → 先存着，等进收招段再兑现。
-            // 不存的话连段就只能「卡在收招那一下」按，手感很差。
-            _attackBuffered = true;
-        }
-
-        /// <summary>能不能接下一刀。打满了返回 false。</summary>
-        private bool TryAdvanceCombo()
-        {
-            if (_comboIndex + 1 >= _maxCombo) return false;
-            BeginSwing(_comboIndex + 1);
-            return true;
-        }
-
-        private void BeginSwing(int index)
-        {
-            _comboIndex     = index;
-            _attackPhase    = AttackPhase.Windup;
-            _attackTimer    = _attackWindup;
-            _attackBuffered = false;
-
-            OnAttacked?.Invoke();      // 表现层据此播「拔剑」或「下一段」
-        }
-
-        /// <summary>
-        /// 推连段计时。<b>判定只在开窗那一瞬做一次</b>，之后是收招 —— 不做持续判定。
-        /// </summary>
-        /// <remarks>计时用 <c>fixedDeltaTime</c>，而暂停时 <see cref="FixedUpdate"/> 提前返回，
-        /// 所以连段天然冻结，不需要额外的暂停分支（与冲刺同理）。</remarks>
-        private void UpdateAttack(float dt)
-        {
-            if (_attackPhase == AttackPhase.None) return;
-
-            _attackTimer -= dt;
-            if (_attackTimer > 0f) return;
-
-            switch (_attackPhase)
-            {
-                case AttackPhase.Windup:
-                    PerformAttackHit();
-                    _attackPhase = AttackPhase.Active;
-                    _attackTimer = _attackActive;
-                    break;
-
-                case AttackPhase.Active:
-                    _attackPhase = AttackPhase.Recover;
-                    _attackTimer = _attackRecover;
-                    // 起手 / 生效段存下的那一下，现在兑现
-                    if (_attackBuffered)
-                    {
-                        _attackBuffered = false;
-                        TryAdvanceCombo();
-                    }
-                    break;
-
-                case AttackPhase.Recover:
-                    _comboIndex  = -1;
-                    _attackPhase = AttackPhase.None;
-                    break;
-            }
-        }
 
         /// <summary>生效段的唯一命中判定。走正式伤害链路（传**基础值**，由伤害处理模块按规则算）。</summary>
+        /// <remarks>放在速度解算**之前**调用，所以读到的朝向是上一帧末的 ——
+        /// 与重构前一致（原来 ③′ 也在 ④ 之前）。</remarks>
         private void PerformAttackHit()
         {
             if (_combat == null) return;
 
             // 发起方只组织「打哪儿、打多大」，最终伤害由伤害处理模块按当前规则算。
-            Vector2 center = (Vector2)transform.position + new Vector2(_facing * _attackOffset, 0f);
+            Vector2 center = (Vector2)transform.position + new Vector2(_mover.Facing * _attackOffset, 0f);
 
             int hits = _combat.PerformAttack(this, center, _attackBoxSize, _attackMask,
                                              _attackDamage, _attackKnockback);
@@ -893,87 +430,63 @@ namespace RuleGame.Gameplay.Player
         private void OnDrawGizmosSelected()
         {
             Gizmos.color = new Color(1f, 0.45f, 0.2f, 0.8f);
-            Vector2 center = (Vector2)transform.position + new Vector2(_facing * _attackOffset, 0f);
+            Vector2 center = (Vector2)transform.position + new Vector2(Facing * _attackOffset, 0f);
             Gizmos.DrawWireCube(center, _attackBoxSize);
         }
 
         // ==================================================================
-        //  属性读取
+        //  参数打包 / 规则读值
         // ==================================================================
 
         /// <summary>
-        /// 把原始横向输入换算成「本帧该往哪个方向走」。
+        /// 把序列化字段打成 <see cref="MotionTuning"/>。
         /// </summary>
-        /// <remarks>
-        /// <para>摩擦反转时取反 —— 这是「摩擦 × 反转」在玩家身上的全部实现。</para>
-        /// <para>抽成纯函数是为了**可测**：真机验证要靠真按键，而注入按键在编辑器失焦时会被
-        /// Input System 重置；手动调 <c>FixedUpdate</c> 又会因为里面的 <c>Rigidbody2D.Slide</c>
-        /// 在物理步之外调用而卡死。所以把决策留在这里单独断言。</para>
-        /// </remarks>
-        public static float ResolveMoveDirection(float rawInput, bool frictionInverted)
-            => frictionInverted ? -rawInput : rawInput;
-
-        /// <summary>
-        /// 本帧起跳用哪一档速度。<b>返回 0 表示这一段跳用不了。</b>
-        /// </summary>
-        /// <param name="grounded">此刻是否踩在支撑面上。</param>
-        /// <param name="inCoyoteWindow">是否还在土狼时间内。</param>
-        /// <param name="jumpsUsed">本次落地以来已用掉几段跳。</param>
-        /// <param name="maxJumps">总跳数上限。</param>
-        /// <param name="groundSpeed">第一段的速度。</param>
-        /// <param name="airSpeed">空中段的速度。</param>
-        /// <remarks>
-        /// <para><b>只用跳数决定不了能不能跳</b>：踩在地上时跳数当然是够的，
-        /// 而离开地面却还在土狼窗口内的那一下，本来就该和站着跳等价。
-        /// 所以判据是「<b>在地面 / 窗口内 → 算第一段</b>，否则 → 扣空中段」。</para>
-        /// <para>调用方负责在窗口关闭时把 <c>jumpsUsed</c> 抬到至少 1
-        /// （「走下来就等于用掉了第一段」），本函数不管那件事，只做判断。</para>
-        /// <para>抽成纯函数是为了可测：真机验证要靠真按键，而失焦的编辑器会重置输入设备；
-        /// 手动调 <c>FixedUpdate</c> 又会因为 <c>Rigidbody2D.Slide</c> 在物理步之外调用而卡死。</para>
-        /// </remarks>
-        public static float ResolveJumpSpeed(bool grounded, bool inCoyoteWindow, int jumpsUsed, int maxJumps,
-                                             float groundSpeed, float airSpeed)
+        /// <remarks><b>每物理帧重打包</b>：这样运行期改字段立刻生效，包括调试时用反射改值那条流程。
+        /// 几十个浮点的拷贝，50Hz 下可以忽略。</remarks>
+        private MotionTuning BuildTuning() => new MotionTuning
         {
-            if (grounded || inCoyoteWindow) return groundSpeed;   // 第一段：地面 / 土狼
-            return jumpsUsed < maxJumps ? airSpeed : 0f;          // 空中段
-        }
+            MoveSpeedMax         = _moveSpeedMax,
+            GroundAccel          = _groundAccel,
+            AirAccel             = _airAccel,
+            AirDrag              = _airDrag,
+            FrictionDecel        = _frictionDecel,
 
-        /// <summary>
-        /// 能不能蹬墙跳，以及弹开的**水平速度**（带符号）。
-        /// </summary>
-        /// <param name="wallLeft">左侧贴着竖墙。</param>
-        /// <param name="wallRight">右侧贴着竖墙。</param>
-        /// <param name="moveInputX">横向输入。</param>
-        /// <param name="grounded">是否踩在支撑面上。</param>
-        /// <param name="pushSpeed">朝墙外按时的推力 —— 「跳出去」用，要够远。</param>
-        /// <param name="climbSpeed">朝墙按（或不按）时的推力 —— 「爬升」用，**要小到方向键能立刻把人拉回墙**。</param>
-        /// <returns>水平速度：正 = 往右弹，负 = 往左弹，<b>0 = 不能蹬</b>。</returns>
-        /// <remarks>
-        /// <para>两档推力是这套动作的核心：</para>
-        /// <list type="bullet">
-        /// <item><b>朝墙外按</b> → <c>pushSpeed</c>：明确地想离开这面墙（去对面、跳出去）。</item>
-        /// <item><b>朝墙按 / 不按</b> → <c>climbSpeed</c>：**仍然是往墙外弹**，但只弹一点点。
-        /// 因为你还按着朝墙的方向，空中加速度会立刻把你拉回去 —— 于是「贴墙 → 跳 → 贴回去 → 跳」
-        /// 能一路爬上去，<b>一面墙就够</b>。若这里用大推力，人会被推飞、接不上。</item>
-        /// </list>
-        /// <para>踩在地上时返回 0：那是普通起跳的场合，不该被蹬墙截胡。</para>
-        /// <para>抽成纯函数是为了可测，与 <see cref="ResolveJumpSpeed"/> 同一个理由。</para>
-        /// </remarks>
-        public static float ResolveWallJumpPush(bool wallLeft, bool wallRight, float moveInputX,
-                                                bool grounded, float pushSpeed, float climbSpeed)
-        {
-            if (grounded) return 0f;
+            JumpSpeed            = _jumpSpeed,
+            AirJumpSpeed         = _airJumpSpeed,
+            MaxAirJumps          = _maxAirJumps,
+            GravityScale         = _gravityScale,
+            FallGravityMultiplier = _fallGravityMultiplier,
+            MaxFallSpeed         = _maxFallSpeed,
+            JumpCutMultiplier    = _jumpCutMultiplier,
+            CoyoteTime           = _coyoteTime,
+            JumpBuffer           = _jumpBuffer,
 
-            // 先看「明确想离开哪面墙」
-            if (wallRight && moveInputX < -0.01f) return -pushSpeed;   // 墙在右、按左 → 往左蹬出去
-            if (wallLeft  && moveInputX >  0.01f) return  pushSpeed;   // 墙在左、按右 → 往右蹬出去
+            DashSpeed            = _dashSpeed,
+            DashDuration         = _dashDuration,
+            DashExitSpeedScale   = _dashExitSpeedScale,
+            DashCooldown         = _dashCooldown,
+            MaxDashes            = _maxDashes,
 
-            // 否则只是在贴墙爬升：仍然往外弹，但只弹一点点
-            if (wallRight) return -climbSpeed;
-            if (wallLeft)  return  climbSpeed;
+            WallClimbEnabled     = _wallClimbEnabled,
+            WallProbeDistance    = _wallProbeDistance,
+            WallSlideSpeed       = _wallSlideSpeed,
+            WallSlideImpactDecel = _wallSlideImpactDecel,
+            WallJumpPushSpeed    = _wallJumpPushSpeed,
+            WallClimbPushSpeed   = _wallClimbPushSpeed,
+            WallJumpUpSpeed      = _wallJumpUpSpeed,
 
-            return 0f;
-        }
+            SolidLayer           = _solidLayer,
+            GroundProbeDistance  = _groundProbeDistance,
+            SurfaceAnchorDistance = _surfaceAnchorDistance,
+            SurfaceSlideAngle    = _surfaceSlideAngle,
+
+            KnockbackDecay       = _knockbackDecay,
+
+            AttackWindup         = _attackWindup,
+            AttackActive         = _attackActive,
+            AttackRecover        = _attackRecover,
+            MaxCombo             = _maxCombo,
+        };
 
         /// <summary>当前摩擦缩放（1.0 = 正常）。规则系统未就绪时退化为 1。</summary>
         private static float FrictionScale

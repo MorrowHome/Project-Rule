@@ -38,6 +38,23 @@ namespace RuleGame.Development.P3
         [Tooltip("「打我一下」的施力点：击退方向背离它。留空 = 用本物体。")]
         [SerializeField] private Transform _attackFrom;
 
+        [Header("速度日志")]
+        [Tooltip("打开面板上的「记录速度到 Console」后，每隔本值秒打一条速度向量。" +
+                 "0.1 = 10 条/秒（默认，读得过来）；0.02 约等于每个物理帧一条，但 Console 会明显变慢。")]
+        [SerializeField] private float _velocityLogInterval = 0.1f;
+
+        [Header("冻结检测")]
+        [Tooltip("位置没变、但竖直速度还不小时，自动打一条完整状态。" +
+                 "这是「速度满速、位置不动」那个 bug 的签名（2026-10-15 查到：surfaceSlideAngle < 90 时，" +
+                 "顶进竖墙的位移会被 Slide 整笔取消，且照样报 remainingVelocity=0）。")]
+        [SerializeField] private bool _detectFrozenMotion = true;
+
+        [Tooltip("低于这个竖直速度就不算「在动」，避免站在地上误报。")]
+        [SerializeField] private float _frozenSpeedThreshold = 1f;
+
+        [Tooltip("两次冻结告警的最小间隔秒数，避免刷屏。")]
+        [SerializeField] private float _frozenLogInterval = 0.5f;
+
         private const int MaxLog = 8;
 
         private static readonly AttributeId[] AllAttributes = (AttributeId[])System.Enum.GetValues(typeof(AttributeId));
@@ -45,6 +62,13 @@ namespace RuleGame.Development.P3
 
         private readonly List<string> _log = new List<string>();
         private bool _paused;
+
+        private bool  _loggingVelocity;      // 是否正在往 Console 打速度
+        private float _velocityLogTimer;
+        private Rigidbody2D _body;           // 只为对照「物理位置 vs 插值后的 transform 位置」
+
+        private float _lastY;                // 冻结检测用：上一帧的 transform.y
+        private float _lastFrozenLog;        // 冻结检测用：上次告警的 Time.time
 
         // ==================================================================
         //  生命周期
@@ -55,6 +79,7 @@ namespace RuleGame.Development.P3
             if (_status == null)     _status     = GetComponent<EntityStatus>();
             if (_damageable == null) _damageable = GetComponent<EntityDamageable>();
             if (_player == null)     _player     = GetComponent<PlayerController>();
+            _body = GetComponent<Rigidbody2D>();
         }
 
         private void OnEnable()
@@ -69,6 +94,77 @@ namespace RuleGame.Development.P3
             if (_combat == null) return;
             _combat.OnDamageApplied -= LogDamage;
             _combat.OnEntityDied    -= LogDeath;
+        }
+
+        /// <summary>
+        /// 速度向量的实时日志。默认关闭 —— 打开后按 <see cref="_velocityLogInterval"/> 节流，
+        /// 不节流的话 50Hz 的物理帧会把 Console 刷爆（每条 Debug.Log 都要抓调用栈，很贵）。
+        /// </summary>
+        /// <remarks>连带打上接地 / 冲刺 / 贴墙 / 朝向 —— 光看一个向量读不出它当时在干什么。</remarks>
+        private void Update()
+        {
+            if (_player == null) return;
+
+            DetectFrozenMotion();
+
+            if (!_loggingVelocity) return;
+
+            _velocityLogTimer -= Time.deltaTime;
+            if (_velocityLogTimer > 0f) return;
+            _velocityLogTimer = _velocityLogInterval;
+
+            Vector2 vel = _player.Velocity;
+            Vector3 pos = _player.transform.position;
+            Vector2 rbPos = _body != null ? _body.position : Vector2.zero;
+
+            Debug.Log($"[P3 速度] v=({vel.x:F3}, {vel.y:F3})  |v|={vel.magnitude:F3}"
+                      + $"  transform=({pos.x:F4}, {pos.y:F4})  rb=({rbPos.x:F4}, {rbPos.y:F4})"
+                      + $"  接地={_player.IsGrounded}  冲刺={_player.IsDashing}"
+                      + $"  贴墙下滑={_player.IsWallSliding}  朝向={_player.Facing:+0;-0;0}",
+                      this);   // 带上上下文对象，点 Console 那行能直接定位到本物体
+        }
+
+        /// <summary>
+        /// 冻结检测：**位置没变、但竖直速度还不小** —— 位移没生效的签名。
+        /// </summary>
+        /// <remarks>
+        /// <para>只在**异常**时打，所以常开也不会刷屏（正常情况下位置每帧都在变）。
+        /// 阈值把「站在地上」（速度≈0）排除掉，不误报。</para>
+        /// <para>命中时把能分辨病因的东西全打出来：物理位置 vs 插值位置、接地、左右墙、
+        /// 贴墙下滑、冲刺、物理步进模式、两层暂停状态。</para>
+        /// <para>⚠️ 2026-10-15 那次就是它：<c>surfaceSlideAngle &lt; 90</c> 时，速度里只要有分量
+        /// 顶进竖墙，<c>Slide</c> 会把**整笔位移**取消（连沿墙下滑的竖直分量一起），
+        /// 而且**照样报 <c>remainingVelocity = (0,0)</c>** —— 于是速度不清零、位置也不动。</para>
+        /// </remarks>
+        private void DetectFrozenMotion()
+        {
+            if (!_detectFrozenMotion) return;
+
+            float y  = _player.transform.position.y;
+            float vy = _player.Velocity.y;
+
+            bool frozen = Mathf.Approximately(y, _lastY) && Mathf.Abs(vy) > _frozenSpeedThreshold;
+            _lastY = y;
+
+            if (!frozen) return;
+            if (Time.time - _lastFrozenLog < _frozenLogInterval) return;   // 告警节流
+            _lastFrozenLog = Time.time;
+
+            Vector2 vel   = _player.Velocity;
+            Vector2 rbPos = _body != null ? _body.position : Vector2.zero;
+
+            // ⚠️ 全限定：本文件若 using RuleGame.Infrastructure.Time，会遮蔽 UnityEngine.Time。
+            bool timePaused = RuleGame.Infrastructure.Time.TimeManager.Instance != null
+                           && RuleGame.Infrastructure.Time.TimeManager.Instance.IsPaused;
+
+            Debug.LogWarning($"[P3 冻结] 位置没变但速度非零！"
+                + $"  v=({vel.x:F3}, {vel.y:F3})"
+                + $"  transform.y={y:F4}  rb.y={rbPos.y:F4}"
+                + $"  接地={_player.IsGrounded}  左墙={_player.WallLeft}  右墙={_player.WallRight}"
+                + $"  贴墙下滑={_player.IsWallSliding}  冲刺={_player.IsDashing}"
+                + $"  simulationMode={Physics2D.simulationMode}"
+                + $"  TimeManager暂停={timePaused}  EntityStatus暂停={_status.IsPaused}",
+                this);
         }
 
         // ==================================================================
@@ -107,6 +203,15 @@ namespace RuleGame.Development.P3
                 GUILayout.Label($"输入：x={inp.x:F2}  朝向 Facing={_player.Facing:+0;-0;0}"
                                 + (Mathf.Sign(inp.x) * _player.Facing < 0f && Mathf.Abs(inp.x) > 0.01f
                                    ? "  ← 输入与朝向反号（摩擦反转？）" : ""));
+            }
+            if (_player != null)
+            {
+                // 速度向量。分量带符号显示 —— 光看大小读不出是在上升还是下落。
+                Vector2 vel = _player.Velocity;
+                GUILayout.Label($"速度：({vel.x:+0.00;-0.00;0.00}, {vel.y:+0.00;-0.00;0.00})"
+                                + $"  |v|={vel.magnitude:F2}");
+                if (GUILayout.Button(_loggingVelocity ? "⏹ 停止记录速度" : "⏺ 记录速度到 Console"))
+                    ToggleVelocityLog();
             }
             GUILayout.Label($"暂停：{_status.IsPaused}");
             DrawLedger();
@@ -220,6 +325,16 @@ namespace RuleGame.Development.P3
             _status.SetPaused(_paused);                    // 冷却冻结（PlayerController 也从这里读）
             if (_rules != null) _rules.SetPaused(_paused);  // 规则时限冻结
             Push(_paused ? "⏸ 暂停" : "▶ 恢复");
+        }
+
+        /// <summary>开关速度向量的实时日志（见 <see cref="Update"/>）。</summary>
+        private void ToggleVelocityLog()
+        {
+            _loggingVelocity = !_loggingVelocity;
+            _velocityLogTimer = 0f;      // 打开后立刻打第一条，不用等一个间隔
+            Push(_loggingVelocity
+                ? $"⏺ 开始记录速度（每 {_velocityLogInterval:F2}s 一条）"
+                : "⏹ 停止记录速度");
         }
 
         // ==================================================================

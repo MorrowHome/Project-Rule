@@ -224,7 +224,7 @@ MonoBehaviour:
     m_Bits: 256
   _groundProbeDistance: 0.08
   _surfaceAnchorDistance: 0.05
-  _surfaceSlideAngle: 89
+  _surfaceSlideAngle: 90
   _knockbackDecay: 30
   _status: {fileID: 279477526}
   _combat: {fileID: 850425796}
