@@ -58,6 +58,7 @@ namespace RuleGame.Presentation.Player
         public const string ParamLand     = "Land";
         public const string ParamHurt     = "Hurt";
         public const string ParamDie      = "Die";
+        public const string ParamReacting = "Reacting";
 
         /// <summary>起手一刀（连段的第一下）。</summary>
         public const string ParamAttack     = "Attack";
@@ -82,6 +83,9 @@ namespace RuleGame.Presentation.Player
         private static readonly int HLand         = Animator.StringToHash(ParamLand);
         private static readonly int HHurt         = Animator.StringToHash(ParamHurt);
         private static readonly int HDie          = Animator.StringToHash(ParamDie);
+        private static readonly int HReacting     = Animator.StringToHash(ParamReacting);
+        private static readonly int HurtState     = Animator.StringToHash("Hurt");
+        private static readonly int DieState      = Animator.StringToHash("Die");
         private static readonly int HAttack       = Animator.StringToHash(ParamAttack);
         private static readonly int HAttackNext   = Animator.StringToHash(ParamAttackNext);
         private static readonly int HHeavy        = Animator.StringToHash(ParamHeavy);
@@ -102,6 +106,7 @@ namespace RuleGame.Presentation.Player
 
         private float _lastHealth;
         private bool  _warnedNoAnimator;
+        private bool  _reactionPending;
 
         // ==================================================================
         //  生命周期
@@ -117,6 +122,7 @@ namespace RuleGame.Presentation.Player
 
         private void OnEnable()
         {
+            _reactionPending = false;
             if (_player != null)
             {
                 _player.OnJumped     += HandleJumped;
@@ -165,8 +171,16 @@ namespace RuleGame.Presentation.Player
             // 所以这里必须显式停，否则拼装界面一开角色还在原地跑。
             _animator.speed = (_status != null && _status.IsPaused) ? 0f : 1f;
 
+            // 受伤/死亡期间仍更新移动参数，但低优先级 AnyState 过渡不能抢走演出。
+            bool reacting = IsReactionState(_animator.GetCurrentAnimatorStateInfo(0))
+                || _animator.IsInTransition(0) && IsReactionState(_animator.GetNextAnimatorStateInfo(0));
+            if (reacting) _reactionPending = false;
+            _animator.SetBool(HReacting, _reactionPending || reacting);
             PushContinuousParameters();
         }
+
+        private static bool IsReactionState(AnimatorStateInfo state)
+            => state.shortNameHash == HurtState || state.shortNameHash == DieState;
 
         /// <summary>
         /// 朝向**必须放在 LateUpdate**，不能和上面的参数一起写在 <c>Update</c> 里。
@@ -247,20 +261,39 @@ namespace RuleGame.Presentation.Player
         {
             if (current <= 0f)
             {
+                BeginReaction();
                 SetTrigger(HDie);
             }
             else if (current < _lastHealth)
             {
+                BeginReaction();
                 SetTrigger(HHurt);
             }
 
             _lastHealth = current;
         }
 
+        private void BeginReaction()
+        {
+            if (_animator == null) return;
+            // 立即保护等待求值的 Hurt/Die，并丢弃旧动作事件，避免演出结束后突然补播。
+            _reactionPending = true;
+            _animator.SetBool(HReacting, true);
+            _animator.ResetTrigger(HJump);
+            _animator.ResetTrigger(HAirJump);
+            _animator.ResetTrigger(HWallJump);
+            _animator.ResetTrigger(HLand);
+            _animator.ResetTrigger(HAttack);
+            _animator.ResetTrigger(HAttackNext);
+            _animator.ResetTrigger(HHeavy);
+        }
+
         private void SetTrigger(int hash)
         {
             // 事件可能在 Awake 之前到（同物体上的组件顺序不保证），也不能在没 Animator 时炸。
-            if (_animator != null) _animator.SetTrigger(hash);
+            if (_animator == null) return;
+            if (hash != HHurt && hash != HDie && _animator.GetBool(HReacting)) return;
+            _animator.SetTrigger(hash);
         }
     }
 }

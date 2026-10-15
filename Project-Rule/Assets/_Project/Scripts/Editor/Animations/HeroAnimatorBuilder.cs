@@ -80,6 +80,7 @@ namespace RuleGame.Editor.Animations
             LinkCombat(states, attackSpeeds);
             LinkInteract(states);
             LinkAnyState(machine, states);
+            ProtectReactions(controller);
 
             machine.defaultState = states["Idle"];
 
@@ -96,6 +97,30 @@ namespace RuleGame.Editor.Animations
             Debug.Log("[HeroAnimatorBuilder] 已重建 Hero.controller："
                       + StateNames.Length + " 个 state、"
                       + controller.parameters.Length + " 个参数。");
+        }
+
+        [MenuItem("RuleGame/Animations/修复 Hero 受伤动画打断规则（保留现有动画图）")]
+        public static void RepairReactionInterruptions()
+        {
+            var controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
+            if (controller == null) throw new System.InvalidOperationException("找不到 " + ControllerPath);
+            ProtectReactions(controller);
+            EditorUtility.SetDirty(controller);
+            AssetDatabase.SaveAssets();
+        }
+
+        private static void ProtectReactions(AnimatorController controller)
+        {
+            string parameter = PlayerAnimationDriver.ParamReacting;
+            if (!System.Array.Exists(controller.parameters, item => item.name == parameter))
+                controller.AddParameter(parameter, AnimatorControllerParameterType.Bool);
+            foreach (var transition in controller.layers[0].stateMachine.anyStateTransitions)
+            {
+                var destination = transition.destinationState;
+                if (destination == null || destination.name == "Hurt" || destination.name == "Die") continue;
+                if (!System.Array.Exists(transition.conditions, condition => condition.parameter == parameter))
+                    transition.AddCondition(AnimatorConditionMode.IfNot, 0f, parameter);
+            }
         }
 
         // ==================================================================
