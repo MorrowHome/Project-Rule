@@ -10,6 +10,7 @@ using RuleGame.Gameplay.Enemy;
 using RuleGame.Infrastructure;
 using RuleGame.Infrastructure.Common;
 using RuleGame.Infrastructure.Time;
+using RuleGame.Infrastructure.Rules;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -21,6 +22,7 @@ namespace RuleGame.Editor.Enemy
     {
         private const string Pending = "RuleGame.Enemy.CombatValidation";
         private const string Tactics = "RuleGame.Enemy.TacticsValidation";
+        private const string ClockRewind = "RuleGame.Enemy.ClockRewindValidation";
         private const string SnapshotCamera = "RuleGame.Enemy.SnapshotCameraValidation";
         private static readonly List<EnemyActor> Actors = new List<EnemyActor>();
         private static readonly List<Action<EnemyActor>> Cases = new List<Action<EnemyActor>>();
@@ -29,6 +31,12 @@ namespace RuleGame.Editor.Enemy
         private static bool _tactics;
         private static string Output => Environment.GetEnvironmentVariable("RULE_BOSS_OUTPUT")
             ?? Path.GetFullPath(Path.Combine(Application.dataPath, _tactics ? "../Logs/BossTacticsValidation.txt" : "../Logs/BossCombatValidation.txt"));
+
+        public static void RunClockRewindBatch()
+        {
+            SessionState.SetBool(ClockRewind, true);
+            RunBatch();
+        }
 
         public static void RunSnapshotCameraBatch()
         {
@@ -63,9 +71,17 @@ namespace RuleGame.Editor.Enemy
         private static void Begin()
         {
             TimeManager.Initialize(); WorldRegistry.Initialize();
-            RuleSystem.Initialize(ScriptableObject.CreateInstance<RuleCatalog>());
+            if (SessionState.GetBool(ClockRewind, false))
+                RuleSystem.Initialize(new TimeRevertCatalog());
+            else RuleSystem.Initialize(ScriptableObject.CreateInstance<RuleCatalog>());
             _deadline = EditorApplication.timeSinceStartup + 30;
             _tactics = SessionState.GetBool(Tactics, false);
+            if (SessionState.GetBool(ClockRewind, false))
+            {
+                AddClockRewindCases();
+                EditorApplication.update += AwaitReady;
+                return;
+            }
             if (SessionState.GetBool(SnapshotCamera, false))
             {
                 AddSnapshotCameraCases();
@@ -304,6 +320,63 @@ namespace RuleGame.Editor.Enemy
                 Check(a.Brain.StateName == "Weak", "阶段过渡优先于普通休息");
             });
             EditorApplication.update += AwaitReady;
+        }
+
+        private sealed class TimeRevertCatalog : IRuleCatalog
+        {
+            private readonly RuleDef _definition = AssetDatabase.LoadAssetAtPath<RuleDef>("Assets/_Project/Data/Rules/TimeRevert.asset");
+            public RuleDef Get(AttributeId attribute, RelationId relation)
+                => attribute == AttributeId.Time && relation == RelationId.Revert ? _definition : null;
+        }
+        private static void AddClockRewindCases()
+        {
+            foreach (bool available in new[] { true, false })
+                Add(EnemyKind.ClockBoss, a =>
+                {
+                    a.Definition.RuleAttribute = AttributeId.Time;
+                    a.Definition.RuleRelation = RelationId.Revert;
+                    var snapshots = SnapshotsFor(a);
+                    SnapshotSystem.SetInstanceForTesting(snapshots);
+                    var body = a.GetComponent<Rigidbody2D>();
+                    Vector2 oldPosition = new Vector2(-6f, 2f);
+                    body.position = oldPosition;
+                    a.transform.position = oldPosition;
+                    if (available)
+                    {
+                        snapshots.CaptureToBuffer();
+                        body.position = new Vector2(-2f, 2f);
+                        a.transform.position = body.position;
+                        snapshots.CaptureToBuffer();
+                    }
+                    Vector2 currentPosition = new Vector2(4f, 2f);
+                    body.position = currentPosition;
+                    a.transform.position = currentPosition;
+                    Target(a, 2f);
+                    Step(a, 2.4f);
+                    Check(a.Brain.StateName == "JumpShake", "反转配置仍先响铃预警");
+                    float energy = a.Status.Energy;
+                    Step(a, a.AnimationDuration + .01f);
+                    if (available)
+                    {
+                        Check(body.position == oldPosition && a.Status.Energy < energy, "真实时间反转回溯位置且扣费");
+                        Check(a.Brain.StateName == "Idle" && a.Brain.ActionElapsed == 0f,
+                            "回溯后的 Idle 不被旧响铃回调强制覆盖为冲撞");
+                        Target(a, 2f);
+                        Step(a, 2.4f);
+                        Check(a.Brain.StateName == "JumpShake", "从回溯位置重新响铃并锁定路线");
+                        Step(a, a.AnimationDuration + .01f);
+                        Step(a);
+                        Check(a.Brain.StateName == "Charge" && a.Motor.Intent.x > 0f && body.position == oldPosition,
+                            "缓冲不足后从新起点按新方向冲撞");
+                    }
+                    else
+                    {
+                        Step(a);
+                        Check(a.Brain.StateName == "Charge" && body.position == currentPosition && a.Motor.Intent.x > 0f,
+                            "无回溯资源时正常从当时位置冲撞");
+                        Check(a.Status.Energy == energy, "反转失败不扣能量");
+                    }
+                });
         }
 
         private sealed class SnapshotBody : IRuleAffected
@@ -566,6 +639,7 @@ namespace RuleGame.Editor.Enemy
             SessionState.SetBool(Pending, false);
             SessionState.SetBool(Tactics, false);
             SessionState.SetBool(SnapshotCamera, false);
+            SessionState.SetBool(ClockRewind, false);
             if (error != null) { _failed++; Debug.LogError(error); }
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(Output)));
             File.WriteAllText(Output, $"Passed: {_passed}\nFailed: {_failed}\n{error}\n");

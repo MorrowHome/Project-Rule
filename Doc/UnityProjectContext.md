@@ -68,6 +68,8 @@ manifest 已有 Coplay Unity MCP，仓库 `.mcp.json` 指向 `localhost:8080/mcp
 
 2026-10-16 修复快照异常与震屏后镜头停住：UnityHFSM 2.3.0 的子状态机退出时会清空 activeState，阶段过渡/死亡期间不应读取 Actions.ActiveStateName；EnemyBrain.Capture 现在仅在 Root 为 Alive 时记录动作，恢复逻辑继续按 Root 分支处理。BossCameraImpulse 结束渲染/停用时改为 ResetWorldToCameraMatrix，归还随 Transform 更新的自动视图计算；写回旧矩阵仍会保留手动模式。隔离 Play Mode 先复现四种 Boss 过渡/死亡采集异常，以及震屏收尾/停用后的视图冻结，共 10 个失败用例；同组修复后 36 项断言通过、退出码 0。验证入口 BossCombatValidation.RunSnapshotCameraBatch，日志 /tmp/rule-snapshot-camera-{baseline,fixed}.log，结果 Logs/SnapshotCameraValidation.txt。摄像机通过调用实际渲染回调并检查移动后的视图矩阵验证，未运行完整白盒画面验收或全量战斗套件。
 
+2026-10-16 排查时钟冲撞起点跳变：用户本地 ClockBoss_Definition 已设 Time × Revert，JumpShake 完成后 CastRule 会同步回溯整个世界，包括施法者的位置、Brain 动作与锁定方向；旧回调随后无条件 Go(Charge) 会覆盖恢复结果，甚至使用快照中尚未锁定的零方向。ClockBossBrain 增加不随时间回退的恢复修订计数，施法期间发生恢复就结束旧回调，按恢复后的动作继续决策；未改变时间反转语义或用户资产配置。使用真实 TimeRevert 规则、费用服务和 SnapshotSystem，先复现旧位置 Idle 被强制替换为 Charge，修复后 RunClockRewindBatch 的 8 项检查通过，包含成功回溯/扣费、恢复动作、重新响铃选向，以及缓冲不足时从当时位置正常冲撞/不扣费。日志 /tmp/rule-clock-rewind-{baseline,fixed}.log。仅做这组定向验证，未重跑完整战斗套件。
+
 ## 证据
 
 `CLAUDE.md`、`Doc/系统模块架构.md`、`Doc/敌人系统接入.md`；工程内 `Packages/manifest.json`、`ProjectSettings/{ProjectVersion.txt,QualitySettings.asset,GraphicsSettings.asset,EditorBuildSettings.asset,ProjectSettings.asset}`；一方 `.asmdef`；`Scripts/Gameplay/Enemy/*.cs`、`Gameplay/Player/EntityStatus.cs`、`PlayerController.cs`、`RuleReleaseService.cs`、`Scripts/Editor/Enemy/EnemyLabBuilder.cs`、`Scripts/Rules/RuleSystemDriver.cs`。
