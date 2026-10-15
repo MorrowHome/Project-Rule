@@ -2,22 +2,24 @@ using UnityEngine;
 
 namespace RuleGame.Gameplay.Enemy
 {
-    /// <summary>指针作为并行攻击时钟；眩晕窗口只攻击发条，失败仅恢复 Boss 自身血量。</summary>
+    /// <summary>瞄准激光与错位封路，预警后沿锁定路线冲撞；保留发条弱点与失败回溯。</summary>
     public sealed class ClockBossBrain : EnemyBrain
     {
         private readonly float[] _hands = { 0.8f, 1.5f, 2.2f };
         private float _nextHour;
         private float _chargeFacing;
         private int _beamVolleys;
+        private float _aimUntil;
         protected override string[] ActionNames => new[] { "Idle", "Walk", "JumpShake", "Charge", "Hurt" };
         public override bool DamageLocked => Root.ActiveStateName == "Transition";
-        public ClockBossBrain(EnemyActor actor) : base(actor) { _nextHour = actor.Definition.ClockHourInterval; }
-        protected override object CaptureExtra() => new object[] { (float[])_hands.Clone(), _nextHour, _chargeFacing, _beamVolleys };
+        public ClockBossBrain(EnemyActor actor) : base(actor) { _nextHour = 2.4f; }
+        protected override object CaptureExtra() => new object[] { (float[])_hands.Clone(), _nextHour, _chargeFacing, _beamVolleys, _aimUntil };
         protected override void RestoreExtra(object state)
         {
             if (!(state is object[] data)) return;
             System.Array.Copy((float[])data[0], _hands, 3); _nextHour = (float)data[1]; _chargeFacing = (float)data[2];
             _beamVolleys = (int)data[3];
+            _aimUntil = (float)data[4];
         }
         public override float ClampHealth(float health)
         {
@@ -36,6 +38,14 @@ namespace RuleGame.Gameplay.Enemy
             }
             // 休息时冻结指针出手时钟，结束后继续剩余间隔，不补发积压的激光。
             if (IsResting || StateName == "Rest") return;
+            // 预警、冲撞与普通受击期间不叠加新激光；远处先靠近有效作战范围。
+            if (!HasTarget || CombatDistance > RangedRange + 2f || (StateName != "Idle" && StateName != "Walk")) return;
+            if (Age < _aimUntil) return;
+            if (TargetInMeleeRange && Age >= NextAttack && Age >= _nextHour)
+            {
+                Go("JumpShake");
+                return;
+            }
             bool volley = false;
             for (int i = 0; i < Phase; i++)
             {
@@ -43,23 +53,35 @@ namespace RuleGame.Gameplay.Enemy
                 _hands[i] -= Delta;
                 if (_hands[i] > 0f) continue;
                 _hands[i] += 2f + i;
-                float rotationPeriod = Config.ClockHourInterval * (i + 1);
-                Actor.Beam(90f - Age / rotationPeriod * 360f, 0.1f + i * 0.1f);
+                FireHand(i);
                 volley = true;
             }
-            if (volley) _beamVolleys++;
+            if (volley) { _beamVolleys++; return; }
             if (_beamVolleys >= Mathf.Max(1, Config.ClockBeamVolleysBeforeRest)
                 && (StateName == "Idle" || StateName == "Walk"))
             {
-                RestAfterAttack();
+                if (Age >= _nextHour && CombatDistance <= RangedRange
+                    && Mathf.Abs(Actor.Target.position.y - Actor.transform.position.y) <= Config.BodySize.y * .6f)
+                    Go("JumpShake");
+                else RestAfterAttack();
                 return;
             }
-            if (HasTarget && CombatDistance <= RangedRange && Age >= _nextHour && Age >= NextAttack
-                && (StateName == "Idle" || StateName == "Walk"))
+        }
+        private void FireHand(int hand)
+        {
+            Vector2 origin = Actor.BeamOrigin != null ? (Vector2)Actor.BeamOrigin.position : (Vector2)Actor.transform.position;
+            Vector2 aim = PredictTarget(.2f) - origin;
+            float angle = Mathf.Atan2(aim.y, aim.x) * Mathf.Rad2Deg;
+            float spread = Mathf.Clamp(Config.ClockBeamSpread, 5f, 35f);
+            float warning = Mathf.Max(.3f, Config.ClockBeamWarning);
+            _aimUntil = Age + warning + .35f;
+            Actor.Motor.Stop();
+            if (hand == 2)
             {
-                _nextHour = Age + Config.ClockHourInterval;
-                Go("JumpShake");
+                Actor.Beam(angle - spread, .18f, warning);
+                Actor.Beam(angle + spread, .18f, warning);
             }
+            else Actor.Beam(angle + (hand == 1 ? -Actor.Facing * spread : 0f), .1f + hand * .08f, warning);
         }
         protected override void TickTransition()
         {
@@ -81,13 +103,25 @@ namespace RuleGame.Gameplay.Enemy
             {
                 Actor.Status.ApplyHealthDelta(Config.Health * 0.6f - Actor.Status.Health);
                 _hands[0] = 0.8f; _hands[1] = 1.5f;
+                _beamVolleys = 0; _nextHour = Age + 1f;
             }
         }
         protected override void EnterAction(string name)
         {
             base.EnterAction(name);
             if (name == "Rest") _beamVolleys = 0;
-            if (name == "Charge") { _chargeFacing = Actor.Facing; Actor.Cue("Charge", 3f, true); }
+            if (name == "JumpShake")
+            {
+                float direction = PredictTarget(.25f).x - Actor.transform.position.x;
+                _chargeFacing = Mathf.Abs(direction) > .1f ? Mathf.Sign(direction) : Actor.Facing;
+                _nextHour = Age + Mathf.Max(1f, Config.ClockChargeCooldown);
+                Actor.FaceDirection(Vector2.right * _chargeFacing);
+            }
+            if (name == "Charge")
+            {
+                Actor.FaceDirection(Vector2.right * _chargeFacing);
+                Actor.Cue("Charge", Actor.Duration("Charge", 3f), true);
+            }
         }
         protected override void TickAction(string name)
         {
@@ -95,7 +129,9 @@ namespace RuleGame.Gameplay.Enemy
             {
                 case "Idle":
                 case "Walk":
-                    if (TargetInMeleeRange && Age >= NextAttack)
+                    // 激光预警和判定期间站定，避免发射原点随走位滑动。
+                    if (Age < _aimUntil) { Actor.Motor.Intent = Vector2.zero; return; }
+                    if (TargetInMeleeRange && Age >= NextAttack && Age >= _nextHour)
                     {
                         Go("JumpShake");
                         return;
@@ -104,12 +140,12 @@ namespace RuleGame.Gameplay.Enemy
                     break;
                 case "JumpShake": if (Finished) { Actor.CastRule(); Go("Charge"); } break;
                 case "Charge":
-                    Actor.Motor.SpeedMultiplier = 3.5f;
-                    if (Actor.transform.position.x > Actor.ArenaX.y) _chargeFacing = -1f;
-                    if (Actor.transform.position.x < Actor.ArenaX.x) _chargeFacing = 1f;
+                    Actor.Motor.SpeedMultiplier = Mathf.Max(1f, Config.ClockChargeSpeedMultiplier);
                     Actor.Motor.Intent = Vector2.right * _chargeFacing;
                     Actor.Attack(2.5f);
-                    if (Finished) RestAfterAttack();
+                    bool blocked = Elapsed > .2f && Mathf.Abs(Actor.Motor.Velocity.x) < .2f;
+                    if (Elapsed >= Mathf.Max(.2f, Config.ClockChargeDuration) || AtArenaEdge(_chargeFacing) || blocked)
+                        RestAfterAttack();
                     break;
                 case "Hurt": if (Finished) Go("Idle"); break;
             }

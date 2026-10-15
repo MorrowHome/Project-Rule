@@ -20,10 +20,13 @@ namespace RuleGame.Presentation.Enemy
         private float _time;
         private Vector3 _anchor;
         private Vector2 _clockFace;
+        private bool _burrowed;
+        private float _visibleAlpha;
         public Vector3 ClockFaceWorld => transform.TransformPoint(_clockFace);
         private void Awake()
         {
             _renderer = GetComponent<SpriteRenderer>();
+            _visibleAlpha = _renderer.color.a;
             _anchor = transform.localPosition;
             if (Actor == null) Actor = GetComponentInParent<EnemyActor>();
             if (AnimationSet != null)
@@ -38,6 +41,7 @@ namespace RuleGame.Presentation.Enemy
         }
         private void OnDisable()
         {
+            SetBurrowed(false);
             if (Actor == null) return;
             Actor.AnimationChanged -= Select;
             Actor.Restored -= RestoreTime;
@@ -66,10 +70,20 @@ namespace RuleGame.Presentation.Enemy
                     if (_renderer.flipX) _clockFace.x = -_clockFace.x;
                 }
             }
+            SetBurrowed(Actor.Definition.Kind == EnemyKind.RabbitBoss && Actor.Brain?.StateName == "Burrow");
             // 始终从原始锚点计算，避免重力反转时累计位移或改变碰撞体比例。
             bool inverted = !Actor.Definition.Flying && Actor.Motor.Up.y < 0f;
             transform.localPosition = inverted ? new Vector3(_anchor.x, -_anchor.y, _anchor.z) : _anchor;
             transform.localRotation = Quaternion.Euler(0f, 0f, inverted ? 180f : 0f);
+        }
+        private void SetBurrowed(bool value)
+        {
+            if (_renderer == null || value == _burrowed) return;
+            Color color = _renderer.color;
+            if (value) _visibleAlpha = color.a;
+            color.a = value ? _visibleAlpha * .3f : _visibleAlpha;
+            _renderer.color = color;
+            _burrowed = value;
         }
     }
 }

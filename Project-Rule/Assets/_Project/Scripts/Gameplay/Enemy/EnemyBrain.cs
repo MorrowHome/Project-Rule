@@ -173,6 +173,26 @@ namespace RuleGame.Gameplay.Enemy
             return true;
         }
         protected bool Finished => Elapsed >= Actor.AnimationDuration;
+        protected Vector2 PredictTarget(float lead)
+        {
+            if (!HasTarget) return Actor.transform.position;
+            var body = Actor.Target.GetComponentInParent<Rigidbody2D>();
+            Vector2 velocity = body != null ? Vector2.ClampMagnitude(body.linearVelocity, 12f) : Vector2.zero;
+            return (Vector2)Actor.Target.position + velocity * lead;
+        }
+        protected float ClampArenaX(float x)
+        {
+            float margin = Config.BodySize.x * .5f + .15f;
+            return Actor.ArenaX.y - Actor.ArenaX.x > margin * 2f
+                ? Mathf.Clamp(x, Actor.ArenaX.x + margin, Actor.ArenaX.y - margin)
+                : (Actor.ArenaX.x + Actor.ArenaX.y) * .5f;
+        }
+        protected bool AtArenaEdge(float direction)
+        {
+            float ahead = Actor.transform.position.x + Actor.Motor.Velocity.x * .12f;
+            return direction < 0f ? ahead <= ClampArenaX(Actor.ArenaX.x) + .05f
+                : ahead >= ClampArenaX(Actor.ArenaX.y) - .05f;
+        }
         protected void RestAfterAttack(string resume = "Idle", float cooldown = -1f)
         {
             float rest = Mathf.Max(0.1f, Config.BossRestDuration);

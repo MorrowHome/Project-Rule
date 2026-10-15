@@ -16,12 +16,20 @@ namespace RuleGame.Editor.Enemy
     public static class BossCombatValidation
     {
         private const string Pending = "RuleGame.Enemy.CombatValidation";
+        private const string Tactics = "RuleGame.Enemy.TacticsValidation";
         private static readonly List<EnemyActor> Actors = new List<EnemyActor>();
         private static readonly List<Action<EnemyActor>> Cases = new List<Action<EnemyActor>>();
         private static int _passed, _failed;
         private static double _deadline;
+        private static bool _tactics;
         private static string Output => Environment.GetEnvironmentVariable("RULE_BOSS_OUTPUT")
-            ?? Path.GetFullPath(Path.Combine(Application.dataPath, "../Logs/BossCombatValidation.txt"));
+            ?? Path.GetFullPath(Path.Combine(Application.dataPath, _tactics ? "../Logs/BossTacticsValidation.txt" : "../Logs/BossCombatValidation.txt"));
+
+        public static void RunTacticsBatch()
+        {
+            SessionState.SetBool(Tactics, true);
+            RunBatch();
+        }
 
         public static void RunBatch()
         {
@@ -46,8 +54,15 @@ namespace RuleGame.Editor.Enemy
             TimeManager.Initialize(); WorldRegistry.Initialize();
             RuleSystem.Initialize(ScriptableObject.CreateInstance<RuleCatalog>());
             _deadline = EditorApplication.timeSinceStartup + 30;
+            _tactics = SessionState.GetBool(Tactics, false);
+            if (_tactics)
+            {
+                AddTacticsCases();
+                EditorApplication.update += AwaitReady;
+                return;
+            }
             Add(EnemyKind.BrickBoss, a => { Target(a, 2); Step(a); Check(a.Brain.StateName == "HammerPlayer", "积木近距锤击"); });
-            Add(EnemyKind.BrickBoss, a => { Target(a, 5); Step(a); Check(a.Brain.StateName == "HammerGround", "积木中距冲击波"); });
+            Add(EnemyKind.BrickBoss, a => { Target(a, 5); Step(a); Check(a.Brain.StateName == "Advance", "积木中距主动压近"); });
             Add(EnemyKind.BrickBoss, a => { Target(a, 8); Step(a); Check(a.Brain.StateName == "Throw", "积木远距投掷"); });
             Add(EnemyKind.BrickBoss, a => { Target(a, 11); Step(a); Check(a.Brain.StateName == "Walk" && a.Motor.Intent.x > 0, "超射程追击"); });
             Add(EnemyKind.BrickBoss, a => { Target(a, 2, 5); Step(a); Check(a.Brain.StateName == "Throw", "高处目标使用投掷"); });
@@ -105,7 +120,7 @@ namespace RuleGame.Editor.Enemy
                 Step(a, 1); a.RestoreSnapshotState(saved);
                 Check(Mathf.Approximately(a.AnimationDuration, duration), "恢复快照保留阶段对应的攻击节奏");
             });
-            Add(EnemyKind.ClockBoss, a => { Target(a, 2); Step(a); Check(a.Brain.StateName == "JumpShake", "发条贴近时响铃反击"); });
+            Add(EnemyKind.ClockBoss, a => { Target(a, 2); Step(a, 2.4f); Check(a.Brain.StateName == "JumpShake", "发条贴近且冲撞就绪时响铃反击"); });
             Add(EnemyKind.ClockBoss, a =>
             {
                 Target(a, 5); Step(a);
@@ -116,11 +131,13 @@ namespace RuleGame.Editor.Enemy
             Add(EnemyKind.RabbitBoss, a =>
             {
                 Target(a, 2); Step(a, 0.3f); Step(a, 0.8f);
-                Check(a.Motor.Intent.x < 0, "兔子投掷恢复时拉开距离");
+                Step(a, a.AnimationDuration + .01f); Step(a);
+                Check(a.Brain.StateName == "Burrow" && a.Motor.Intent.x < 0, "兔子近身藏身撤退");
             });
             Add(EnemyKind.RabbitBoss, a =>
             {
-                Target(a, 11); Step(a, 0.3f); Step(a);
+                Target(a, 11); Step(a, .3f); Step(a, 2.1f);
+                Step(a, a.Definition.BossRestDuration + .01f); Step(a);
                 Check(a.Motor.Intent.x > 0, "兔子超射程靠近");
             });
             foreach (EnemyKind kind in new[] { EnemyKind.BrickBoss, EnemyKind.ClockBoss, EnemyKind.RabbitBoss, EnemyKind.BatBoss })
@@ -272,6 +289,112 @@ namespace RuleGame.Editor.Enemy
             EditorApplication.update += AwaitReady;
         }
 
+        private static void AddTacticsCases()
+        {
+            Add(EnemyKind.BrickBoss, a =>
+            {
+                Target(a, 5); Step(a); Step(a);
+                Check(a.Brain.StateName == "Advance" && a.Motor.Intent.x > 0 && a.Motor.SpeedMultiplier > 1f, "积木主动快步压近");
+                Target(a, -6); Step(a);
+                Check(a.Brain.StateName == "HammerGround", "玩家绕后时积木停步重新预警地面重击");
+            });
+            Add(EnemyKind.BrickBoss, a =>
+            {
+                EnemyProjectile shot = null;
+                a.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.ProjectileSpawn) shot = (EnemyProjectile)cue.Subject; };
+                Target(a, 8); Step(a); Target(a, -8); Step(a, a.AnimationDuration * .65f);
+                Check(shot != null && shot.Velocity.x > 0f, "积木投掷锁定起手时目标，玩家换边可以躲避");
+            });
+            Add(EnemyKind.BrickBoss, a =>
+            {
+                a.Status.ApplyHealthDelta(-260); Step(a); Step(a, 1.1f);
+                Target(a, 2); Step(a); Step(a, a.AnimationDuration + .01f);
+                Check(a.Brain.StateName == "HammerGround", "积木分裂阶段解锁锤人接地面重击");
+                Step(a, a.AnimationDuration + .01f);
+                Check(a.Brain.StateName == "Rest", "积木有限连招结束后进入休息");
+            });
+            Add(EnemyKind.ClockBoss, a =>
+            {
+                EnemyBeam beam = null;
+                a.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.BeamSpawn) beam = (EnemyBeam)cue.Subject; };
+                Target(a, 6); Step(a, .81f);
+                Check(beam != null && beam.Direction.x > .9f && beam.WarningDuration >= .7f, "发条瞄准激光保留预警");
+                Vector2 direction = beam.Direction; Target(a, -6); Step(a, .1f);
+                Check(beam.Direction == direction, "激光预警后不追着玩家转向");
+            });
+            Add(EnemyKind.ClockBoss, a =>
+            {
+                Target(a, 2); Step(a, 2.4f); Target(a, -6);
+                Step(a, a.AnimationDuration + .01f); Step(a);
+                Check(a.Brain.StateName == "Charge" && a.Motor.Intent.x > 0 && a.Facing > 0, "发条冲撞保持响铃时锁定方向");
+                a.transform.position = new Vector3(11.9f, 0, 0); Step(a);
+                Check(a.Brain.StateName == "Rest", "发条到边界停止冲撞，不来回折返追杀");
+            });
+            Add(EnemyKind.ClockBoss, a =>
+            {
+                int beams = 0;
+                a.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.BeamSpawn) beams++; };
+                Target(a, 6); Step(a, .81f); Step(a, 2.01f);
+                Step(a, a.Definition.ClockBeamWarning + .36f);
+                Check(beams == 2 && a.Brain.StateName == "JumpShake", "两轮激光后抓机会进入响铃冲撞");
+                Step(a, .2f);
+                Check(beams == 2, "响铃期间不再叠加新激光");
+                Step(a, .7f); Step(a, a.Definition.ClockChargeDuration + .01f);
+                Check(a.Brain.StateName == "Rest", "发条冲撞后保留喘息窗口");
+            });
+            Add(EnemyKind.RabbitBoss, a =>
+            {
+                Target(a, 2); Step(a, .21f); Step(a); Step(a, a.AnimationDuration + .01f); Step(a);
+                Check(a.Brain.StateName == "Burrow" && a.Motor.Intent.x < 0 && a.Motor.SpeedMultiplier > 1, "兔子被逼近时藏身撤退");
+                var visual = new GameObject("BurrowVisual"); visual.SetActive(false);
+                var renderer = visual.AddComponent<SpriteRenderer>();
+                var animator = visual.AddComponent<RuleGame.Presentation.Enemy.EnemySpriteAnimator>(); animator.Actor = a;
+                visual.SetActive(true); animator.SendMessage("LateUpdate");
+                Check(renderer.color.a < .5f, "白盒也用半透明显示藏身状态");
+                object saved = a.CaptureSnapshotState(); Target(a, -8); Step(a);
+                Check(a.Motor.Intent.x < 0, "藏身路线不随玩家换边反复抖动");
+                a.RestoreSnapshotState(saved); Step(a, a.Definition.RabbitBurrowDuration + .01f); animator.SendMessage("LateUpdate");
+                Check(a.Brain.StateName == "Pop" && renderer.color.a == 1f, "藏身结束重新现身，外观恢复");
+            });
+            Add(EnemyKind.RabbitBoss, a =>
+            {
+                a.transform.position = new Vector3(-10, 0, 0); Target(a, 2);
+                Step(a, .21f); Step(a); Step(a, a.AnimationDuration + .01f);
+                Check(a.Brain.StateName == "HideThrow", "兔子被堵在墙角时改用高抛反击");
+            });
+            Add(EnemyKind.RabbitBoss, a =>
+            {
+                float first = -1f, second = -1f;
+                a.Feedback += cue =>
+                {
+                    if (cue.Kind != EnemyFeedbackKind.ProjectileSpawn) return;
+                    if (first < 0f) first = ((EnemyProjectile)cue.Subject).Gravity;
+                    else second = ((EnemyProjectile)cue.Subject).Gravity;
+                };
+                Target(a, 6); Step(a, .21f); Step(a, .75f); Step(a, 1.3f);
+                Step(a, a.Definition.BossRestDuration + .01f); Step(a, .65f); Step(a, .75f);
+                Check(first > 0 && second > first, "兔子休息后切换快弹与高抛，避免重复同一招");
+            });
+            Add(EnemyKind.RabbitBoss, a =>
+            {
+                int shots = 0;
+                a.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.ProjectileSpawn) shots++; };
+                Target(a, 6); a.Status.ApplyHealthDelta(-950); Step(a); Step(a, .81f);
+                Step(a, .36f); Step(a, .36f); Step(a, .4f);
+                Check(shots == 6 && a.Brain.StateName == "Rest", "兔子翻转后两轮三发散射，结束后休息");
+            });
+            foreach (EnemyKind kind in new[] { EnemyKind.BrickBoss, EnemyKind.ClockBoss, EnemyKind.RabbitBoss })
+                Add(kind, a =>
+                {
+                    a.Definition.BossRestDuration = 1.8f; Target(a, 6); AdvanceTo(a, "Rest");
+                    Step(a, .4f);
+                    Check(a.Brain.StateName == "Rest" && a.Motor.Intent == Vector2.zero, kind + " 新战术保留完整休息");
+                    object saved = a.CaptureSnapshotState(); float remaining = a.Brain.RestRemaining;
+                    a.Status.SetPaused(true); Step(a, 10); a.Status.SetPaused(false); Step(a, .2f); a.RestoreSnapshotState(saved);
+                    Check(Mathf.Approximately(a.Brain.RestRemaining, remaining), kind + " 新战术兼容暂停与快照");
+                });
+        }
+
         private static void Add(EnemyKind kind, Action<EnemyActor> test)
         {
             var config = ScriptableObject.CreateInstance<EnemyDefinition>();
@@ -332,6 +455,7 @@ namespace RuleGame.Editor.Enemy
         private static void Finish(string error)
         {
             SessionState.SetBool(Pending, false);
+            SessionState.SetBool(Tactics, false);
             if (error != null) { _failed++; Debug.LogError(error); }
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(Output)));
             File.WriteAllText(Output, $"Passed: {_passed}\nFailed: {_failed}\n{error}\n");

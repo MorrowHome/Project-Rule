@@ -38,6 +38,25 @@ namespace RuleGame.Gameplay.Enemy
         [Min(0.1f)] public float BossRestDuration = 1.8f;
         [Tooltip("发条连续发射这么多轮指针后休息；同一物理帧多根指针算一轮。")]
         [Min(1)] public int ClockBeamVolleysBeforeRest = 2;
+        [Header("积木压迫与连招")]
+        [Min(0.2f)] public float BrickAdvanceDuration = 0.9f;
+        [Min(1f)] public float BrickAdvanceSpeedMultiplier = 2.2f;
+        [Min(0.5f)] public float BrickAdvanceCooldown = 4f;
+        [Tooltip("第二阶段起一套攻击的最大招数，每招仍有完整前摇，结束后休息。")]
+        [Range(1, 3)] public int BrickComboLimit = 2;
+        [Header("发条封路与冲撞")]
+        [Min(0.2f)] public float ClockChargeDuration = 1.15f;
+        [Min(1f)] public float ClockChargeSpeedMultiplier = 3.5f;
+        [Min(1f)] public float ClockChargeCooldown = 7f;
+        [Min(0.3f)] public float ClockBeamWarning = 0.7f;
+        [Range(5f, 35f)] public float ClockBeamSpread = 14f;
+        [Header("兔子藏身与弹幕")]
+        [Min(0.2f)] public float RabbitBurrowDuration = 1f;
+        [Min(1f)] public float RabbitBurrowSpeedMultiplier = 2.8f;
+        [Min(1f)] public float RabbitBurrowCooldown = 5f;
+        [Min(1f)] public float RabbitEscapeDistance = 2.8f;
+        [Range(1, 3)] public int RabbitBurstCount = 2;
+        [Min(0.2f)] public float RabbitBurstInterval = 0.35f;
         [Header("Boss 距离控制")]
         [Min(0.5f)] public float PreferredDistance = 5f;
         [Min(0.1f)] public float SpacingTolerance = 0.6f;

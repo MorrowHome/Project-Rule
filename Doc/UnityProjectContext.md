@@ -62,6 +62,8 @@ manifest 已有 Coplay Unity MCP，仓库 `.mcp.json` 指向 `localhost:8080/mcp
 
 2026-10-16 增加统一 `Rest`：一套攻击后不再出招，`BossRestDuration` 地面默认 1.8 秒、蝙蝠默认 3.2 秒，均不随阶段缩短。发条默认两轮指针后休息，由 `ClockBeamVolleysBeforeRest` 调整；指针时钟在休息中冻结。兔子每轮投掷后休息，蝙蝠攻击后升至场地高度的 80%，围绕休息起点左右各 2.5 米往返，速度为基础巡航的 0.85 倍；不追踪玩家、不出招。高度、距离和速度均在 Inspector 配置，巡飞端点与方向参加快照。破韧恢复继续剩余休息；阶段和死亡优先。同时关闭飞行实体的 Slide 贴地吸附，修复落地后有上升速度却无法升空的问题。地面实体的吸附行为不变。生成工具同步配置。新增验证日志为 `/tmp/rule-bat-rest-patrol-combat.log`、`/tmp/rule-bat-rest-patrol-flight.log` 和 `/tmp/rule-bat-rest-patrol-body.log`。
 
+2026-10-16 三种地面 Boss 重做战术：积木新增 Advance 压近与分裂后有限连招、起手锁定投掷；发条改为瞄准/错位/分叉激光，预警站定，响铃锁定短冲撞，受阻或到边界后休息；兔子近身藏身撤退、墙角高抛，快弹/高抛交替，翻转后有限散射。新参数在 EnemyDefinition 对应三个分组。兔子素材仍为空，藏身用半透明占位表现，不加无敌或穿人。遵照本轮要求只运行 `BossCombatValidation.RunTacticsBatch` 做必要的定向验证，28 项通过且编译通过，不重跑前述历史完整套件。日志 `/tmp/rule-three-boss-tactics.log`，计数 `Logs/BossTacticsValidation.txt`。前述 119/21/9 是战术重做前的历史结果。
+
 ## 证据
 
 `CLAUDE.md`、`Doc/系统模块架构.md`、`Doc/敌人系统接入.md`；工程内 `Packages/manifest.json`、`ProjectSettings/{ProjectVersion.txt,QualitySettings.asset,GraphicsSettings.asset,EditorBuildSettings.asset,ProjectSettings.asset}`；一方 `.asmdef`；`Scripts/Gameplay/Enemy/*.cs`、`Gameplay/Player/EntityStatus.cs`、`PlayerController.cs`、`RuleReleaseService.cs`、`Scripts/Editor/Enemy/EnemyLabBuilder.cs`、`Scripts/Rules/RuleSystemDriver.cs`。
