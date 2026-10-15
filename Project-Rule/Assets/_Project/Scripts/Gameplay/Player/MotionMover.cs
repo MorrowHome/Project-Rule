@@ -59,19 +59,41 @@ namespace RuleGame.Gameplay.Player
 
             Vector2 slideVelocity = _velocity + _externalVelocity;
 
-            // ⑨′ 顶墙分量预夹：已知哪边贴着墙，就把「顶进去」的那一份先夹掉。
+            // ⑨′ 顶墙 / 顶天花板预夹：已知哪个方向贴着墙或天花板，就把「顶进去」的那一份先去掉。
             //
-            //    ⚠️ 这一条不是优化，是**必须的兜底**。`Rigidbody2D.Slide` 一旦在移动过程中
-            //       碰到一个「不能沿其滑动」的面（surfaceSlideAngle 挡不住的竖墙、或**墙的下沿拐角**
-            //       这种斜法线接触），它会**把整笔位移取消** —— 不只是顶墙那一份，连沿墙下滑的
-            //       竖直分量一起丢掉；**而且照样报 `remainingVelocity = (0,0)`**，于是 ⑩ 以为
-            //       「移动成功了」，不清零速度 → 表现就是「速度满速、位置不动」，代码里没人发现。
-            //       实测（2026-10-15）：真实左墙下沿 y=1.72、玩家 y=1.4473 时必然冻结；
-            //       同一位置把 x 夹成 0 就恢复正常。加叠代次数（8/16/32）无效。
+            //    ⚠️ 这一条不是优化，是**必须的兜底**。`Rigidbody2D.Slide` 碰到「过不去」的面时有两种
+            //       失败模式，都**不报错、也不在 remainingVelocity 里体现**：
+            //         ① 碰到不能沿其滑动的面（surfaceSlideAngle 挡不住的竖墙、或墙下沿拐角这种
+            //            斜法线接触）→ 把**整笔位移取消**；
+            //         ② 碰到天花板 → 把位移**截到「缝」那么长**。
+            //       两种都**照样报 remainingVelocity = (0,0)**，于是 ⑩ 以为「移动成功了」。
+            //       ① 的表现是「速度满速、位置不动」（实测：真实左墙下沿 y=1.72、玩家 y=1.4473 时
+            //          必然冻结；加叠代次数 8/16/32 无效）；② 的表现是「顶着天花板挂住」，
+            //          直到重力把上升速度吃光才掉下来（起跳 16.5 要 0.22 秒，读起来像「粘住」）。
             //
-            //    墙的法向分量本来就过不去，留着只会让 Slide 走那条取消路径，所以夹掉它没有副作用。
-            if (contact.WallLeft  && slideVelocity.x < 0f) slideVelocity.x = 0f;
-            if (contact.WallRight && slideVelocity.x > 0f) slideVelocity.x = 0f;
+            //    ⚠️ **必须同时改 `_velocity` 本身**，不能只改喂给 Slide 的副本 —— 只改副本的话
+            //       剩余速度变成 0，⑩ 反而不清零了，速度会一直留着（第一版就是这么错的）。
+            //
+            //    被夹掉的都是「本来就过不去」的分量，所以没有副作用；夹完立刻清掉，
+            //    手感就是「撞上去、停住、然后该掉就掉」。
+            if (contact.WallLeft && slideVelocity.x < 0f)
+            {
+                slideVelocity.x = 0f;
+                _velocity.x    = 0f;
+            }
+            if (contact.WallRight && slideVelocity.x > 0f)
+            {
+                slideVelocity.x = 0f;
+                _velocity.x    = 0f;
+            }
+            if (contact.Ceiling)
+            {
+                float alongUp = Vector2.Dot(slideVelocity, contact.Up);
+                if (alongUp > 0f) slideVelocity -= contact.Up * alongUp;
+
+                float riseSpeed = Vector2.Dot(_velocity, contact.Up);
+                if (riseSpeed > 0f) _velocity -= contact.Up * riseSpeed;
+            }
 
             var result = _body.Slide(slideVelocity, dt, BuildSlideMovement(tuning, contact));
 

@@ -65,6 +65,9 @@ namespace RuleGame.Presentation.Player
         /// <summary>连段的下一刀（收招前再按一次）。</summary>
         public const string ParamAttackNext = "AttackNext";
 
+        /// <summary>重击（下 + 攻击）。**不先进拔剑**，直接从 AnyState 进 <c>SlashDown</c>。</summary>
+        public const string ParamHeavy = "HeavyAttack";
+
         private static readonly int HSpeed          = Animator.StringToHash(ParamSpeed);
         private static readonly int HMoving         = Animator.StringToHash(ParamMoving);
         private static readonly int HGrounded       = Animator.StringToHash(ParamGrounded);
@@ -81,6 +84,7 @@ namespace RuleGame.Presentation.Player
         private static readonly int HDie          = Animator.StringToHash(ParamDie);
         private static readonly int HAttack       = Animator.StringToHash(ParamAttack);
         private static readonly int HAttackNext   = Animator.StringToHash(ParamAttackNext);
+        private static readonly int HHeavy        = Animator.StringToHash(ParamHeavy);
 
         // ==================================================================
         //  序列化
@@ -120,6 +124,7 @@ namespace RuleGame.Presentation.Player
                 _player.OnWallJumped += HandleWallJumped;
                 _player.OnLanded     += HandleLanded;
                 _player.OnAttacked   += HandleAttacked;
+                _player.OnHeavyAttacked += HandleHeavyAttacked;
             }
 
             if (_status != null)
@@ -138,6 +143,7 @@ namespace RuleGame.Presentation.Player
                 _player.OnWallJumped -= HandleWallJumped;
                 _player.OnLanded     -= HandleLanded;
                 _player.OnAttacked   -= HandleAttacked;
+                _player.OnHeavyAttacked -= HandleHeavyAttacked;
             }
 
             if (_status != null) _status.OnHealthChanged -= HandleHealthChanged;
@@ -229,6 +235,12 @@ namespace RuleGame.Presentation.Player
         /// </remarks>
         private void HandleAttacked()
             => SetTrigger(_player.AttackComboIndex <= 0 ? HAttack : HAttackNext);
+
+        /// <summary>
+        /// 重击。**不走 <see cref="ParamAttack"/>** —— 那条路会先进 <c>DrawSword</c>（拔剑）；
+        /// 重击是直接劈下去的单发动作，所以给图上一条独立的 AnyState 过渡。
+        /// </summary>
+        private void HandleHeavyAttacked() => SetTrigger(HHeavy);
 
         /// <summary>掉血 → 受伤；掉到 0 → 死亡。回血不触发任何东西。</summary>
         private void HandleHealthChanged(float current, float max)

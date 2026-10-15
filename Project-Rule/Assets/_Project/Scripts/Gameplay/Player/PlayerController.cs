@@ -227,6 +227,58 @@ namespace RuleGame.Gameplay.Player
         [Tooltip("连段最多打几刀。1 = 只有一下，不接。")]
         [SerializeField, Range(1, 4)] private int _maxCombo = 2;
 
+        // ------------------------------------------------------------------
+        //  重击：单发，不进连段
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// 重击动画的目标时长（秒）—— <c>HeroAnimatorBuilder</c> 按它算 <c>SlashDown</c> 的
+        /// <c>AnimatorState.speed</c>。
+        /// </summary>
+        /// <remarks>取 0.70 是因为 <c>Hero_SlashDown</c> 原始 0.9167 秒 → 倍率约 1.31，
+        /// **比轻击的 1.70 慢** —— 同一段素材放慢，读起来才有分量。</remarks>
+        public const float HeavySwingSeconds = 0.70f;
+
+        /// <summary>
+        /// 重击起手。**要对齐刀刃的视觉接触时刻**，和 <see cref="AttackWindupBase"/> 同一条道理。
+        /// </summary>
+        /// <remarks>⚠️ 这个数是量出来的、不是拍的：先用动画测试窗把 <c>SlashDown</c> 逐帧走一遍，
+        /// 记下刀刃扫到目标那一帧 k（12fps），则接触真时 = (k / 12) × (0.70 / 0.9167)。</remarks>
+        public const float HeavyWindupBase = 0.32f;
+
+        /// <summary>重击生效：判定窗时长。</summary>
+        public const float HeavyActiveBase = 0.14f;
+
+        /// <summary>重击收招：这段时间里出不了第二发。</summary>
+        public const float HeavyRecoverBase = 0.36f;
+
+        /// <summary>重击冷却：从收招结束起算。整轮 ≈ 起手 + 生效 + 收招 + 冷却 ≈ 2.0 秒。</summary>
+        public const float HeavyCooldownBase = 1.2f;
+
+        [Tooltip("重击起手：从按键到「判定开窗」的秒数。")]
+        [SerializeField] private float _heavyWindup = HeavyWindupBase;
+
+        [Tooltip("重击生效：判定窗时长。只在开窗那一瞬做一次命中判定。")]
+        [SerializeField] private float _heavyActive = HeavyActiveBase;
+
+        [Tooltip("重击收招：这段时间里出不了第二发。冷却从这里结束时起算。")]
+        [SerializeField] private float _heavyRecover = HeavyRecoverBase;
+
+        [Tooltip("重击冷却秒数。0 = 没有冷却。")]
+        [SerializeField] private float _heavyCooldown = HeavyCooldownBase;
+
+        [Tooltip("重击伤害**基础值** —— 换算由伤害处理模块负责，这里不许先乘系数。")]
+        [SerializeField] private float _heavyDamage = 24f;
+
+        [Tooltip("重击击退基础值。比轻击大，重击才「推得动」。")]
+        [SerializeField] private float _heavyKnockback = 12f;
+
+        [Tooltip("重击判定盒尺寸。比轻击大一圈。")]
+        [SerializeField] private Vector2 _heavyBoxSize = new Vector2(1.4f, 1.2f);
+
+        [Tooltip("重击判定盒相对角色中心的水平偏移（朝前）。")]
+        [SerializeField] private float _heavyBoxOffset = 0.9f;
+
         [Header("能量")]
         [Tooltip("每命中一个目标恢复的能量（策划案 §四：攻击小怪回能）。未命中不给。")]
         [SerializeField] private float _energyPerHit = 4f;
@@ -240,6 +292,7 @@ namespace RuleGame.Gameplay.Player
         private JumpSolver    _jump;
         private DashSolver    _dash;
         private AttackSolver  _attack;
+        private HeavyAttackSolver _heavy;
         private MotionMover   _mover;
 
         // ==================================================================
@@ -277,6 +330,12 @@ namespace RuleGame.Gameplay.Player
         /// （起手播拔剑、接续播下一段）。</remarks>
         public event Action OnAttacked;
 
+        /// <summary>
+        /// 重击起手瞬间。与 <see cref="OnAttacked"/> 分开：它不进连段，
+        /// 表现层要播的是另一段动作（<c>SlashDown</c>），而且**不先播拔剑**。
+        /// </summary>
+        public event Action OnHeavyAttacked;
+
         // ==================================================================
         //  生命周期
         // ==================================================================
@@ -292,6 +351,7 @@ namespace RuleGame.Gameplay.Player
             _jump     = new JumpSolver();
             _dash     = new DashSolver();
             _attack   = new AttackSolver();
+            _heavy    = new HeavyAttackSolver();
             _mover    = new MotionMover(body);          // 刚体的 Kinematic 配置在这里面
 
             _dash.Reset(BuildTuning());                 // 起手就有冲刺，不必先落地一次
@@ -342,10 +402,29 @@ namespace RuleGame.Gameplay.Player
             DashSolver.Decision dash = _dash.Advance(tuning, input, contact, _mover.Facing, dt);
             if (dash.Started) OnDashed?.Invoke();
 
-            // ③′ 攻击连段：起手 → 生效 → 收招。判定本身留在本类（要用 CombatSystem 与位置）。
-            AttackSolver.Decision attack = _attack.Advance(tuning, input.AttackPressed, dt);
+            // ③′ 攻击：轻击连段与重击共用这一个按键，**按意图路由**。
+            //
+            // ⚠️ 判「意图」而不是「合法性」：下+攻击**就是**一次重击意图，
+            //    不合法（冷却中 / 空中 / 冲刺中 / 轻击在跑）就**丢掉**，
+            //    绝不回退成一次轻击 —— 否则冷却期按下去会莫名其妙挥出一刀轻击。
+            bool heavyIntent  = HeavyAttackSolver.IsHeavyIntent(input.Move, input.AttackPressed, contact.Up);
+            bool lightPressed = input.AttackPressed && !heavyIntent;
+
+            // 轻击在跑就不给重击：ComboIndex 直到收招结束才回到 −1，
+            // 所以 `>= 0` 恰好等价于「连段还在三段里」（不用给 AttackSolver 加新 API）。
+            HeavyAttackSolver.Decision heavy = _heavy.Advance(
+                tuning, heavyIntent,
+                HeavyAttackSolver.CanStart(_attack.ComboIndex >= 0, contact.Grounded, dash.Dashing),
+                dt);
+            if (heavy.Swing)  OnHeavyAttacked?.Invoke();
+            if (heavy.Strike)
+                PerformAttackHit(_heavyDamage, _heavyKnockback, _heavyBoxSize, _heavyBoxOffset);
+
+            // ③″ 攻击连段：起手 → 生效 → 收招。判定本身留在本类（要用 CombatSystem 与位置）。
+            AttackSolver.Decision attack = _attack.Advance(tuning, lightPressed, dt);
             if (attack.Swing)  OnAttacked?.Invoke();
-            if (attack.Strike) PerformAttackHit();
+            if (attack.Strike)
+                PerformAttackHit(_attackDamage, _attackKnockback, _attackBoxSize, _attackOffset);
 
             // ②⑦⑧ 跳跃：跳数与土狼时间一直推进；冲刺期间只推进计数、不消费输入。
             JumpSolver.Decision jump = _jump.Solve(tuning, input, contact, dash.Dashing, dt);
@@ -433,6 +512,12 @@ namespace RuleGame.Gameplay.Player
         /// <summary>当前连段打到第几刀（0 起数）；没在出招时是 −1。</summary>
         public int AttackComboIndex => _attack != null ? _attack.ComboIndex : -1;
 
+        /// <summary>重击正在挥（起手 / 生效 / 收招都算）。</summary>
+        public bool IsHeavyBusy => _heavy != null && _heavy.IsBusy;
+
+        /// <summary>重击冷却剩余秒数，0 = 可以放（供 HUD / 调试浮层显示）。</summary>
+        public float HeavyCooldownLeft => _heavy != null ? _heavy.CooldownLeft : 0f;
+
         /// <summary>暂停中不读输入、不推进物理。</summary>
         /// <remarks>暂停状态由 <c>EntityStatus.SetPaused</c> 驱动 —— 暂停持有者（P1 的时间管理器）负责调用。</remarks>
         private bool IsPaused => _status != null && _status.IsPaused;
@@ -455,18 +540,23 @@ namespace RuleGame.Gameplay.Player
         //  攻击判定
         // ==================================================================
 
-        /// <summary>生效段的唯一命中判定。走正式伤害链路（传**基础值**，由伤害处理模块按规则算）。</summary>
-        /// <remarks>放在速度解算**之前**调用，所以读到的朝向是上一帧末的 ——
-        /// 与重构前一致（原来 ③′ 也在 ④ 之前）。</remarks>
-        private void PerformAttackHit()
+        /// <summary>
+        /// 生效段的唯一命中判定。轻击与重击共用这一个出口，只差传进来的那组参数。
+        /// </summary>
+        /// <remarks>
+        /// <para>走正式伤害链路：<b>传的是基础值</b>，最终伤害由伤害处理模块按当前规则算 ——
+        /// 重击就是传一个更大的基础伤害，**绝不在这一侧先乘系数**（会绕过伤害规则）。</para>
+        /// <para>放在速度解算**之前**调用，所以读到的朝向是上一帧末的 ——
+        /// 与重构前一致（原来 ③′ 也在 ④ 之前）。</para>
+        /// </remarks>
+        private void PerformAttackHit(float damage, float knockback, Vector2 boxSize, float boxOffset)
         {
             if (_combat == null) return;
 
             // 发起方只组织「打哪儿、打多大」，最终伤害由伤害处理模块按当前规则算。
-            Vector2 center = (Vector2)transform.position + new Vector2(_mover.Facing * _attackOffset, 0f);
+            Vector2 center = (Vector2)transform.position + new Vector2(_mover.Facing * boxOffset, 0f);
 
-            int hits = _combat.PerformAttack(this, center, _attackBoxSize, _attackMask,
-                                             _attackDamage, _attackKnockback);
+            int hits = _combat.PerformAttack(this, center, boxSize, _attackMask, damage, knockback);
 
             // 能量恢复来源之一：命中即回，未命中不给（策划案 §四）。
             if (hits > 0 && _status != null)
@@ -476,9 +566,15 @@ namespace RuleGame.Gameplay.Player
         /// <summary>攻击判定体 + 贴墙探针：调参时直接看得到范围与朝向。</summary>
         private void OnDrawGizmosSelected()
         {
+            // 轻击（橙）与重击（红）各画一个 —— 重击的盒更大、偏移更远，
+            // 不画出来就没法目视调 _heavyBoxSize / _heavyBoxOffset。
             Gizmos.color = new Color(1f, 0.45f, 0.2f, 0.8f);
             Vector2 center = (Vector2)transform.position + new Vector2(Facing * _attackOffset, 0f);
             Gizmos.DrawWireCube(center, _attackBoxSize);
+
+            Gizmos.color = new Color(1f, 0.2f, 0.35f, 0.8f);
+            Vector2 heavyCenter = (Vector2)transform.position + new Vector2(Facing * _heavyBoxOffset, 0f);
+            Gizmos.DrawWireCube(heavyCenter, _heavyBoxSize);
 
             // 贴墙能力的**中段圆探针**。它的位置是从主碰撞体 bounds 推出来的（没有实体碰撞体），
             // 所以必须画出来才看得见 —— 这也是判断「探针高度合不合适」的唯一直观手段。
@@ -544,6 +640,15 @@ namespace RuleGame.Gameplay.Player
             AttackActive         = _attackActive,
             AttackRecover        = _attackRecover,
             MaxCombo             = _maxCombo,
+
+            HeavyWindup          = _heavyWindup,
+            HeavyActive          = _heavyActive,
+            HeavyRecover         = _heavyRecover,
+            HeavyCooldown        = _heavyCooldown,
+            HeavyDamage          = _heavyDamage,
+            HeavyKnockback       = _heavyKnockback,
+            HeavyBoxSize         = _heavyBoxSize,
+            HeavyBoxOffset       = _heavyBoxOffset,
         };
 
         /// <summary>当前摩擦缩放（1.0 = 正常）。规则系统未就绪时退化为 1。</summary>

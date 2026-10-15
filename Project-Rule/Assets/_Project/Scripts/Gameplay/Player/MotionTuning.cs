@@ -161,5 +161,33 @@ namespace RuleGame.Gameplay.Player
 
         /// <summary>连段最多打几刀。1 = 只有一下，不接。</summary>
         public int MaxCombo;
+
+        // ------------------------------------------------------------------
+        //  重击（不进连段的一次性单发）
+        // ------------------------------------------------------------------
+
+        /// <summary>起手：从按键到「判定开窗」的秒数。对齐刀刃的视觉接触时刻，见 PlayerController 的说明。</summary>
+        public float HeavyWindup;
+
+        /// <summary>生效：判定窗的时长。只在开窗那一瞬做一次命中判定。</summary>
+        public float HeavyActive;
+
+        /// <summary>收招：这段时间里出不了第二发。冷却从这里结束时起算。</summary>
+        public float HeavyRecover;
+
+        /// <summary>收招结束后的冷却秒数。0 = 没有冷却。</summary>
+        public float HeavyCooldown;
+
+        /// <summary>伤害**基础值** —— 由伤害处理模块按当前规则换算，调用方不许自己乘系数。</summary>
+        public float HeavyDamage;
+
+        /// <summary>击退基础值。比轻击大，重击才"推得动"。</summary>
+        public float HeavyKnockback;
+
+        /// <summary>判定盒尺寸。比轻击大一圈。</summary>
+        public Vector2 HeavyBoxSize;
+
+        /// <summary>判定盒相对角色中心的水平偏移（朝前）。</summary>
+        public float HeavyBoxOffset;
     }
 }

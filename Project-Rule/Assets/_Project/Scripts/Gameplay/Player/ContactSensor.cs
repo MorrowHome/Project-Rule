@@ -25,6 +25,7 @@ namespace RuleGame.Gameplay.Player
         private bool    _grounded;
         private bool    _wallLeft;
         private bool    _wallRight;
+        private bool    _ceiling;
         private bool    _climbLeft;
         private bool    _climbRight;
         private bool    _wasGrounded;
@@ -77,14 +78,49 @@ namespace RuleGame.Gameplay.Player
             _grounded  = ProbeGround(tuning);
             _wallLeft  = ProbeWall(Vector2.left, tuning);
             _wallRight = ProbeWall(Vector2.right, tuning);
+            _ceiling   = ProbeCeiling(tuning);
 
             // 中段探针：只认「身体中段那一小块」旁边的墙（贴墙能力的判据）。
             Bounds b = _bodyCollider.bounds;
             _climbLeft  = ProbeClimb(new Vector2(b.min.x,  b.center.y), tuning.WallClimbProbeRadius, tuning);
             _climbRight = ProbeClimb(new Vector2(b.max.x,  b.center.y), tuning.WallClimbProbeRadius, tuning);
 
-            return new State(_grounded, _wallLeft, _wallRight, _groundFriction, _up,
-                             _grounded && !_wasGrounded, _climbLeft, _climbRight);
+            return new State
+            {
+                Grounded       = _grounded,
+                WallLeft       = _wallLeft,
+                WallRight      = _wallRight,
+                Ceiling        = _ceiling,
+                GroundFriction = _groundFriction,
+                Up             = _up,
+                JustLanded     = _grounded && !_wasGrounded,
+                ClimbLeft      = _climbLeft,
+                ClimbRight     = _climbRight,
+            };
+        }
+
+        /// <summary>
+        /// 头顶有没有天花板：沿「上」方向做一次碰撞体扫描，找**法线朝下**的接触。
+        /// </summary>
+        /// <remarks>
+        /// <para>用途只有一个：让 <see cref="MotionMover"/> 在起跳顶到天花板时把向上的速度夹掉。</para>
+        /// <para>⚠️ 不夹的话，<c>Rigidbody2D.Slide</c> 会把位移**截到「缝」那么长**，
+        /// 但 <c>remainingVelocity</c> 照样报 <c>(0,0)</c> —— 于是 <c>MotionMover</c> 的 ⑩
+        /// 以为「移动成功了」，不清零向上的速度。表现是**顶着天花板挂住**，
+        /// 直到重力把那点上升速度吃光才掉下来（实测：起跳 16.5 要 0.22 秒，读起来像「粘住」）。</para>
+        /// </remarks>
+        private bool ProbeCeiling(MotionTuning tuning)
+        {
+            var filter = new ContactFilter2D { useTriggers = false };
+            filter.SetLayerMask(tuning.SolidLayer);
+
+            int count = _body.Cast(_up, filter, _groundHits, tuning.GroundProbeDistance);
+            for (int i = 0; i < count; i++)
+            {
+                // 法线朝下才是天花板；朝上的是支撑面，朝水平的是墙。
+                if (Vector2.Dot(_groundHits[i].normal, _up) < -0.5f) return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -173,36 +209,41 @@ namespace RuleGame.Gameplay.Player
         /// <summary>
         /// 本物理帧的接触快照。
         /// </summary>
-        /// <remarks><see cref="JustLanded"/> 是**边沿**（false → true），表现层靠它播一次落地动作 ——
-        /// 靠每帧采样接地状态是拿不到的（0.33 秒的落地只有 4 个物理帧）。</remarks>
-        public readonly struct State
+        /// <remarks>
+        /// <para><see cref="JustLanded"/> 是**边沿**（false → true），表现层靠它播一次落地动作 ——
+        /// 靠每帧采样接地状态是拿不到的（0.33 秒的落地只有 4 个物理帧）。</para>
+        /// <para>⚠️ 用「公开字段 + 对象初始化器」而不是 <c>init</c> 访问器：本工程的 Unity
+        /// 配置里没有 <c>System.Runtime.CompilerServices.IsExternalInit</c>，<c>init</c> 编译不过
+        /// （CS0518）。与 <c>JumpSolver.Decision</c> 那几个结论结构保持一致。</para>
+        /// </remarks>
+        public struct State
         {
-            public readonly bool    Grounded;
-            public readonly bool    WallLeft;
-            public readonly bool    WallRight;
-            public readonly float   GroundFriction;
-            public readonly Vector2 Up;
-            public readonly bool    JustLanded;
+            /// <summary>脚下有支撑面。</summary>
+            public bool Grounded;
+
+            /// <summary>左侧贴着竖墙（**全高**探测，只用于顶墙分量预夹）。</summary>
+            public bool WallLeft;
+
+            /// <summary>右侧贴着竖墙（**全高**探测，只用于顶墙分量预夹）。</summary>
+            public bool WallRight;
+
+            /// <summary>头顶贴着天花板 —— 用于夹掉向上的速度。</summary>
+            public bool Ceiling;
+
+            /// <summary>脚下这块地的摩擦系数（来自它的 <c>PhysicsMaterial2D</c>）。</summary>
+            public float GroundFriction;
+
+            /// <summary>当前「上」方向 = 重力反方向。</summary>
+            public Vector2 Up;
+
+            /// <summary>本帧刚落地（false → true 的边沿）。</summary>
+            public bool JustLanded;
 
             /// <summary>左侧**中段**贴着可爬的竖墙 —— 贴墙下滑 / 蹬墙跳用它，不用 <see cref="WallLeft"/>。</summary>
-            public readonly bool    ClimbLeft;
+            public bool ClimbLeft;
 
             /// <summary>右侧**中段**贴着可爬的竖墙。</summary>
-            public readonly bool    ClimbRight;
-
-            public State(bool grounded, bool wallLeft, bool wallRight,
-                         float groundFriction, Vector2 up, bool justLanded,
-                         bool climbLeft, bool climbRight)
-            {
-                Grounded       = grounded;
-                WallLeft       = wallLeft;
-                WallRight      = wallRight;
-                GroundFriction = groundFriction;
-                Up             = up;
-                JustLanded     = justLanded;
-                ClimbLeft      = climbLeft;
-                ClimbRight     = climbRight;
-            }
+            public bool ClimbRight;
         }
     }
 }

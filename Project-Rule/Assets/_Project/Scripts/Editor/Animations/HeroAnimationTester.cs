@@ -252,6 +252,7 @@ namespace RuleGame.Editor.Animations
                 if (GUILayout.Button("落地"))    Trigger(PlayerAnimationDriver.ParamLand);
                 if (GUILayout.Button("出刀"))    Trigger(PlayerAnimationDriver.ParamAttack);
                 if (GUILayout.Button("连段"))    Trigger(PlayerAnimationDriver.ParamAttackNext);
+                if (GUILayout.Button("重击"))    Trigger(PlayerAnimationDriver.ParamHeavy);
             }
 
             EditorGUILayout.Space(6f);
@@ -262,7 +263,7 @@ namespace RuleGame.Editor.Animations
         /// <summary>图上**没有入边**、所以游戏里走不到的状态。强制播放只用于看动画。</summary>
         private static readonly string[] UnreachableStates =
         {
-            "SlashDown", "Throw",
+            "Throw",
             "PullOut", "PickupOne", "PickupBoth", "PutBack", "OrbHold",
         };
 

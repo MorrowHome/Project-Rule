@@ -125,6 +125,9 @@ namespace RuleGame.Editor.Animations
             // 共用一个的话连段中途再按会从拔剑重来。
             c.AddParameter(PlayerAnimationDriver.ParamAttack,     AnimatorControllerParameterType.Trigger);
             c.AddParameter(PlayerAnimationDriver.ParamAttackNext, AnimatorControllerParameterType.Trigger);
+
+            // 重击：独立的一条，不共用 Attack —— 那条会先进拔剑，重击是直接劈下去。
+            c.AddParameter(PlayerAnimationDriver.ParamHeavy,      AnimatorControllerParameterType.Trigger);
         }
 
         private static void ClearParameters(AnimatorController c)
@@ -343,6 +346,7 @@ namespace RuleGame.Editor.Animations
             float blendDraw  = AttackBlend(speeds, "DrawSword");
             float blendSlash1 = AttackBlend(speeds, "Slash1");
             float blendSlash2 = AttackBlend(speeds, "Slash2");
+            float blendSlashDown = AttackBlend(speeds, "SlashDown");
 
             // 拔剑（4 帧）之后自动进第一段挥砍
             Link(s["DrawSword"], s["Slash1"], blendDraw, exitTime: true, at: 1f);
@@ -354,7 +358,9 @@ namespace RuleGame.Editor.Animations
             Link(s["Slash1"], s["Sheathe"], blendSlash1, exitTime: true, at: 1f);
 
             Link(s["Slash2"], s["Sheathe"], blendSlash2, exitTime: true, at: 1f);
-            Link(s["SlashDown"], s["Sheathe"], 0.05f, exitTime: true, at: 1f);
+
+            // 重击：入边在 LinkAnyState（下 + 攻击），播完同样收剑。
+            Link(s["SlashDown"], s["Sheathe"], blendSlashDown, exitTime: true, at: 1f);
 
             Link(s["Sheathe"], s["Idle"], 0.1f, exitTime: true, at: 1f);
             Link(s["Throw"], s["Idle"], 0.1f, exitTime: true, at: 1f);
@@ -373,29 +379,36 @@ namespace RuleGame.Editor.Animations
         // ⚠️ 速度按**剪辑原始时长**现算，不是写死的倍率：美术重导出更长的剪辑时，
         //    速度会自己跟着变，不用回来改这里。
 
-        /// <summary>一次挥砍在图上连续播哪几个 state。速度按**这一段的总时长**算。</summary>
-        private static readonly string[][] AttackSegments =
+        /// <summary>
+        /// 「一刀」在图上连续播哪几个 state，以及**这一段该占多少秒**。
+        /// </summary>
+        /// <remarks>
+        /// ⚠️ 目标秒数**每段各自带**，不是一个全局值：重击的 <c>SlashDown</c> 原片 0.9167 秒，
+        /// 套轻击那 0.54 秒会被压成和轻击一样快，就"重"不起来了。
+        /// 段的划分照美术的连段结构：起手拔剑 → 挥砍 → 收剑。
+        /// </remarks>
+        private static readonly (string[] States, float Seconds)[] AttackSegments =
         {
-            new[] { "DrawSword", "Slash1" },   // 第一刀：拔剑起手 + 挥砍
-            new[] { "Slash2" },                // 第二刀：回旋斩（美术的转身动作，不自作主张拆开）
+            (new[] { "DrawSword", "Slash1" }, PlayerController.AttackSwingSeconds),   // 第一刀：拔剑起手 + 挥砍
+            (new[] { "Slash2" },              PlayerController.AttackSwingSeconds),   // 第二刀：回旋斩
+            (new[] { "SlashDown" },           PlayerController.HeavySwingSeconds),    // 重击：单发
         };
 
         /// <summary>
         /// 给攻击链上的 state 算好播放速度，写进 <c>AnimatorState.speed</c>，并返回这张表。
         /// </summary>
         /// <remarks>
-        /// 倍率 = 这一段的剪辑总时长 ÷ <see cref="PlayerController.AttackSwingSeconds"/>。
+        /// 倍率 = 这一段的剪辑总时长 ÷ <b>这一段自己的</b>目标秒数。
         /// 攻击链以外的 state 一律不碰，保持 1（二段跳、贴墙、冲刺那些节奏都不受影响）。
         /// </remarks>
         private static Dictionary<string, float> ApplyAttackSpeeds(Dictionary<string, AnimatorState> states)
         {
             var speeds = new Dictionary<string, float>();
 
-            float target = PlayerController.AttackSwingSeconds;
-            if (target <= 0f) return speeds;
-
-            foreach (string[] segment in AttackSegments)
+            foreach ((string[] segment, float target) in AttackSegments)
             {
+                if (target <= 0f) continue;
+
                 float total = 0f;
                 foreach (string name in segment) total += ClipSeconds(states, name);
 
@@ -410,8 +423,7 @@ namespace RuleGame.Editor.Animations
                 }
             }
 
-            Debug.Log("[HeroAnimatorBuilder] 攻击速度 " + DescribeSpeeds(speeds)
-                      + "，每刀目标 " + target.ToString("0.###") + " 秒。");
+            Debug.Log("[HeroAnimatorBuilder] 攻击速度 " + DescribeSpeeds(speeds) + "。");
             return speeds;
         }
 
@@ -464,7 +476,7 @@ namespace RuleGame.Editor.Animations
         // ==================================================================
         //
         // ⚠️ **顺序 = 优先级**：Unity 按列表顺序求值，先满足的赢。
-        //    死亡 > 受击 > 冲刺 > 蹬墙 > 起跳 > 落地 > 攻击。
+        //    死亡 > 受击 > 冲刺 > 蹬墙 > 起跳 > 落地 > 攻击（轻击 / 重击）。
         //    攻击排在最后：机动动作优先，免得一刀把冲刺 / 蹬墙取消掉。
 
         private static void LinkAnyState(AnimatorStateMachine sm, Dictionary<string, AnimatorState> s)
@@ -504,7 +516,13 @@ namespace RuleGame.Editor.Animations
             t = sm.AddAnyStateTransition(s["DrawSword"]);
             t.hasExitTime = false; t.duration = 0.05f; t.hasFixedDuration = true; t.canTransitionToSelf = false;
             When(t, AnimatorConditionMode.If, PlayerAnimationDriver.ParamAttack);
-        }
 
+            // 重击（下 + 攻击）。和轻击并列排在最末：它也是攻击，机动动作优先。
+            // ⚠️ 它**不进 DrawSword**（拔剑）—— 重击是直接劈下去的单发动作，
+            //    和轻击那条链只共用「收剑」这个尾巴。所以这里的 DstState 是 SlashDown。
+            t = sm.AddAnyStateTransition(s["SlashDown"]);
+            t.hasExitTime = false; t.duration = 0.05f; t.hasFixedDuration = true; t.canTransitionToSelf = false;
+            When(t, AnimatorConditionMode.If, PlayerAnimationDriver.ParamHeavy);
+        }
     }
 }
