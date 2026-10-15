@@ -120,7 +120,7 @@ namespace RuleGame.Editor.Enemy
                 if (original.IsValid() && original.isLoaded) SceneManager.SetActiveScene(original);
                 AssetDatabase.DeleteAsset(generationPath);
             }
-            Debug.Log("[EnemyLabs] 六个独立白盒与六个敌人 Prefab 已生成，主角无敌，Build Settings 未修改。");
+            Debug.Log("[EnemyLabs] 六个独立白盒与六个敌人 Prefab 已生成，主角默认可受伤，F5 切换无敌，Build Settings 未修改。");
         }
         private static EnemyAnimationSet CreateAnimationSet(EnemyKind kind, EnemyArtManifest manifest)
         {

@@ -178,7 +178,7 @@ MonoBehaviour:
   Enemy: {fileID: 1566107194}
   Player: {fileID: 753694175}
   Font: {fileID: 12800000, guid: fe3c02df273c952408d013a1b86511fd, type: 3}
-  Invincible: 1
+  Invincible: 0
 --- !u!114 &429400468
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -14,7 +14,7 @@ namespace RuleGame.Development.Enemy
         public EnemyActor Enemy;
         public EntityStatus Player;
         public Font Font;
-        public bool Invincible = true;
+        public bool Invincible = false;
         private GUIStyle _style;
         private void Start() => SetInvincible(Invincible);
         public void SetInvincible(bool invincible)
