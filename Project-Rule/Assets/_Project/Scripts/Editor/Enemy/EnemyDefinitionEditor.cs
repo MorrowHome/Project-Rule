@@ -46,7 +46,7 @@ namespace RuleGame.Editor.Enemy
             { nameof(EnemyDefinition.RabbitRepositionDuration), "地面换位最长时长（秒）" },
             { nameof(EnemyDefinition.RabbitAimLockLead), "投掷提前锁定时间（秒）" },
             { nameof(EnemyDefinition.RabbitAirHeight), "翻转后飞行高度差" },
-            { nameof(EnemyDefinition.RabbitAirMoveDuration), "空中换侧最长时长（秒）" },
+            { nameof(EnemyDefinition.RabbitAirMoveDuration), "空中换侧参考时长（秒）" },
             { nameof(EnemyDefinition.RabbitAirSpeedMultiplier), "空中换侧速度倍率" },
             { nameof(EnemyDefinition.RabbitFanAngle), "散射相邻弹夹角（度）" },
             { nameof(EnemyDefinition.PreferredDistance), "理想作战距离" },

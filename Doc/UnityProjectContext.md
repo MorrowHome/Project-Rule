@@ -82,6 +82,8 @@ manifest 已有 Coplay Unity MCP，仓库 `.mcp.json` 指向 `localhost:8080/mcp
 
 2026-10-16 修复兔子投掷物提前砸地：下落速度外推会把锁定点推入地板；原高抛补偿随后被固定总速度归一化，在增强重力下射程不足。仅兔子改为按目标碰撞体中心瞄准，用身体盒扫掠限制预判点不穿地形；按飞行时间保留完整初速度，近距离高抛保留至少 0.65 秒飞行时间。出手时机、锁定窗口与其他敌人弹道不变。新增 RabbitProjectileValidation，Unity 6000.6.4f1 隔离 Play Mode 基线 7 项中 3 项失败（正反向下落、三倍重力）；修复后 7 项通过，并检查弹池复用刚体位置。兔子原有 RunRabbitTacticsBatch 的 23 项也通过。日志 /tmp/rule-rabbit-projectile-before.log、/tmp/rule-rabbit-projectile-after.log、/tmp/rule-rabbit-projectile-tactics.log；未跑其他 Boss 或全量构建。
 
+2026-10-16 用户反馈仍向脚底投掷、倒立未实际起飞。本轮补齐上一轮未覆盖的近身与倒立进攻条件：翻转演出开始即启用实例飞行并垂直离地；空中换位超时不能越过身体离地间距和侧向站位检查，玩家钻到正下方时先重新换位。地面贴身时重新站位，墙角反击落点至少越过自己的身体。兔子使用身体前方的独立出手点，弹道按该点计算；可选 origin 对其他敌人的原有调用不产生变化。中文 Inspector 将换侧时长说明为参考时长。新增三条回归在旧实现均失败，修复后 RabbitProjectileValidation 共 10 项通过，含实际 RabbitBoss prefab 物理：翻转中已上升，首轮 body=(0.87,3.00)、出手点=(2.12,2.70)、目标=(6,0.65)。RunRabbitTacticsBatch 23 项通过，原正下方攻击用例改为有效侧向站位；墙角反击、休息、快照保留。日志 /tmp/rule-rabbit-takeoff-before.log、/tmp/rule-rabbit-takeoff-after.log、/tmp/rule-rabbit-takeoff-tactics.log。未跑其他 Boss 或全量构建。
+
 ## 证据
 
 `CLAUDE.md`、`Doc/系统模块架构.md`、`Doc/敌人系统接入.md`；工程内 `Packages/manifest.json`、`ProjectSettings/{ProjectVersion.txt,QualitySettings.asset,GraphicsSettings.asset,EditorBuildSettings.asset,ProjectSettings.asset}`；一方 `.asmdef`；`Scripts/Gameplay/Enemy/*.cs`、`Gameplay/Player/EntityStatus.cs`、`PlayerController.cs`、`RuleReleaseService.cs`、`Scripts/Editor/Enemy/EnemyLabBuilder.cs`、`Scripts/Rules/RuleSystemDriver.cs`。

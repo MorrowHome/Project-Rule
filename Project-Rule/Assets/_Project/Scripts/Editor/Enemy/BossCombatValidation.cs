@@ -458,7 +458,11 @@ namespace RuleGame.Editor.Enemy
             });
             AddRabbitCase(a =>
             {
-                Target(a, 6); RabbitFlip(a); Target(a, 0, -2);
+                a.transform.position = new Vector3(0f, 4f, 0f);
+                a.GetComponent<Rigidbody2D>().position = a.transform.position;
+                a.GetComponent<BoxCollider2D>().size = a.Definition.BodySize;
+                Physics2D.SyncTransforms();
+                Target(a, 6); RabbitFlip(a); Target(a, 5, -2);
                 Step(a, a.Definition.RabbitAirMoveDuration + .01f);
                 var velocities = new List<Vector2>(); var variants = new List<int>();
                 a.Feedback += cue =>
@@ -468,7 +472,7 @@ namespace RuleGame.Editor.Enemy
                 };
                 Step(a, .36f);
                 Check(velocities.Count == 3 && variants.TrueForAll(index => index == 2), "第二阶段用鸭子打三发扇形压制");
-                Check(Mathf.Abs(velocities[0].x - velocities[2].x) > 2f, "向下攻击时三发仍有角度展开，不重叠为一条线");
+                Check(Mathf.Abs(velocities[0].x - velocities[2].x) > 2f, "斜向攻击时三发仍有角度展开，不重叠为一条线");
                 Step(a, a.Definition.RabbitBurstInterval + .01f);
                 Check(velocities.Count == 6, "散射仅按配置发两轮，保留间隔");
                 Step(a, a.AnimationDuration + .01f);

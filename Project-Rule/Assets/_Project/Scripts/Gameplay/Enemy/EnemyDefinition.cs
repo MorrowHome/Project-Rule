@@ -60,7 +60,9 @@ namespace RuleGame.Gameplay.Enemy
         [Header("兔子瞄准与飞行战术")]
         [Min(0.6f)] public float RabbitRepositionDuration = 2f;
         [Min(0.1f)] public float RabbitAimLockLead = 0.35f;
+        [Tooltip("翻转后相对玩家的目标高度差；起飞会同时保证身体与地面的安全间距。")]
         [Min(1f)] public float RabbitAirHeight = 2.4f;
+        [Tooltip("换侧到达该时长后，仍须实际离地并拉开侧向距离才可投掷；不会超时后贴地出招。")]
         [Min(0.5f)] public float RabbitAirMoveDuration = 1.8f;
         [Min(1f)] public float RabbitAirSpeedMultiplier = 1.6f;
         [Range(5f, 40f)] public float RabbitFanAngle = 18f;

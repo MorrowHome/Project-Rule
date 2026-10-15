@@ -50,6 +50,9 @@ namespace RuleGame.Editor.Enemy
                 Case("三倍重力高抛", 8.5f, 0f, true, 3f);
                 Case("近处高抛", 3.2f, 0f, true, 1f);
                 Case("失重平射", 6f, 0f, false, 0f);
+                Case("贴身时先重新站位", 1.4f, 0f, false, 1f, true);
+                FlightCase(false);
+                FlightCase(true);
             }
             finally
             {
@@ -63,7 +66,7 @@ namespace RuleGame.Editor.Enemy
             EditorApplication.Exit(_failed == 0 ? 0 : 1);
         }
 
-        private static void Case(string name, float distance, float fallingSpeed, bool lob, float gravityScale)
+        private static void Case(string name, float distance, float fallingSpeed, bool lob, float gravityScale, bool reposition = false)
         {
             GameObject root = new GameObject(name);
             try
@@ -97,9 +100,19 @@ namespace RuleGame.Editor.Enemy
                     if (cue.Kind == EnemyFeedbackKind.ProjectileSpawn) shot = (EnemyProjectile)cue.Subject;
                 };
                 actor.Brain.Tick(.8f); actor.Brain.Tick(.71f);
+                if (reposition)
+                {
+                    if (shot != null || actor.Brain.StateName != "Reposition")
+                        throw new InvalidOperationException("贴身仍从身体中心向脚下丢出弹体");
+                    _passed++; Debug.Log("PASS: " + name);
+                    return;
+                }
                 if (shot == null) throw new InvalidOperationException("没有生成弹体");
                 shot.enabled = false;
-                if (Vector2.Distance(shot.GetComponent<Rigidbody2D>().position, actor.transform.position) > .01f)
+                if ((shot.transform.position.x - actor.transform.position.x) * Mathf.Sign(distance) < 1f
+                    || shot.transform.position.y < actor.transform.position.y + .2f)
+                    throw new InvalidOperationException("弹体没有从身体前方的抬高出手点生成");
+                if (Vector2.Distance(shot.GetComponent<Rigidbody2D>().position, shot.transform.position) > .01f)
                     throw new InvalidOperationException("池化弹体刚体仍停在旧落地点");
                 // 玩家落地；预判锁定后不再追踪。用真实弹体扫掠与物理步进检查是否能到达玩家。
                 targetBody.linearVelocity = Vector2.zero;
@@ -124,6 +137,76 @@ namespace RuleGame.Editor.Enemy
             {
                 foreach (var shot in UnityEngine.Object.FindObjectsByType<EnemyProjectile>(FindObjectsSortMode.None))
                     shot.gameObject.SetActive(false);
+                UnityEngine.Object.DestroyImmediate(root);
+                Physics2D.SyncTransforms();
+            }
+        }
+
+        private static void FlightCase(bool simulate)
+        {
+            string name = simulate ? "倒立先实际升空，玩家钻到下方先换位" : "换位超时也不能贴地倒立投掷";
+            var root = new GameObject(name);
+            try
+            {
+                Physics2D.gravity = Vector2.down * 9.81f;
+                var floor = new GameObject("Floor"); floor.transform.SetParent(root.transform);
+                floor.layer = 8; floor.transform.position = Vector2.down * .5f;
+                floor.AddComponent<BoxCollider2D>().size = new Vector2(40f, 1f);
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Enemies/RabbitBoss.prefab");
+                var actor = UnityEngine.Object.Instantiate(prefab, root.transform).GetComponent<EnemyActor>();
+                actor.enabled = false;
+                actor.Definition = UnityEngine.Object.Instantiate(actor.Definition); actor.Definition.Energy = 0f;
+                actor.transform.position = new Vector2(0f, 1.55f);
+                var body = actor.GetComponent<Rigidbody2D>(); body.position = actor.transform.position;
+                var target = new GameObject("Target"); target.transform.SetParent(root.transform);
+                target.transform.position = new Vector2(6f, .65f);
+                target.AddComponent<BoxCollider2D>().size = new Vector2(.7f, 1.1f);
+                actor.Target = target.transform; actor.SendMessage("Start");
+                actor.Status.ApplyHealthDelta(40f - actor.Status.Health);
+                int shots = 0; float firstShotHeight = 0f;
+                actor.Feedback += cue =>
+                {
+                    if (cue.Kind != EnemyFeedbackKind.ProjectileSpawn) return;
+                    if (shots == 0)
+                    {
+                        firstShotHeight = body.position.y;
+                        Debug.Log($"倒立首轮实际位置：body={body.position}, origin={cue.Position}, target={target.transform.position}");
+                    }
+                    shots++;
+                    ((EnemyProjectile)cue.Subject).gameObject.SetActive(false);
+                };
+                Physics2D.SyncTransforms();
+                if (!simulate)
+                {
+                    actor.Brain.Tick(.02f); actor.Brain.Tick(actor.AnimationDuration + .01f);
+                    actor.Brain.Tick(actor.Definition.RabbitAirMoveDuration + .01f); actor.Brain.Tick(.36f);
+                    if (shots != 0 || actor.Brain.StateName != "AirReposition")
+                        throw new InvalidOperationException("没有真正升空就进入倒立投掷");
+                }
+                else
+                {
+                    for (int i = 0; i < 25; i++)
+                    {
+                        actor.Brain.Tick(.02f); actor.Motor.Tick(.02f); Physics2D.Simulate(.02f);
+                    }
+                    if (body.position.y < 1.8f) throw new InvalidOperationException("翻转动画期间仍贴地");
+                    for (int i = 0; i < 400 && shots == 0; i++)
+                    {
+                        actor.Brain.Tick(.02f); actor.Motor.Tick(.02f); Physics2D.Simulate(.02f);
+                    }
+                    if (shots != 3 || firstShotHeight < 2.7f)
+                        throw new InvalidOperationException($"倒立出手未取得实际高度：shots={shots}, y={firstShotHeight}");
+                    target.transform.position = new Vector2(body.position.x, .65f); Physics2D.SyncTransforms();
+                    actor.Brain.Tick(.4f);
+                    if (shots != 3 || actor.Brain.StateName != "AirReposition")
+                        throw new InvalidOperationException("玩家钻到下方后仍朝脚下续丢");
+                }
+                _passed++; Debug.Log("PASS: " + name);
+                UnityEngine.Object.DestroyImmediate(actor.Definition);
+            }
+            catch (Exception error) { _failed++; Debug.LogError(name + ": " + error.Message); }
+            finally
+            {
                 UnityEngine.Object.DestroyImmediate(root);
                 Physics2D.SyncTransforms();
             }

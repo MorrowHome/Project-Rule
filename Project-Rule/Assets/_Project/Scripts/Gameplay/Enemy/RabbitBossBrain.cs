@@ -16,7 +16,7 @@ namespace RuleGame.Gameplay.Enemy
         private uint _random = 3917;
         private Vector2 _aim;
         protected override string[] ActionNames => new[] { "Pop", "Reposition", "Throw", "Hide", "Burrow", "HideThrow", "AirReposition", "FlipThrow", "Hurt" };
-        public override bool IsFlying => base.IsFlying || (_flipped && Phase >= 2 && !Actor.Defeated);
+        public override bool IsFlying => base.IsFlying || (_flipped && !Actor.Defeated);
         protected override string FirstAction => "Pop";
         public RabbitBossBrain(EnemyActor actor) : base(actor) { }
         private sealed class Data
@@ -75,6 +75,11 @@ namespace RuleGame.Gameplay.Enemy
             if (Actor.Status.Energy <= 50f || (_random & 1) == 0) return;
             _resume = StateName; _resumeElapsed = Elapsed; _resumePulses = Pulses;
             Transition("Magic", Phase, _flipped ? Actor.Duration("Flight", 1f) : Actor.Duration("Magic", 1f));
+        }
+        protected override void TickTransition()
+        {
+            // 翻转演出就开始离地，不让倒立的帽子留在地面等动画播完。
+            if (TransitionName == "Flip") Actor.Motor.Intent = HasAirClearance() ? Vector2.zero : Actor.Motor.Up;
         }
         protected override void AfterTransition(string name)
         {
@@ -165,6 +170,18 @@ namespace RuleGame.Gameplay.Enemy
                     if (HasTarget && CombatDistance <= RangedRange
                         && Impact(Mathf.Min(1f, releaseTime / Actor.AnimationDuration)))
                     {
+                        if (Mathf.Abs(_aim.x - Actor.transform.position.x) < MinimumThrowDistance)
+                        {
+                            if (name != "HideThrow")
+                            {
+                                Go("Reposition");
+                                break;
+                            }
+                            // 墙角没有退路时仍向外起弧，落点至少越过自己的身体，避免原地往脚下倒。
+                            float side = Mathf.Abs(_aim.x - Actor.transform.position.x) > .1f
+                                ? Mathf.Sign(_aim.x - Actor.transform.position.x) : Actor.Facing;
+                            _aim.x = Actor.transform.position.x + side * MinimumThrowDistance;
+                        }
                         FireLob(_lob ? .6f : .18f, _lob ? 8f : 10f);
                     }
                     if (Finished) FinishVolley();
@@ -173,20 +190,28 @@ namespace RuleGame.Gameplay.Enemy
                     if (!HasTarget) { Actor.Motor.Stop(); break; }
                     Vector2 offset = _airDestination - (Vector2)Actor.transform.position;
                     Actor.FaceTarget();
-                    Actor.Motor.Intent = offset.sqrMagnitude > .16f ? offset.normalized : Vector2.zero;
+                    bool airborne = HasAirClearance();
+                    // 先垂直升空，再横向换位；超时只结束换位，不能跳过离地与侧向站位条件。
+                    Actor.Motor.Intent = !airborne ? Actor.Motor.Up : offset.sqrMagnitude > .16f ? offset.normalized : Vector2.zero;
                     Actor.Motor.SpeedMultiplier = Mathf.Max(1f, Config.RabbitAirSpeedMultiplier);
-                    if (offset.sqrMagnitude <= .16f || Elapsed >= Mathf.Max(.5f, Config.RabbitAirMoveDuration))
+                    if (airborne && (offset.sqrMagnitude <= .16f || Elapsed >= Mathf.Max(.5f, Config.RabbitAirMoveDuration)))
                     {
-                        if (CombatDistance <= RangedRange) Go("FlipThrow");
-                        else RestAfterAttack("AirReposition");
+                        if (HasAirAttackSpacing() && CombatDistance <= RangedRange) Go("FlipThrow");
+                        else if (offset.sqrMagnitude <= .16f) ChooseAirPoint();
                     }
                     break;
                 case "FlipThrow":
+                    if (!HasAirClearance() || !HasAirAttackSpacing())
+                    {
+                        Go("AirReposition");
+                        break;
+                    }
                     int count = Mathf.Clamp(Config.RabbitBurstCount, 1, 3);
                     if (HasTarget && CombatDistance <= RangedRange && Pulses < count
                         && Elapsed >= .35f + Pulses * Mathf.Max(.2f, Config.RabbitBurstInterval))
                     {
-                        Vector2 direction = (_aim - (Vector2)Actor.transform.position).normalized;
+                        Vector2 origin = ThrowOrigin();
+                        Vector2 direction = (_aim - origin).normalized;
                         float spread = Mathf.Clamp(Config.RabbitFanAngle, 5f, 40f);
                         float sweep = ((Pulses + _pattern) & 1) == 0 ? -spread * .25f : spread * .25f;
                         for (int i = -1; i <= 1; i++)
@@ -194,7 +219,7 @@ namespace RuleGame.Gameplay.Enemy
                             float angle = (sweep + i * spread) * Mathf.Deg2Rad;
                             Vector2 shot = new Vector2(direction.x * Mathf.Cos(angle) - direction.y * Mathf.Sin(angle),
                                 direction.x * Mathf.Sin(angle) + direction.y * Mathf.Cos(angle));
-                            Actor.Shoot(shot, 9f, .2f, visualIndex: 2);
+                            Actor.Shoot(shot, 9f, .2f, visualIndex: 2, origin: origin);
                         }
                         Pulses++;
                         _aim = PredictThrowTarget(.2f);
@@ -206,11 +231,29 @@ namespace RuleGame.Gameplay.Enemy
         }
         private void FireLob(float gravity, float speed)
         {
-            Vector2 delta = _aim - (Vector2)Actor.transform.position;
-            float time = Mathf.Clamp(Mathf.Abs(delta.x) / speed, _lob ? .65f : .2f, 1.3f);
+            Vector2 origin = ThrowOrigin();
+            Vector2 delta = _aim - origin;
+            float time = Mathf.Clamp(Mathf.Abs(delta.x) / speed, _lob ? .85f : .2f, 1.3f);
             // 按飞行时间解出完整初速度；再压回固定总速会丢失重力补偿，尤其在重力增强时提前砸地。
             Vector2 velocity = delta / time - Physics2D.gravity * (gravity * time * .5f);
-            Actor.Shoot(velocity, velocity.magnitude, gravity, visualIndex: _lob ? 1 : 0);
+            Actor.Shoot(velocity, velocity.magnitude, gravity, visualIndex: _lob ? 1 : 0, origin: origin);
+        }
+        private float MinimumThrowDistance => Mathf.Max(Config.BodySize.x, Config.PreferredDistance * .4f);
+        private float AirClearance => Mathf.Clamp(Config.RabbitAirHeight * .5f, .75f, 2f);
+        private bool HasAirAttackSpacing() => HasTarget && Mathf.Abs(Actor.Target.position.x - Actor.transform.position.x)
+            >= Mathf.Max(MinimumThrowDistance, Mathf.Min(Config.PreferredDistance * .7f, RangedRange * .5f));
+        private bool HasAirClearance()
+        {
+            var body = Actor.GetComponent<BoxCollider2D>();
+            return !Physics2D.BoxCast(body.bounds.center, body.bounds.size, 0f, -Actor.Motor.Up,
+                AirClearance, Actor.Motor.SolidMask);
+        }
+        private Vector2 ThrowOrigin()
+        {
+            Vector2 center = Actor.transform.position;
+            float side = Mathf.Abs(_aim.x - center.x) > .1f ? Mathf.Sign(_aim.x - center.x) : Actor.Facing;
+            return center + Vector2.right * (side * (Config.BodySize.x * .5f + .25f))
+                + Actor.Motor.Up * (Config.BodySize.y * (IsFlying ? -.1f : .15f));
         }
         private Vector2 PredictThrowTarget(float lead)
         {
@@ -245,6 +288,14 @@ namespace RuleGame.Gameplay.Enemy
             }
             float margin = Config.BodySize.y * .5f + .15f;
             float y = (target + Actor.Motor.Up * Mathf.Max(1f, Config.RabbitAirHeight)).y;
+            var body = Actor.GetComponent<BoxCollider2D>();
+            RaycastHit2D floor = Physics2D.BoxCast(body.bounds.center, body.bounds.size, 0f,
+                -Actor.Motor.Up, AirClearance, Actor.Motor.SolidMask);
+            if (floor.collider != null)
+            {
+                float minimumY = Actor.transform.position.y + Actor.Motor.Up.y * (AirClearance - floor.distance + .1f);
+                y = Actor.Motor.Up.y >= 0f ? Mathf.Max(y, minimumY) : Mathf.Min(y, minimumY);
+            }
             y = Actor.ArenaY.y - Actor.ArenaY.x > margin * 2f
                 ? Mathf.Clamp(y, Actor.ArenaY.x + margin, Actor.ArenaY.y - margin)
                 : (Actor.ArenaY.x + Actor.ArenaY.y) * .5f;

@@ -167,9 +167,9 @@ namespace RuleGame.Gameplay.Enemy
             Combat.PerformAttack(this, center, new Vector2(reach, Definition.BodySize.y * 0.8f),
                 PlayerMask, Definition.Damage, 5f, _swingTargets);
         }
-        public void Shoot(Vector2 direction, float speed = 8f, float gravity = 0f, float radius = 0.22f, int visualIndex = -1)
+        public void Shoot(Vector2 direction, float speed = 8f, float gravity = 0f, float radius = 0.22f, int visualIndex = -1, Vector2? origin = null)
         {
-            if (HasTarget) EnemyProjectile.Spawn(this, direction, speed, gravity, radius, visualIndex);
+            if (HasTarget) EnemyProjectile.Spawn(this, direction, speed, gravity, radius, visualIndex, origin);
         }
         public void Beam(float angle, float width, float warning = 0.65f)
         {

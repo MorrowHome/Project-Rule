@@ -27,7 +27,7 @@ namespace RuleGame.Gameplay.Enemy
         public float Age => _age;
         public int VisualIndex => _visualIndex;
 
-        public static void Spawn(EnemyActor source, Vector2 direction, float speed, float gravity, float radius, int visualIndex = -1)
+        public static void Spawn(EnemyActor source, Vector2 direction, float speed, float gravity, float radius, int visualIndex = -1, Vector2? origin = null)
         {
             if (source.Target == null || source.Defeated) return;
             EnemyProjectile shot = null;
@@ -51,8 +51,8 @@ namespace RuleGame.Gameplay.Enemy
             shot._visualIndex = visualIndex >= 0 ? Mathf.Clamp(visualIndex, 0, 2)
                 : Mathf.FloorToInt((source.Brain?.SimulationAge ?? 0f) * 8f) % 3;
             shot._velocity = direction.normalized * speed; shot._inPool = false;
-            shot.transform.position = source.transform.position;
-            if (gravity == 0f && radius >= 0.3f)
+            shot.transform.position = origin.HasValue ? (Vector3)origin.Value : source.transform.position;
+            if (!origin.HasValue && gravity == 0f && radius >= 0.3f)
                 shot.transform.position -= (Vector3)source.Motor.Up * (source.Definition.BodySize.y * 0.5f - radius - 0.05f);
             shot.transform.localScale = Vector3.one * radius * 2f;
             shot.gameObject.SetActive(true);
