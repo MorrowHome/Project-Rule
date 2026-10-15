@@ -43,7 +43,7 @@ namespace RuleGame.Editor.Enemy
             Physics2D.simulationMode = SimulationMode2D.Script;
             try
             {
-                Case("站地平射", 6f, 0f, false, 1f);
+                Case("站立向上抛向主角", 6f, 0f, false, 1f);
                 Case("下落预判", 5.5f, -8f, false, 1f);
                 Case("反向下落预判", -5.5f, -8f, false, 1f);
                 Case("远处高抛", 8.5f, 0f, true, 1f);
@@ -114,6 +114,8 @@ namespace RuleGame.Editor.Enemy
                     throw new InvalidOperationException("弹体没有从身体前方的抬高出手点生成");
                 if (Vector2.Distance(shot.GetComponent<Rigidbody2D>().position, shot.transform.position) > .01f)
                     throw new InvalidOperationException("池化弹体刚体仍停在旧落地点");
+                if (gravityScale > 0f && shot.Velocity.y <= 0f)
+                    throw new InvalidOperationException($"站立投掷起手仍向下：velocity={shot.Velocity}");
                 // 玩家落地；预判锁定后不再追踪。用真实弹体扫掠与物理步进检查是否能到达玩家。
                 targetBody.linearVelocity = Vector2.zero;
                 bool reached = false;
@@ -124,11 +126,16 @@ namespace RuleGame.Editor.Enemy
                     Debug.Log($"{name}: impact={cue.Position}, reached={reached}");
                 };
                 Debug.Log($"{name}: initial velocity={shot.Velocity}, gravity={shot.Gravity}");
+                float releaseHeight = shot.transform.position.y, peak = releaseHeight;
                 for (int i = 0; i < 120 && shot.gameObject.activeSelf; i++)
                 {
                     shot.SendMessage("FixedUpdate"); Physics2D.Simulate(Time.fixedDeltaTime);
+                    peak = Mathf.Max(peak, shot.GetComponent<Rigidbody2D>().position.y);
                 }
                 if (!reached) throw new InvalidOperationException("到达玩家前已砸地或越过目标");
+                if (gravityScale > 0f && peak < releaseHeight + .75f)
+                    throw new InvalidOperationException($"缺少清晰上抛弧线：rise={peak - releaseHeight}");
+                Debug.Log($"{name}: actual rise={peak - releaseHeight:F2}");
                 _passed++; Debug.Log("PASS: " + name);
                 UnityEngine.Object.DestroyImmediate(config);
             }

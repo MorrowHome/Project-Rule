@@ -73,6 +73,7 @@ MonoBehaviour:
   ImpactFraction: 0.6
   RabbitCycle: 20
   RabbitThrowInterval: 2
+  RabbitThrowArcHeight: 1
   ClockHourInterval: 12
   ClockMinuteInterval: 6
   ClockSecondInterval: 3

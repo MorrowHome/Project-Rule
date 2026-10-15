@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace RuleGame.Gameplay.Enemy
 {
-    /// <summary>快弹与高抛交替，近身藏身撤退，翻转后飞行换侧并使用有限散射。</summary>
+    /// <summary>低弧投掷与高抛交替，近身藏身撤退，翻转后飞行换侧并使用有限散射。</summary>
     public sealed class RabbitBossBrain : EnemyBrain
     {
         private float _cycle, _magicCheck = 5f, _nextBurrow;
@@ -182,7 +182,7 @@ namespace RuleGame.Gameplay.Enemy
                                 ? Mathf.Sign(_aim.x - Actor.transform.position.x) : Actor.Facing;
                             _aim.x = Actor.transform.position.x + side * MinimumThrowDistance;
                         }
-                        FireLob(_lob ? .6f : .18f, _lob ? 8f : 10f);
+                        FireLob();
                     }
                     if (Finished) FinishVolley();
                     break;
@@ -229,13 +229,25 @@ namespace RuleGame.Gameplay.Enemy
                 case "Hurt": if (Finished) Go(_flipped ? "AirReposition" : "Reposition"); break;
             }
         }
-        private void FireLob(float gravity, float speed)
+        private void FireLob()
         {
             Vector2 origin = ThrowOrigin();
             Vector2 delta = _aim - origin;
-            float time = Mathf.Clamp(Mathf.Abs(delta.x) / speed, _lob ? .85f : .2f, 1.3f);
-            // 按飞行时间解出完整初速度；再压回固定总速会丢失重力补偿，尤其在重力增强时提前砸地。
-            Vector2 velocity = delta / time - Physics2D.gravity * (gravity * time * .5f);
+            float gravity = _lob ? .65f : .95f;
+            float acceleration = Physics2D.gravity.magnitude * gravity;
+            if (acceleration < .001f)
+            {
+                // 失重规则保留直线运动，不能为制造弧线私自恢复世界重力。
+                Actor.Shoot(delta, _lob ? 8f : 10f, gravity, visualIndex: _lob ? 1 : 0, origin: origin);
+                return;
+            }
+            Vector2 up = -Physics2D.gravity.normalized;
+            float height = Vector2.Dot(delta, up);
+            float rise = Mathf.Max(0f, height) + Mathf.Max(.3f, Config.RabbitThrowArcHeight) * (_lob ? 1.6f : 1f);
+            float verticalSpeed = Mathf.Sqrt(2f * acceleration * rise);
+            float time = verticalSpeed / acceleration + Mathf.Sqrt(2f * (rise - height) / acceleration);
+            // 弧顶必须高于出手点和目标，保证先向上抛，再落向锁定点，而非直接向低处发射。
+            Vector2 velocity = (delta - up * height) / time + up * verticalSpeed;
             Actor.Shoot(velocity, velocity.magnitude, gravity, visualIndex: _lob ? 1 : 0, origin: origin);
         }
         private float MinimumThrowDistance => Mathf.Max(Config.BodySize.x, Config.PreferredDistance * .4f);

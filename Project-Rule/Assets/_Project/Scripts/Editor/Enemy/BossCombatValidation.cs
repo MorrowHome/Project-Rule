@@ -382,8 +382,8 @@ namespace RuleGame.Editor.Enemy
                 Target(a, -8); Step(a, .4f);
                 Check(shot == null, "原画出手前留出可躲避的锁定窗口");
                 Step(a, .31f);
-                Check(shot != null && shot.Velocity.x > 0f && shot.VisualIndex == 0 && shot.Gravity < .3f,
-                    "平射弹珠跟踪起手期间的位置，锁定后不追踪玩家换边");
+                Check(shot != null && shot.Velocity.x > 0f && shot.Velocity.y > 0f && shot.VisualIndex == 0,
+                    "低弧弹珠先向上抛向锁定位置，锁定后不追踪玩家换边");
             });
             AddRabbitCase(a =>
             {
