@@ -13,11 +13,10 @@ namespace RuleGame.Presentation.Enemy
         private TrailRenderer _trail;
         private EnemyVfxProfile _profile;
         private EnemyActor _source;
-        private float _age;
         private void Awake() => _shot = GetComponent<EnemyProjectile>();
         public void Configure(EnemyVfxProfile profile)
         {
-            _profile = profile; _age = 0f;
+            _profile = profile;
             if (_shot == null) _shot = GetComponent<EnemyProjectile>();
             if (_body == null)
             {
@@ -29,6 +28,7 @@ namespace RuleGame.Presentation.Enemy
             if (_source != null) _source.Restored -= OnRestore;
             _source = _shot.Source;
             if (_source != null) _source.Restored += OnRestore;
+            // Shot 是带透明收尾的一次性发射闪光；飞行弹体必须保持独立弹芯，不能循环该序列。
             _body.sprite = profile.ProjectileSprite;
             _body.enabled = true;
             _body.sharedMaterial = profile.Material;
@@ -46,7 +46,7 @@ namespace RuleGame.Presentation.Enemy
             _trail.startColor = profile.Secondary; _trail.endColor = new Color(profile.Accent.r, profile.Accent.g, profile.Accent.b, 0f);
             _trail.Clear(); _trail.emitting = true;
         }
-        private void OnRestore() { _age = 0f; if (_trail != null) _trail.Clear(); }
+        private void OnRestore() { if (_trail != null) _trail.Clear(); }
         private void OnDisable()
         {
             if (_source != null) _source.Restored -= OnRestore;
@@ -84,13 +84,10 @@ namespace RuleGame.Presentation.Enemy
             // TrailRenderer 的历史点用引擎时间清退，实体暂停时延长寿命以保留现有轨迹。
             _trail.time = paused ? 1000f : .18f;
             if (paused) return;
-            _age += Time.deltaTime;
             bool ground = _shot.Gravity == 0f && _shot.Radius >= .3f;
             _body.transform.localRotation = Quaternion.Euler(0f, 0f, ground ? 0f :
                 Mathf.Atan2(_shot.Velocity.y, _shot.Velocity.x) * Mathf.Rad2Deg);
             _body.transform.localScale = ground ? new Vector3(1.7f, .8f, 1f) : Vector3.one * 1.7f;
-            if (_profile.Shot != null && !ground)
-                _body.sprite = _profile.Shot.Frame(_age % _profile.Shot.Duration);
         }
     }
 }
