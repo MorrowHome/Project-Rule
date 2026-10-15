@@ -120,11 +120,11 @@ namespace RuleGame.Gameplay.Enemy
                     float height = HasTarget ? Vector2.Dot(Actor.Target.position - Actor.transform.position, Actor.Motor.Up) : 0f;
                     _lob = name == "HideThrow" || CombatDistance < Config.PreferredDistance * .7f
                         || height > Config.BodySize.y * .35f || (_pattern % 3 == 2 && CombatDistance < Config.PreferredDistance + 1f);
-                    _aim = PredictTarget(.25f);
+                    _aim = PredictThrowTarget(.25f);
                     Actor.Cue(name, Mathf.Max(Actor.Duration(name, .5f), Config.RabbitThrowInterval));
                     break;
                 case "FlipThrow":
-                    _aim = PredictTarget(.25f);
+                    _aim = PredictThrowTarget(.25f);
                     Actor.Cue(name, .4f + Mathf.Clamp(Config.RabbitBurstCount, 1, 3) * Mathf.Max(.2f, Config.RabbitBurstInterval), true);
                     break;
             }
@@ -161,7 +161,7 @@ namespace RuleGame.Gameplay.Enemy
                     // 先跟踪，再给玩家一段固定锁定窗口，仍在原画第十二帧附近出手。
                     float releaseTime = (name == "HideThrow" ? 41f : 12f) / 8f;
                     if (Pulses == 0 && Elapsed < releaseTime - Mathf.Max(.1f, Config.RabbitAimLockLead))
-                        _aim = PredictTarget(.25f);
+                        _aim = PredictThrowTarget(.25f);
                     if (HasTarget && CombatDistance <= RangedRange
                         && Impact(Mathf.Min(1f, releaseTime / Actor.AnimationDuration)))
                     {
@@ -197,7 +197,7 @@ namespace RuleGame.Gameplay.Enemy
                             Actor.Shoot(shot, 9f, .2f, visualIndex: 2);
                         }
                         Pulses++;
-                        _aim = PredictTarget(.2f);
+                        _aim = PredictThrowTarget(.2f);
                     }
                     if (Finished) FinishVolley();
                     break;
@@ -207,9 +207,23 @@ namespace RuleGame.Gameplay.Enemy
         private void FireLob(float gravity, float speed)
         {
             Vector2 delta = _aim - (Vector2)Actor.transform.position;
-            float time = Mathf.Clamp(Mathf.Abs(delta.x) / speed, .2f, 1.3f);
-            Vector2 direction = delta - Physics2D.gravity * (gravity * time * time * .5f);
-            Actor.Shoot(direction, speed, gravity, visualIndex: _lob ? 1 : 0);
+            float time = Mathf.Clamp(Mathf.Abs(delta.x) / speed, _lob ? .65f : .2f, 1.3f);
+            // 按飞行时间解出完整初速度；再压回固定总速会丢失重力补偿，尤其在重力增强时提前砸地。
+            Vector2 velocity = delta / time - Physics2D.gravity * (gravity * time * .5f);
+            Actor.Shoot(velocity, velocity.magnitude, gravity, visualIndex: _lob ? 1 : 0);
+        }
+        private Vector2 PredictThrowTarget(float lead)
+        {
+            if (!HasTarget) return Actor.transform.position;
+            Vector2 offset = PredictTarget(lead) - (Vector2)Actor.Target.position;
+            var collider = Actor.Target.GetComponent<Collider2D>() ?? Actor.Target.GetComponentInParent<Collider2D>();
+            Vector2 center = collider != null && collider.enabled ? (Vector2)collider.bounds.center : (Vector2)Actor.Target.position;
+            if (offset.sqrMagnitude < .0001f) return center;
+            Vector2 size = collider != null && collider.enabled ? (Vector2)collider.bounds.size : Vector2.one * .55f;
+            // 用目标身体扫掠预判位移，落地或撞墙后就停止外推，不把锁定点放进地形。
+            RaycastHit2D hit = Physics2D.BoxCast(center, size, 0f, offset.normalized,
+                offset.magnitude, Actor.Motor.SolidMask);
+            return center + offset.normalized * (hit.collider != null ? Mathf.Max(0f, hit.distance - .02f) : offset.magnitude);
         }
         private void FinishVolley()
         {

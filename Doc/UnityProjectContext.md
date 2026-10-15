@@ -80,6 +80,8 @@ manifest 已有 Coplay Unity MCP，仓库 `.mcp.json` 指向 `localhost:8080/mcp
 
 2026-10-16 用户补充微信目录中的“敌人逻辑”，并明确“不必完全参考”。原始文本与八张 drawio 已保存到 Doc/References/EnemyLogic，作为可调整的角色/阶段/招式参考；本轮兔子主动换位、实际飞行、有限散射和休息节奏保留，不回退为原图的机械循环。原文本普通投掷写 0.5 秒、行为图写 2 秒；当前沿用交付 16 帧、8 fps 的 2 秒投掷动作及其原画出手点。该轮仅补充参考与约束说明，没有修改已经通过 23 项检查的运行代码。
 
+2026-10-16 修复兔子投掷物提前砸地：下落速度外推会把锁定点推入地板；原高抛补偿随后被固定总速度归一化，在增强重力下射程不足。仅兔子改为按目标碰撞体中心瞄准，用身体盒扫掠限制预判点不穿地形；按飞行时间保留完整初速度，近距离高抛保留至少 0.65 秒飞行时间。出手时机、锁定窗口与其他敌人弹道不变。新增 RabbitProjectileValidation，Unity 6000.6.4f1 隔离 Play Mode 基线 7 项中 3 项失败（正反向下落、三倍重力）；修复后 7 项通过，并检查弹池复用刚体位置。兔子原有 RunRabbitTacticsBatch 的 23 项也通过。日志 /tmp/rule-rabbit-projectile-before.log、/tmp/rule-rabbit-projectile-after.log、/tmp/rule-rabbit-projectile-tactics.log；未跑其他 Boss 或全量构建。
+
 ## 证据
 
 `CLAUDE.md`、`Doc/系统模块架构.md`、`Doc/敌人系统接入.md`；工程内 `Packages/manifest.json`、`ProjectSettings/{ProjectVersion.txt,QualitySettings.asset,GraphicsSettings.asset,EditorBuildSettings.asset,ProjectSettings.asset}`；一方 `.asmdef`；`Scripts/Gameplay/Enemy/*.cs`、`Gameplay/Player/EntityStatus.cs`、`PlayerController.cs`、`RuleReleaseService.cs`、`Scripts/Editor/Enemy/EnemyLabBuilder.cs`、`Scripts/Rules/RuleSystemDriver.cs`。
