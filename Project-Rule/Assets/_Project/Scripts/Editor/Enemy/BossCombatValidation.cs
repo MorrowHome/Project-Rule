@@ -490,6 +490,7 @@ namespace RuleGame.Editor.Enemy
                     var snapshots = SnapshotsFor(a);
                     SnapshotSystem.SetInstanceForTesting(snapshots);
                     var body = a.GetComponent<Rigidbody2D>();
+                    a.GetComponent<BoxCollider2D>().size = a.Definition.BodySize;
                     Vector2 oldPosition = new Vector2(-6f, 2f);
                     body.position = oldPosition;
                     a.transform.position = oldPosition;
@@ -505,29 +506,40 @@ namespace RuleGame.Editor.Enemy
                     a.transform.position = currentPosition;
                     Target(a, 2f);
                     Step(a, 2.4f);
-                    Check(a.Brain.StateName == "JumpShake", "反转配置仍先响铃预警");
+                    Check(a.Brain.StateName == "JumpShake", "时间反转配置下仍先响铃预警");
                     float energy = a.Status.Energy;
                     Step(a, a.AnimationDuration + .01f);
-                    if (available)
+                    Check(a.Brain.StateName == "Charge" && body.position == currentPosition,
+                        "有无历史快照都从响铃结束的当前位置起跑");
+                    Check(a.Status.Energy == energy, "乱跑不隐式施法或扣除规则能量");
+                    Step(a);
+                    Check(a.Motor.Intent.x > 0f && a.Facing > 0f, "冲撞使用本次预警锁定的方向");
+                    var floor = new GameObject("ClockChargeFloor"); floor.layer = 8;
+                    floor.transform.position = new Vector3(0f, currentPosition.y - a.Definition.BodySize.y * .5f - .5f, 0f);
+                    floor.AddComponent<BoxCollider2D>().size = new Vector2(60f, 1f);
+                    a.PlayerMask = 0;
+                    Physics2D.SyncTransforms();
+                    SimulationMode2D previousMode = Physics2D.simulationMode;
+                    try
                     {
-                        Check(body.position == oldPosition && a.Status.Energy < energy, "真实时间反转回溯位置且扣费");
-                        Check(a.Brain.StateName == "Idle" && a.Brain.ActionElapsed == 0f,
-                            "回溯后的 Idle 不被旧响铃回调强制覆盖为冲撞");
-                        Target(a, 2f);
-                        Step(a, 2.4f);
-                        Check(a.Brain.StateName == "JumpShake", "从回溯位置重新响铃并锁定路线");
-                        Step(a, a.AnimationDuration + .01f);
-                        Step(a);
-                        Check(a.Brain.StateName == "Charge" && a.Motor.Intent.x > 0f && body.position == oldPosition,
-                            "缓冲不足后从新起点按新方向冲撞");
+                        Physics2D.simulationMode = SimulationMode2D.Script;
+                        for (int i = 0; i < 15; i++)
+                        {
+                            Vector2 previous = body.position;
+                            Step(a); a.Motor.Tick(.02f); Physics2D.Simulate(.02f);
+                            if (Vector2.Distance(body.position, previous) > .3f)
+                                throw new InvalidOperationException("冲撞位移不连续：" + previous + " -> " + body.position);
+                        }
+                        Check(body.position.x > currentPosition.x && a.Brain.StateName == "Charge",
+                            "真实物理冲撞逐步向前移动，没有跳到历史坐标");
                     }
-                    else
-                    {
-                        Step(a);
-                        Check(a.Brain.StateName == "Charge" && body.position == currentPosition && a.Motor.Intent.x > 0f,
-                            "无回溯资源时正常从当时位置冲撞");
-                        Check(a.Status.Energy == energy, "反转失败不扣能量");
-                    }
+                    finally { Physics2D.simulationMode = previousMode; }
+                    Check(snapshots.TryPeekSecondLast(out _) == available, "冲撞不会消耗或清空时间回溯缓冲");
+                    Vector2 beforeCast = body.position;
+                    bool cast = a.CastRule();
+                    Check(available ? cast && body.position == oldPosition && a.Status.Energy < energy
+                        : !cast && body.position == beforeCast && a.Status.Energy == energy,
+                        "显式释放时间反转仍遵守原有回溯与扣费语义");
                 });
         }
 

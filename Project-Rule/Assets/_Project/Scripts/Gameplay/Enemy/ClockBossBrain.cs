@@ -12,7 +12,6 @@ namespace RuleGame.Gameplay.Enemy
         private float _chargeFacing;
         private int _beamVolleys;
         private float _aimUntil;
-        private uint _restoreRevision;
         protected override string[] ActionNames => new[] { "Idle", "Walk", "JumpShake", "Charge", "Hurt" };
         public override bool DamageLocked => Root.ActiveStateName == "Transition";
         public ClockBossBrain(EnemyActor actor) : base(actor)
@@ -36,8 +35,6 @@ namespace RuleGame.Gameplay.Enemy
         protected override void RestoreExtra(object state)
         {
             if (!(state is object[] data)) return;
-            // 这是调用栈失效标记，不随快照回退；施法期间也可能同步恢复当前 Brain。
-            _restoreRevision++;
             System.Array.Copy((float[])data[0], _hands, 3); _nextHour = (float)data[1]; _chargeFacing = (float)data[2];
             _beamVolleys = (int)data[3];
             _aimUntil = (float)data[4];
@@ -162,13 +159,8 @@ namespace RuleGame.Gameplay.Enemy
                     KeepDistance("Walk", Mathf.Min(Config.PreferredDistance, RangedRange));
                     break;
                 case "JumpShake":
-                    if (Finished)
-                    {
-                        uint revision = _restoreRevision;
-                        Actor.CastRule();
-                        // 时间反转已恢复位置、动作和锁定方向，旧响铃回调不能再覆盖恢复后的状态。
-                        if (revision == _restoreRevision) Go("Charge");
-                    }
+                    // 乱跑是从当前位置起步的移动招式，不在这里隐式释放会回溯自身位置的全局规则。
+                    if (Finished) Go("Charge");
                     break;
                 case "Charge":
                     Actor.Motor.SpeedMultiplier = Mathf.Max(1f, Config.ClockChargeSpeedMultiplier);
