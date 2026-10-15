@@ -1,0 +1,4262 @@
+{
+  "frames": [
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0000.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5259118375072801,
+      "pivotY": 0.15555555555555556,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0001.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5342856078665077,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0002.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5472856127605812,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0003.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5559615690642903,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0004.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.553059554973822,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0005.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5516865079365079,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0006.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5507628614660389,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0007.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5465266257465162,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0008.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5417984522207269,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0009.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5421716101694916,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0010.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-11.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5416298365577051,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0011.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-12.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5279937664041995,
+      "pivotY": 0.18888888888888888,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0012.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-13.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5186004098360656,
+      "pivotY": 0.25555555555555554,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0013.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-14.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5036213600264725,
+      "pivotY": 0.24444444444444446,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0014.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-15.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.46749458694203866,
+      "pivotY": 0.18888888888888888,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0015.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-16.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.46856321356615177,
+      "pivotY": 0.18888888888888888,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0016.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-17.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4721409574468085,
+      "pivotY": 0.18888888888888888,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0017.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-18.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.46817330113257827,
+      "pivotY": 0.18888888888888888,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0018.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-19.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4773988415043654,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0019.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-20.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47709857047872345,
+      "pivotY": 0.18888888888888888,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0020.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-21.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4786574377457405,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0021.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-22.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4789759955041747,
+      "pivotY": 0.18888888888888888,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0022.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-23.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.46863072519083965,
+      "pivotY": 0.18888888888888888,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0023.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-24.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4546912291169451,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0024.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/前进/前进/前进-25.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.44348578717201165,
+      "pivotY": 0.15555555555555556,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0025.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/受击/受击序列/受击-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47277440421631534,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0026.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/受击/受击序列/受击-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4590109854394176,
+      "pivotY": 0.18888888888888888,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0027.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/受击/受击序列/受击-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.44977884615384617,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0028.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/受击/受击序列/受击-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4530471991701245,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0029.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/受击/受击序列/受击-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4539396437994723,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0030.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/受击/受击序列/受击-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47277440421631534,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0031.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/无波序列/捶地（无波-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47277440421631534,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0032.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/无波序列/捶地（无波-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47303479381443303,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0033.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/无波序列/捶地（无波-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47291321580690965,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0034.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/无波序列/捶地（无波-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47703125,
+      "pivotY": 0.19999999999999996,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0035.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/无波序列/捶地（无波-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48828568662880745,
+      "pivotY": 0.19999999999999996,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0036.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/无波序列/捶地（无波-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49338003778337536,
+      "pivotY": 0.19999999999999996,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0037.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/无波序列/捶地（无波-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5612959693132001,
+      "pivotY": 0.19999999999999996,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0038.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/无波序列/捶地（无波-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5710370280735722,
+      "pivotY": 0.19999999999999996,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0039.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/无波序列/捶地（无波-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47842215256008364,
+      "pivotY": 0.19999999999999996,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0040.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/无波序列/捶地（无波-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4666590409956076,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0041.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/无波序列/捶地（无波-11.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.46635958574181113,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0042.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/无波序列/捶地（无波-12.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.46717468644476606,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0043.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/无波序列/捶地（无波-13.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.46914362980769225,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0044.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/无波序列/捶地（无波-14.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.46942355518711515,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0045.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/无波序列/捶地（无波-15.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47277440421631534,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0046.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/有波序列/捶地（有波-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47277440421631534,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0047.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/有波序列/捶地（有波-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47303479381443303,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0048.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/有波序列/捶地（有波-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47291321580690965,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0049.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/有波序列/捶地（有波-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47703125,
+      "pivotY": 0.19999999999999996,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0050.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/有波序列/捶地（有波-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48828568662880745,
+      "pivotY": 0.19999999999999996,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0051.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/有波序列/捶地（有波-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49338003778337536,
+      "pivotY": 0.19999999999999996,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0052.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/有波序列/捶地（有波-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5612959693132001,
+      "pivotY": 0.19999999999999996,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0053.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/有波序列/捶地（有波-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5710370280735722,
+      "pivotY": 0.19999999999999996,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0054.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/有波序列/捶地（有波-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47842215256008364,
+      "pivotY": 0.19999999999999996,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0055.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/有波序列/捶地（有波-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4666590409956076,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0056.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/有波序列/捶地（有波-11.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.46352811338289956,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0057.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/有波序列/捶地（有波-12.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48359935035842294,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0058.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/有波序列/捶地（有波-13.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.46914362980769225,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0059.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/有波序列/捶地（有波-14.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.46942355518711515,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0060.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/捶地/有波序列/捶地（有波-15.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47277440421631534,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0061.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/扔东西/扔-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47277440421631534,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0062.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/扔东西/扔-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4859758771929824,
+      "pivotY": 0.18888888888888888,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0063.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/扔东西/扔-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48932278400407536,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0064.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/扔东西/扔-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.489161554192229,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0065.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/扔东西/扔-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47419410946196655,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0066.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/扔东西/扔-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4606343079281647,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0067.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/扔东西/扔-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4577881282495667,
+      "pivotY": 0.18888888888888888,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0068.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/扔东西/扔-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4687349430573806,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0069.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/扔东西/扔-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4689028384279476,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0070.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/扔东西/扔-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4794509242957746,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0071.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/扔东西/扔-11.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4830085920177384,
+      "pivotY": 0.18888888888888888,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0072.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/扔东西/扔-12.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5069168526785715,
+      "pivotY": 0.18888888888888888,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0073.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/扔东西/扔-13.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.46526447724200093,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0074.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/扔东西/扔-14.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47277440421631534,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0075.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/分裂小怪/分裂/分裂-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47277440421631534,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0076.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/分裂小怪/分裂/分裂-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4590109854394176,
+      "pivotY": 0.18888888888888888,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0077.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/分裂小怪/分裂/分裂-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.44977884615384617,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0078.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/分裂小怪/分裂/分裂-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4530471991701245,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0079.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/分裂小怪/分裂/分裂-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4539396437994723,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0080.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/分裂小怪/分裂/分裂-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48070504926108376,
+      "pivotY": 0.09999999999999998,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0081.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/分裂小怪/分裂/分裂-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49498984045755573,
+      "pivotY": 0.07777777777777772,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0082.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/分裂小怪/分裂/分裂-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5017668977942782,
+      "pivotY": 0.0,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0083.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/分裂小怪/分裂/分裂-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47277440421631534,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0084.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/分裂小怪/分裂/分裂-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47277440421631534,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0085.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/生气/生气序列/生气-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47277440421631534,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0086.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/生气/生气序列/生气-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5212357624360762,
+      "pivotY": 0.19999999999999996,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0087.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/生气/生气序列/生气-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5033655608504398,
+      "pivotY": 0.19999999999999996,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0088.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/生气/生气序列/生气-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5042941473722896,
+      "pivotY": 0.19999999999999996,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0089.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/生气/生气序列/生气-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5056967703349282,
+      "pivotY": 0.19999999999999996,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0090.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/生气/生气序列/生气-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5065649047270062,
+      "pivotY": 0.19999999999999996,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0091.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/生气/生气序列/生气-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4810688997821351,
+      "pivotY": 0.19999999999999996,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0092.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/生气/生气序列/生气-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47277440421631534,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0093.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/死亡分裂/死亡分裂/死亡分裂-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47277440421631534,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0094.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/死亡分裂/死亡分裂/死亡分裂-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47305194805194806,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0095.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/死亡分裂/死亡分裂/死亡分裂-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47331061484918796,
+      "pivotY": 0.18888888888888888,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0096.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/死亡分裂/死亡分裂/死亡分裂-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47210786568537255,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0097.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/死亡分裂/死亡分裂/死亡分裂-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47225535961272475,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0098.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/死亡分裂/死亡分裂/死亡分裂-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4737031180648025,
+      "pivotY": 0.1777777777777778,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0099.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/死亡分裂/死亡分裂/死亡分裂-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47411420478837113,
+      "pivotY": 0.18888888888888888,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0100.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/死亡分裂/死亡分裂/死亡分裂-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4685187117417919,
+      "pivotY": 0.18888888888888888,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0101.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/死亡分裂/死亡分裂/死亡分裂-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.453125,
+      "pivotY": 0.15555555555555556,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0102.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/死亡分裂/死亡分裂/死亡分裂-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5008143939393939,
+      "pivotY": 0.1444444444444445,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0103.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/死亡分裂/死亡分裂/死亡分裂-11.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4755669831223629,
+      "pivotY": 0.12222222222222223,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0104.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/死亡分裂/死亡分裂/死亡分裂-12.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.47533815298507465,
+      "pivotY": 0.12222222222222223,
+      "ppu": 147.5
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0105.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪前进/小怪前进/小怪走-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.6431966145833333,
+      "pivotY": 0.19999999999999996,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0106.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪前进/小怪前进/小怪走-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.670115291262136,
+      "pivotY": 0.18888888888888888,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0107.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪前进/小怪前进/小怪走-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.6914026497695852,
+      "pivotY": 0.2222222222222222,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0108.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪前进/小怪前进/小怪走-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.6735981308411214,
+      "pivotY": 0.21111111111111114,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0109.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪前进/小怪前进/小怪走-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.6928843896713615,
+      "pivotY": 0.21111111111111114,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0110.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪前进/小怪前进/小怪走-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.6744693396226416,
+      "pivotY": 0.18888888888888888,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0111.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪爆炸/爆炸（忘命名了/未命名作品-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4961733870967742,
+      "pivotY": 0.2777777777777778,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0112.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪爆炸/爆炸（忘命名了/未命名作品-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4954953457446808,
+      "pivotY": 0.2777777777777778,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0113.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪爆炸/爆炸（忘命名了/未命名作品-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4954953457446808,
+      "pivotY": 0.2777777777777778,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0114.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪爆炸/爆炸（忘命名了/未命名作品-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4961733870967742,
+      "pivotY": 0.2777777777777778,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0115.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪爆炸/爆炸（忘命名了/未命名作品-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4955008278145695,
+      "pivotY": 0.2777777777777778,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0116.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪爆炸/爆炸（忘命名了/未命名作品-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4955008278145695,
+      "pivotY": 0.2777777777777778,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0117.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪爆炸/爆炸（忘命名了/未命名作品-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4961733870967742,
+      "pivotY": 0.2777777777777778,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0118.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪爆炸/爆炸（忘命名了/未命名作品-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4955008278145695,
+      "pivotY": 0.2777777777777778,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0119.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪爆炸/爆炸（忘命名了/未命名作品-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0120.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪爆炸/爆炸（忘命名了/未命名作品-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4961733870967742,
+      "pivotY": 0.2777777777777778,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0121.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪爆炸/爆炸（忘命名了/未命名作品-11.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4955008278145695,
+      "pivotY": 0.2777777777777778,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0122.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪爆炸/爆炸（忘命名了/未命名作品-12.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0123.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪爆炸/爆炸（忘命名了/未命名作品-13.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5015027665995976,
+      "pivotY": 0.2777777777777778,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0124.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪爆炸/爆炸（忘命名了/未命名作品-14.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5323602440408626,
+      "pivotY": 0.30000000000000004,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0125.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪爆炸/爆炸（忘命名了/未命名作品-15.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.45674384715025906,
+      "pivotY": 0.38888888888888884,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0126.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪爆炸/爆炸（忘命名了/未命名作品-16.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5510524611398964,
+      "pivotY": 0.5777777777777777,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0127.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/小怪爆炸/爆炸（忘命名了/未命名作品-17.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.569564393939394,
+      "pivotY": 0.6555555555555556,
+      "ppu": 120.0
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0128.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/行走序列/行走-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5390625,
+      "pivotY": 0.18888888888888888,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.5390625,
+      "clockFaceY": 0.5416666666666667
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0129.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/行走序列/行走-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5375,
+      "pivotY": 0.18888888888888888,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.5375,
+      "clockFaceY": 0.5472222222222223
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0130.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/行走序列/行走-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5390625,
+      "pivotY": 0.18888888888888888,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.5390625,
+      "clockFaceY": 0.5416666666666667
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0131.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/行走序列/行走-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.540625,
+      "pivotY": 0.19999999999999996,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.540625,
+      "clockFaceY": 0.5416666666666667
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0132.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/行走序列/行走-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5375,
+      "pivotY": 0.18888888888888888,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.5375,
+      "clockFaceY": 0.5444444444444445
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0133.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/眩晕弹发条/眩晕循环/眩晕-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5921875,
+      "pivotY": 0.15555555555555556,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.5921875,
+      "clockFaceY": 0.4805555555555555
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0134.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/眩晕弹发条/眩晕循环/眩晕-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5984375,
+      "pivotY": 0.15555555555555556,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.5984375,
+      "clockFaceY": 0.475
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0135.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/眩晕弹发条/眩晕循环/眩晕-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.55625,
+      "pivotY": 0.15555555555555556,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.55625,
+      "clockFaceY": 0.4805555555555555
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0136.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/眩晕弹发条/眩晕循环/眩晕-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5125,
+      "pivotY": 0.15555555555555556,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.5125,
+      "clockFaceY": 0.4805555555555555
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0137.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/眩晕弹发条/眩晕循环/眩晕-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49375,
+      "pivotY": 0.15555555555555556,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.49375,
+      "clockFaceY": 0.4805555555555555
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0138.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/眩晕弹发条/眩晕循环/眩晕-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4859375,
+      "pivotY": 0.15555555555555556,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.4859375,
+      "clockFaceY": 0.4805555555555555
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0139.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/眩晕弹发条/眩晕循环/眩晕-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4328125,
+      "pivotY": 0.15555555555555556,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.4328125,
+      "clockFaceY": 0.4805555555555555
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0140.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/眩晕弹发条/眩晕循环/眩晕-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.3859375,
+      "pivotY": 0.15555555555555556,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.3859375,
+      "clockFaceY": 0.47777777777777775
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0141.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/眩晕弹发条/眩晕循环/眩晕-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.36875,
+      "pivotY": 0.15555555555555556,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.36875,
+      "clockFaceY": 0.475
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0142.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/眩晕弹发条/眩晕循环/眩晕-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.3640625,
+      "pivotY": 0.15555555555555556,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.3640625,
+      "clockFaceY": 0.475
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0143.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/眩晕弹发条/眩晕循环/眩晕-11.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.3765625,
+      "pivotY": 0.15555555555555556,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.3765625,
+      "clockFaceY": 0.47777777777777775
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0144.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/眩晕弹发条/眩晕循环/眩晕-12.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4109375,
+      "pivotY": 0.15555555555555556,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.4109375,
+      "clockFaceY": 0.4805555555555555
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0145.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/眩晕弹发条/眩晕循环/眩晕-13.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4625,
+      "pivotY": 0.15555555555555556,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.4625,
+      "clockFaceY": 0.4805555555555555
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0146.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/眩晕弹发条/眩晕循环/眩晕-14.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5015625,
+      "pivotY": 0.15555555555555556,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.5015625,
+      "clockFaceY": 0.4805555555555555
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0147.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/眩晕弹发条/眩晕循环/眩晕-15.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5453125,
+      "pivotY": 0.15555555555555556,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.5453125,
+      "clockFaceY": 0.47777777777777775
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0148.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/眩晕弹发条/眩晕循环/眩晕-16.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.6046875,
+      "pivotY": 0.15555555555555556,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.6046875,
+      "clockFaceY": 0.475
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0149.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/眩晕弹发条/眩晕循环/眩晕-17.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.6453125,
+      "pivotY": 0.15555555555555556,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.6453125,
+      "clockFaceY": 0.4555555555555556
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0150.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/眩晕弹发条/发条弹出收回/发条弹出-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5515625,
+      "pivotY": 0.15555555555555556,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.5515625,
+      "clockFaceY": 0.49722222222222223
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0151.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/眩晕弹发条/发条弹出收回/发条弹出-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5671875,
+      "pivotY": 0.15555555555555556,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.5671875,
+      "clockFaceY": 0.48611111111111116
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0152.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑起步/乱跑起步-1.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.44542772861356933,
+      "pivotY": 0.07526881720430112,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.44542772861356933,
+      "clockFaceY": 0.25806451612903225
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0153.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑起步/乱跑起步-2.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.45353982300884954,
+      "pivotY": 0.06989247311827962,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.45353982300884954,
+      "clockFaceY": 0.21639784946236562
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0154.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑起步/乱跑起步-3.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.4107669616519174,
+      "pivotY": 0.07526881720430112,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.4107669616519174,
+      "clockFaceY": 0.256720430107527
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0155.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑起步/乱跑起步-4.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.47345132743362833,
+      "pivotY": 0.06989247311827962,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.47345132743362833,
+      "clockFaceY": 0.239247311827957
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0156.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑起步/乱跑起步-5.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.523598820058997,
+      "pivotY": 0.06989247311827962,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.523598820058997,
+      "clockFaceY": 0.23118279569892475
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0157.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-1.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.5626843657817109,
+      "pivotY": 0.06989247311827962,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.5626843657817109,
+      "clockFaceY": 0.23521505376344076
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0158.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-2.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.6157817109144543,
+      "pivotY": 0.06989247311827962,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.6157817109144543,
+      "clockFaceY": 0.2446236559139785
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0159.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-3.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.6998525073746312,
+      "pivotY": 0.07526881720430112,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.6998525073746312,
+      "clockFaceY": 0.239247311827957
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0160.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-4.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.7352507374631269,
+      "pivotY": 0.07526881720430112,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.7352507374631269,
+      "clockFaceY": 0.239247311827957
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0161.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-5.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.7684365781710915,
+      "pivotY": 0.07526881720430112,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.7684365781710915,
+      "clockFaceY": 0.2513440860215055
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0162.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-6.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.8561946902654868,
+      "pivotY": 0.07526881720430112,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.8561946902654868,
+      "clockFaceY": 0.239247311827957
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0163.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-7.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.8443952802359882,
+      "pivotY": 0.07526881720430112,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.8443952802359882,
+      "clockFaceY": 0.2486559139784945
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0164.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-8.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.7876106194690264,
+      "pivotY": 0.07526881720430112,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.7876106194690264,
+      "clockFaceY": 0.23521505376344076
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0165.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-9.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.7300884955752213,
+      "pivotY": 0.08064516129032262,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.7300884955752213,
+      "clockFaceY": 0.24059139784946226
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0166.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-10.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.6681415929203539,
+      "pivotY": 0.08602150537634412,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.6681415929203539,
+      "clockFaceY": 0.25268817204301075
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0167.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-11.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.6268436578171092,
+      "pivotY": 0.07526881720430112,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.6268436578171092,
+      "clockFaceY": 0.2338709677419355
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0168.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-12.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.5892330383480826,
+      "pivotY": 0.07526881720430112,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.5892330383480826,
+      "clockFaceY": 0.2379032258064515
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0169.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-13.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.5265486725663717,
+      "pivotY": 0.07526881720430112,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.5265486725663717,
+      "clockFaceY": 0.2446236559139785
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0170.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-14.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.47640117994100295,
+      "pivotY": 0.06989247311827962,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.47640117994100295,
+      "clockFaceY": 0.23118279569892475
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0171.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-15.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.4004424778761062,
+      "pivotY": 0.06989247311827962,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.4004424778761062,
+      "clockFaceY": 0.24596774193548376
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0172.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-16.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.31710914454277284,
+      "pivotY": 0.08064516129032262,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.31710914454277284,
+      "clockFaceY": 0.243279569892473
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0173.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-17.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.27949852507374634,
+      "pivotY": 0.08064516129032262,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.27949852507374634,
+      "clockFaceY": 0.25
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0174.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-18.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.24262536873156343,
+      "pivotY": 0.07526881720430112,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.24262536873156343,
+      "clockFaceY": 0.239247311827957
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0175.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-19.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.17699115044247787,
+      "pivotY": 0.08064516129032262,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.17699115044247787,
+      "clockFaceY": 0.25403225806451624
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0176.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-20.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.14970501474926254,
+      "pivotY": 0.08064516129032262,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.14970501474926254,
+      "clockFaceY": 0.239247311827957
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0177.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-21.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.2028023598820059,
+      "pivotY": 0.08064516129032262,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.2028023598820059,
+      "clockFaceY": 0.24193548387096775
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0178.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-22.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.31932153392330387,
+      "pivotY": 0.07526881720430112,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.31932153392330387,
+      "clockFaceY": 0.239247311827957
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0179.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-23.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.38569321533923306,
+      "pivotY": 0.07526881720430112,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.38569321533923306,
+      "clockFaceY": 0.24731182795698925
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0180.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跑动冲刺/乱跑循环（结束可以直接接静止帧/捂头乱跑-24.png",
+      "width": 2715,
+      "height": 1491,
+      "pivotX": 0.4830383480825958,
+      "pivotY": 0.06989247311827962,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.4830383480825958,
+      "clockFaceY": 0.2338709677419355
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0181.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跳起闹铃/闹铃序列/跳起闹铃-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.503125,
+      "pivotY": 0.1444444444444445,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.503125,
+      "clockFaceY": 0.4722222222222222
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0182.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跳起闹铃/闹铃序列/跳起闹铃-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5015625,
+      "pivotY": 0.1444444444444445,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.5015625,
+      "clockFaceY": 0.4361111111111111
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0183.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跳起闹铃/闹铃序列/跳起闹铃-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.1444444444444445,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.5,
+      "clockFaceY": 0.4222222222222223
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0184.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跳起闹铃/闹铃序列/跳起闹铃-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4984375,
+      "pivotY": 0.1444444444444445,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.4984375,
+      "clockFaceY": 0.5472222222222223
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0185.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跳起闹铃/闹铃序列/跳起闹铃-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.496875,
+      "pivotY": 0.25555555555555554,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.496875,
+      "clockFaceY": 0.5972222222222222
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0186.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跳起闹铃/闹铃序列/跳起闹铃-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.496875,
+      "pivotY": 0.28888888888888886,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.496875,
+      "clockFaceY": 0.6
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0187.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跳起闹铃/闹铃序列/跳起闹铃-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4953125,
+      "pivotY": 0.30000000000000004,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.4953125,
+      "clockFaceY": 0.6
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0188.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跳起闹铃/闹铃序列/跳起闹铃-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.496875,
+      "pivotY": 0.28888888888888886,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.496875,
+      "clockFaceY": 0.6
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0189.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跳起闹铃/闹铃序列/跳起闹铃-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4953125,
+      "pivotY": 0.30000000000000004,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.4953125,
+      "clockFaceY": 0.6
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0190.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跳起闹铃/闹铃序列/跳起闹铃-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.496875,
+      "pivotY": 0.28888888888888886,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.496875,
+      "clockFaceY": 0.6
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0191.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跳起闹铃/闹铃序列/跳起闹铃-11.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4953125,
+      "pivotY": 0.30000000000000004,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.4953125,
+      "clockFaceY": 0.6
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0192.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跳起闹铃/闹铃序列/跳起闹铃-12.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.496875,
+      "pivotY": 0.28888888888888886,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.496875,
+      "clockFaceY": 0.6
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0193.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跳起闹铃/闹铃序列/跳起闹铃-13.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4953125,
+      "pivotY": 0.30000000000000004,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.4953125,
+      "clockFaceY": 0.6
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0194.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跳起闹铃/闹铃序列/跳起闹铃-14.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.496875,
+      "pivotY": 0.28888888888888886,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.496875,
+      "clockFaceY": 0.6
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0195.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跳起闹铃/闹铃序列/跳起闹铃-15.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4953125,
+      "pivotY": 0.30000000000000004,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.4953125,
+      "clockFaceY": 0.6
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0196.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跳起闹铃/闹铃序列/跳起闹铃-16.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.496875,
+      "pivotY": 0.28888888888888886,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.496875,
+      "clockFaceY": 0.6
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0197.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跳起闹铃/闹铃序列/跳起闹铃-17.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.496875,
+      "pivotY": 0.16666666666666663,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.496875,
+      "clockFaceY": 0.5388888888888889
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0198.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跳起闹铃/闹铃序列/跳起闹铃-18.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4984375,
+      "pivotY": 0.1444444444444445,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.4984375,
+      "clockFaceY": 0.4722222222222222
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0199.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跳起闹铃/闹铃序列/跳起闹铃-19.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5015625,
+      "pivotY": 0.1444444444444445,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.5015625,
+      "clockFaceY": 0.42500000000000004
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0200.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/跳起闹铃/闹铃序列/跳起闹铃-20.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5015625,
+      "pivotY": 0.1444444444444445,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.5015625,
+      "clockFaceY": 0.44999999999999996
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0201.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/死亡倒地/死亡序列/死亡倒地-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.496875,
+      "pivotY": 0.1444444444444445,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.496875,
+      "clockFaceY": 0.5138888888888888
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0202.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/死亡倒地/死亡序列/死亡倒地-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4953125,
+      "pivotY": 0.1444444444444445,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.4953125,
+      "clockFaceY": 0.5333333333333333
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0203.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/死亡倒地/死亡序列/死亡倒地-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4953125,
+      "pivotY": 0.1444444444444445,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.4953125,
+      "clockFaceY": 0.5194444444444444
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0204.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/死亡倒地/死亡序列/死亡倒地-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.496875,
+      "pivotY": 0.1444444444444445,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.496875,
+      "clockFaceY": 0.5083333333333333
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0205.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/死亡倒地/死亡序列/死亡倒地-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.496875,
+      "pivotY": 0.1444444444444445,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.496875,
+      "clockFaceY": 0.43333333333333335
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0206.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/死亡倒地/死亡序列/死亡倒地-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.53125,
+      "pivotY": 0.1333333333333333,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.53125,
+      "clockFaceY": 0.4305555555555556
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0207.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/死亡倒地/死亡序列/死亡倒地-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.584375,
+      "pivotY": 0.1333333333333333,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.584375,
+      "clockFaceY": 0.4027777777777778
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0208.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/死亡倒地/死亡序列/死亡倒地-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.6625,
+      "pivotY": 0.09999999999999998,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.6625,
+      "clockFaceY": 0.3222222222222222
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0209.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/死亡倒地/死亡序列/死亡倒地-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.66875,
+      "pivotY": 0.07777777777777772,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.66875,
+      "clockFaceY": 0.3222222222222222
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0210.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/死亡倒地/死亡序列/死亡倒地-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.66875,
+      "pivotY": 0.07777777777777772,
+      "ppu": 157.33333333333334,
+      "clockFaceX": 0.66875,
+      "clockFaceY": 0.32499999999999996
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0211.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/飞行/飞行序列/飞行-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49454497397527647,
+      "pivotY": 0.28888888888888886,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0212.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/飞行/飞行序列/飞行-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4897592905405405,
+      "pivotY": 0.0888888888888889,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0213.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/飞行/飞行序列/飞行-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48960344272844275,
+      "pivotY": 0.12222222222222223,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0214.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/飞行/飞行序列/飞行-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4898177749360614,
+      "pivotY": 0.18888888888888888,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0215.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/飞行/飞行序列/飞行-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49721892789373817,
+      "pivotY": 0.30000000000000004,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0216.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/受击/受击/受击-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4902302631578947,
+      "pivotY": 0.3111111111111111,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0217.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/受击/受击/受击-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49266117969821677,
+      "pivotY": 0.1777777777777778,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0218.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/受击/受击/受击-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4915589660743134,
+      "pivotY": 0.12222222222222223,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0219.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/受击/受击/受击-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49161794354838706,
+      "pivotY": 0.12222222222222223,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0220.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/受击/受击/受击-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4914304892601432,
+      "pivotY": 0.12222222222222223,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0221.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/受击/受击/受击-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49127820665083133,
+      "pivotY": 0.12222222222222223,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0222.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/受击/受击/受击-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4925078864353313,
+      "pivotY": 0.12222222222222223,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0223.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/受击/受击/受击-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4922478236184708,
+      "pivotY": 0.12222222222222223,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0224.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/受击/受击/受击-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49603563199473333,
+      "pivotY": 0.2666666666666667,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0225.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/受击/受击/受击-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49608556937172776,
+      "pivotY": 0.2666666666666667,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0226.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/受击/受击/受击-11.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4921796369518332,
+      "pivotY": 0.07777777777777772,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0227.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/受击/受击/受击-12.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4974856557377049,
+      "pivotY": 0.2666666666666667,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0228.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/受击/受击/受击-13.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4921796369518332,
+      "pivotY": 0.07777777777777772,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0229.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/受击/受击/受击-14.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49209070796460175,
+      "pivotY": 0.16666666666666663,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0230.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/受击/受击/受击-15.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49213935574229695,
+      "pivotY": 0.30000000000000004,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0231.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/受击/受击/受击-16.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48980863764044946,
+      "pivotY": 0.3111111111111111,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0232.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/劈砍，劈三下/劈砍序列/劈砍-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48721898242055445,
+      "pivotY": 0.3111111111111111,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0233.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/劈砍，劈三下/劈砍序列/劈砍-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4737957167403044,
+      "pivotY": 0.3111111111111111,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0234.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/劈砍，劈三下/劈砍序列/劈砍-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5252919161676647,
+      "pivotY": 0.3111111111111111,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0235.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/劈砍，劈三下/劈砍序列/劈砍-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5388808139534884,
+      "pivotY": 0.11111111111111116,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0236.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/劈砍，劈三下/劈砍序列/劈砍-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.45175574204946994,
+      "pivotY": 0.23333333333333328,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0237.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/劈砍，劈三下/劈砍序列/劈砍-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4505721830985915,
+      "pivotY": 0.24444444444444446,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0238.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/劈砍，劈三下/劈砍序列/劈砍-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49286635063206924,
+      "pivotY": 0.24444444444444446,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0239.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/劈砍，劈三下/劈砍序列/劈砍-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48839369158878504,
+      "pivotY": 0.2777777777777778,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0240.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/劈砍，劈三下/劈砍序列/劈砍-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49181476799524093,
+      "pivotY": 0.3111111111111111,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0241.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/劈砍，劈三下/劈砍序列/劈砍-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5377616995073892,
+      "pivotY": 0.30000000000000004,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0242.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/劈砍，劈三下/劈砍序列/劈砍-11.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5373596433289299,
+      "pivotY": 0.28888888888888886,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0243.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/劈砍，劈三下/劈砍序列/劈砍-12.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5309659090909091,
+      "pivotY": 0.19999999999999996,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0244.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/劈砍，劈三下/劈砍序列/劈砍-13.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5067132352941177,
+      "pivotY": 0.16666666666666663,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0245.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/劈砍，劈三下/劈砍序列/劈砍-14.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4950892857142857,
+      "pivotY": 0.2222222222222222,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0246.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大叫/大叫序列/大叫-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49454497397527647,
+      "pivotY": 0.28888888888888886,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0247.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大叫/大叫序列/大叫-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4897592905405405,
+      "pivotY": 0.0888888888888889,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0248.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大叫/大叫序列/大叫-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48960344272844275,
+      "pivotY": 0.12222222222222223,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0249.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大叫/大叫序列/大叫-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4894019080234834,
+      "pivotY": 0.18888888888888888,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0250.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大叫/大叫序列/大叫-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4968953318152245,
+      "pivotY": 0.30000000000000004,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0251.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大叫/大叫序列/大叫-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49454497397527647,
+      "pivotY": 0.28888888888888886,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0252.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大叫/大叫序列/大叫-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4897592905405405,
+      "pivotY": 0.0888888888888889,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0253.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大叫/大叫序列/大叫-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48960344272844275,
+      "pivotY": 0.12222222222222223,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0254.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大叫/大叫序列/大叫-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4898177749360614,
+      "pivotY": 0.18888888888888888,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0255.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48980863764044946,
+      "pivotY": 0.3111111111111111,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0256.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49152717391304346,
+      "pivotY": 0.28888888888888886,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0257.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48464399429073346,
+      "pivotY": 0.3222222222222222,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0258.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4947391097095923,
+      "pivotY": 0.33333333333333337,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0259.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4929166048650252,
+      "pivotY": 0.33333333333333337,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0260.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49531876073268466,
+      "pivotY": 0.33333333333333337,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0261.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4941807250538407,
+      "pivotY": 0.05555555555555558,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0262.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49195069814872927,
+      "pivotY": 0.33333333333333337,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0263.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4947527204241071,
+      "pivotY": 0.33333333333333337,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0264.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4845745672933453,
+      "pivotY": 0.2666666666666667,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0265.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-11.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49346937859195406,
+      "pivotY": 0.05555555555555558,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0266.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-12.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49174914276807985,
+      "pivotY": 0.33333333333333337,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0267.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-13.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4952586508826002,
+      "pivotY": 0.33333333333333337,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0268.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-14.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49358837763652125,
+      "pivotY": 0.33333333333333337,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0269.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-15.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4938073497661029,
+      "pivotY": 0.05555555555555558,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0270.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-16.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4908671586715867,
+      "pivotY": 0.18888888888888888,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0271.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-17.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49541334870075443,
+      "pivotY": 0.33333333333333337,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0272.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-18.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4952977972626176,
+      "pivotY": 0.33333333333333337,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0273.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-19.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49374174493689466,
+      "pivotY": 0.34444444444444444,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0274.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-20.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49431145924627523,
+      "pivotY": 0.34444444444444444,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0275.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-21.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48460820895522383,
+      "pivotY": 0.3222222222222222,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0276.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-22.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49855993470149257,
+      "pivotY": 0.25555555555555554,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0277.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/大展翅膀/展翅序列/伸展翅膀-23.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48980863764044946,
+      "pivotY": 0.3111111111111111,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0278.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/前指（示意攻击/前指序列/前指-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48980863764044946,
+      "pivotY": 0.3111111111111111,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0279.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/前指（示意攻击/前指序列/前指-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49152717391304346,
+      "pivotY": 0.28888888888888886,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0280.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/前指（示意攻击/前指序列/前指-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48464399429073346,
+      "pivotY": 0.3222222222222222,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0281.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/前指（示意攻击/前指序列/前指-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4947391097095923,
+      "pivotY": 0.33333333333333337,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0282.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/前指（示意攻击/前指序列/前指-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49431145924627523,
+      "pivotY": 0.34444444444444444,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0283.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/前指（示意攻击/前指序列/前指-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4950044326241135,
+      "pivotY": 0.3222222222222222,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0284.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/前指（示意攻击/前指序列/前指-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49022632087628865,
+      "pivotY": 0.34444444444444444,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0285.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/前指（示意攻击/前指序列/前指-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4897471114635252,
+      "pivotY": 0.37777777777777777,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0286.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/前指（示意攻击/前指序列/前指-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4933485381988903,
+      "pivotY": 0.3222222222222222,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0287.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/前指（示意攻击/前指序列/前指-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49387209302325585,
+      "pivotY": 0.21111111111111114,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0288.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/前指（示意攻击/前指序列/前指-11.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.494365581270183,
+      "pivotY": 0.3555555555555555,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0289.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/前指（示意攻击/前指序列/前指-12.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4950044326241135,
+      "pivotY": 0.3222222222222222,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0290.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/前指（示意攻击/前指序列/前指-13.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4939218431771894,
+      "pivotY": 0.3111111111111111,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0291.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/前指（示意攻击/前指序列/前指-14.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48460820895522383,
+      "pivotY": 0.3222222222222222,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0292.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/前指（示意攻击/前指序列/前指-15.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49855993470149257,
+      "pivotY": 0.25555555555555554,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0293.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/前指（示意攻击/前指序列/前指-16.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48980863764044946,
+      "pivotY": 0.3111111111111111,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0294.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/冲刺/冲刺（可循环，懒得拆了，可自拆/冲刺-1.png",
+      "width": 3966,
+      "height": 2163,
+      "pivotX": 0.7086040735221063,
+      "pivotY": 0.5666666666666667,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0295.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/冲刺/冲刺（可循环，懒得拆了，可自拆/冲刺-2.png",
+      "width": 3966,
+      "height": 2163,
+      "pivotX": 0.7094502523554305,
+      "pivotY": 0.5666666666666667,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0296.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/冲刺/冲刺（可循环，懒得拆了，可自拆/冲刺-3.png",
+      "width": 3966,
+      "height": 2163,
+      "pivotX": 0.7093090464479735,
+      "pivotY": 0.5629629629629629,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0297.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/冲刺/冲刺（可循环，懒得拆了，可自拆/冲刺-4.png",
+      "width": 3966,
+      "height": 2163,
+      "pivotX": 0.7090866470613306,
+      "pivotY": 0.5629629629629629,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0298.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/冲刺/冲刺（可循环，懒得拆了，可自拆/冲刺-5.png",
+      "width": 3966,
+      "height": 2163,
+      "pivotX": 0.810089923626509,
+      "pivotY": 0.4814814814814815,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0299.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/冲刺/冲刺（可循环，懒得拆了，可自拆/冲刺-6.png",
+      "width": 3966,
+      "height": 2163,
+      "pivotX": 0.8665795380707662,
+      "pivotY": 0.4481481481481482,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0300.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/冲刺/冲刺（可循环，懒得拆了，可自拆/冲刺-7.png",
+      "width": 3966,
+      "height": 2163,
+      "pivotX": 0.7929578999707119,
+      "pivotY": 0.44074074074074077,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0301.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/冲刺/冲刺（可循环，懒得拆了，可自拆/冲刺-8.png",
+      "width": 3966,
+      "height": 2163,
+      "pivotX": 0.6547518810676706,
+      "pivotY": 0.4703703703703703,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0302.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/冲刺/冲刺（可循环，懒得拆了，可自拆/冲刺-9.png",
+      "width": 3966,
+      "height": 2163,
+      "pivotX": 0.4789255475752171,
+      "pivotY": 0.48888888888888893,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0303.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/冲刺/冲刺（可循环，懒得拆了，可自拆/冲刺-10.png",
+      "width": 3966,
+      "height": 2163,
+      "pivotX": 0.1857481553599358,
+      "pivotY": 0.4703703703703703,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0304.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/冲刺/冲刺（可循环，懒得拆了，可自拆/冲刺-11.png",
+      "width": 3966,
+      "height": 2163,
+      "pivotX": 0.1097462015109074,
+      "pivotY": 0.4703703703703703,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0305.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/冲刺/冲刺（可循环，懒得拆了，可自拆/冲刺-12.png",
+      "width": 3966,
+      "height": 2163,
+      "pivotX": 0.06632840028188865,
+      "pivotY": 0.48518518518518516,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0306.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/冲刺/冲刺（可循环，懒得拆了，可自拆/冲刺-13.png",
+      "width": 3966,
+      "height": 2163,
+      "pivotX": 0.1951839180333804,
+      "pivotY": 0.6111111111111112,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0307.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/冲刺/冲刺（可循环，懒得拆了，可自拆/冲刺-14.png",
+      "width": 3966,
+      "height": 2163,
+      "pivotX": 0.5130273371582855,
+      "pivotY": 0.6370370370370371,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0308.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/冲刺/冲刺（可循环，懒得拆了，可自拆/冲刺-15.png",
+      "width": 3966,
+      "height": 2163,
+      "pivotX": 0.7762181430845302,
+      "pivotY": 0.5592592592592592,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0309.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/冲刺/冲刺（可循环，懒得拆了，可自拆/冲刺-16.png",
+      "width": 3966,
+      "height": 2163,
+      "pivotX": 0.7657312586821916,
+      "pivotY": 0.5111111111111111,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0310.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/冲刺/冲刺（可循环，懒得拆了，可自拆/冲刺-17.png",
+      "width": 3966,
+      "height": 2163,
+      "pivotX": 0.7631350542461653,
+      "pivotY": 0.5,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0311.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/冲刺/冲刺（可循环，懒得拆了，可自拆/冲刺-18.png",
+      "width": 3966,
+      "height": 2163,
+      "pivotX": 0.774632829674152,
+      "pivotY": 0.5,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0312.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/冲刺/冲刺（可循环，懒得拆了，可自拆/冲刺-19.png",
+      "width": 3966,
+      "height": 2163,
+      "pivotX": 0.7721526374859708,
+      "pivotY": 0.49629629629629635,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0313.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/冲刺/冲刺（可循环，懒得拆了，可自拆/冲刺-20.png",
+      "width": 3966,
+      "height": 2163,
+      "pivotX": 0.7731430433365917,
+      "pivotY": 0.5037037037037038,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0314.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/冲刺/冲刺（可循环，懒得拆了，可自拆/冲刺-21.png",
+      "width": 3966,
+      "height": 2163,
+      "pivotX": 0.7716712580348944,
+      "pivotY": 0.5074074074074074,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0315.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/甩毛（主动/甩毛循环序列/甩毛循环-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49418537151702785,
+      "pivotY": 0.2666666666666667,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0316.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/甩毛（主动/甩毛循环序列/甩毛循环-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4912166159567275,
+      "pivotY": 0.2777777777777778,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0317.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/甩毛（主动/甩毛循环序列/甩毛循环-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49534634870719774,
+      "pivotY": 0.23333333333333328,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0318.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/甩毛（主动/甩毛循环序列/甩毛循环-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4943717907573813,
+      "pivotY": 0.23333333333333328,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0319.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/甩毛（主动/甩毛循环序列/甩毛循环-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49717778110047844,
+      "pivotY": 0.2777777777777778,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0320.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/甩毛（主动/甩毛循环序列/甩毛循环-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49518261002444985,
+      "pivotY": 0.24444444444444446,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0321.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/甩毛（主动/甩毛循环序列/甩毛循环-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4958454978488015,
+      "pivotY": 0.2666666666666667,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0322.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/甩毛（主动/甩毛循环序列/甩毛循环-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.493335355987055,
+      "pivotY": 0.28888888888888886,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0323.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/甩毛（主动/甩毛循环序列/甩毛循环-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4946660238429173,
+      "pivotY": 0.2222222222222222,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0324.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/甩毛（主动/甩毛循环序列/甩毛循环-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4967936298822071,
+      "pivotY": 0.28888888888888886,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0325.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/甩毛（主动/甩毛循环序列/甩毛循环-11.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49693103705917513,
+      "pivotY": 0.3111111111111111,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0326.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/甩毛（主动/甩毛循环序列/甩毛循环-12.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4973238740109556,
+      "pivotY": 0.25555555555555554,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0327.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/甩毛（主动/回正/回正-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49152041547277936,
+      "pivotY": 0.16666666666666663,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0328.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/甩毛（主动/回正/回正-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49454343418590146,
+      "pivotY": 0.23333333333333328,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0329.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/甩毛（主动/回正/回正-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49354066083283044,
+      "pivotY": 0.28888888888888886,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0330.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/甩毛（主动/回正/回正-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49584292510742783,
+      "pivotY": 0.28888888888888886,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0331.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/甩毛（主动/回正/回正-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4959271523178808,
+      "pivotY": 0.30000000000000004,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0332.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/甩毛（主动/回正/回正-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48980863764044946,
+      "pivotY": 0.3111111111111111,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0333.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/落下/下落-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48980863764044946,
+      "pivotY": 0.3111111111111111,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0334.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/落下/下落-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49147627028934365,
+      "pivotY": 0.30000000000000004,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0335.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/落下/下落-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49626363185723726,
+      "pivotY": 0.28888888888888886,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0336.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/落下/下落-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49580437944408534,
+      "pivotY": 0.25555555555555554,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0337.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/落下/下落-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4963006756756757,
+      "pivotY": 0.15555555555555556,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0338.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/落下/下落-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.495923755787037,
+      "pivotY": 0.06666666666666665,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0339.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/落下/下落-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4963095442083619,
+      "pivotY": 0.06666666666666665,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0340.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/落下/下落-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4977526595744681,
+      "pivotY": 0.06666666666666665,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0341.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/落下/下落-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.50013778659612,
+      "pivotY": 0.05555555555555558,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0342.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/落下/下落-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5002581282952548,
+      "pivotY": 0.05555555555555558,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0343.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/落下/下落-11.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5016353626943005,
+      "pivotY": 0.06666666666666665,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0344.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/落下/下落-12.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5007324614760746,
+      "pivotY": 0.06666666666666665,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0345.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/落下/下落-13.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5001301097653293,
+      "pivotY": 0.07777777777777772,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0346.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/落下/下落-14.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4994375907111756,
+      "pivotY": 0.07777777777777772,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0347.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/晕循环/晕循环-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5024295649072753,
+      "pivotY": 0.07777777777777772,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0348.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/晕循环/晕循环-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.504753301213419,
+      "pivotY": 0.07777777777777772,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0349.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/晕循环/晕循环-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5017008928571428,
+      "pivotY": 0.07777777777777772,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0350.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/晕循环/晕循环-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4972170398009951,
+      "pivotY": 0.07777777777777772,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0351.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/晕循环/晕循环-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49477990472829925,
+      "pivotY": 0.07777777777777772,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0352.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/晕循环/晕循环-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4989348094565984,
+      "pivotY": 0.07777777777777772,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0353.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/晕循环/晕循环-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5014159806728704,
+      "pivotY": 0.07777777777777772,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0354.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/起飞/起飞-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5027925053918045,
+      "pivotY": 0.07777777777777772,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0355.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/起飞/起飞-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4993263212795549,
+      "pivotY": 0.07777777777777772,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0356.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/起飞/起飞-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49903617527173916,
+      "pivotY": 0.07777777777777772,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0357.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/起飞/起飞-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49744781858129317,
+      "pivotY": 0.07777777777777772,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0358.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/起飞/起飞-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49874625748503,
+      "pivotY": 0.07777777777777772,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0359.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/起飞/起飞-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4960188882063882,
+      "pivotY": 0.07777777777777772,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0360.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/起飞/起飞-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.495139802631579,
+      "pivotY": 0.07777777777777772,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0361.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/起飞/起飞-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49759732360097325,
+      "pivotY": 0.0888888888888889,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0362.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/起飞/起飞-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49596904342723,
+      "pivotY": 0.11111111111111116,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0363.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/起飞/起飞-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49368400621118014,
+      "pivotY": 0.1777777777777778,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0364.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/起飞/起飞-11.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4914317375886525,
+      "pivotY": 0.16666666666666663,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0365.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/起飞/起飞-12.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49469524119947844,
+      "pivotY": 0.3111111111111111,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0366.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/虚弱/起飞/起飞-13.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48980863764044946,
+      "pivotY": 0.3111111111111111,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0367.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/坠落死亡/死亡序列/死亡-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.48980863764044946,
+      "pivotY": 0.3111111111111111,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0368.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/坠落死亡/死亡序列/死亡-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49177150249821555,
+      "pivotY": 0.30000000000000004,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0369.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/坠落死亡/死亡序列/死亡-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49199981910274965,
+      "pivotY": 0.30000000000000004,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0370.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/坠落死亡/死亡序列/死亡-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49279296875,
+      "pivotY": 0.21111111111111114,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0371.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/坠落死亡/死亡序列/死亡-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49434883252818035,
+      "pivotY": 0.1777777777777778,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0372.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/坠落死亡/死亡序列/死亡-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49489505789909016,
+      "pivotY": 0.16666666666666663,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0373.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/坠落死亡/死亡序列/死亡-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4948487903225806,
+      "pivotY": 0.1333333333333333,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0374.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/坠落死亡/死亡序列/死亡-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4945159978308026,
+      "pivotY": 0.07777777777777772,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0375.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/坠落死亡/死亡序列/死亡-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4948803191489362,
+      "pivotY": 0.0888888888888889,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0376.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/坠落死亡/死亡序列/死亡-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4950677710843373,
+      "pivotY": 0.0888888888888889,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0377.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/坠落死亡/死亡序列/死亡-11.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4950487012987013,
+      "pivotY": 0.07777777777777772,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0378.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/坠落死亡/死亡序列/死亡-12.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.49407106164383563,
+      "pivotY": 0.06666666666666665,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0379.png",
+      "source": "Doc/动画合集/蝙蝠boss动画（1s8帧（已加红眼/坠落死亡/死亡序列/死亡-13.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.4929949891657638,
+      "pivotY": 0.06666666666666665,
+      "ppu": 134.2857142857143
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_Hand_1.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/闹钟包含指针（图片/分针.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.3828125,
+      "pivotY": 0.4902777777777778,
+      "ppu": 157.33333333333334
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_Hand_2.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/闹钟包含指针（图片/时针.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.382421875,
+      "pivotY": 0.4902777777777778,
+      "ppu": 157.33333333333334
+    }
+  ],
+  "sequences": [
+    {
+      "actor": "BrickBoss",
+      "action": "Walk",
+      "facesRight": false,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0000.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0001.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0002.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0003.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0004.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0005.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0006.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0007.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0008.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0009.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0010.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0011.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0012.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0013.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0014.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0015.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0016.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0017.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0018.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0019.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0020.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0021.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0022.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0023.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0024.png"
+      ]
+    },
+    {
+      "actor": "BrickBoss",
+      "action": "Hurt",
+      "facesRight": false,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0025.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0026.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0027.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0028.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0029.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0030.png"
+      ]
+    },
+    {
+      "actor": "BrickBoss",
+      "action": "HammerPlayer",
+      "facesRight": false,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0031.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0032.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0033.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0034.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0035.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0036.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0037.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0038.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0039.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0040.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0041.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0042.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0043.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0044.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0045.png"
+      ]
+    },
+    {
+      "actor": "BrickBoss",
+      "action": "HammerGround",
+      "facesRight": false,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0046.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0047.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0048.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0049.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0050.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0051.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0052.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0053.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0054.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0055.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0056.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0057.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0058.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0059.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0060.png"
+      ]
+    },
+    {
+      "actor": "BrickBoss",
+      "action": "Throw",
+      "facesRight": false,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0061.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0062.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0063.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0064.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0065.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0066.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0067.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0068.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0069.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0070.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0071.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0072.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0073.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0074.png"
+      ]
+    },
+    {
+      "actor": "BrickBoss",
+      "action": "Split",
+      "facesRight": false,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0075.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0076.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0077.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0078.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0079.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0080.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0081.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0082.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0083.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0084.png"
+      ]
+    },
+    {
+      "actor": "BrickBoss",
+      "action": "Angry",
+      "facesRight": false,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0085.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0086.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0087.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0088.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0089.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0090.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0091.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0092.png"
+      ]
+    },
+    {
+      "actor": "BrickBoss",
+      "action": "Dead",
+      "facesRight": false,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0093.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0094.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0095.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0096.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0097.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0098.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0099.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0100.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0101.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0102.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0103.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0104.png"
+      ]
+    },
+    {
+      "actor": "BrickBoss",
+      "action": "Idle",
+      "facesRight": false,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_0000.png"
+      ]
+    },
+    {
+      "actor": "BrickMinion",
+      "action": "Walk",
+      "facesRight": false,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0105.png",
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0106.png",
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0107.png",
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0108.png",
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0109.png",
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0110.png"
+      ]
+    },
+    {
+      "actor": "BrickMinion",
+      "action": "Dead",
+      "facesRight": false,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0111.png",
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0112.png",
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0113.png",
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0114.png",
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0115.png",
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0116.png",
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0117.png",
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0118.png",
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0119.png",
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0120.png",
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0121.png",
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0122.png",
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0123.png",
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0124.png",
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0125.png",
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0126.png",
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0127.png"
+      ]
+    },
+    {
+      "actor": "BrickMinion",
+      "action": "Idle",
+      "facesRight": false,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0105.png"
+      ]
+    },
+    {
+      "actor": "BrickMinion",
+      "action": "Hurt",
+      "facesRight": false,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BrickMinion/BrickMinion_0105.png"
+      ]
+    },
+    {
+      "actor": "ClockBoss",
+      "action": "Walk",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0128.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0129.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0130.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0131.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0132.png"
+      ]
+    },
+    {
+      "actor": "ClockBoss",
+      "action": "Stun",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0133.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0134.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0135.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0136.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0137.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0138.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0139.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0140.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0141.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0142.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0143.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0144.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0145.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0146.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0147.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0148.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0149.png"
+      ]
+    },
+    {
+      "actor": "ClockBoss",
+      "action": "Recover",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0150.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0151.png"
+      ]
+    },
+    {
+      "actor": "ClockBoss",
+      "action": "Rewind",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0133.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0134.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0135.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0136.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0137.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0138.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0139.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0140.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0141.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0142.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0143.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0144.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0145.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0146.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0147.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0148.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0149.png"
+      ]
+    },
+    {
+      "actor": "ClockBoss",
+      "action": "Charge",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0152.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0153.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0154.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0155.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0156.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0157.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0158.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0159.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0160.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0161.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0162.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0163.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0164.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0165.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0166.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0167.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0168.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0169.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0170.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0171.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0172.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0173.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0174.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0175.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0176.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0177.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0178.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0179.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0180.png"
+      ]
+    },
+    {
+      "actor": "ClockBoss",
+      "action": "JumpShake",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0181.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0182.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0183.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0184.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0185.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0186.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0187.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0188.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0189.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0190.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0191.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0192.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0193.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0194.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0195.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0196.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0197.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0198.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0199.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0200.png"
+      ]
+    },
+    {
+      "actor": "ClockBoss",
+      "action": "Dead",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0201.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0202.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0203.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0204.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0205.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0206.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0207.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0208.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0209.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0210.png"
+      ]
+    },
+    {
+      "actor": "ClockBoss",
+      "action": "Idle",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0128.png"
+      ]
+    },
+    {
+      "actor": "ClockBoss",
+      "action": "Hurt",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_0128.png"
+      ]
+    },
+    {
+      "actor": "BatBoss",
+      "action": "Fly",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0211.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0212.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0213.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0214.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0215.png"
+      ]
+    },
+    {
+      "actor": "BatBoss",
+      "action": "Hurt",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0216.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0217.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0218.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0219.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0220.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0221.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0222.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0223.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0224.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0225.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0226.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0227.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0228.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0229.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0230.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0231.png"
+      ]
+    },
+    {
+      "actor": "BatBoss",
+      "action": "Slash",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0232.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0233.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0234.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0235.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0236.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0237.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0238.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0239.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0240.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0241.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0242.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0243.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0244.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0245.png"
+      ]
+    },
+    {
+      "actor": "BatBoss",
+      "action": "Roar",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0246.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0247.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0248.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0249.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0250.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0251.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0252.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0253.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0254.png"
+      ]
+    },
+    {
+      "actor": "BatBoss",
+      "action": "WingSpread",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0255.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0256.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0257.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0258.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0259.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0260.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0261.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0262.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0263.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0264.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0265.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0266.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0267.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0268.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0269.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0270.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0271.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0272.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0273.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0274.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0275.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0276.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0277.png"
+      ]
+    },
+    {
+      "actor": "BatBoss",
+      "action": "Point",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0278.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0279.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0280.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0281.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0282.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0283.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0284.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0285.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0286.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0287.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0288.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0289.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0290.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0291.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0292.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0293.png"
+      ]
+    },
+    {
+      "actor": "BatBoss",
+      "action": "Dash",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0294.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0295.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0296.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0297.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0298.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0299.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0300.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0301.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0302.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0303.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0304.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0305.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0306.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0307.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0308.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0309.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0310.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0311.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0312.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0313.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0314.png"
+      ]
+    },
+    {
+      "actor": "BatBoss",
+      "action": "Shake",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0315.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0316.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0317.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0318.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0319.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0320.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0321.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0322.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0323.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0324.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0325.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0326.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0327.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0328.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0329.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0330.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0331.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0332.png"
+      ]
+    },
+    {
+      "actor": "BatBoss",
+      "action": "Weak",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0333.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0334.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0335.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0336.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0337.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0338.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0339.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0340.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0341.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0342.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0343.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0344.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0345.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0346.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0347.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0348.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0349.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0350.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0351.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0352.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0353.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0354.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0355.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0356.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0357.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0358.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0359.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0360.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0361.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0362.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0363.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0364.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0365.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0366.png"
+      ]
+    },
+    {
+      "actor": "BatBoss",
+      "action": "Dead",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0367.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0368.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0369.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0370.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0371.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0372.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0373.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0374.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0375.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0376.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0377.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0378.png",
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0379.png"
+      ]
+    },
+    {
+      "actor": "BatBoss",
+      "action": "Idle",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BatBoss/BatBoss_0211.png"
+      ]
+    },
+    {
+      "actor": "ClockBoss",
+      "action": "Hand1",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_Hand_1.png"
+      ]
+    },
+    {
+      "actor": "ClockBoss",
+      "action": "Hand2",
+      "facesRight": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_Hand_2.png"
+      ]
+    }
+  ],
+  "source": "Doc/动画合集",
+  "frameRate": 8
+}

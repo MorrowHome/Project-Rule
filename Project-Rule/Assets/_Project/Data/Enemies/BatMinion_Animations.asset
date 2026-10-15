@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff07526ecba378c4c9291476eb1f3b68, type: 3}
+  m_Name: BatMinion_Animations
+  m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.Enemy.EnemyAnimationSet
+  Sequences:
+  - Action: Walk
+    Frames:
+    - {fileID: 21300000, guid: e017059d83f8c2944b31188dd5cb08e0, type: 3}
+    - {fileID: 21300000, guid: 55a3e285d20a74946800acb77d0d237d, type: 3}
+    - {fileID: 21300000, guid: c93dcfa0be0f44944834b4dc6a1bc15c, type: 3}
+    - {fileID: 21300000, guid: 7aac763166629484ebeecfa396188ddd, type: 3}
+    - {fileID: 21300000, guid: 186581448ce371643959c02172c68845, type: 3}
+    FrameRate: 8
+    FacesRight: 1
+  - Action: Hurt
+    Frames:
+    - {fileID: 21300000, guid: d181a5870fe2b54418c40dcd0a6d7798, type: 3}
+    - {fileID: 21300000, guid: ec2b007d4d6270f458f5b9c80085947b, type: 3}
+    - {fileID: 21300000, guid: cf4bda293be8cd942b3fc7a026830a67, type: 3}
+    - {fileID: 21300000, guid: a5b16149fab465f40aa5698981d9e3ef, type: 3}
+    - {fileID: 21300000, guid: e841a584d4584e646b3f93bdc881132d, type: 3}
+    - {fileID: 21300000, guid: 79e855c9fac76744f9d3180561348196, type: 3}
+    - {fileID: 21300000, guid: 6922229bb478cf84bba3986f807ec210, type: 3}
+    - {fileID: 21300000, guid: 0ce39999529ad5c418adb4b8c6374e58, type: 3}
+    - {fileID: 21300000, guid: a2354244b7001044aa766b5ac34b9c41, type: 3}
+    - {fileID: 21300000, guid: 652ad54b219ad6d4ba728a329aead154, type: 3}
+    - {fileID: 21300000, guid: ace4cde67477e364fa9c774bb8d6377b, type: 3}
+    - {fileID: 21300000, guid: a09b41d4274dd044e842eefb4f9e3d59, type: 3}
+    - {fileID: 21300000, guid: c4d24bd8cc8848749a23b27a77d12f2c, type: 3}
+    - {fileID: 21300000, guid: c4700ab4c0d57f64c8183c8efbeae687, type: 3}
+    - {fileID: 21300000, guid: 43f38bafb69f0994e8c36d6c51aed530, type: 3}
+    - {fileID: 21300000, guid: abf69068178d2e0429f1eac44f0d9b3f, type: 3}
+    FrameRate: 8
+    FacesRight: 1
+  - Action: Dead
+    Frames:
+    - {fileID: 21300000, guid: b2a571588c0516c47a2c95f0199334c3, type: 3}
+    - {fileID: 21300000, guid: 895fbce1796de6e4bbbd77f880387031, type: 3}
+    - {fileID: 21300000, guid: ed35bcca949a1994bbd91cb37d6e7283, type: 3}
+    - {fileID: 21300000, guid: cb284a5c1120146439c118a881f798cc, type: 3}
+    - {fileID: 21300000, guid: 849a03fd05a8e6246a71f9a25b063ac6, type: 3}
+    - {fileID: 21300000, guid: 915fb816255c4c846a375ce3773007c1, type: 3}
+    - {fileID: 21300000, guid: 6e4b5698bbad1fd46a613d62556a8e2c, type: 3}
+    - {fileID: 21300000, guid: 0e81234935520bb4dab5f6fef80be89e, type: 3}
+    - {fileID: 21300000, guid: 71bc64e5dea69fc4ab6e75febe098dee, type: 3}
+    - {fileID: 21300000, guid: 7b3dfec920694e048ad22090d1b35470, type: 3}
+    - {fileID: 21300000, guid: 7bce8e1e85f341c458f9c14aa21d8ff0, type: 3}
+    - {fileID: 21300000, guid: 521fbca725ce7ef458cb0d7e21c3fc4f, type: 3}
+    - {fileID: 21300000, guid: 3ded5341443f19349a9b98e4e9832942, type: 3}
+    FrameRate: 8
+    FacesRight: 1
+  - Action: Idle
+    Frames:
+    - {fileID: 21300000, guid: e017059d83f8c2944b31188dd5cb08e0, type: 3}
+    FrameRate: 8
+    FacesRight: 1

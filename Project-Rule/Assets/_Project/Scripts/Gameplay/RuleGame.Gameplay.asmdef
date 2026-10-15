@@ -4,7 +4,8 @@
     "references": [
         "RuleGame.Core",
         "RuleGame.Infrastructure",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "UnityHFSM"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -9,7 +9,8 @@
         "RuleGame.UI",
         "RuleGame.Presentation",
         "RuleGame.Development",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Unity.2D.Sprite.Editor"
     ],
     "includePlatforms": [
         "Editor"

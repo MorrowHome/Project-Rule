@@ -1,0 +1,483 @@
+fileFormatVersion: 2
+guid: 64736cebc28a40543b83fd0755354964
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -7891742651848049782
+    second: BrickBoss_0058_0
+  - first:
+      213: 831793992019628930
+    second: BrickBoss_0058_1
+  - first:
+      213: -1211149991250518270
+    second: BrickBoss_0058_2
+  - first:
+      213: -2692342323514393530
+    second: BrickBoss_0058_3
+  - first:
+      213: -4197208333240090742
+    second: BrickBoss_0058_4
+  - first:
+      213: 6596069114867334096
+    second: BrickBoss_0058_5
+  - first:
+      213: -7761812729888852531
+    second: BrickBoss_0058_6
+  - first:
+      213: -6685306362312235286
+    second: BrickBoss_0058_7
+  - first:
+      213: -5279073745728954347
+    second: BrickBoss_0058_8
+  - first:
+      213: -1517409137548795145
+    second: BrickBoss_0058_9
+  - first:
+      213: -5886126549267132699
+    second: BrickBoss_0058_10
+  - first:
+      213: 6251054847407689118
+    second: BrickBoss_0058_11
+  - first:
+      213: -5480164446606815824
+    second: BrickBoss_0058_12
+  - first:
+      213: -7418957034118779756
+    second: BrickBoss_0058_13
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 9
+  spritePivot: {x: 0.46914363, y: 0.17777778}
+  spritePixelsToUnits: 147.5
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 512
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: BrickBoss_0058_0
+      rect:
+        serializedVersion: 2
+        x: 313
+        y: 231
+        width: 24
+        height: 9
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a8b3cc1ded5ea7290800000000000000
+      internalID: -7891742651848049782
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BrickBoss_0058_1
+      rect:
+        serializedVersion: 2
+        x: 363
+        y: 133
+        width: 458
+        height: 457
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 28352ac8a302b8b00800000000000000
+      internalID: 831793992019628930
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BrickBoss_0058_2
+      rect:
+        serializedVersion: 2
+        x: 871
+        y: 233
+        width: 25
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20f9bc9ff71213fe0800000000000000
+      internalID: -1211149991250518270
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BrickBoss_0058_3
+      rect:
+        serializedVersion: 2
+        x: 178
+        y: 217
+        width: 42
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 64cbc21ebe0e2aad0800000000000000
+      internalID: -2692342323514393530
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BrickBoss_0058_4
+      rect:
+        serializedVersion: 2
+        x: 1041
+        y: 212
+        width: 52
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a8f3ae8324580c5c0800000000000000
+      internalID: -4197208333240090742
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BrickBoss_0058_5
+      rect:
+        serializedVersion: 2
+        x: 17
+        y: 139
+        width: 28
+        height: 53
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0dbb79999e1f98b50800000000000000
+      internalID: 6596069114867334096
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BrickBoss_0058_6
+      rect:
+        serializedVersion: 2
+        x: 57
+        y: 153
+        width: 39
+        height: 41
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dc5bedd2270884490800000000000000
+      internalID: -7761812729888852531
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BrickBoss_0058_7
+      rect:
+        serializedVersion: 2
+        x: 1069
+        y: 150
+        width: 55
+        height: 52
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ae668b3a8450933a0800000000000000
+      internalID: -6685306362312235286
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BrickBoss_0058_8
+      rect:
+        serializedVersion: 2
+        x: 1143
+        y: 151
+        width: 32
+        height: 46
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5102cb2e566fcb6b0800000000000000
+      internalID: -5279073745728954347
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BrickBoss_0058_9
+      rect:
+        serializedVersion: 2
+        x: 999
+        y: 92
+        width: 26
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7f2e871dd6411fae0800000000000000
+      internalID: -1517409137548795145
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BrickBoss_0058_10
+      rect:
+        serializedVersion: 2
+        x: 122
+        y: 76
+        width: 28
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5eecfe7e617405ea0800000000000000
+      internalID: -5886126549267132699
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BrickBoss_0058_11
+      rect:
+        serializedVersion: 2
+        x: 255
+        y: 58
+        width: 29
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e9d0833a34530c650800000000000000
+      internalID: 6251054847407689118
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BrickBoss_0058_12
+      rect:
+        serializedVersion: 2
+        x: 818
+        y: 64
+        width: 24
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0bd8641987b82f3b0800000000000000
+      internalID: -5480164446606815824
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BrickBoss_0058_13
+      rect:
+        serializedVersion: 2
+        x: 621
+        y: 48
+        width: 45
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 49ce67182e19a0990800000000000000
+      internalID: -7418957034118779756
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 1537655665
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      BrickBoss_0058_0: -7891742651848049782
+      BrickBoss_0058_1: 831793992019628930
+      BrickBoss_0058_10: -5886126549267132699
+      BrickBoss_0058_11: 6251054847407689118
+      BrickBoss_0058_12: -5480164446606815824
+      BrickBoss_0058_13: -7418957034118779756
+      BrickBoss_0058_2: -1211149991250518270
+      BrickBoss_0058_3: -2692342323514393530
+      BrickBoss_0058_4: -4197208333240090742
+      BrickBoss_0058_5: 6596069114867334096
+      BrickBoss_0058_6: -7761812729888852531
+      BrickBoss_0058_7: -6685306362312235286
+      BrickBoss_0058_8: -5279073745728954347
+      BrickBoss_0058_9: -1517409137548795145
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

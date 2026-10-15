@@ -1,0 +1,278 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff07526ecba378c4c9291476eb1f3b68, type: 3}
+  m_Name: ClockBoss_Animations
+  m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.Enemy.EnemyAnimationSet
+  Sequences:
+  - Action: Walk
+    Frames:
+    - {fileID: 21300000, guid: 7c3b263ecdcf37448a06b4542666b4fb, type: 3}
+    - {fileID: 21300000, guid: 93b632f8b40d08f42be920be0f3c7624, type: 3}
+    - {fileID: 21300000, guid: 43cbe21f62343eb439b948a46b0254a2, type: 3}
+    - {fileID: 21300000, guid: 209665f0f30bec04f872303ae3396201, type: 3}
+    - {fileID: 21300000, guid: 037bde307a2bcc14fa6c8c0a5f25161c, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 1.614407}
+    - {x: 0, y: 1.6398305}
+    - {x: 0, y: 1.614407}
+    - {x: 0, y: 1.5635594}
+    - {x: 0, y: 1.6271187}
+    FrameRate: 8
+    FacesRight: 1
+  - Action: Stun
+    Frames:
+    - {fileID: 21300000, guid: ddd5ff572b7e51049a7f575be8bfe041, type: 3}
+    - {fileID: 21300000, guid: bc62dbe23b759044b980183fc0196e5a, type: 3}
+    - {fileID: 21300000, guid: 4fa0183a053c7c140853463dcc036ab2, type: 3}
+    - {fileID: 21300000, guid: a69f6628b6a43764db1c994ff3c71572, type: 3}
+    - {fileID: 21300000, guid: e8cd509ae5298fb4ab76c01cb5f4572e, type: 3}
+    - {fileID: 21300000, guid: 85c670f3b8d8a7f4394db20b3081fc9b, type: 3}
+    - {fileID: 21300000, guid: 12621c7e1d280ce4aa3db3594d5c0f35, type: 3}
+    - {fileID: 21300000, guid: 4d88d8c1e7214794a9412eefe571b372, type: 3}
+    - {fileID: 21300000, guid: b15b7909fdb8e2847a6fe26c75ab5e1c, type: 3}
+    - {fileID: 21300000, guid: bbd3c4b475f591049842e80a7e18c695, type: 3}
+    - {fileID: 21300000, guid: 9685ba00a9f54b7479c97994e10dea68, type: 3}
+    - {fileID: 21300000, guid: d2f5bd6878fba264c9d85d27bd341932, type: 3}
+    - {fileID: 21300000, guid: b7fb052a99be10f41bd58510a3976829, type: 3}
+    - {fileID: 21300000, guid: 0f4a6dd5b85aaac48b733281845f34b1, type: 3}
+    - {fileID: 21300000, guid: 8e585a607f496084c89c0e6f269fbec8, type: 3}
+    - {fileID: 21300000, guid: cfe1ae497678b3b4da5338feb4d621f9, type: 3}
+    - {fileID: 21300000, guid: 2d3099be35c89d84f95750bb26ce0b54, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 1.4872882}
+    - {x: 0, y: 1.4618644}
+    - {x: 0, y: 1.4872882}
+    - {x: 0, y: 1.4872882}
+    - {x: 0, y: 1.4872882}
+    - {x: 0, y: 1.4872882}
+    - {x: 0, y: 1.4872882}
+    - {x: 0, y: 1.4745764}
+    - {x: 0, y: 1.4618644}
+    - {x: 0, y: 1.4618644}
+    - {x: 0, y: 1.4745764}
+    - {x: 0, y: 1.4872882}
+    - {x: 0, y: 1.4872882}
+    - {x: 0, y: 1.4872882}
+    - {x: 0, y: 1.4745764}
+    - {x: 0, y: 1.4618644}
+    - {x: 0, y: 1.3728814}
+    FrameRate: 8
+    FacesRight: 1
+  - Action: Recover
+    Frames:
+    - {fileID: 21300000, guid: 28e70dfbe8cd3c04481b5adb36ce69b5, type: 3}
+    - {fileID: 21300000, guid: c6371a848ddccb6459a5e4097691fe0e, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 1.5635593}
+    - {x: 0, y: 1.5127119}
+    FrameRate: 8
+    FacesRight: 1
+  - Action: Rewind
+    Frames:
+    - {fileID: 21300000, guid: ddd5ff572b7e51049a7f575be8bfe041, type: 3}
+    - {fileID: 21300000, guid: bc62dbe23b759044b980183fc0196e5a, type: 3}
+    - {fileID: 21300000, guid: 4fa0183a053c7c140853463dcc036ab2, type: 3}
+    - {fileID: 21300000, guid: a69f6628b6a43764db1c994ff3c71572, type: 3}
+    - {fileID: 21300000, guid: e8cd509ae5298fb4ab76c01cb5f4572e, type: 3}
+    - {fileID: 21300000, guid: 85c670f3b8d8a7f4394db20b3081fc9b, type: 3}
+    - {fileID: 21300000, guid: 12621c7e1d280ce4aa3db3594d5c0f35, type: 3}
+    - {fileID: 21300000, guid: 4d88d8c1e7214794a9412eefe571b372, type: 3}
+    - {fileID: 21300000, guid: b15b7909fdb8e2847a6fe26c75ab5e1c, type: 3}
+    - {fileID: 21300000, guid: bbd3c4b475f591049842e80a7e18c695, type: 3}
+    - {fileID: 21300000, guid: 9685ba00a9f54b7479c97994e10dea68, type: 3}
+    - {fileID: 21300000, guid: d2f5bd6878fba264c9d85d27bd341932, type: 3}
+    - {fileID: 21300000, guid: b7fb052a99be10f41bd58510a3976829, type: 3}
+    - {fileID: 21300000, guid: 0f4a6dd5b85aaac48b733281845f34b1, type: 3}
+    - {fileID: 21300000, guid: 8e585a607f496084c89c0e6f269fbec8, type: 3}
+    - {fileID: 21300000, guid: cfe1ae497678b3b4da5338feb4d621f9, type: 3}
+    - {fileID: 21300000, guid: 2d3099be35c89d84f95750bb26ce0b54, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 1.4872882}
+    - {x: 0, y: 1.4618644}
+    - {x: 0, y: 1.4872882}
+    - {x: 0, y: 1.4872882}
+    - {x: 0, y: 1.4872882}
+    - {x: 0, y: 1.4872882}
+    - {x: 0, y: 1.4872882}
+    - {x: 0, y: 1.4745764}
+    - {x: 0, y: 1.4618644}
+    - {x: 0, y: 1.4618644}
+    - {x: 0, y: 1.4745764}
+    - {x: 0, y: 1.4872882}
+    - {x: 0, y: 1.4872882}
+    - {x: 0, y: 1.4872882}
+    - {x: 0, y: 1.4745764}
+    - {x: 0, y: 1.4618644}
+    - {x: 0, y: 1.3728814}
+    FrameRate: 8
+    FacesRight: 1
+  - Action: Charge
+    Frames:
+    - {fileID: 21300000, guid: 1bfe6d4b2a8ff05478021f80f7fd6b78, type: 3}
+    - {fileID: 21300000, guid: d704ae830b2a7fa4f998db7968af9aea, type: 3}
+    - {fileID: 21300000, guid: ee8601124533bd545a89b377cdf964df, type: 3}
+    - {fileID: 21300000, guid: 9c650d1bb1210ea4aafbd0f6830c6979, type: 3}
+    - {fileID: 21300000, guid: c46f67013b3ff46488da6eb42fdd708e, type: 3}
+    - {fileID: 21300000, guid: cb37a815d17d87d44b4ce10b563851cb, type: 3}
+    - {fileID: 21300000, guid: 7e7c73b764bd4534cb89cc0fa4cbdb39, type: 3}
+    - {fileID: 21300000, guid: 3e894a1e9ec25394f8e16a21810cac52, type: 3}
+    - {fileID: 21300000, guid: ca3071758ddf5134ab2689d09322cca4, type: 3}
+    - {fileID: 21300000, guid: 04697a89626f9cd43ae24ce3d4f0f150, type: 3}
+    - {fileID: 21300000, guid: 2e8b8efbe18ff2049804450714621067, type: 3}
+    - {fileID: 21300000, guid: e3517b0e76ac44d4e8a46e15aa11231b, type: 3}
+    - {fileID: 21300000, guid: e572f9733f31619439519b12a7d48805, type: 3}
+    - {fileID: 21300000, guid: f5f3c7ce83e5d0c4bae0ecea86168bc3, type: 3}
+    - {fileID: 21300000, guid: b736607b3d628d647b473f1075062765, type: 3}
+    - {fileID: 21300000, guid: 86e568b83885bf743bb2abd11a577e02, type: 3}
+    - {fileID: 21300000, guid: aaa894c03ca52864b965afd738adbb4f, type: 3}
+    - {fileID: 21300000, guid: c88402e674f72124787a897c32509b5a, type: 3}
+    - {fileID: 21300000, guid: 984c9325f9331dc4fab11dfeaaefcd45, type: 3}
+    - {fileID: 21300000, guid: c17c08eb6094cf448877aa030cf5b280, type: 3}
+    - {fileID: 21300000, guid: 5046c38ff4ab4154eb3ca25e8109dc97, type: 3}
+    - {fileID: 21300000, guid: ab789f336b72c8649952e244547c4d61, type: 3}
+    - {fileID: 21300000, guid: 414af32ad66b1ed4aad3d5384fb397ed, type: 3}
+    - {fileID: 21300000, guid: e28c8d9f26f07ab4886c8643ed05bdf6, type: 3}
+    - {fileID: 21300000, guid: 0145ecd9cd249a84e949e0dd8d02e5b3, type: 3}
+    - {fileID: 21300000, guid: 56bc569ec588a674a9cfb581a4610761, type: 3}
+    - {fileID: 21300000, guid: 4595f4f4265beae4ea55b898ad5e327d, type: 3}
+    - {fileID: 21300000, guid: dad6dcc3c2ea7844eb33b41a98a34bb5, type: 3}
+    - {fileID: 21300000, guid: 734516b9e524f214691208a969a75376, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 1.732299}
+    - {x: 0, y: 1.3883868}
+    - {x: 0, y: 1.7195616}
+    - {x: 0, y: 1.6049242}
+    - {x: 0, y: 1.5284992}
+    - {x: 0, y: 1.5667117}
+    - {x: 0, y: 1.6558743}
+    - {x: 0, y: 1.5539742}
+    - {x: 0, y: 1.5539742}
+    - {x: 0, y: 1.6686116}
+    - {x: 0, y: 1.5539742}
+    - {x: 0, y: 1.6431366}
+    - {x: 0, y: 1.5157617}
+    - {x: 0, y: 1.5157617}
+    - {x: 0, y: 1.5794492}
+    - {x: 0, y: 1.5030242}
+    - {x: 0, y: 1.5412366}
+    - {x: 0, y: 1.6049242}
+    - {x: 0, y: 1.5284992}
+    - {x: 0, y: 1.6686116}
+    - {x: 0, y: 1.5412368}
+    - {x: 0, y: 1.6049242}
+    - {x: 0, y: 1.5539742}
+    - {x: 0, y: 1.6431366}
+    - {x: 0, y: 1.5030242}
+    - {x: 0, y: 1.5284991}
+    - {x: 0, y: 1.5539742}
+    - {x: 0, y: 1.6303992}
+    - {x: 0, y: 1.5539743}
+    FrameRate: 8
+    FacesRight: 1
+  - Action: JumpShake
+    Frames:
+    - {fileID: 21300000, guid: 19044af202c898945af8eb2a9539c1eb, type: 3}
+    - {fileID: 21300000, guid: 78f2f9ffabeb1274b9c6f4a87814eb51, type: 3}
+    - {fileID: 21300000, guid: 71d73492661e92649819baa39a31838e, type: 3}
+    - {fileID: 21300000, guid: 3ad260b44347b084083e6c6cbe6f8b30, type: 3}
+    - {fileID: 21300000, guid: 1b8f57ddb1c83ba4fa41cb596b9c85de, type: 3}
+    - {fileID: 21300000, guid: 4387c3bafecf5a24ab8dfaaf97a75969, type: 3}
+    - {fileID: 21300000, guid: 7f073ec83949bf34f9ffa07bd9c55cc5, type: 3}
+    - {fileID: 21300000, guid: eca79b56774d52c41996e314f1fa8587, type: 3}
+    - {fileID: 21300000, guid: dfac40ff8cc8b5043a2208e9b4390eca, type: 3}
+    - {fileID: 21300000, guid: 5d6561bd8e4f8354c8d35d276bc3b6d7, type: 3}
+    - {fileID: 21300000, guid: e3406ea719a28474c8b5c3079b98088b, type: 3}
+    - {fileID: 21300000, guid: 720a327f733e90f4e92e40ec4ca4ce6c, type: 3}
+    - {fileID: 21300000, guid: 5c2be70494e64ed4999c7ece389240c1, type: 3}
+    - {fileID: 21300000, guid: 82814d422323d3c4698c530312f968b5, type: 3}
+    - {fileID: 21300000, guid: 72d83ab0dbc33a64d94ec626e040c395, type: 3}
+    - {fileID: 21300000, guid: 9d3aeedd6e1af754a93b44e0da5a89ae, type: 3}
+    - {fileID: 21300000, guid: 04b246c48d9d8aa4b8ce0681191be717, type: 3}
+    - {fileID: 21300000, guid: a15950e9989814f4abe7b004f6e33bae, type: 3}
+    - {fileID: 21300000, guid: 5f3849288e8579b41862335044dedb43, type: 3}
+    - {fileID: 21300000, guid: 66f0bc65dce0feb4da8385d7c9862568, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 1.5}
+    - {x: 0, y: 1.3347459}
+    - {x: 0, y: 1.2711865}
+    - {x: 0, y: 1.8432202}
+    - {x: 0, y: 1.5635593}
+    - {x: 0, y: 1.423729}
+    - {x: 0, y: 1.3728814}
+    - {x: 0, y: 1.423729}
+    - {x: 0, y: 1.3728814}
+    - {x: 0, y: 1.423729}
+    - {x: 0, y: 1.3728814}
+    - {x: 0, y: 1.423729}
+    - {x: 0, y: 1.3728814}
+    - {x: 0, y: 1.423729}
+    - {x: 0, y: 1.3728814}
+    - {x: 0, y: 1.423729}
+    - {x: 0, y: 1.7033898}
+    - {x: 0, y: 1.5}
+    - {x: 0, y: 1.2838984}
+    - {x: 0, y: 1.398305}
+    FrameRate: 8
+    FacesRight: 1
+  - Action: Dead
+    Frames:
+    - {fileID: 21300000, guid: 1478eec197849e7429a591be04432fce, type: 3}
+    - {fileID: 21300000, guid: 5b846998ff5d0914893f85aff235b197, type: 3}
+    - {fileID: 21300000, guid: c6546f748e5fd594db2b9a6fc5b3f558, type: 3}
+    - {fileID: 21300000, guid: 4662be1d532b44f479a7d47350865994, type: 3}
+    - {fileID: 21300000, guid: 24ab57a22b3247746b66cae77fb5343c, type: 3}
+    - {fileID: 21300000, guid: e28ecb518a4fc40479ee2cf90bb297bc, type: 3}
+    - {fileID: 21300000, guid: e19e11bf8676c054e9b158f77848e626, type: 3}
+    - {fileID: 21300000, guid: a708b093ea2638d438b8d80abef6974d, type: 3}
+    - {fileID: 21300000, guid: 4681c88e9f958354daf837209333e715, type: 3}
+    - {fileID: 21300000, guid: e69357d2ea5e2f64b8b690bdb64a381a, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 1.690678}
+    - {x: 0, y: 1.7796612}
+    - {x: 0, y: 1.7161018}
+    - {x: 0, y: 1.6652542}
+    - {x: 0, y: 1.3220339}
+    - {x: 0, y: 1.3601695}
+    - {x: 0, y: 1.233051}
+    - {x: 0, y: 1.0169492}
+    - {x: 0, y: 1.1186441}
+    - {x: 0, y: 1.1313559}
+    FrameRate: 8
+    FacesRight: 1
+  - Action: Idle
+    Frames:
+    - {fileID: 21300000, guid: 7c3b263ecdcf37448a06b4542666b4fb, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 1.614407}
+    FrameRate: 8
+    FacesRight: 1
+  - Action: Hurt
+    Frames:
+    - {fileID: 21300000, guid: 7c3b263ecdcf37448a06b4542666b4fb, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 1.614407}
+    FrameRate: 8
+    FacesRight: 1
+  - Action: Hand1
+    Frames:
+    - {fileID: 21300000, guid: ee4faa7c40aa68d40a5e6e5710dd5022, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 0}
+    FrameRate: 8
+    FacesRight: 1
+  - Action: Hand2
+    Frames:
+    - {fileID: 21300000, guid: ac0770e8c5abca74aa0ae2200753f69f, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 0}
+    FrameRate: 8
+    FacesRight: 1
