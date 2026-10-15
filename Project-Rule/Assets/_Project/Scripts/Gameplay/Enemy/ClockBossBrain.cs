@@ -8,14 +8,16 @@ namespace RuleGame.Gameplay.Enemy
         private readonly float[] _hands = { 0.8f, 1.5f, 2.2f };
         private float _nextHour;
         private float _chargeFacing;
+        private int _beamVolleys;
         protected override string[] ActionNames => new[] { "Idle", "Walk", "JumpShake", "Charge", "Hurt" };
         public override bool DamageLocked => Root.ActiveStateName == "Transition";
         public ClockBossBrain(EnemyActor actor) : base(actor) { _nextHour = actor.Definition.ClockHourInterval; }
-        protected override object CaptureExtra() => new object[] { (float[])_hands.Clone(), _nextHour, _chargeFacing };
+        protected override object CaptureExtra() => new object[] { (float[])_hands.Clone(), _nextHour, _chargeFacing, _beamVolleys };
         protected override void RestoreExtra(object state)
         {
             if (!(state is object[] data)) return;
             System.Array.Copy((float[])data[0], _hands, 3); _nextHour = (float)data[1]; _chargeFacing = (float)data[2];
+            _beamVolleys = (int)data[3];
         }
         public override float ClampHealth(float health)
         {
@@ -32,14 +34,25 @@ namespace RuleGame.Gameplay.Enemy
                 Transition("Stun", 2, Config.ClockCoreWindow);
                 return;
             }
-            // 三根指针独立推进，行走/攻击恢复不会重启秒针，也不会串成一次长动作。
+            // 休息时冻结指针出手时钟，结束后继续剩余间隔，不补发积压的激光。
+            if (IsResting || StateName == "Rest") return;
+            bool volley = false;
             for (int i = 0; i < Phase; i++)
             {
+                if (_beamVolleys >= Mathf.Max(1, Config.ClockBeamVolleysBeforeRest)) break;
                 _hands[i] -= Delta;
                 if (_hands[i] > 0f) continue;
                 _hands[i] += 2f + i;
                 float rotationPeriod = Config.ClockHourInterval * (i + 1);
                 Actor.Beam(90f - Age / rotationPeriod * 360f, 0.1f + i * 0.1f);
+                volley = true;
+            }
+            if (volley) _beamVolleys++;
+            if (_beamVolleys >= Mathf.Max(1, Config.ClockBeamVolleysBeforeRest)
+                && (StateName == "Idle" || StateName == "Walk"))
+            {
+                RestAfterAttack();
+                return;
             }
             if (HasTarget && CombatDistance <= RangedRange && Age >= _nextHour && Age >= NextAttack
                 && (StateName == "Idle" || StateName == "Walk"))
@@ -73,6 +86,7 @@ namespace RuleGame.Gameplay.Enemy
         protected override void EnterAction(string name)
         {
             base.EnterAction(name);
+            if (name == "Rest") _beamVolleys = 0;
             if (name == "Charge") { _chargeFacing = Actor.Facing; Actor.Cue("Charge", 3f, true); }
         }
         protected override void TickAction(string name)

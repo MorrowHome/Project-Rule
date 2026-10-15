@@ -2,7 +2,7 @@
 
 <!-- unity-onboarding:generated:start -->
 
-分析日期：2026-10-15；基线 `9af8f80`（最新角色动画），关闭白盒无敌已提交为 `f927297`。当前工作分支 `p2-p3-merge`，已衔接之前的 Boss 距离/破韧与身体阻挡，并新增蝙蝠高机动空战。Unity 工程在仓库下的 `Project-Rule/`，不是仓库根目录。
+分析日期：2026-10-15；基线 `9af8f80`（最新角色动画），关闭白盒无敌已提交为 `f927297`。当前工作分支 `feat/better-boss`（fork → 原仓库 `p2-p3-merge` 的 PR #10），已衔接之前的 Boss 距离/破韧与身体阻挡，并新增蝙蝠高机动空战。Unity 工程在仓库下的 `Project-Rule/`，不是仓库根目录。
 
 ## 已确认环境
 
@@ -51,14 +51,16 @@ manifest 已有 Coplay Unity MCP，仓库 `.mcp.json` 指向 `localhost:8080/mcp
 
 本机现已安装项目要求的 Unity `6000.6.4f1`。本次在 `/tmp/rule-bat-flight-20261015` 中复制相关一方运行源码、原版 UnityHFSM 2.3.0、真实蝙蝠定义/动画及精灵，使用同一版本运行隔离 Play Mode。输入程序集复制自当前工程 Library，未修改项目包依赖、项目设置或主角动画资源。
 
-- `BatFlightValidation.RunBatch`：15 项通过，检查真实位移、第一阶段俯冲、预警与锁定方向、恢复、撤离、边界、暂停、快照，以及 DashWindup 的四帧配置与实际精灵播放。
-- `BossCombatValidation.RunBatch`：72 项通过，包含阶段节奏、破韧打断、俯冲方向快照与短展翅动作断言。
+- `BatFlightValidation.RunBatch`：17 项通过，检查真实位移、第一阶段俯冲、预警与锁定方向、恢复、撤离、边界、暂停、快照，以及 DashWindup 的四帧配置、实际精灵播放与休息时的实际悬停。
+- `BossCombatValidation.RunBatch`：118 项通过，包含阶段节奏、破韧打断、俯冲方向快照与短展翅动作断言，以及四种 Boss 的休息窗口、暂停、快照、反击受伤和指针停火。
 - `BossBodyCollisionValidation.RunBatch`：9 项通过，覆盖新版玩家移动模块的身体阻挡、冲刺、反向脱离、迎面、接触伤害和触发器。
 - 当前完整 `Test_Enemy_BatBoss` 白盒已进入 Play 观察到一阶段 Recover/Fly、飞行与攻击特效，主角无敌关闭并正常掉血；测试后退出 Play。Editor.log 未发现 C# 编译错误。未执行 Player 构建或完整难度平衡验收。
 
 已修复一次表现回归：将完整 23 帧展翅压入 0.5 秒会产生约 46 帧/秒的快速拍翼。独立 DashWindup 仅取前四帧，完整 WingSpread 施法序列不改；生成工具也同步生成短序列，避免重建后复发。验证期间出现与此前相同的 UnityEditor.Search.SearchDatabase 索引异常，以及隔离靶标未绑定死亡广播的警告，未改生产逻辑来掩盖它们。
 
 日志位于 `/tmp/rule-bat-windup-validation.log`、`/tmp/rule-bat-windup-brains.log`、`/tmp/rule-bat-body-validation.log`，各验证器的计数结果保存在隔离工程 `Logs/`。`git diff --check` 已通过；未改动同事的 Hero 图集、动画剪辑和 Animator Controller。
+
+2026-10-16 增加统一 `Rest`：一套攻击后停下休息，`BossRestDuration` 默认 1.8 秒且不随阶段缩短。发条默认两轮指针后休息，由 `ClockBeamVolleysBeforeRest` 调整；指针时钟在休息中冻结。兔子每轮投掷后休息，蝙蝠攻击后悬停且不因玩家逼近提前逃走。破韧恢复继续剩余休息；阶段和死亡优先。生成工具同步配置。新增验证日志为 `/tmp/rule-boss-rest-combat.log`、`/tmp/rule-bat-rest-flight.log` 和 `/tmp/rule-boss-rest-body.log`。
 
 ## 证据
 

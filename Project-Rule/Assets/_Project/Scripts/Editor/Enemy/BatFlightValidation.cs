@@ -113,9 +113,18 @@ namespace RuleGame.Editor.Enemy
                         Check(_bat.AnimationDuration >= 0.3f, "俯冲后有可追击的恢复窗口");
                         _step++; break;
                     case 4:
+                        if (_bat.Brain.StateName != "Rest") return;
+                        Check(_bat.Motor.Intent == Vector2.zero && _bat.Definition.BossRestDuration >= 1.8f,
+                            "真实蝙蝠攻击后进入可配置的完整休息窗口");
+                        _savedPosition = _body.position; _due = Time.fixedTime + .3f; _step = 40; break;
+                    case 40:
+                        Check(_bat.Brain.StateName == "Rest" && Vector2.Distance(_body.position, _savedPosition) < .02f,
+                            "休息时实际悬停，不继续高速撤离");
+                        _step = 41; break;
+                    case 41:
                         if (_bat.Brain.StateName != "Fly") return;
                         _bat.Target.position = _bat.transform.position + Vector3.right * 2.1f;
-                        Physics2D.SyncTransforms(); _step++; break;
+                        Physics2D.SyncTransforms(); _step = 5; break;
                     case 5:
                         if (_bat.Brain.StateName != "Evade") return;
                         Check(_bat.Motor.SpeedMultiplier > 1f, "玩家逼近时主动高速撤离");

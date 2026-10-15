@@ -202,6 +202,65 @@ namespace RuleGame.Editor.Enemy
                 Check(a.Brain.Phase == 2 && a.Brain.StateName != "Hurt", "阶段虚弱不被普通受击覆盖");
             });
             Add(EnemyKind.BrickMinion, a => { a.Brain.OnHit(1); Check(a.Brain.StateName == "Hurt", "小怪保留普通受击"); });
+            foreach (EnemyKind kind in new[] { EnemyKind.BrickBoss, EnemyKind.ClockBoss, EnemyKind.RabbitBoss, EnemyKind.BatBoss })
+                Add(kind, a =>
+                {
+                    a.Definition.BossRestDuration = 1.8f;
+                    Target(a, 3); AdvanceTo(a, "Rest");
+                    string label = a.Definition.Kind.ToString();
+                    Check(a.Motor.Intent == Vector2.zero && a.Motor.Velocity == Vector2.zero,
+                        label + " 完成一套攻击后停下休息");
+                    a.Combat = new GameObject("RestCombat_" + label).AddComponent<RuleGame.Gameplay.Combat.CombatSystem>();
+                    int attacks = 0;
+                    a.Feedback += cue =>
+                    {
+                        if (cue.Kind == EnemyFeedbackKind.Strike || cue.Kind == EnemyFeedbackKind.ProjectileSpawn
+                            || cue.Kind == EnemyFeedbackKind.BeamSpawn || cue.Kind == EnemyFeedbackKind.RuleCast
+                            || cue.Kind == EnemyFeedbackKind.Summon) attacks++;
+                    };
+                    Target(a, 0.1f);
+                    for (int i = 0; i < 10; i++) Step(a);
+                    Check(a.Brain.StateName == "Rest" && attacks == 0 && a.Motor.Intent == Vector2.zero,
+                        label + " 玩家贴近也不提前进攻、撤离或施法");
+                    float remaining = a.Brain.RestRemaining;
+                    a.Status.SetPaused(true); Step(a, 10); a.Status.SetPaused(false);
+                    Check(Mathf.Approximately(a.Brain.RestRemaining, remaining), label + " 暂停冻结休息计时");
+                    object saved = a.CaptureSnapshotState(); Step(a, 0.3f); a.RestoreSnapshotState(saved);
+                    Check(a.Brain.StateName == "Rest" && Mathf.Approximately(a.Brain.RestRemaining, remaining),
+                        label + " 快照恢复休息进度");
+                    float health = a.Status.Health;
+                    a.ApplyDamage(new DamageInfo { Amount = 10f });
+                    Check(a.Status.Health == health - 10f && a.Brain.StateName == "Rest", label + " 休息中可以正常承受反击");
+                    a.Brain.OnHit(30f); Step(a, .46f);
+                    Check(a.Brain.StateName == "Rest" && a.Motor.Intent == Vector2.zero, label + " 破韧恢复不会跳过剩余休息");
+                    float left = a.Brain.RestRemaining;
+                    Step(a, left - .05f);
+                    Check(a.Brain.StateName == "Rest" && attacks == 0, label + " 保留完整休息窗口");
+                    Step(a, .06f);
+                    Check(a.Brain.StateName != "Rest", label + " 到时恢复行动");
+                    Target(a, 3);
+                    for (int i = 0; i < 200 && attacks == 0; i++) Step(a);
+                    Check(attacks > 0, label + " 休息后能重新发动攻击");
+                });
+            Add(EnemyKind.ClockBoss, a =>
+            {
+                Target(a, 6); int volleys = 0;
+                a.Definition.ClockBeamVolleysBeforeRest = 2;
+                a.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.BeamSpawn) volleys++; };
+                AdvanceTo(a, "Rest");
+                Check(volleys == 2, "发条远程指针攻击两轮后也会休息");
+                for (int i = 0; i < 15; i++) Step(a, .1f);
+                Check(volleys == 2, "发条休息期间不从并行指针时钟偷发激光");
+            });
+            Add(EnemyKind.BatBoss, a =>
+            {
+                a.Definition.BossRestDuration = 2.5f;
+                Target(a, 3); AdvanceTo(a, "Rest");
+                Step(a, 2.3f);
+                Check(a.Brain.StateName == "Rest", "Inspector 配置可延长蝙蝠休息时间");
+                a.Status.ApplyHealthDelta(-334); Step(a);
+                Check(a.Brain.StateName == "Weak", "阶段过渡优先于普通休息");
+            });
             EditorApplication.update += AwaitReady;
         }
 
@@ -209,6 +268,7 @@ namespace RuleGame.Editor.Enemy
         {
             var config = ScriptableObject.CreateInstance<EnemyDefinition>();
             config.Kind = kind; config.Health = 1000; config.HurtCooldown = 4;
+            config.BossRestDuration = .5f;
             config.Flying = kind == EnemyKind.BatBoss;
             config.Timings = new[]
             {
@@ -217,7 +277,7 @@ namespace RuleGame.Editor.Enemy
                 new EnemyActionTiming { Action = "Pop", Duration = 0.2f },
                 new EnemyActionTiming { Action = "Split", Duration = 1 }
             };
-            var go = new GameObject("BossValidation_" + Actors.Count); go.SetActive(false);
+            var go = new GameObject("BossValidation_" + Actors.Count); go.layer = 9; go.SetActive(false);
             var actor = go.AddComponent<EnemyActor>(); actor.Definition = config;
             actor.Target = new GameObject("Target_" + Actors.Count).transform;
             Target(actor, 5); actor.GetComponent<RuleGame.Gameplay.Player.EntityStatus>().SetPaused(true);
@@ -246,6 +306,7 @@ namespace RuleGame.Editor.Enemy
         private static void Cooldown(EnemyActor actor)
         {
             Target(actor, 2); Step(actor); Step(actor, actor.AnimationDuration + 0.01f);
+            Step(actor, actor.Definition.BossRestDuration + .01f);
         }
         private static void Target(EnemyActor actor, float x, float y = 0)
             => actor.Target.position = actor.transform.position + new Vector3(x, y, 0);

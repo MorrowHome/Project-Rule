@@ -17,10 +17,14 @@ namespace RuleGame.Gameplay.Enemy
         protected string TransitionName;
         protected int NextPhase, Pulses;
         private float _staggerDamage, _lastStaggerHit;
+        private float _restUntil;
+        private string _restReturn = "Idle";
         public int Phase { get; protected set; } = 1;
         public float Delta { get; private set; }
         public float ActionElapsed => Elapsed;
         public float SimulationAge => Age;
+        public float RestRemaining => IsBoss ? Mathf.Max(0f, _restUntil - Age) : 0f;
+        protected bool IsResting => RestRemaining > 0f;
         public string StateName => Root.ActiveStateName == "Alive" ? Actions.ActiveStateName : TransitionName;
         public virtual bool DamageLocked => false;
         protected bool HasTarget => Actor.HasTarget;
@@ -52,6 +56,12 @@ namespace RuleGame.Gameplay.Enemy
                 string name = action;
                 Actions.AddState(name, new State(onEnter: _ => EnterAction(name), onLogic: _ => TickAction(name)));
             }
+            if (IsBoss)
+                Actions.AddState("Rest", new State(onEnter: _ => EnterAction("Rest"), onLogic: _ =>
+                {
+                    Actor.Motor.Intent = Vector2.zero;
+                    if (!IsResting) Go(_restReturn);
+                }));
             Actions.SetStartState(FirstAction);
             Root.AddState("Alive", Actions);
             Root.AddState("Transition", new State(onEnter: _ =>
@@ -95,16 +105,29 @@ namespace RuleGame.Gameplay.Enemy
         {
             Elapsed = 0f; Pulses = 0;
             Actor.FaceTarget();
+            if (name == "Rest")
+            {
+                string idle = Config.Flying ? "Fly" : "Idle";
+                Actor.Cue(idle, Actor.Duration(idle), true);
+                Actor.Motor.Stop();
+                return;
+            }
             float duration = name == "Hurt" && IsBoss
                 ? Mathf.Min(Actor.Duration(name), Mathf.Max(0.05f, Config.BossHurtDuration)) : Actor.Duration(name);
             Actor.Cue(name, duration, name == "Idle" || name == "Walk" || name == "Fly");
             // 从受击恢复后开始完整冷却，长受击动画不能吃掉保护窗口。
             if (name == "Hurt") NextHurt = Age + (IsBoss ? duration : 0f) + Mathf.Max(0f, Config.HurtCooldown);
         }
-        protected void Go(string action) => Actions.RequestStateChange(action, true);
+        protected void Go(string action)
+        {
+            // 硬直恢复也要回到尚未结束的休息，不能通过受击提前进入下一轮进攻。
+            if (IsResting && action != "Hurt") action = "Rest";
+            Actions.RequestStateChange(action, true);
+        }
         protected void Transition(string name, int phase, float duration = -1f)
         {
             _staggerDamage = 0f;
+            _restUntil = Age;
             TransitionName = name; NextPhase = phase;
             TransitionDuration = duration > 0f ? duration : Actor.Duration(name);
             Root.RequestStateChange("Transition", true);
@@ -150,10 +173,13 @@ namespace RuleGame.Gameplay.Enemy
             return true;
         }
         protected bool Finished => Elapsed >= Actor.AnimationDuration;
-        protected void RestAfterAttack()
+        protected void RestAfterAttack(string resume = "Idle", float cooldown = -1f)
         {
-            NextAttack = Age + Config.AttackCooldown;
-            Go("Idle");
+            float rest = Mathf.Max(0.1f, Config.BossRestDuration);
+            NextAttack = Age + Mathf.Max(rest, cooldown < 0f ? Config.AttackCooldown : cooldown);
+            _restUntil = Age + rest;
+            _restReturn = resume;
+            Go("Rest");
         }
         protected virtual void TickGlobal() { }
         protected virtual void TickTransition() { }
@@ -181,6 +207,8 @@ namespace RuleGame.Gameplay.Enemy
             public string Root, Action, Transition;
             public float Age, Elapsed, Attack, Hurt, Duration;
             public float StaggerDamage, LastStaggerHit;
+            public float RestUntil;
+            public string RestReturn;
             public int Phase, NextPhase, Pulses;
             public object Extra;
         }
@@ -189,13 +217,16 @@ namespace RuleGame.Gameplay.Enemy
             Root = Root.ActiveStateName, Action = Actions.ActiveStateName, Transition = TransitionName,
             Age = Age, Elapsed = Elapsed, Attack = NextAttack, Hurt = NextHurt, Duration = TransitionDuration,
             Phase = Phase, NextPhase = NextPhase, Pulses = Pulses, Extra = CaptureExtra(),
-            StaggerDamage = _staggerDamage, LastStaggerHit = _lastStaggerHit
+            StaggerDamage = _staggerDamage, LastStaggerHit = _lastStaggerHit,
+            RestUntil = _restUntil, RestReturn = _restReturn
         };
         public void Restore(object state)
         {
             if (!(state is Data data)) return;
             TransitionName = data.Transition; TransitionDuration = data.Duration;
             Phase = data.Phase;
+            // EnterAction/Go 可能读取休息状态，先恢复时钟和休息期限。
+            Age = data.Age; _restUntil = data.RestUntil; _restReturn = data.RestReturn;
             Root.RequestStateChange(data.Root, true);
             if (data.Root == "Alive") Actions.RequestStateChange(data.Action, true);
             Age = data.Age; Elapsed = data.Elapsed; NextAttack = data.Attack; NextHurt = data.Hurt;

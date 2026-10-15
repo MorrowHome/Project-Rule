@@ -185,6 +185,8 @@ namespace RuleGame.Editor.Enemy
                 : kind == EnemyKind.BrickBoss ? 1.8f : kind == EnemyKind.BatBoss ? 5.5f : 2.5f;
             definition.FlightAcceleration = kind == EnemyKind.BatBoss ? 70f : 24f;
             definition.AttackCooldown = kind == EnemyKind.BatBoss ? 1.1f : 1.8f;
+            definition.BossRestDuration = 1.8f;
+            definition.ClockBeamVolleysBeforeRest = 2;
             definition.Energy = 100f; definition.EnergyRegen = 2f;
             bool boss = kind != EnemyKind.BrickMinion && kind != EnemyKind.BatMinion;
             definition.HurtCooldown = boss ? 4f : 2f;

@@ -33,6 +33,11 @@ namespace RuleGame.Gameplay.Enemy
         public float MoveSpeed = 2.5f;
         public float AttackRange = 3.5f;
         public float AttackCooldown = 1.8f;
+        [Header("Boss 进攻后的喘息")]
+        [Tooltip("一套攻击结束后停止移动与新攻击的时间，不随阶段加速缩短。已有投射物继续飞行。")]
+        [Min(0.1f)] public float BossRestDuration = 1.8f;
+        [Tooltip("发条连续发射这么多轮指针后休息；同一物理帧多根指针算一轮。")]
+        [Min(1)] public int ClockBeamVolleysBeforeRest = 2;
         [Header("Boss 距离控制")]
         [Min(0.5f)] public float PreferredDistance = 5f;
         [Min(0.1f)] public float SpacingTolerance = 0.6f;

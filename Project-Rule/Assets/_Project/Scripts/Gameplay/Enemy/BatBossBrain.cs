@@ -176,9 +176,8 @@ namespace RuleGame.Gameplay.Enemy
 
         private void FinishAttack()
         {
-            NextAttack = Age + Mathf.Max(0.2f, Config.AttackCooldown / Tempo);
             _orbitSide = -_orbitSide;
-            Go("Fly");
+            RestAfterAttack("Fly", Mathf.Max(0.2f, Config.AttackCooldown / Tempo));
         }
         private void ChooseFlightPoint()
         {

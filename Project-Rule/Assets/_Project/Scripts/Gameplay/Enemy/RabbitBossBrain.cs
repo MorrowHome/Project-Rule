@@ -31,7 +31,7 @@ namespace RuleGame.Gameplay.Enemy
                 Transition("Flip", 2, 0.8f);
                 return;
             }
-            if (Age < _magicCheck || StateName == "Hurt" || !HasTarget) return;
+            if (IsResting || StateName == "Rest" || Age < _magicCheck || StateName == "Hurt" || !HasTarget) return;
             _magicCheck = Age + 5f;
             _random ^= _random << 13; _random ^= _random >> 17; _random ^= _random << 5;
             if (Actor.Status.Energy <= 50f || (_random & 1) == 0) return;
@@ -69,13 +69,13 @@ namespace RuleGame.Gameplay.Enemy
                     if (name == "Throw" && (Pulses > 0 || CombatDistance > RangedRange))
                         PositionForThrow();
                     else Actor.Motor.Intent = Vector2.zero;
-                    if (Finished) Go(name);
+                    if (Finished) RestAfterAttack(name);
                     break;
                 case "FlipThrow":
                     if (HasTarget && CombatDistance <= RangedRange && Impact(0.4f))
                         for (int i = -1; i <= 1; i++) Actor.Shoot(Actor.TowardTarget + Vector2.up * (i * 0.35f), 8f, 0.2f);
                     if (Pulses > 0 || CombatDistance > RangedRange) PositionForThrow();
-                    if (Finished) Go(name);
+                    if (Finished) RestAfterAttack(name);
                     break;
                 case "Hurt": if (Finished) Go(_flipped ? "FlipThrow" : "Throw"); break;
             }
