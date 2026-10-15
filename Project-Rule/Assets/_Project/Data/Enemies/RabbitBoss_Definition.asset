@@ -37,6 +37,7 @@ MonoBehaviour:
   ClockChargeSpeedMultiplier: 3.5
   ClockChargeCooldown: 7
   ClockBeamWarning: 0.7
+  ClockBeamDuration: 0.35
   ClockBeamSpread: 14
   RabbitBurrowDuration: 1
   RabbitBurrowSpeedMultiplier: 2.8
@@ -44,6 +45,12 @@ MonoBehaviour:
   RabbitEscapeDistance: 2.8
   RabbitBurstCount: 2
   RabbitBurstInterval: 0.35
+  RabbitRepositionDuration: 2
+  RabbitAimLockLead: 0.35
+  RabbitAirHeight: 2.4
+  RabbitAirMoveDuration: 1.8
+  RabbitAirSpeedMultiplier: 1.6
+  RabbitFanAngle: 18
   PreferredDistance: 5
   SpacingTolerance: 0.6
   RangedRange: 9
@@ -77,6 +84,9 @@ MonoBehaviour:
   ClockHourInterval: 12
   ClockMinuteInterval: 6
   ClockSecondInterval: 3
+  ClockHourRotationPeriod: 12
+  ClockMinuteRotationPeriod: 6
+  ClockSecondRotationPeriod: 3
   ClockCoreWindow: 3
   ClockCoreHealth: 15
   Timings:

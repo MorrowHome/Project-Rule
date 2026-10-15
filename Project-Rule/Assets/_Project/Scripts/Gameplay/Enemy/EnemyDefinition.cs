@@ -36,8 +36,8 @@ namespace RuleGame.Gameplay.Enemy
         [Header("Boss 进攻后的喘息")]
         [Tooltip("一套攻击结束后不再出招的时间；地面 Boss 原地休息，蝙蝠高空巡飞。不随阶段加速缩短。")]
         [Min(0.1f)] public float BossRestDuration = 1.8f;
-        [Tooltip("发条连续发射这么多轮指针后休息；同一物理帧多根指针算一轮。")]
-        [Min(1)] public int ClockBeamVolleysBeforeRest = 2;
+        // 保留旧资产的序列化字段；独立激光不再按轮数进入休息。
+        [HideInInspector] public int ClockBeamVolleysBeforeRest = 2;
         [Header("积木压迫与连招")]
         [Min(0.2f)] public float BrickAdvanceDuration = 0.9f;
         [Min(1f)] public float BrickAdvanceSpeedMultiplier = 2.2f;
@@ -48,8 +48,11 @@ namespace RuleGame.Gameplay.Enemy
         [Min(0.2f)] public float ClockChargeDuration = 1.15f;
         [Min(1f)] public float ClockChargeSpeedMultiplier = 3.5f;
         [Min(1f)] public float ClockChargeCooldown = 7f;
+        [Tooltip("每次短暂扫射开始造成伤害前的预警时间。")]
         [Min(0.3f)] public float ClockBeamWarning = 0.7f;
-        [Range(5f, 35f)] public float ClockBeamSpread = 14f;
+        [Min(0.05f)] public float ClockBeamDuration = 0.35f;
+        // 旧版瞄准散射参数，仅保留序列化兼容；扫射方向完全由指针决定。
+        [HideInInspector] public float ClockBeamSpread = 14f;
         [Header("兔子藏身与弹幕")]
         [Min(0.2f)] public float RabbitBurrowDuration = 1f;
         [Min(1f)] public float RabbitBurrowSpeedMultiplier = 2.8f;
@@ -112,10 +115,14 @@ namespace RuleGame.Gameplay.Enemy
         public float RabbitCycle = 20f;
         public float RabbitThrowInterval = 2f;
         [Header("时钟独立指针")]
-        [Tooltip("时针、分针、秒针各自转完一圈后攻击；休息和阶段过渡冻结，出手只重置对应指针。")]
+        [Tooltip("每束激光消失后，到下一次预警开始的停火间隔。与指针转速独立。")]
         [Min(0.3f)] public float ClockHourInterval = 12f;
         [Min(0.3f)] public float ClockMinuteInterval = 6f;
         [Min(0.3f)] public float ClockSecondInterval = 3f;
+        [Header("指针旋转速度（秒/圈）")]
+        [Min(1f)] public float ClockHourRotationPeriod = 24f;
+        [Min(1f)] public float ClockMinuteRotationPeriod = 12f;
+        [Min(1f)] public float ClockSecondRotationPeriod = 6f;
         public float ClockCoreWindow = 3f;
         public float ClockCoreHealth = 15f;
         public EnemyActionTiming[] Timings = Array.Empty<EnemyActionTiming>();

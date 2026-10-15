@@ -110,7 +110,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 2, y: 3.2}
+  m_Size: {x: 1.4, y: 2.2}
   m_EdgeRadius: 0
 --- !u!114 &6472474428353924764
 MonoBehaviour:
@@ -170,6 +170,7 @@ MonoBehaviour:
   BeamOrigin: {fileID: 0}
   RuntimeSpawned: 0
   ArenaX: {x: -12, y: 12}
+  ArenaY: {x: 0, y: 10}
 --- !u!114 &5595989688828443882
 MonoBehaviour:
   m_ObjectHideFlags: 0

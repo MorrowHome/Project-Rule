@@ -293,7 +293,7 @@ namespace RuleGame.Editor.Enemy
                     a.Feedback += cue =>
                     {
                         if (cue.Kind == EnemyFeedbackKind.Strike || cue.Kind == EnemyFeedbackKind.ProjectileSpawn
-                            || cue.Kind == EnemyFeedbackKind.BeamSpawn || cue.Kind == EnemyFeedbackKind.RuleCast
+                            || (cue.Kind == EnemyFeedbackKind.BeamSpawn && kind != EnemyKind.ClockBoss) || cue.Kind == EnemyFeedbackKind.RuleCast
                             || cue.Kind == EnemyFeedbackKind.Summon) attacks++;
                     };
                     Target(a, 0.1f);
@@ -329,13 +329,9 @@ namespace RuleGame.Editor.Enemy
                 });
             Add(EnemyKind.ClockBoss, a =>
             {
-                Target(a, 6); int volleys = 0;
-                a.Definition.ClockBeamVolleysBeforeRest = 2;
-                a.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.BeamSpawn) volleys++; };
-                AdvanceTo(a, "Rest");
-                Check(volleys == 2, "发条远程指针攻击两轮后也会休息");
-                for (int i = 0; i < 15; i++) Step(a, .1f);
-                Check(volleys == 2, "发条休息期间不从并行指针时钟偷发激光");
+                Target(a, 2); AdvanceTo(a, "Rest");
+                a.ClockBeams.Tick(a.Definition.ClockHourInterval);
+                Check(ClockBeamCount(a) == 1 && a.Brain.StateName == "Rest", "身体休息期间激光保持持续扫射");
             });
             Add(EnemyKind.BatBoss, a =>
             {
@@ -495,7 +491,6 @@ namespace RuleGame.Editor.Enemy
                 config.ClockHourInterval = 2f;
                 config.ClockMinuteInterval = 1.2f;
                 config.ClockSecondInterval = .6f;
-                config.ClockBeamVolleysBeforeRest = 100;
             });
         private static void ClockPhaseTwo(EnemyActor actor)
         {
@@ -514,7 +509,7 @@ namespace RuleGame.Editor.Enemy
         }
         private static ClockHandView CreateClockHandView(EnemyActor actor)
         {
-            var go = new GameObject("ClockHands"); go.SetActive(false);
+            var go = new GameObject("ClockHands"); go.transform.SetParent(actor.transform, false); go.SetActive(false);
             var view = go.AddComponent<ClockHandView>(); view.Actor = actor;
             view.Hands = new Transform[3];
             for (int i = 0; i < 3; i++)
@@ -530,101 +525,168 @@ namespace RuleGame.Editor.Enemy
         {
             AddClockHandCase(a =>
             {
-                var brain = (ClockBossBrain)a.Brain;
+                var config = AssetDatabase.LoadAssetAtPath<EnemyDefinition>("Assets/_Project/Data/Enemies/ClockBoss_Definition.asset");
+                Check(config.ClockHourRotationPeriod == 24f && config.ClockMinuteRotationPeriod == 12f && config.ClockSecondRotationPeriod == 6f,
+                    "真实时钟配置默认改为 24/12/6 秒一圈");
+                a.ClockBeams.Tick(.1f);
+                Check(ClockBeamCount(a) == 0, "开场先等待停火间隔，不立即常驻激光");
                 var view = CreateClockHandView(a);
-                Check(view.Hands[2].gameObject.activeSelf && !view.Hands[1].gameObject.activeSelf && !view.Hands[0].gameObject.activeSelf,
-                    "一阶段只显示真正的时针资源");
-                Step(a, .3f); float hour = brain.HandProgress(0);
-                ClockPhaseTwo(a); view.SendMessage("LateUpdate");
-                Check(a.Brain.Phase == 2 && view.Hands[2].gameObject.activeSelf && view.Hands[1].gameObject.activeSelf && !view.Hands[0].gameObject.activeSelf,
-                    "二阶段保留时针并加入分针");
-                Check(brain.HandProgress(0) > hour && brain.HandProgress(1) < .05f && brain.HandProgress(2) == 0f,
-                    "解锁分针从自身周期起算，不重置时针或预跑秒针");
-                ClockOpenCore(a);
-                float h = brain.HandProgress(0), m = brain.HandProgress(1);
-                a.WeakPoint.ApplyDamage(new DamageInfo { Amount = a.Definition.ClockCoreHealth });
-                Step(a); Step(a, .61f); view.SendMessage("LateUpdate");
-                Check(a.Brain.Phase == 3 && view.Hands[0].gameObject.activeSelf && view.Hands[1].gameObject.activeSelf && view.Hands[2].gameObject.activeSelf,
-                    "击破发条进入三阶段才加入秒针");
-                Check(brain.HandProgress(0) == h && brain.HandProgress(1) == m && brain.HandProgress(2) == 0f,
-                    "阶段过渡冻结旧指针，秒针不继承全局时间");
-            });
-            AddClockHandCase(a =>
-            {
-                ClockPhaseTwo(a); Target(a, 6);
-                var brain = (ClockBossBrain)a.Brain;
-                var widths = new List<float>();
-                a.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.BeamSpawn) widths.Add(((EnemyBeam)cue.Subject).Width); };
-                Step(a, 1.19f);
-                Check(widths.Count == 1 && Mathf.Approximately(widths[0], .18f), "分针先按自己的周期发射");
-                float hour = brain.HandProgress(0);
-                Step(a, .8f);
-                Check(widths.Count == 2 && Mathf.Approximately(widths[1], .1f), "时针在分针预警期间仍可独立到期出手");
-                Check(hour > .5f && brain.HandProgress(1) > .6f, "单针出手不清空另一根的剩余进度");
-                var view = CreateClockHandView(a);
-                Quaternion rotation = view.Hands[1].localRotation;
-                object saved = a.CaptureSnapshotState();
-                float h = brain.HandProgress(0), m = brain.HandProgress(1);
-                a.Status.SetPaused(true); Step(a, 5); a.Status.SetPaused(false);
-                Check(brain.HandProgress(0) == h && brain.HandProgress(1) == m, "暂停冻结每根针的独立计时");
-                Step(a, .2f); a.RestoreSnapshotState(saved); view.SendMessage("LateUpdate");
-                Check(brain.HandProgress(0) == h && brain.HandProgress(1) == m && Quaternion.Angle(rotation, view.Hands[1].localRotation) < .01f,
-                    "快照恢复各针计时与对应显示角度");
-            });
-            AddClockHandCase(a =>
-            {
+                Check(view.Hands[2].gameObject.activeSelf && !view.Hands[1].gameObject.activeSelf, "一阶段仅显示时针");
                 ClockPhaseTwo(a); ClockOpenCore(a);
                 a.WeakPoint.ApplyDamage(new DamageInfo { Amount = a.Definition.ClockCoreHealth });
-                Step(a); Step(a, .61f); Target(a, 6);
-                var brain = (ClockBossBrain)a.Brain;
-                int beams = 0, hours = 0;
-                a.Feedback += cue =>
+                Step(a); Step(a, .61f); view.SendMessage("LateUpdate");
+                Check(a.Brain.Phase == 3 && view.Hands[0].gameObject.activeSelf, "三阶段才解锁秒针");
+                for (int hand = 0; hand < 3; hand++)
                 {
-                    if (cue.Kind != EnemyFeedbackKind.BeamSpawn) return;
-                    beams++;
-                    if (Mathf.Approximately(((EnemyBeam)cue.Subject).Width, .1f)) hours++;
-                };
-                Step(a, .61f);
-                Check(beams == 2 && hours == 0, "三阶段秒针按快周期触发双线封路");
-                Step(a, .6f);
-                Check(beams == 5 && brain.HandProgress(0) > .6f, "秒针二次触发时分针独立加入，时针仍继续计时");
-                Step(a, .8f);
-                Check(hours == 1 && beams == 8, "三根针均能按自身周期攻击，不被最快针抢占");
-                int before = beams; Step(a, 50f);
-                Check(beams - before == 4, "长帧每根针最多触发一次，不补发积压连射");
+                    a.ClockBeams.Restore(new ClockBeamEmitter(a).Capture());
+                    a.ClockBeams.Tick(a.ClockBeams.RotationPeriod(hand) * .25f);
+                    view.SendMessage("LateUpdate");
+                    EnemyBeam beam = ClockBeamFor(a, hand);
+                    Vector2 needle = view.Hands[2 - hand].TransformDirection(hand == 1 ? Vector3.down : Vector3.up);
+                    Check(beam != null && Vector2.Dot(beam.Direction, Vector2.right) > .9999f && Vector2.Dot(needle, beam.Direction) > .9999f,
+                        hand + " 号针三点方向与短扫射光束一致");
+                    a.ClockBeams.Tick(a.ClockBeams.RotationPeriod(hand) * .25f);
+                    Check(Vector2.Dot(beam.Direction, Vector2.down) > .9999f, hand + " 号针六点方向向下");
+                }
             });
             AddClockHandCase(a =>
             {
-                Target(a, 2); Step(a, 2.4f); Step(a, 1.06f);
-                var brain = (ClockBossBrain)a.Brain;
-                Check(a.Brain.StateName == "JumpShake", "激光收尾后身体仍可响铃");
-                float before = brain.HandProgress(0); Step(a, .3f);
-                Check(brain.HandProgress(0) > before, "响铃身体动作期间独立指针继续计时");
-                Step(a, 1.8f);
-                Check(a.Brain.StateName == "Charge" && brain.HandProgress(0) == 1f, "身体忙时到期指针保留一次待发，不覆盖冲撞");
+                int spawns = 0;
+                a.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.BeamSpawn) spawns++; };
+                AdvanceClock(a, 1.98f); Check(ClockBeamCount(a) == 0, "停火计时结束前完全没有光束");
+                AdvanceClock(a, .04f); EnemyBeam beam = ClockBeamFor(a, 0);
+                Check(beam != null && beam.Age < beam.WarningDuration, "到期先进入预警");
+                var profile = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<EnemyVfxProfile>("Assets/_Project/Data/Enemies/Vfx/ClockBoss_Vfx.asset"));
+                var material = new Material(Shader.Find("Sprites/Default")); profile.BeamMaterial = profile.BeamCoreMaterial = material;
+                var view = beam.GetComponent<EnemyBeamView>();
+                if (view == null) view = beam.gameObject.AddComponent<EnemyBeamView>();
+                view.Configure(profile); beam.SendMessage("LateUpdate"); view.SendMessage("LateUpdate");
+                var core = beam.transform.Find("BeamCore").GetComponent<LineRenderer>();
+                Check(!core.enabled, "预警阶段只有细线，没有伤害核心");
+                AdvanceClock(a, .72f); beam.SendMessage("LateUpdate"); view.SendMessage("LateUpdate");
+                Check(core.enabled && core.startWidth > 0f && beam.Age >= beam.WarningDuration, "预警后开启有限时长激光");
+                float progress = a.ClockBeams.HandProgress(0);
+                AdvanceClock(a, .36f);
+                Check(!beam.gameObject.activeSelf && ClockBeamCount(a) == 0, "0.35 秒发射结束后光束真正消失");
+                AdvanceClock(a, 1.8f);
+                Check(ClockBeamCount(a) == 0 && spawns == 1 && a.ClockBeams.HandProgress(0) > progress,
+                    "消失后保留完整停火窗口，指针仍缓慢旋转");
+                AdvanceClock(a, .3f);
+                Check(ClockBeamCount(a) == 1 && spawns == 2, "停火结束后下一轮重新预警，不积压常驻光束");
             });
             AddClockHandCase(a =>
             {
-                a.Definition.ClockBeamVolleysBeforeRest = 1;
-                Target(a, 6, 4); Step(a, 2.01f); Step(a, 1.06f);
-                var brain = (ClockBossBrain)a.Brain;
-                Check(a.Brain.StateName == "Rest", "独立指针攻击仍保留完整休息窗口");
-                float progress = brain.HandProgress(0);
-                Step(a, .2f);
-                Check(brain.HandProgress(0) == progress, "休息统一冻结指针，不在后台积压攻击");
-                Step(a, .31f); Step(a, .1f);
-                Check(a.Brain.StateName != "Rest" && brain.HandProgress(0) > progress, "休息后继续各自剩余进度");
+                a.ClockBeams.Tick(a.ClockBeams.HandInterval(0)); EnemyBeam beam = ClockBeamFor(a, 0);
+                Vector2 direction = beam.Direction; float progress = a.ClockBeams.HandProgress(0);
+                Target(a, -8, 3); a.FaceDirection(Vector2.left);
+                Check(beam.Direction == direction, "玩家换边和 Boss 转身不改变激光方向");
+                a.Definition.ClockHourInterval = .3f;
+                a.ClockBeams.Tick(.5f);
+                Check(Mathf.Abs(a.ClockBeams.HandProgress(0) - progress - .5f / 24f) < .001f,
+                    "缩短发射间隔不会加快指针转速");
+                a.Target.gameObject.SetActive(false);
+                Check(beam.gameObject.activeSelf && beam.Direction != direction, "短扫射期间没有目标也继续沿针转动");
             });
             AddClockHandCase(a =>
             {
-                ClockPhaseTwo(a); Step(a, .3f);
-                var brain = (ClockBossBrain)a.Brain;
-                float h = brain.HandProgress(0), m = brain.HandProgress(1);
-                ClockOpenCore(a); Step(a, a.Definition.ClockCoreWindow + .01f); Step(a, 1f);
-                Check(a.Brain.Phase == 2 && a.Status.Health == 600f && brain.HandProgress(2) == 0f,
-                    "发条窗口失败仍回到二阶段，不提前解锁秒针");
-                Check(brain.HandProgress(0) == h && brain.HandProgress(1) == m, "失败恢复生命不重置已有指针周期");
+                Target(a, 2); Step(a, 2.4f); CheckSweepDuring(a, "JumpShake");
+                Step(a, a.AnimationDuration + .01f); CheckSweepDuring(a, "Charge");
+                Step(a, a.Definition.ClockChargeDuration + .01f); CheckSweepDuring(a, "Rest");
+                a.Brain.OnHit(30f); CheckSweepDuring(a, "Hurt");
+                ClockPhaseTwo(a); ClockOpenCore(a); CheckSweepDuring(a, "Stun");
+                a.WeakPoint.ApplyDamage(new DamageInfo { Amount = a.Definition.ClockCoreHealth }); Step(a); CheckSweepDuring(a, "Recover");
             });
+            AddClockHandCase(a =>
+            {
+                ClockPhaseTwo(a); ClockOpenCore(a); Step(a, a.Definition.ClockCoreWindow + .01f);
+                CheckSweepDuring(a, "Rewind");
+            });
+            AddClockHandCase(a =>
+            {
+                a.ClockBeams.Tick(1f); object cooldownState = a.CaptureSnapshotState();
+                a.ClockBeams.Tick(1f); Check(ClockBeamCount(a) == 1, "等待结束生成一束光束");
+                a.RestoreSnapshotState(cooldownState);
+                Check(ClockBeamCount(a) == 0, "回溯到等待阶段清除未来光束");
+                a.ClockBeams.Tick(.98f); Check(ClockBeamCount(a) == 0, "快照恢复停火剩余时间");
+                a.ClockBeams.Tick(.04f); EnemyBeam beam = ClockBeamFor(a, 0);
+                for (int i = 0; i < 10; i++) beam.SendMessage("FixedUpdate");
+                object actorState = a.CaptureSnapshotState(), beamState = beam.CaptureSnapshotState();
+                Vector2 direction = beam.Direction; float age = beam.Age;
+                a.ClockBeams.Tick(.4f); beam.SendMessage("FixedUpdate");
+                a.RestoreSnapshotState(actorState); beam.RestoreSnapshotState(beamState);
+                Check(beam.Direction == direction && beam.Age == age, "快照同步恢复角度与短脉冲预警进度");
+                a.Status.SetPaused(true); a.ClockBeams.Tick(2); beam.SendMessage("FixedUpdate"); a.Status.SetPaused(false);
+                Check(beam.Direction == direction && beam.Age == age, "单体暂停冻结指针和光束寿命");
+                TimeManager.Instance.SetPaused(true); a.ClockBeams.Tick(2); beam.SendMessage("FixedUpdate"); TimeManager.Instance.SetPaused(false);
+                Check(beam.Direction == direction && beam.Age == age, "全局暂停冻结指针和光束寿命");
+                a.Status.ApplyHealthDelta(-a.Status.Health); Step(a); beam.SendMessage("FixedUpdate");
+                Check(a.Defeated && !beam.gameObject.activeSelf, "死亡立即结束当前短扫射");
+            });
+            AddClockHandCase(a =>
+            {
+                a.transform.position = new Vector3(100f, 100f, 0f); a.PlayerMask = 1 << 10;
+                a.Definition.ClockHourRotationPeriod = 8f;
+                a.Combat = new GameObject("SweepCombat").AddComponent<RuleGame.Gameplay.Combat.CombatSystem>();
+                GameObject target = a.Target.gameObject; target.layer = 10; target.SetActive(false);
+                var status = target.AddComponent<RuleGame.Gameplay.Player.EntityStatus>();
+                var damageable = target.AddComponent<RuleGame.Gameplay.Combat.EntityDamageable>();
+                typeof(RuleGame.Gameplay.Combat.EntityDamageable).GetField("_faction", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(damageable, Faction.Player);
+                typeof(RuleGame.Gameplay.Combat.EntityDamageable).GetField("_invincibleSeconds", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(damageable, 0f);
+                typeof(RuleGame.Gameplay.Combat.EntityDamageable).GetField("_combat", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(damageable, a.Combat);
+                target.AddComponent<BoxCollider2D>().size = Vector2.one * .2f; target.SetActive(true); status.InitializeVitals(100f, 0f);
+                // 重建实例计时，使测试设置的 8 秒/圈从十二点起算。
+                a.ClockBeams.Restore(new ClockBeamEmitter(a).Capture());
+                Target(a, 2f); Physics2D.SyncTransforms();
+                a.ClockBeams.Tick(2f); EnemyBeam beam = ClockBeamFor(a, 0);
+                for (int i = 0; i < 34; i++) beam.SendMessage("FixedUpdate");
+                Check(status.Health == 100f, "预警细线不会造成伤害");
+                for (int i = 0; i < 2; i++) beam.SendMessage("FixedUpdate");
+                Check(status.Health == 90f, "短扫射沿针尖方向实际命中玩家");
+                beam.SendMessage("FixedUpdate"); Check(status.Health == 90f, "短扫射不会每个物理帧重复扣血");
+                a.ClockBeams.Tick(2f);
+                for (int i = 0; i < 30; i++) beam.SendMessage("FixedUpdate");
+                Check(status.Health == 90f && !beam.gameObject.activeSelf, "转离并消失后不再造成伤害");
+                EnemyBeam pulse = null;
+                a.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.BeamSpawn) pulse = (EnemyBeam)cue.Subject; };
+                EnemyBeam.Spawn(a, 0f, .2f, .3f);
+                Check(pulse == beam && !pulse.FollowsClockHand && pulse.Direction == Vector2.right,
+                    "池复用为普通光束时清除指针绑定");
+                for (int i = 0; i < 40; i++) pulse.SendMessage("FixedUpdate");
+                Check(!pulse.gameObject.activeSelf, "普通光束仍按原寿命结束");
+            });
+        }
+        private static EnemyBeam ClockBeamFor(EnemyActor actor, int hand)
+        {
+            foreach (EnemyBeam beam in UnityEngine.Object.FindObjectsByType<EnemyBeam>(FindObjectsSortMode.None))
+                if (beam.Source == actor && beam.ClockHand == hand && beam.gameObject.activeSelf) return beam;
+            return null;
+        }
+        private static int ClockBeamCount(EnemyActor actor)
+        {
+            int count = 0;
+            foreach (EnemyBeam beam in UnityEngine.Object.FindObjectsByType<EnemyBeam>(FindObjectsSortMode.None))
+                if (beam.Source == actor && beam.FollowsClockHand && beam.gameObject.activeSelf) count++;
+            return count;
+        }
+        private static void AdvanceClock(EnemyActor actor, float seconds)
+        {
+            int frames = Mathf.RoundToInt(seconds / Time.fixedDeltaTime);
+            for (int frame = 0; frame < frames; frame++)
+            {
+                actor.ClockBeams.Tick(Time.fixedDeltaTime);
+                foreach (EnemyBeam beam in UnityEngine.Object.FindObjectsByType<EnemyBeam>(FindObjectsSortMode.None))
+                    if (beam.Source == actor) beam.SendMessage("FixedUpdate");
+            }
+        }
+        private static void CheckSweepDuring(EnemyActor actor, string state)
+        {
+            Check(actor.Brain.StateName == state, "进入身体状态 " + state);
+            actor.ClockBeams.Restore(new ClockBeamEmitter(actor).Capture());
+            actor.ClockBeams.Tick(actor.ClockBeams.HandInterval(0));
+            EnemyBeam beam = ClockBeamFor(actor, 0); Vector2 before = beam.Direction, intent = actor.Motor.Intent;
+            actor.ClockBeams.Tick(.15f);
+            Check(beam != null && beam.Direction != before && actor.Brain.StateName == state && actor.Motor.Intent == intent,
+                state + " 期间短扫射独立计时且方向随针变化");
         }
 
         private sealed class TimeRevertCatalog : IRuleCatalog
@@ -817,9 +879,11 @@ namespace RuleGame.Editor.Enemy
                 EnemyBeam beam = null;
                 a.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.BeamSpawn) beam = (EnemyBeam)cue.Subject; };
                 Target(a, 6); Step(a, a.Definition.ClockHourInterval + .01f);
-                Check(beam != null && beam.Direction.x > .9f && beam.WarningDuration >= .7f, "发条瞄准激光保留预警");
-                Vector2 direction = beam.Direction; Target(a, -6); Step(a, .1f);
-                Check(beam.Direction == direction, "激光预警后不追着玩家转向");
+                Check(beam != null && Vector2.Dot(beam.Direction, a.ClockBeams.HandDirection(0)) > .999f && beam.WarningDuration >= .7f, "发条沿指针方向扫射并保留启动预警");
+                Vector2 direction = beam.Direction; Target(a, -6);
+                Check(beam.Direction == direction, "玩家换边不会让光束瞄准玩家");
+                Step(a, .1f);
+                Check(beam.Direction != direction, "激光预警期间也跟随指针转动");
             });
             Add(EnemyKind.ClockBoss, a =>
             {
@@ -833,13 +897,12 @@ namespace RuleGame.Editor.Enemy
             {
                 int beams = 0;
                 a.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.BeamSpawn) beams++; };
-                Target(a, 6); Step(a, a.Definition.ClockHourInterval + .01f); Step(a, a.Definition.ClockHourInterval + .01f);
-                Step(a, a.Definition.ClockBeamWarning + .36f);
-                Check(beams == 2 && a.Brain.StateName == "JumpShake", "两轮激光后抓机会进入响铃冲撞");
-                Step(a, .2f);
-                Check(beams == 2, "响铃期间不再叠加新激光");
-                Step(a, .7f); Step(a, a.Definition.ClockChargeDuration + .01f);
-                Check(a.Brain.StateName == "Rest", "发条冲撞后保留喘息窗口");
+                Target(a, 2); Step(a, 2.4f);
+                Check(a.Brain.StateName == "JumpShake", "身体独立按冷却响铃");
+                a.ClockBeams.Tick(a.Definition.ClockHourInterval);
+                Check(beams >= 1 && a.Brain.StateName == "JumpShake", "响铃期间激光独立发射");
+                Step(a, a.AnimationDuration + .01f); Step(a, a.Definition.ClockChargeDuration + .01f);
+                Check(a.Brain.StateName == "Rest", "身体冲撞后保留喘息窗口");
             });
             Add(EnemyKind.RabbitBoss, a =>
             {
@@ -941,7 +1004,12 @@ namespace RuleGame.Editor.Enemy
         }
         private static void Target(EnemyActor actor, float x, float y = 0)
             => actor.Target.position = actor.transform.position + new Vector3(x, y, 0);
-        private static void Step(EnemyActor actor, float dt = 0.02f) => actor.Brain.Tick(dt);
+        private static void Step(EnemyActor actor, float dt = 0.02f)
+        {
+            if (TimeManager.Instance?.IsPaused == true || actor.Status.IsPaused) return;
+            actor.Brain.Tick(dt);
+            actor.ClockBeams?.Tick(dt);
+        }
         private static void AdvanceTo(EnemyActor actor, string state)
         {
             for (int i = 0; i < 2000 && actor.Brain.StateName != state; i++) Step(actor);

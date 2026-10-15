@@ -35,6 +35,7 @@ namespace RuleGame.Gameplay.Enemy
         public EntityStatus Status { get; private set; }
         public EnemyMotor Motor { get; private set; }
         public EnemyBrain Brain { get; private set; }
+        public ClockBeamEmitter ClockBeams { get; private set; }
         public bool IsFlying => Brain?.IsFlying ?? (Definition != null && Definition.Flying);
         public bool HasTarget => Target != null && Target.gameObject.activeInHierarchy;
         public Faction Faction => Faction.Enemy;
@@ -68,6 +69,7 @@ namespace RuleGame.Gameplay.Enemy
             _release = new RuleReleaseService(RuleSystem.Instance, Status, AllUnlockedRuleUnlocks.Instance);
             Brain = EnemyBrain.Create(this);
             Brain.Initialize();
+            if (Definition.Kind == EnemyKind.ClockBoss) ClockBeams = new ClockBeamEmitter(this);
         }
         private void FixedUpdate()
         {
@@ -76,6 +78,7 @@ namespace RuleGame.Gameplay.Enemy
             _invulnerability = Mathf.Max(0f, _invulnerability - dt);
             if (!Defeated) Status.RestoreEnergy(Definition.EnergyRegen * dt);
             Brain.Tick(dt);
+            ClockBeams?.Tick(dt);
             Motor.Tick(dt);
             TickContactDamage(dt);
         }
@@ -222,6 +225,7 @@ namespace RuleGame.Gameplay.Enemy
         private sealed class Data
         {
             public object Brain;
+            public object ClockBeams;
             public Vector2 Velocity, Impulse;
             public float Facing, Invulnerability, ContactCooldown;
             public bool Defeated;
@@ -232,6 +236,7 @@ namespace RuleGame.Gameplay.Enemy
         public object CaptureSnapshotState() => new Data
         {
             Brain = Brain?.Capture(), Velocity = Motor.Velocity, Impulse = Motor.CaptureImpulse(),
+            ClockBeams = ClockBeams?.Capture(),
             Facing = Facing, Invulnerability = _invulnerability, Defeated = Defeated, Summons = _summons.ToArray(),
             ContactCooldown = _contactCooldown,
             StrikeAnnounced = _strikeAnnounced,
@@ -244,6 +249,7 @@ namespace RuleGame.Gameplay.Enemy
             _contactCooldown = data.ContactCooldown;
             _summons.Clear(); _summons.AddRange(data.Summons);
             Brain?.Restore(data.Brain);
+            ClockBeams?.Restore(data.ClockBeams);
             _swingTargets.Clear();
             foreach (IDamageable target in data.SwingTargets) _swingTargets.Add(target);
             Motor.Restore(data.Velocity, data.Impulse);

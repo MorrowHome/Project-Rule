@@ -22,7 +22,7 @@ namespace RuleGame.Presentation.Enemy
                 if (_visual != null) Hands[i].position = _visual.ClockFaceWorld;
                 // 美术的分针原图朝下，时针及其细长秒针朝上，统一到十二点起始方向。
                 float orientation = i == 1 ? 180f : 0f;
-                Hands[i].localRotation = Quaternion.Euler(0f, 0f, orientation - brain.HandProgress(hand) * 360f);
+                Hands[i].localRotation = Quaternion.Euler(0f, 0f, orientation + (Actor.ClockBeams?.HandRotation(hand) ?? 0f));
             }
         }
     }

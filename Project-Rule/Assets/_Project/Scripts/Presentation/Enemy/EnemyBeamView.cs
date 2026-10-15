@@ -38,7 +38,7 @@ namespace RuleGame.Presentation.Enemy
             _outer.SetPosition(0, start); _core.SetPosition(0, start); _core.SetPosition(1, end);
             float progress = Mathf.Clamp01(_beam.Age / Mathf.Max(.01f, _beam.WarningDuration));
             bool firing = _beam.Age >= _beam.WarningDuration;
-            float fade = firing ? Mathf.Clamp01(1f - (_beam.Age - _beam.WarningDuration) / .35f) : 1f;
+            float fade = firing ? Mathf.Clamp01(1f - (_beam.Age - _beam.WarningDuration) / _beam.FireDuration) : 1f;
             _outer.startWidth = _outer.endWidth = firing ? _beam.Width * (10f + fade * 6f) : .1f + progress * .06f;
             Color outer = _profile.Secondary; outer.a = firing ? fade * .85f : .25f + progress * .4f;
             _outer.startColor = _outer.endColor = outer;

@@ -17,11 +17,33 @@ MonoBehaviour:
   BodySize: {x: 2, y: 3.2}
   Health: 100
   Damage: 10
+  ContactDamage: 1
+  ContactInterval: 0.6
+  ContactPadding: 0.05
   Energy: 100
   EnergyRegen: 2
+  RuleAttribute: 4
+  RuleRelation: 3
   MoveSpeed: 1.8
   AttackRange: 3.5
   AttackCooldown: 1.8
+  BossRestDuration: 1.8
+  ClockBeamVolleysBeforeRest: 2
+  BrickAdvanceDuration: 0.9
+  BrickAdvanceSpeedMultiplier: 2.2
+  BrickAdvanceCooldown: 4
+  BrickComboLimit: 2
+  ClockChargeDuration: 1.15
+  ClockChargeSpeedMultiplier: 3.5
+  ClockChargeCooldown: 7
+  ClockBeamWarning: 0.7
+  ClockBeamSpread: 14
+  RabbitBurrowDuration: 1
+  RabbitBurrowSpeedMultiplier: 2.8
+  RabbitBurrowCooldown: 5
+  RabbitEscapeDistance: 2.8
+  RabbitBurstCount: 2
+  RabbitBurstInterval: 0.35
   PreferredDistance: 5
   SpacingTolerance: 0.6
   RangedRange: 9
@@ -32,6 +54,18 @@ MonoBehaviour:
   BossHurtDuration: 0.45
   GravityScale: 1
   Flying: 0
+  FlightAcceleration: 24
+  BatOrbitDistance: 4.5
+  BatHoverHeight: 3
+  BatDashCooldown: 4
+  BatDashWindup: 0.5
+  BatDashDuration: 0.65
+  BatEvadeCooldown: 2.5
+  BatEvadeDuration: 0.65
+  BatRecoverDuration: 0.45
+  BatRestHeightRatio: 0.8
+  BatRestPatrolDistance: 2.5
+  BatRestSpeedMultiplier: 0.85
   ImpactFraction: 0.6
   RabbitCycle: 20
   RabbitThrowInterval: 2

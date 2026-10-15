@@ -23,12 +23,27 @@ MonoBehaviour:
   Energy: 100
   EnergyRegen: 2
   RuleAttribute: 0
-  RuleRelation: 4
+  RuleRelation: 1
   MoveSpeed: 5.5
   AttackRange: 3.5
   AttackCooldown: 1.1
-  BossRestDuration: 3.2
+  BossRestDuration: 2
   ClockBeamVolleysBeforeRest: 2
+  BrickAdvanceDuration: 0.9
+  BrickAdvanceSpeedMultiplier: 2.2
+  BrickAdvanceCooldown: 4
+  BrickComboLimit: 2
+  ClockChargeDuration: 1.15
+  ClockChargeSpeedMultiplier: 3.5
+  ClockChargeCooldown: 7
+  ClockBeamWarning: 0.7
+  ClockBeamSpread: 14
+  RabbitBurrowDuration: 1
+  RabbitBurrowSpeedMultiplier: 2.8
+  RabbitBurrowCooldown: 5
+  RabbitEscapeDistance: 2.8
+  RabbitBurstCount: 2
+  RabbitBurstInterval: 0.35
   PreferredDistance: 5
   SpacingTolerance: 0.6
   RangedRange: 9
