@@ -97,8 +97,15 @@ namespace RuleGame.Gameplay.Player
         /// 关掉时 <see cref="WallProbeDistance"/> 等参数全部失效，但保留着不碍事。</remarks>
         public bool WallClimbEnabled;
 
-        /// <summary>横向墙面探测距离（米）。</summary>
+        /// <summary>横向墙面探测距离（米）。**这是「全高」探测**，用于顶墙分量预夹，不是能力判定。</summary>
         public float WallProbeDistance;
+
+        /// <summary>
+        /// 贴墙能力的中段圆探针半径（米）。探针位置 = 主碰撞体的**中段高度**、左右两条边缘。
+        /// </summary>
+        /// <remarks>只认中段的接触 —— 矮台、台阶、头顶横梁都不算墙。
+        /// 与 <see cref="WallProbeDistance"/> 是两回事：那个是全高探测，管预夹。</remarks>
+        public float WallClimbProbeRadius;
 
         /// <summary>贴墙时的下滑速度上限。远低于终端速度 —— 贴墙是「缓慢下滑」不是「挂在墙上」。</summary>
         public float WallSlideSpeed;

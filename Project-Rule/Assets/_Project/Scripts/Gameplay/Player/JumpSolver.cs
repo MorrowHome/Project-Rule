@@ -109,8 +109,9 @@ namespace RuleGame.Gameplay.Player
             }
 
             // 贴墙能力关掉时这一档直接作废 —— wallPush 恒为 0，下面的分支自然跳过，落回空中段。
+            // ⚠️ 用**中段**探针（Climb），不是全高的 Wall —— 矮台 / 台阶不该能蹬。
             float wallPush = tuning.WallClimbEnabled
-                ? ResolveWallJumpPush(contact.WallLeft, contact.WallRight, input.Move.x,
+                ? ResolveWallJumpPush(contact.ClimbLeft, contact.ClimbRight, input.Move.x,
                                       contact.Grounded,
                                       tuning.WallJumpPushSpeed, tuning.WallClimbPushSpeed)
                 : 0f;

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using RuleGame.Gameplay.Player;
 using RuleGame.Presentation.Player;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -34,7 +35,7 @@ namespace RuleGame.Editor.Animations
             "Idle", "Run",
             // 空中
             // ⚠️ Airborne 是**二段跳**那一下的动作（5 帧），不是滞空 —— 它是一次性动作。
-            //     滞空用 Fall：定格 Airborne 第 1 帧（见 EnsureHeldFrameClips）。
+            //     滞空用 Fall（美术的 air 六帧序列）。
             "JumpStart", "Airborne", "Fall", "Weightless", "WallSlide", "WallJump",
             // 其它机动
             "Push", "Land",
@@ -61,8 +62,6 @@ namespace RuleGame.Editor.Animations
                 return;
             }
 
-            EnsureHeldFrameClips();
-
             // 每次重建都先清空,保证结果是「声明决定」而不是「声明 + 上次残留」。
             ClearParameters(controller);
             AnimatorStateMachine machine = controller.layers[0].stateMachine;
@@ -71,12 +70,14 @@ namespace RuleGame.Editor.Animations
 
             Dictionary<string, AnimatorState> states = CreateStates(machine);
 
+            Dictionary<string, float> attackSpeeds = ApplyAttackSpeeds(states);
+
             AddParameters(controller);
             LinkLocomotion(states);
             LinkAir(states);
             LinkActionStates(states);
             LinkReactions(states);
-            LinkCombat(states);
+            LinkCombat(states, attackSpeeds);
             LinkInteract(states);
             LinkAnyState(machine, states);
 
@@ -335,23 +336,112 @@ namespace RuleGame.Editor.Animations
         // 结构照美术给的「使用说明」：**起手拔剑 → 中间任意挥砍 → 收手收剑**。
         // 起手由 AnyState 的 Attack 触发（见 LinkAnyState），接续靠 AttackNext。
 
-        private static void LinkCombat(Dictionary<string, AnimatorState> s)
+        private static void LinkCombat(Dictionary<string, AnimatorState> s,
+                                       Dictionary<string, float> speeds)
         {
+            // 过渡时长按源 state 的速度缩 —— 理由见 AttackBlend。
+            float blendDraw  = AttackBlend(speeds, "DrawSword");
+            float blendSlash1 = AttackBlend(speeds, "Slash1");
+            float blendSlash2 = AttackBlend(speeds, "Slash2");
+
             // 拔剑（4 帧）之后自动进第一段挥砍
-            Link(s["DrawSword"], s["Slash1"], 0.05f, exitTime: true, at: 1f);
+            Link(s["DrawSword"], s["Slash1"], blendDraw, exitTime: true, at: 1f);
 
             // 第一段：收招前再按一下 → 接第二段；不按 → 收剑。
             // ⚠️ 不带 exitTime 的那条排在前面，所以按下时立刻接、不按下才等播完。
-            When(Link(s["Slash1"], s["Slash2"], 0.05f),
+            When(Link(s["Slash1"], s["Slash2"], blendSlash1),
                  AnimatorConditionMode.If, PlayerAnimationDriver.ParamAttackNext);
-            Link(s["Slash1"], s["Sheathe"], 0.05f, exitTime: true, at: 1f);
+            Link(s["Slash1"], s["Sheathe"], blendSlash1, exitTime: true, at: 1f);
 
-            Link(s["Slash2"], s["Sheathe"], 0.05f, exitTime: true, at: 1f);
+            Link(s["Slash2"], s["Sheathe"], blendSlash2, exitTime: true, at: 1f);
             Link(s["SlashDown"], s["Sheathe"], 0.05f, exitTime: true, at: 1f);
 
             Link(s["Sheathe"], s["Idle"], 0.1f, exitTime: true, at: 1f);
             Link(s["Throw"], s["Idle"], 0.1f, exitTime: true, at: 1f);
         }
+
+        // ==================================================================
+        //  攻击链的播放速度：把每一刀压到 PlayerController.AttackSwingSeconds
+        // ==================================================================
+        //
+        // ⚠️ 「动画多快播完」和「判定多久开窗」是**两个旋钮**，别绑一起：
+        //    · 判定三段（起手 / 生效 / 收招）在 PlayerController，管玩法节奏 ——
+        //      起手决定判定开窗**落在动画的哪一帧**（要对齐刀刃接触）。
+        //    · 本文件这一套只管动画时长。
+        //    动画提速 → 接触时刻提前 → 起手要跟着缩短。改一个记得看另一个。
+        //
+        // ⚠️ 速度按**剪辑原始时长**现算，不是写死的倍率：美术重导出更长的剪辑时，
+        //    速度会自己跟着变，不用回来改这里。
+
+        /// <summary>一次挥砍在图上连续播哪几个 state。速度按**这一段的总时长**算。</summary>
+        private static readonly string[][] AttackSegments =
+        {
+            new[] { "DrawSword", "Slash1" },   // 第一刀：拔剑起手 + 挥砍
+            new[] { "Slash2" },                // 第二刀：回旋斩（美术的转身动作，不自作主张拆开）
+        };
+
+        /// <summary>
+        /// 给攻击链上的 state 算好播放速度，写进 <c>AnimatorState.speed</c>，并返回这张表。
+        /// </summary>
+        /// <remarks>
+        /// 倍率 = 这一段的剪辑总时长 ÷ <see cref="PlayerController.AttackSwingSeconds"/>。
+        /// 攻击链以外的 state 一律不碰，保持 1（二段跳、贴墙、冲刺那些节奏都不受影响）。
+        /// </remarks>
+        private static Dictionary<string, float> ApplyAttackSpeeds(Dictionary<string, AnimatorState> states)
+        {
+            var speeds = new Dictionary<string, float>();
+
+            float target = PlayerController.AttackSwingSeconds;
+            if (target <= 0f) return speeds;
+
+            foreach (string[] segment in AttackSegments)
+            {
+                float total = 0f;
+                foreach (string name in segment) total += ClipSeconds(states, name);
+
+                if (total <= 0f) continue;   // 剪辑缺失：保持原速，别把图弄坏
+
+                float speed = total / target;
+                foreach (string name in segment)
+                {
+                    if (!states.TryGetValue(name, out AnimatorState state)) continue;
+                    state.speed = speed;
+                    speeds[name] = speed;
+                }
+            }
+
+            Debug.Log("[HeroAnimatorBuilder] 攻击速度 " + DescribeSpeeds(speeds)
+                      + "，每刀目标 " + target.ToString("0.###") + " 秒。");
+            return speeds;
+        }
+
+        private static float ClipSeconds(Dictionary<string, AnimatorState> states, string name)
+        {
+            if (!states.TryGetValue(name, out AnimatorState state)) return 0f;
+            var clip = state.motion as AnimationClip;
+            return clip != null ? clip.length : 0f;
+        }
+
+        private static string DescribeSpeeds(Dictionary<string, float> speeds)
+        {
+            string result = "";
+            foreach (KeyValuePair<string, float> pair in speeds)
+            {
+                if (result.Length > 0) result += "、";
+                result += pair.Key + " ×" + pair.Value.ToString("0.00");
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 攻击链的过渡时长。过渡是**按秒**算的（<c>hasFixedDuration = true</c>），
+        /// 所以动画被提速后必须一起缩 —— 否则同一段过渡会占掉剪辑更大的一块，看起来发糊。
+        /// </summary>
+        private static float AttackBlend(Dictionary<string, float> speeds, string fromName,
+                                         float seconds = 0.05f)
+            => speeds.TryGetValue(fromName, out float speed) && speed > 0f
+                   ? seconds / speed
+                   : seconds;
 
         // ==================================================================
         //  连线：拾取 / 交互
@@ -416,88 +506,5 @@ namespace RuleGame.Editor.Animations
             When(t, AnimatorConditionMode.If, PlayerAnimationDriver.ParamAttack);
         }
 
-        // ==================================================================
-        //  定格帧剪辑（贴墙下滑 / 滞空）
-        // ==================================================================
-        //
-        // 有些状态没有自己的素材，就**定格某张现成的帧**：把同一张图重复 N 次凑成一个
-        // 合法时长的循环剪辑。比借一整段动画好 —— 借整段 = 在原地放那整段动作。
-        // 📌 想换姿势就改下面的帧号；要真正的专属动画得让美术补图。
-
-        /// <summary>贴墙下滑定格用 WallJump 序列里的第几帧（1 起数）。</summary>
-        private const int WallSlideSourceFrame = 3;
-
-        /// <summary>滞空定格用 Airborne 序列里的第几帧（1 起数）。</summary>
-        private const int FallSourceFrame = 1;
-
-        /// <summary>同一张图重复几次。给剪辑一个合法时长，循环时看不出接缝。</summary>
-        private const int HeldKeyCount = 5;
-
-        private static void EnsureHeldFrameClips()
-        {
-            EnsureHeldFrameClip("WallSlide", "WallJump", WallSlideSourceFrame);
-            EnsureHeldFrameClip("Fall",      "Airborne", FallSourceFrame);
-
-            // Airborne 现在是**二段跳**那一下的一次性动作，不能再循环 ——
-            // 循环的话人在空中会反复翻，停不下来。
-            EnsureOneShot("Airborne");
-        }
-
-        /// <summary>把 <c>&lt;源序列&gt;</c> 的第 <paramref name="frame"/> 帧定格成一个循环剪辑。</summary>
-        private static void EnsureHeldFrameClip(string targetName, string sourceSequence, int frame)
-        {
-            string target = ClipFolder + "/Hero_" + targetName + ".anim";
-            string spritePath = "Assets/_Project/Art/Sprites/Hero/" + sourceSequence
-                                + "/Hero_" + sourceSequence + "_" + frame.ToString("D2") + ".png";
-
-            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
-            if (sprite == null)
-            {
-                Debug.LogError("[HeroAnimatorBuilder] 找不到定格帧：" + spritePath);
-                return;
-            }
-
-            // 已存在就复用（保住 GUID，场景 / 控制器引用不会断），只覆盖曲线。
-            var clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(target);
-            if (clip == null)
-            {
-                clip = new AnimationClip { name = "Hero_" + targetName, frameRate = 12f };
-                AssetDatabase.CreateAsset(clip, target);
-            }
-
-            var binding = EditorCurveBinding.PPtrCurve("", typeof(SpriteRenderer), "m_Sprite");
-            var keys = new ObjectReferenceKeyframe[HeldKeyCount];
-            for (int i = 0; i < HeldKeyCount; i++)
-                keys[i] = new ObjectReferenceKeyframe { time = i / clip.frameRate, value = sprite };
-
-            AnimationUtility.SetObjectReferenceCurve(clip, binding, keys);
-            SetLoopTime(clip, true);
-
-            EditorUtility.SetDirty(clip);
-            AssetDatabase.SaveAssets();
-            Debug.Log("[HeroAnimatorBuilder] 生成 Hero_" + targetName + ".anim（定格 "
-                      + sourceSequence + " 第 " + frame + " 帧）。");
-        }
-
-        /// <summary>把剪辑设成一次性（不循环）。已经是就什么都不做。</summary>
-        private static void EnsureOneShot(string clipName)
-        {
-            var clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(ClipFolder + "/Hero_" + clipName + ".anim");
-            if (clip == null)
-            {
-                Debug.LogWarning("[HeroAnimatorBuilder] 找不到剪辑：" + clipName);
-                return;
-            }
-            SetLoopTime(clip, false);
-            EditorUtility.SetDirty(clip);
-        }
-
-        private static void SetLoopTime(AnimationClip clip, bool loop)
-        {
-            AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(clip);
-            if (settings.loopTime == loop) return;
-            settings.loopTime = loop;
-            AnimationUtility.SetAnimationClipSettings(clip, settings);
-        }
     }
 }

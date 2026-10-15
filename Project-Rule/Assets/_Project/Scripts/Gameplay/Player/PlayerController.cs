@@ -121,8 +121,13 @@ namespace RuleGame.Gameplay.Player
                  "不是玩家特权 —— 敌人配一下就有、关掉就没有。")]
         [SerializeField] private bool _wallClimbEnabled = true;
 
-        [Tooltip("横向墙面探测距离（米）。")]
+        [Tooltip("横向墙面探测距离（米）。**全高探测**，用于顶墙分量预夹（防止 Slide 把整笔位移取消）。")]
         [SerializeField] private float _wallProbeDistance = 0.08f;
+
+        [Tooltip("贴墙能力的**中段圆探针**半径（米）。探针位置 = 主碰撞体的中段高度、左右两条边缘。\n" +
+                 "只认中段的接触 —— 矮台 / 台阶 / 头顶横梁都不算墙，所以不会在平台上误触发贴墙。\n" +
+                 "与上面那条是两回事：那条是全高探测，管预夹。")]
+        [SerializeField] private float _wallClimbProbeRadius = 0.06f;
 
         [Tooltip("贴墙时的下滑速度上限。远低于 _maxFallSpeed —— 贴墙是「缓慢下滑」，不是「挂在墙上」。" +
                  "调大 = 贴墙停留时间短、掉得快；调小 = 有更多时间看准再蹬。")]
@@ -174,16 +179,50 @@ namespace RuleGame.Gameplay.Player
         [SerializeField] private float     _attackOffset    = 0.8f;
         [SerializeField] private LayerMask _attackMask;
 
+        // ------------------------------------------------------------------
+        //  攻击节奏：判定三段管玩法节奏，动画速度是另一件事
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// 起手：从按键到「判定开窗」的基准秒数。**它要对齐刀刃的视觉接触时刻**。
+        /// </summary>
+        /// <remarks>
+        /// <para>第一刀在图上要走 <c>DrawSword</c>（拔剑）再进 <c>Slash1</c>，刀刃扫到目标
+        /// 差不多是 <c>Slash1</c> 的第二、三帧 —— 那是 0.3 秒出头，不是 0.1 秒。
+        /// 起手太短 = **判定比视觉早**，看着像"没打到就掉血"。</para>
+        /// <para>⚠️ 它和 <see cref="AttackSwingSeconds"/> 是**两件事**：动画提速 → 接触时刻提前
+        /// → 这个数要跟着缩短。改一个记得看另一个。</para>
+        /// </remarks>
+        public const float AttackWindupBase = 0.30f;
+
+        /// <summary>生效：判定窗的基准时长。</summary>
+        public const float AttackActiveBase = 0.12f;
+
+        /// <summary>收招：连段窗口的基准时长。</summary>
+        public const float AttackRecoverBase = 0.30f;
+
+        /// <summary>
+        /// 一刀动画的目标时长（秒）—— <c>HeroAnimatorBuilder</c> 按它算 <c>AnimatorState.speed</c>。
+        /// </summary>
+        /// <remarks>
+        /// <para>「一刀」按图上的**连续段**算：第一刀 = <c>DrawSword + Slash1</c>，
+        /// 第二刀 = <c>Slash2</c>（回旋）。每一段各自的剪辑时长除以本值 = 该段的播放倍率。</para>
+        /// <para>⚠️ 它**不是**判定一个循环的长度，别把两边绑一起：判定循环 = 起手 + 生效 + 收招
+        /// = <see cref="AttackWindupBase"/> + <see cref="AttackActiveBase"/>
+        /// + <see cref="AttackRecoverBase"/>。判定管「多久能再打」，本值管「动画多快播完」。</para>
+        /// </remarks>
+        public const float AttackSwingSeconds = 0.54f;
+
         [Tooltip("起手：从按键到「判定开窗」的秒数。")]
-        [SerializeField] private float _attackWindup = 0.12f;
+        [SerializeField] private float _attackWindup = AttackWindupBase;
 
         [Tooltip("生效：判定窗的时长。**只在开窗那一瞬做一次命中判定**，不做持续判定 —— " +
                  "一刀砍两次会把无敌帧和伤害规则都算乱。")]
-        [SerializeField] private float _attackActive = 0.12f;
+        [SerializeField] private float _attackActive = AttackActiveBase;
 
         [Tooltip("收招：这段时间里**再按一次就接下一刀**，不按就收剑。" +
                  "起手 / 生效段按下会先存着，到收招段再兑现（连段手感靠它）。")]
-        [SerializeField] private float _attackRecover = 0.30f;
+        [SerializeField] private float _attackRecover = AttackRecoverBase;
 
         [Tooltip("连段最多打几刀。1 = 只有一下，不接。")]
         [SerializeField, Range(1, 4)] private int _maxCombo = 2;
@@ -249,7 +288,7 @@ namespace RuleGame.Gameplay.Player
             var body = GetComponent<Rigidbody2D>();
 
             _input    = new PlayerInput(_inputActions);
-            _contacts = new ContactSensor(body);
+            _contacts = new ContactSensor(body, GetComponent<Collider2D>());
             _jump     = new JumpSolver();
             _dash     = new DashSolver();
             _attack   = new AttackSolver();
@@ -359,11 +398,19 @@ namespace RuleGame.Gameplay.Player
         /// <summary>本帧读到的**原始**移动输入（未经摩擦反转换算）。供调试浮层显示。</summary>
         public Vector2 MoveInput => _input != null ? _input.Move : Vector2.zero;
 
-        /// <summary>左侧是否贴着可蹬的竖墙（供调试浮层显示）。</summary>
+        /// <summary>
+        /// 左侧是否贴着竖墙（**全高**探测；供调试浮层显示）。只用于顶墙分量预夹。
+        /// </summary>
         public bool WallLeft => _contacts != null && _contacts.WallLeft;
 
-        /// <summary>右侧是否贴着可蹬的竖墙（供调试浮层显示）。</summary>
+        /// <summary>右侧是否贴着竖墙（**全高**探测）。只用于顶墙分量预夹。</summary>
         public bool WallRight => _contacts != null && _contacts.WallRight;
+
+        /// <summary>左侧**中段**是否贴着可爬的竖墙 —— 贴墙下滑 / 蹬墙跳的判据。</summary>
+        public bool ClimbLeft => _contacts != null && _contacts.ClimbLeft;
+
+        /// <summary>右侧**中段**是否贴着可爬的竖墙 —— 贴墙下滑 / 蹬墙跳的判据。</summary>
+        public bool ClimbRight => _contacts != null && _contacts.ClimbRight;
 
         /// <summary>是否正在贴墙缓慢下滑（供调试浮层显示）。</summary>
         public bool IsWallSliding => _mover != null && _mover.WallSliding;
@@ -426,12 +473,22 @@ namespace RuleGame.Gameplay.Player
                 _status.RestoreEnergy(_energyPerHit * hits);
         }
 
-        /// <summary>攻击判定体：调参时直接看得到范围与朝向。</summary>
+        /// <summary>攻击判定体 + 贴墙探针：调参时直接看得到范围与朝向。</summary>
         private void OnDrawGizmosSelected()
         {
             Gizmos.color = new Color(1f, 0.45f, 0.2f, 0.8f);
             Vector2 center = (Vector2)transform.position + new Vector2(Facing * _attackOffset, 0f);
             Gizmos.DrawWireCube(center, _attackBoxSize);
+
+            // 贴墙能力的**中段圆探针**。它的位置是从主碰撞体 bounds 推出来的（没有实体碰撞体），
+            // 所以必须画出来才看得见 —— 这也是判断「探针高度合不合适」的唯一直观手段。
+            var collider = GetComponent<Collider2D>();
+            if (collider == null || _wallClimbProbeRadius <= 0f) return;
+
+            Bounds b = collider.bounds;
+            Gizmos.color = new Color(0.25f, 0.9f, 1f, 0.9f);
+            Gizmos.DrawWireSphere(new Vector3(b.min.x, b.center.y, transform.position.z), _wallClimbProbeRadius);
+            Gizmos.DrawWireSphere(new Vector3(b.max.x, b.center.y, transform.position.z), _wallClimbProbeRadius);
         }
 
         // ==================================================================
@@ -469,6 +526,7 @@ namespace RuleGame.Gameplay.Player
 
             WallClimbEnabled     = _wallClimbEnabled,
             WallProbeDistance    = _wallProbeDistance,
+            WallClimbProbeRadius = _wallClimbProbeRadius,
             WallSlideSpeed       = _wallSlideSpeed,
             WallSlideImpactDecel = _wallSlideImpactDecel,
             WallJumpPushSpeed    = _wallJumpPushSpeed,

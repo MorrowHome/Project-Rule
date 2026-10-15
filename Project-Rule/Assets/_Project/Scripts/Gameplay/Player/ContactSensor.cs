@@ -17,26 +17,48 @@ namespace RuleGame.Gameplay.Player
     public sealed class ContactSensor
     {
         private readonly Rigidbody2D _body;
+        private readonly Collider2D  _bodyCollider;      // 主碰撞体：中段探针的几何来源
         private readonly RaycastHit2D[] _groundHits = new RaycastHit2D[4];
         private readonly RaycastHit2D[] _wallHits   = new RaycastHit2D[4];
+        private readonly Collider2D[]   _climbHits  = new Collider2D[4];
 
         private bool    _grounded;
         private bool    _wallLeft;
         private bool    _wallRight;
+        private bool    _climbLeft;
+        private bool    _climbRight;
         private bool    _wasGrounded;
         private float   _groundFriction = 1f;
         private Vector2 _up = Vector2.up;
 
-        public ContactSensor(Rigidbody2D body) => _body = body;
+        public ContactSensor(Rigidbody2D body, Collider2D bodyCollider)
+        {
+            _body         = body;
+            _bodyCollider = bodyCollider;
+        }
 
         /// <summary>是否站在支撑面上。</summary>
         public bool Grounded => _grounded;
 
-        /// <summary>左侧是否贴着可蹬的竖墙。</summary>
+        /// <summary>
+        /// 左侧是否贴着竖墙。<b>全高探测</b>（整个碰撞体的形状往外扫）—— 只用于顶墙分量预夹。
+        /// </summary>
+        /// <remarks>贴墙**能力**的判据是 <see cref="ClimbLeft"/>，不是这个。</remarks>
         public bool WallLeft => _wallLeft;
 
-        /// <summary>右侧是否贴着可蹬的竖墙。</summary>
+        /// <summary>
+        /// 右侧是否贴着竖墙。<b>全高探测</b> —— 只用于顶墙分量预夹。
+        /// </summary>
         public bool WallRight => _wallRight;
+
+        /// <summary>
+        /// 左侧**中段**是否贴着可爬的竖墙 —— <b>贴墙下滑 / 蹬墙跳的判据</b>。
+        /// </summary>
+        /// <remarks>只认中段的接触，所以矮台 / 台阶 / 头顶横梁都不算墙。</remarks>
+        public bool ClimbLeft => _climbLeft;
+
+        /// <summary>右侧**中段**是否贴着可爬的竖墙 —— 贴墙下滑 / 蹬墙跳的判据。</summary>
+        public bool ClimbRight => _climbRight;
 
         /// <summary>脚下这块地的摩擦系数（来自它的 <c>PhysicsMaterial2D</c>）。</summary>
         public float GroundFriction => _groundFriction;
@@ -56,8 +78,34 @@ namespace RuleGame.Gameplay.Player
             _wallLeft  = ProbeWall(Vector2.left, tuning);
             _wallRight = ProbeWall(Vector2.right, tuning);
 
+            // 中段探针：只认「身体中段那一小块」旁边的墙（贴墙能力的判据）。
+            Bounds b = _bodyCollider.bounds;
+            _climbLeft  = ProbeClimb(new Vector2(b.min.x,  b.center.y), tuning.WallClimbProbeRadius, tuning);
+            _climbRight = ProbeClimb(new Vector2(b.max.x,  b.center.y), tuning.WallClimbProbeRadius, tuning);
+
             return new State(_grounded, _wallLeft, _wallRight, _groundFriction, _up,
-                             _grounded && !_wasGrounded);
+                             _grounded && !_wasGrounded, _climbLeft, _climbRight);
+        }
+
+        /// <summary>
+        /// 中段圆探针：在指定点做一个圆重叠查询，看旁边有没有可爬的竖墙。
+        /// </summary>
+        /// <remarks>
+        /// <para>为什么不复用 <see cref="ProbeWall"/> 的 Cast：那个是**整个碰撞体**往外扫，
+        /// 「下半身贴着矮台」也会算成墙 —— 会在平台上误触发贴墙下滑。
+        /// 能力判定只认**中段那一小块**，所以矮台 / 台阶 / 头顶横梁都不算墙。</para>
+        /// <para>用 <c>SolidLayer</c> 过滤，天然排除玩家自己（玩家在 Default 层，不在 Ground 层）。</para>
+        /// <para>⚠️ 它**不读法线**：圆探针只回答「那个点旁边有没有东西」，没有方向可判 ——
+        /// 这正是它比 Cast 简单的地方（Cast 那套「法线要顶着扫描方向」的坑没有了）。</para>
+        /// </remarks>
+        private bool ProbeClimb(Vector2 point, float radius, MotionTuning tuning)
+        {
+            if (radius <= 0f) return false;
+
+            var filter = new ContactFilter2D { useTriggers = false };
+            filter.SetLayerMask(tuning.SolidLayer);
+
+            return Physics2D.OverlapCircle(point, radius, filter, _climbHits) > 0;
         }
 
         /// <summary>沿当前「上」方向的反向做一次碰撞体扫描，看脚下有没有支撑面。</summary>
@@ -136,8 +184,15 @@ namespace RuleGame.Gameplay.Player
             public readonly Vector2 Up;
             public readonly bool    JustLanded;
 
+            /// <summary>左侧**中段**贴着可爬的竖墙 —— 贴墙下滑 / 蹬墙跳用它，不用 <see cref="WallLeft"/>。</summary>
+            public readonly bool    ClimbLeft;
+
+            /// <summary>右侧**中段**贴着可爬的竖墙。</summary>
+            public readonly bool    ClimbRight;
+
             public State(bool grounded, bool wallLeft, bool wallRight,
-                         float groundFriction, Vector2 up, bool justLanded)
+                         float groundFriction, Vector2 up, bool justLanded,
+                         bool climbLeft, bool climbRight)
             {
                 Grounded       = grounded;
                 WallLeft       = wallLeft;
@@ -145,6 +200,8 @@ namespace RuleGame.Gameplay.Player
                 GroundFriction = groundFriction;
                 Up             = up;
                 JustLanded     = justLanded;
+                ClimbLeft      = climbLeft;
+                ClimbRight     = climbRight;
             }
         }
     }

@@ -138,8 +138,10 @@ namespace RuleGame.Gameplay.Player
                                            bool dashing, out bool wallSliding)
         {
             Vector2 move = frame.Input.Move;
-            bool pressingIntoWall = (frame.Contact.WallLeft && move.x < -0.01f)
-                                 || (frame.Contact.WallRight && move.x > 0.01f);
+
+            // ⚠️ 用**中段**探针（Climb），不是全高的 Wall —— 矮台 / 台阶不该触发贴墙下滑。
+            bool pressingIntoWall = (frame.Contact.ClimbLeft && move.x < -0.01f)
+                                 || (frame.Contact.ClimbRight && move.x > 0.01f);
 
             // 贴墙能力关掉时，本帧根本不算「在贴墙」—— 竖直轴照常归重力。
             wallSliding = t.WallClimbEnabled

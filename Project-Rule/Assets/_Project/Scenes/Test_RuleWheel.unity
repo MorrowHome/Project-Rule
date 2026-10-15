@@ -236,7 +236,7 @@ MonoBehaviour:
   _attackMask:
     serializedVersion: 2
     m_Bits: 512
-  _attackWindup: 0.12
+  _attackWindup: 0.3
   _attackActive: 0.12
   _attackRecover: 0.3
   _maxCombo: 2

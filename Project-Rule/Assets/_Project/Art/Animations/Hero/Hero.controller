@@ -343,7 +343,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Slash2
-  m_Speed: 1
+  m_Speed: 2.4691358
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -2585354542014143400}
@@ -546,7 +546,7 @@ AnimatorStateTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0.05
+  m_TransitionDuration: 0.02025
   m_TransitionOffset: 0
   m_ExitTime: 1
   m_HasExitTime: 1
@@ -885,7 +885,7 @@ AnimatorStateTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0.05
+  m_TransitionDuration: 0.029454548
   m_TransitionOffset: 0
   m_ExitTime: 1
   m_HasExitTime: 1
@@ -1192,7 +1192,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: DrawSword
-  m_Speed: 1
+  m_Speed: 1.6975307
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 5598692338006989771}
@@ -1299,7 +1299,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Slash1
-  m_Speed: 1
+  m_Speed: 1.6975307
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 9097386757925946091}
@@ -1414,7 +1414,7 @@ AnimatorStateTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0.05
+  m_TransitionDuration: 0.029454548
   m_TransitionOffset: 0
   m_ExitTime: 1
   m_HasExitTime: 1
@@ -1763,7 +1763,7 @@ AnimatorStateTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0.05
+  m_TransitionDuration: 0.029454548
   m_TransitionOffset: 0
   m_ExitTime: 1
   m_HasExitTime: 0

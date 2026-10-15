@@ -196,6 +196,8 @@ namespace RuleGame.Development.P3
                 GUILayout.Label($"贴墙：左={_player.WallLeft} 右={_player.WallRight}"
                                 + (_player.IsWallSliding ? "  ← 缓慢下滑中" : ""));
             if (_player != null)
+                GUILayout.Label($"可爬墙（中段探针）：左={_player.ClimbLeft} 右={_player.ClimbRight}");
+            if (_player != null)
             {
                 // 排查「按键和移动方向对不上」：这里能同时看到**输入**和**换算后的朝向**。
                 // 按右时 Input 的 x 应该是正的；只有「摩擦 × 反转」生效时 Facing 才会与它反号。

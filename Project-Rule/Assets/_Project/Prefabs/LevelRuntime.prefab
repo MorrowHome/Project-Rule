@@ -152,7 +152,9 @@ MonoBehaviour:
   _dashExitSpeedScale: 0.35
   _maxDashes: 1
   _dashCooldown: 0.25
+  _wallClimbEnabled: 1
   _wallProbeDistance: 0.08
+  _wallClimbProbeRadius: 0.06
   _wallSlideSpeed: 6
   _wallSlideImpactDecel: 60
   _wallJumpPushSpeed: 9
@@ -174,7 +176,7 @@ MonoBehaviour:
   _attackMask:
     serializedVersion: 2
     m_Bits: 512
-  _attackWindup: 0.12
+  _attackWindup: 0.3
   _attackActive: 0.12
   _attackRecover: 0.3
   _maxCombo: 2
@@ -218,6 +220,10 @@ MonoBehaviour:
   _testDamage: 10
   _testKnockback: 6
   _attackFrom: {fileID: 0}
+  _velocityLogInterval: 0.1
+  _detectFrozenMotion: 1
+  _frozenSpeedThreshold: 1
+  _frozenLogInterval: 0.5
 --- !u!70 &6857249214650424030
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -380,7 +386,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: acd85ae573534cc48ac9fc5bbfbf56f3, type: 3}
+  m_Sprite: {fileID: 4239126994550403861, guid: 0bc3c4954e5f7304db7eba4b1a527590, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
