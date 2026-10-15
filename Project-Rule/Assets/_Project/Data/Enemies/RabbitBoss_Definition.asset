@@ -17,11 +17,33 @@ MonoBehaviour:
   BodySize: {x: 2, y: 3}
   Health: 100
   Damage: 10
+  ContactDamage: 1
+  ContactInterval: 0.6
+  ContactPadding: 0.05
   Energy: 100
   EnergyRegen: 2
+  RuleAttribute: 0
+  RuleRelation: 4
   MoveSpeed: 2.5
   AttackRange: 3.5
   AttackCooldown: 1.8
+  BossRestDuration: 1.8
+  ClockBeamVolleysBeforeRest: 2
+  BrickAdvanceDuration: 0.9
+  BrickAdvanceSpeedMultiplier: 2.2
+  BrickAdvanceCooldown: 4
+  BrickComboLimit: 2
+  ClockChargeDuration: 1.15
+  ClockChargeSpeedMultiplier: 3.5
+  ClockChargeCooldown: 7
+  ClockBeamWarning: 0.7
+  ClockBeamSpread: 14
+  RabbitBurrowDuration: 1
+  RabbitBurrowSpeedMultiplier: 2.8
+  RabbitBurrowCooldown: 5
+  RabbitEscapeDistance: 2.8
+  RabbitBurstCount: 2
+  RabbitBurstInterval: 0.35
   PreferredDistance: 5
   SpacingTolerance: 0.6
   RangedRange: 9
@@ -32,10 +54,58 @@ MonoBehaviour:
   BossHurtDuration: 0.45
   GravityScale: 1
   Flying: 0
+  FlightAcceleration: 24
+  BatOrbitDistance: 4.5
+  BatHoverHeight: 3
+  BatDashCooldown: 4
+  BatDashWindup: 0.5
+  BatDashDuration: 0.65
+  BatEvadeCooldown: 2.5
+  BatEvadeDuration: 0.65
+  BatRecoverDuration: 0.45
+  BatApproachDistance: 2.5
+  BatApproachHeight: 0.8
+  BatApproachDuration: 2.4
+  BatApproachSpeedMultiplier: 1.15
+  BatRestHeightRatio: 0.8
+  BatRestPatrolDistance: 2.5
+  BatRestSpeedMultiplier: 0.85
   ImpactFraction: 0.6
   RabbitCycle: 20
   RabbitThrowInterval: 2
   ClockHourInterval: 12
+  ClockMinuteInterval: 6
+  ClockSecondInterval: 3
   ClockCoreWindow: 3
   ClockCoreHealth: 15
-  Timings: []
+  Timings:
+  - Action: Pop
+    Duration: 3.625
+  - Action: Throw
+    Duration: 2
+  - Action: Hide
+    Duration: 1.25
+  - Action: Turn
+    Duration: 1.75
+  - Action: Flight
+    Duration: 0.5
+  - Action: Dead
+    Duration: 1
+  - Action: HatWobble
+    Duration: 0.75
+  - Action: Walk
+    Duration: 1.125
+  - Action: Burrow
+    Duration: 1.125
+  - Action: Idle
+    Duration: 0.2
+  - Action: Hurt
+    Duration: 0.2
+  - Action: Flip
+    Duration: 3
+  - Action: FlipThrow
+    Duration: 0.5
+  - Action: HideThrow
+    Duration: 5.625
+  - Action: Magic
+    Duration: 5.625

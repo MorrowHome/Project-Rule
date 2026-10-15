@@ -27,8 +27,8 @@ Transform:
   m_GameObject: {fileID: 711937413678346375}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 2, y: 3, z: 1}
+  m_LocalPosition: {x: 0, y: -1.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 859637739978463828}
@@ -82,8 +82,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 5
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -3209511910272548094, guid: f9113bda5603fba42b3acc164cb94477, type: 3}
-  m_Color: {r: 0.65, g: 0.62, b: 0.56, a: 1}
+  m_Sprite: {fileID: 21300000, guid: d982437617a6d4fff93d95e0dd0d68e5, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -103,7 +103,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8f755534787511b41b4052304be8c5cb, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.Enemy.EnemySpriteAnimator
   Actor: {fileID: 215027207439530412}
   AnimationSet: {fileID: 11400000, guid: f6381f289a3eef649bb412fbe2992487, type: 2}
@@ -229,7 +229,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5b17e5f0fb818991d232565fec6e1d5, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Player.EntityStatus
   _energyMax: 100
   _energy: 100
@@ -246,7 +246,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 03f81f7abaebd04478283970d8cfbc34, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Enemy.EnemyMotor
   SolidMask:
     serializedVersion: 2
@@ -261,7 +261,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e367a6432c3bc2049834a74d9b8f8f63, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Enemy.EnemyActor
   Definition: {fileID: 11400000, guid: 4b9dbd6d3374a4342af4f3d27f35a4d1, type: 2}
   Target: {fileID: 0}
@@ -273,10 +273,11 @@ MonoBehaviour:
   PlayerMask:
     serializedVersion: 2
     m_Bits: 1
-  ProjectileSprite: {fileID: 21300000, guid: 36b2976af0b0e39468f739a7537ef56e, type: 3}
+  ProjectileSprite: {fileID: 21300000, guid: 5b03d561158084303bbd97618cd85c2c, type: 3}
   BeamOrigin: {fileID: 0}
   RuntimeSpawned: 0
   ArenaX: {x: -12, y: 12}
+  ArenaY: {x: 0, y: 10}
 --- !u!114 &1443321523564181749
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -287,7 +288,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a7085f702f0e4752bd2383e7a2978b8b, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Common.RuleAffectedBody
   _applyFriction: 1
   _applyMass: 1

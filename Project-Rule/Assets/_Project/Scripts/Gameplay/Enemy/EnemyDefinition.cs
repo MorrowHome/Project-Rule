@@ -57,6 +57,13 @@ namespace RuleGame.Gameplay.Enemy
         [Min(1f)] public float RabbitEscapeDistance = 2.8f;
         [Range(1, 3)] public int RabbitBurstCount = 2;
         [Min(0.2f)] public float RabbitBurstInterval = 0.35f;
+        [Header("兔子瞄准与飞行战术")]
+        [Min(0.6f)] public float RabbitRepositionDuration = 2f;
+        [Min(0.1f)] public float RabbitAimLockLead = 0.35f;
+        [Min(1f)] public float RabbitAirHeight = 2.4f;
+        [Min(0.5f)] public float RabbitAirMoveDuration = 1.8f;
+        [Min(1f)] public float RabbitAirSpeedMultiplier = 1.6f;
+        [Range(5f, 40f)] public float RabbitFanAngle = 18f;
         [Header("Boss 距离控制")]
         [Min(0.5f)] public float PreferredDistance = 5f;
         [Min(0.1f)] public float SpacingTolerance = 0.6f;

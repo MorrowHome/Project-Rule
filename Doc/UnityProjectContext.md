@@ -74,6 +74,10 @@ manifest 已有 Coplay Unity MCP，仓库 `.mcp.json` 指向 `localhost:8080/mcp
 
 2026-10-16 用户再次反馈乱跑瞬移，最终取消时钟 JumpShake 完成时的隐式 CastRule，直接从当前位置进入 Charge。此前恢复修订计数只防止旧回调覆盖恢复结果，并未去掉起跑前的全局回溯，不能满足乱跑起点连续的要求；该计数已删除。保留 Definition 的用户配置和显式施法语义，不修改 TimeRule/SnapshotSystem 或为施法者添加免疫。RunClockRewindBatch 的定向用例改为：有/无历史缓冲时起点一致、不扣施法能量、锁向正确、实际物理步连续移动、缓冲未被消耗，以及显式反转仍回溯/扣费。修复前复现有缓冲时回到历史位置；修复后 Unity 6000.6.4f1 隔离 Play Mode 中 14 项通过，日志 /tmp/rule-clock-charge-fixed.log，计数 Logs/ClockChargeValidation.txt。未重跑独立指针或全量战斗检查。
 
+2026-10-16 接入补交的兔子 111 张 PNG：正式 RabbitBoss Prefab、18 个动作/辅助序列和三类双帧投掷物，原画按 8 fps 播放。固定画布脚底锚点保留跳跃，藏身改为空帽跳跃；Flip 先缩回再反转，二阶段持续显示倒置帽子，Dead 完整播放后停用。投掷间隔延长时，弹体仍在原画第 12 帧附近出手。三类白底投掷物仅生成透明裁切运行时副本，交付原件和身体 PNG 字节不变。新增 import_rabbit.py 与保留参数的兔子单独导入菜单，通用资源/特效重建保留兔子接线。使用真实 Prefab、动画与组件的隔离 Play Mode 定向验证 58 项通过、退出码 0，覆盖播放、出手、自定义间隔、藏身、阶段、暂停、池复用、快照和死亡；原工程兔子白盒也已进入 Play 观察到冒出、施法与翻转起手。日志 /tmp/rule-rabbit-animation-validation.log，结果 Project-Rule/Logs/RabbitAnimationValidation.txt。隔离工程出现既有 UnityEditor.Search.SearchDatabase 索引异常；无新增 C# 编译错误，未执行 Player 构建或全套战斗平衡验证。
+
+2026-10-16 在兔子交付资源基础上强化 AI：目标超射程时持续追近；投掷先跟踪、出手前 0.35 秒锁定，按距离和高度选弹珠平射/跳棋高抛。藏帽只沿锁定路线向外撤退，墙角无空间就反击；冒出动画结束后保留完整撤退冷却，避免反复藏身。翻转后由实例 Brain.IsFlying 驱动 EnemyMotor 实际升空换侧，不改共享 Definition；用鸭子打两轮三发交错扇形，结束后悬停休息且仍可受伤。飞行路线与弹道选择参加快照，回溯到第一阶段恢复地面模式。新增六项中文 Inspector 参数。用户提供路径的 111 张运行时帧已核对来源哈希，身体原件未改，其它角色清单未改。本轮只运行 RunRabbitTacticsBatch：Unity 6000.6.4f1 独立副本 /tmp/rule-rabbit-ai-20261016 中 23 项通过，含真实物理升空、实际精灵选择、平射/高抛、墙角反击、撤退冷却、扇形角度、休息/暂停/快照；日志 /tmp/rule-rabbit-ai.log。前述 58 项资源播放检查为接入时的历史结果，本轮未重跑。同期时钟发射器等改动不纳入本次提交。
+
 ## 证据
 
 `CLAUDE.md`、`Doc/系统模块架构.md`、`Doc/敌人系统接入.md`；工程内 `Packages/manifest.json`、`ProjectSettings/{ProjectVersion.txt,QualitySettings.asset,GraphicsSettings.asset,EditorBuildSettings.asset,ProjectSettings.asset}`；一方 `.asmdef`；`Scripts/Gameplay/Enemy/*.cs`、`Gameplay/Player/EntityStatus.cs`、`PlayerController.cs`、`RuleReleaseService.cs`、`Scripts/Editor/Enemy/EnemyLabBuilder.cs`、`Scripts/Rules/RuleSystemDriver.cs`。

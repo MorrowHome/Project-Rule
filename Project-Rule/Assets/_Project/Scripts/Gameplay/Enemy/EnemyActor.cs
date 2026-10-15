@@ -35,6 +35,7 @@ namespace RuleGame.Gameplay.Enemy
         public EntityStatus Status { get; private set; }
         public EnemyMotor Motor { get; private set; }
         public EnemyBrain Brain { get; private set; }
+        public bool IsFlying => Brain?.IsFlying ?? (Definition != null && Definition.Flying);
         public bool HasTarget => Target != null && Target.gameObject.activeInHierarchy;
         public Faction Faction => Faction.Enemy;
         public string AnimationName { get; private set; } = "Idle";
@@ -166,9 +167,9 @@ namespace RuleGame.Gameplay.Enemy
             Combat.PerformAttack(this, center, new Vector2(reach, Definition.BodySize.y * 0.8f),
                 PlayerMask, Definition.Damage, 5f, _swingTargets);
         }
-        public void Shoot(Vector2 direction, float speed = 8f, float gravity = 0f, float radius = 0.22f)
+        public void Shoot(Vector2 direction, float speed = 8f, float gravity = 0f, float radius = 0.22f, int visualIndex = -1)
         {
-            if (HasTarget) EnemyProjectile.Spawn(this, direction, speed, gravity, radius);
+            if (HasTarget) EnemyProjectile.Spawn(this, direction, speed, gravity, radius, visualIndex);
         }
         public void Beam(float angle, float width, float warning = 0.65f)
         {

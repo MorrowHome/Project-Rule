@@ -172,8 +172,13 @@ def main():
         manifest["frames"].append({"path": path, "source": str(source.relative_to(ROOT)).replace("\\", "/"),
             "width": width, "height": height, "pivotX": x, "pivotY": y, "ppu": clock_height / 3.0})
         manifest["sequences"].append({"actor": "ClockBoss", "action": "Hand" + str(index), "facesRight": True, "frames": [path]})
-    (DEST / "EnemyArtManifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"Copied {len(manifest['frames'])} frames; {len(manifest['sequences'])} sequences. Rabbit folder is empty.")
+    manifest_path = DEST / "EnemyArtManifest.json"
+    if manifest_path.exists():
+        previous = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["frames"] += [f for f in previous["frames"] if "/RabbitBoss/" in f["path"]]
+        manifest["sequences"] += [s for s in previous["sequences"] if s["actor"] == "RabbitBoss"]
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"Copied {len(manifest['frames'])} frames; {len(manifest['sequences'])} sequences.")
 
 
 if __name__ == "__main__":

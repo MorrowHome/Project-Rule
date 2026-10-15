@@ -27,9 +27,10 @@ namespace RuleGame.Gameplay.Enemy
         protected bool IsResting => RestRemaining > 0f;
         public string StateName => Root.ActiveStateName == "Alive" ? Actions.ActiveStateName : TransitionName;
         public virtual bool DamageLocked => false;
+        public virtual bool IsFlying => Config.Flying;
         protected bool HasTarget => Actor.HasTarget;
         protected bool IsBoss => Config.Kind != EnemyKind.BrickMinion && Config.Kind != EnemyKind.BatMinion;
-        protected float CombatDistance => !HasTarget ? float.PositiveInfinity : Config.Flying
+        protected float CombatDistance => !HasTarget ? float.PositiveInfinity : Actor.IsFlying
             ? Actor.Distance : Mathf.Abs(Actor.Target.position.x - Actor.transform.position.x);
         protected bool TargetInMeleeRange => HasTarget && CombatDistance <= Config.AttackRange
             && Mathf.Abs(Actor.Target.position.y - Actor.transform.position.y) <= Config.BodySize.y * 0.4f;

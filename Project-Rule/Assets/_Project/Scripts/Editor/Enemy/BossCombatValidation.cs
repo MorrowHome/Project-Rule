@@ -22,6 +22,7 @@ namespace RuleGame.Editor.Enemy
     {
         private const string Pending = "RuleGame.Enemy.CombatValidation";
         private const string Tactics = "RuleGame.Enemy.TacticsValidation";
+        private const string RabbitTactics = "RuleGame.Enemy.RabbitTacticsValidation";
         private const string ClockHands = "RuleGame.Enemy.ClockHandsValidation";
         private const string ClockRewind = "RuleGame.Enemy.ClockRewindValidation";
         private const string SnapshotCamera = "RuleGame.Enemy.SnapshotCameraValidation";
@@ -32,6 +33,12 @@ namespace RuleGame.Editor.Enemy
         private static bool _tactics;
         private static string Output => Environment.GetEnvironmentVariable("RULE_BOSS_OUTPUT")
             ?? Path.GetFullPath(Path.Combine(Application.dataPath, _tactics ? "../Logs/BossTacticsValidation.txt" : "../Logs/BossCombatValidation.txt"));
+
+        public static void RunRabbitTacticsBatch()
+        {
+            SessionState.SetBool(RabbitTactics, true);
+            RunBatch();
+        }
 
         public static void RunClockHandsBatch()
         {
@@ -83,6 +90,12 @@ namespace RuleGame.Editor.Enemy
             else RuleSystem.Initialize(ScriptableObject.CreateInstance<RuleCatalog>());
             _deadline = EditorApplication.timeSinceStartup + 30;
             _tactics = SessionState.GetBool(Tactics, false);
+            if (SessionState.GetBool(RabbitTactics, false))
+            {
+                AddRabbitTacticsCases();
+                EditorApplication.update += AwaitReady;
+                return;
+            }
             if (SessionState.GetBool(ClockHands, false))
             {
                 AddClockHandCases();
@@ -334,6 +347,142 @@ namespace RuleGame.Editor.Enemy
                 Check(a.Brain.StateName == "Weak", "阶段过渡优先于普通休息");
             });
             EditorApplication.update += AwaitReady;
+        }
+
+        private static void AddRabbitCase(Action<EnemyActor> test)
+            => Add(EnemyKind.RabbitBoss, test, config =>
+            {
+                var delivered = AssetDatabase.LoadAssetAtPath<EnemyDefinition>("Assets/_Project/Data/Enemies/RabbitBoss_Definition.asset");
+                if (delivered == null) throw new InvalidOperationException("缺少已交付兔子定义");
+                config.Health = 100f; config.Energy = 0f;
+                config.BodySize = delivered.BodySize;
+                config.Timings = (EnemyActionTiming[])delivered.Timings.Clone();
+            });
+        private static void RabbitFlip(EnemyActor actor)
+        {
+            actor.Status.ApplyHealthDelta(50f - actor.Status.Health);
+            Step(actor); Step(actor, actor.AnimationDuration + .01f);
+        }
+        private static void AddRabbitTacticsCases()
+        {
+            AddRabbitCase(a =>
+            {
+                Target(a, 14); int shots = 0;
+                a.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.ProjectileSpawn) shots++; };
+                Step(a, a.AnimationDuration + .01f); Step(a, .1f);
+                Check(a.Brain.StateName == "Reposition" && a.Motor.Intent.x > 0f, "兔子远处先主动追近，不站桩播放空投掷");
+                Step(a, a.Definition.RabbitRepositionDuration + .01f);
+                Check(a.Brain.StateName == "Reposition" && shots == 0, "目标仍超射程时持续换位，不进入攻击休息死循环");
+            });
+            AddRabbitCase(a =>
+            {
+                Target(a, 6); EnemyProjectile shot = null;
+                a.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.ProjectileSpawn) shot = (EnemyProjectile)cue.Subject; };
+                Step(a, a.AnimationDuration + .01f); Target(a, 8); Step(a, .8f);
+                Target(a, -8); Step(a, .4f);
+                Check(shot == null, "原画出手前留出可躲避的锁定窗口");
+                Step(a, .31f);
+                Check(shot != null && shot.Velocity.x > 0f && shot.VisualIndex == 0 && shot.Gravity < .3f,
+                    "平射弹珠跟踪起手期间的位置，锁定后不追踪玩家换边");
+            });
+            AddRabbitCase(a =>
+            {
+                Target(a, 6, 4); EnemyProjectile shot = null;
+                a.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.ProjectileSpawn) shot = (EnemyProjectile)cue.Subject; };
+                Step(a, a.AnimationDuration + .01f); Step(a, 1.51f);
+                Check(shot != null && shot.VisualIndex == 1 && shot.Gravity > .5f && shot.Velocity.y > 0f,
+                    "高处目标改用跳棋高抛，不只按固定轮次换弹");
+            });
+            AddRabbitCase(a =>
+            {
+                a.transform.position = new Vector3(10.8f, 2f, 0f); Target(a, -2);
+                Step(a, .6f); Step(a, a.AnimationDuration + .01f);
+                Check(a.Brain.StateName == "HideThrow", "墙角无撤退空间时原地反击，不倒退穿过玩家");
+                EnemyProjectile shot = null;
+                a.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.ProjectileSpawn) shot = (EnemyProjectile)cue.Subject; };
+                Step(a, 5.14f);
+                Check(shot != null && shot.VisualIndex == 1 && shot.Velocity.x < 0f,
+                    "墙角反击完整冒出后向玩家高抛");
+            });
+            AddRabbitCase(a =>
+            {
+                Target(a, 2); Step(a, .6f); Step(a, a.AnimationDuration + .01f); Step(a);
+                Check(a.Brain.StateName == "Burrow" && a.Motor.Intent.x < 0f, "近身先缩回再用空帽跳跃撤退");
+                object saved = a.CaptureSnapshotState(); Target(a, -2); Step(a);
+                Check(a.Motor.Intent.x < 0f, "撤退路线不随玩家穿越而抽搐换向");
+                Target(a, 2); Step(a, a.Definition.RabbitBurrowDuration + .01f);
+                Step(a, a.AnimationDuration + .01f); Step(a);
+                Check(a.Brain.StateName == "Throw", "长冒出动画结束后保留撤退冷却，避免无限藏帽不反击");
+                a.RestoreSnapshotState(saved); Step(a);
+                Check(a.Brain.StateName == "Burrow" && a.Motor.Intent.x < 0f && !a.IsFlying,
+                    "快照恢复地面撤退路线与移动模式");
+            });
+            AddRabbitCase(a =>
+            {
+                a.transform.position = new Vector3(0f, 2f, 0f);
+                var body = a.GetComponent<Rigidbody2D>(); body.position = a.transform.position;
+                a.GetComponent<BoxCollider2D>().size = a.Definition.BodySize;
+                Target(a, 6); RabbitFlip(a);
+                Check(a.Brain.StateName == "AirReposition" && a.IsFlying && !a.Definition.Flying,
+                    "翻转后启用实例飞行，不改共享定义或只有飞行外观");
+                var visual = new GameObject("RabbitVisual"); visual.SetActive(false);
+                visual.transform.SetParent(a.transform, false); visual.transform.localPosition = Vector3.down * 1.5f;
+                var renderer = visual.AddComponent<SpriteRenderer>();
+                var animator = visual.AddComponent<EnemySpriteAnimator>(); animator.Actor = a;
+                animator.AnimationSet = AssetDatabase.LoadAssetAtPath<EnemyAnimationSet>("Assets/_Project/Data/Enemies/RabbitBoss_Animations.asset");
+                visual.SetActive(true); animator.SendMessage("LateUpdate");
+                var flight = Array.Find(animator.AnimationSet.Sequences, sequence => sequence.Action == "Flight");
+                Check(flight.NativeFrameRate && flight.FrameRate == 8f && Array.IndexOf(flight.Frames, renderer.sprite) >= 0,
+                    "翻转换侧使用交付的原生八帧飞行序列");
+                var snapshots = SnapshotsFor(a); var saved = snapshots.Capture();
+                Vector2 start = body.position;
+                var floor = new GameObject("RabbitFlightFloor"); floor.layer = 8;
+                floor.transform.position = new Vector3(0f, 0f, 0f);
+                floor.AddComponent<BoxCollider2D>().size = new Vector2(40f, 1f);
+                a.PlayerMask = 0; Physics2D.SyncTransforms();
+                SimulationMode2D previousMode = Physics2D.simulationMode;
+                try
+                {
+                    Physics2D.simulationMode = SimulationMode2D.Script;
+                    for (int i = 0; i < 20; i++) { Step(a); a.Motor.Tick(.02f); Physics2D.Simulate(.02f); }
+                    Check(body.position.y > start.y + .6f && body.position.y < a.ArenaY.y - a.Definition.BodySize.y * .5f,
+                        "真实物理升空换位且留在场地高度范围");
+                }
+                finally { Physics2D.simulationMode = previousMode; }
+                snapshots.Restore(saved); Step(a); Vector2 route = a.Motor.Intent;
+                Target(a, -6); Step(a);
+                Check(a.IsFlying && a.Brain.StateName == "AirReposition" && Vector2.Dot(route, a.Motor.Intent) > .99f,
+                    "飞行快照恢复后保持锁定路线，不瞬移追踪换边");
+                a.Target.gameObject.SetActive(false); Step(a);
+                Check(a.Motor.Intent == Vector2.zero, "丢失目标停止飞行追击");
+            });
+            AddRabbitCase(a =>
+            {
+                Target(a, 6); RabbitFlip(a); Target(a, 0, -2);
+                Step(a, a.Definition.RabbitAirMoveDuration + .01f);
+                var velocities = new List<Vector2>(); var variants = new List<int>();
+                a.Feedback += cue =>
+                {
+                    if (cue.Kind != EnemyFeedbackKind.ProjectileSpawn) return;
+                    var shot = (EnemyProjectile)cue.Subject; velocities.Add(shot.Velocity); variants.Add(shot.VisualIndex);
+                };
+                Step(a, .36f);
+                Check(velocities.Count == 3 && variants.TrueForAll(index => index == 2), "第二阶段用鸭子打三发扇形压制");
+                Check(Mathf.Abs(velocities[0].x - velocities[2].x) > 2f, "向下攻击时三发仍有角度展开，不重叠为一条线");
+                Step(a, a.Definition.RabbitBurstInterval + .01f);
+                Check(velocities.Count == 6, "散射仅按配置发两轮，保留间隔");
+                Step(a, a.AnimationDuration + .01f);
+                Check(a.Brain.StateName == "Rest" && a.Motor.Intent == Vector2.zero && a.IsFlying,
+                    "空中散射结束悬停休息，不连续追打");
+                float health = a.Status.Health;
+                a.ApplyDamage(new DamageInfo { Amount = 10f });
+                Check(a.Status.Health == health - 10f && a.Brain.StateName == "Rest", "空中休息仍可被玩家反击，没有新增无敌");
+                float age = a.Brain.SimulationAge; object saved = a.CaptureSnapshotState();
+                a.Status.SetPaused(true); Step(a, 5); a.Status.SetPaused(false);
+                Check(a.Brain.SimulationAge == age, "暂停冻结兔子换位和散射时钟");
+                Step(a, a.Brain.RestRemaining + .01f); Step(a, .1f); a.RestoreSnapshotState(saved);
+                Check(a.IsFlying && a.Brain.StateName == "Rest", "快照恢复飞行阶段及剩余喘息");
+            });
         }
 
         private static void AddClockHandCase(Action<EnemyActor> test)
@@ -806,6 +955,7 @@ namespace RuleGame.Editor.Enemy
             SessionState.SetBool(SnapshotCamera, false);
             SessionState.SetBool(ClockRewind, false);
             SessionState.SetBool(ClockHands, false);
+            SessionState.SetBool(RabbitTactics, false);
             if (error != null) { _failed++; Debug.LogError(error); }
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(Output)));
             File.WriteAllText(Output, $"Passed: {_passed}\nFailed: {_failed}\n{error}\n");

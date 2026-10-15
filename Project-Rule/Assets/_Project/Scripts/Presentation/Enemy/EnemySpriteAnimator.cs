@@ -49,7 +49,10 @@ namespace RuleGame.Presentation.Enemy
         private void Select()
         {
             _time = 0f;
-            _sequences.TryGetValue(Actor.AnimationName, out _current);
+            string action = Actor.AnimationName;
+            if (Actor.Definition.Kind == EnemyKind.RabbitBoss && Actor.Brain?.Phase >= 2
+                && action != "Dead" && action != "Flip") action = "Flight";
+            _sequences.TryGetValue(action, out _current);
             if (_current == null) _sequences.TryGetValue("Idle", out _current);
         }
         private void RestoreTime() { Select(); _time = Actor.Brain?.ActionElapsed ?? 0f; }
@@ -60,7 +63,8 @@ namespace RuleGame.Presentation.Enemy
             if (_current != null && _current.Frames.Length > 0)
             {
                 float duration = Mathf.Max(0.05f, Actor.AnimationDuration);
-                int frame = Mathf.FloorToInt(_time / duration * _current.Frames.Length);
+                int frame = Mathf.FloorToInt(_current.NativeFrameRate
+                    ? _time * _current.FrameRate : _time / duration * _current.Frames.Length);
                 frame = Actor.AnimationLoop ? frame % _current.Frames.Length : Mathf.Min(frame, _current.Frames.Length - 1);
                 _renderer.sprite = _current.Frames[frame];
                 _renderer.flipX = (Actor.Facing < 0f) == _current.FacesRight;
@@ -70,9 +74,10 @@ namespace RuleGame.Presentation.Enemy
                     if (_renderer.flipX) _clockFace.x = -_clockFace.x;
                 }
             }
-            SetBurrowed(Actor.Definition.Kind == EnemyKind.RabbitBoss && Actor.Brain?.StateName == "Burrow");
+            SetBurrowed(Actor.Definition.Kind == EnemyKind.RabbitBoss && Actor.Brain?.StateName == "Burrow"
+                && !_sequences.ContainsKey("Burrow"));
             // 始终从原始锚点计算，避免重力反转时累计位移或改变碰撞体比例。
-            bool inverted = !Actor.Definition.Flying && Actor.Motor.Up.y < 0f;
+            bool inverted = !Actor.IsFlying && Actor.Motor.Up.y < 0f;
             transform.localPosition = inverted ? new Vector3(_anchor.x, -_anchor.y, _anchor.z) : _anchor;
             transform.localRotation = Quaternion.Euler(0f, 0f, inverted ? 180f : 0f);
         }

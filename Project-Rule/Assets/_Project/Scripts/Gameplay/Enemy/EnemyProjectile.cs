@@ -16,6 +16,7 @@ namespace RuleGame.Gameplay.Enemy
         private SpriteRenderer _renderer;
         private Vector2 _velocity;
         private float _gravity, _radius, _age;
+        private int _visualIndex;
         private bool _inPool;
         private readonly RaycastHit2D[] _hits = new RaycastHit2D[8];
         public bool DiscardWhenMissing => true;
@@ -23,8 +24,10 @@ namespace RuleGame.Gameplay.Enemy
         public Vector2 Velocity => _velocity;
         public float Radius => _radius;
         public float Gravity => _gravity;
+        public float Age => _age;
+        public int VisualIndex => _visualIndex;
 
-        public static void Spawn(EnemyActor source, Vector2 direction, float speed, float gravity, float radius)
+        public static void Spawn(EnemyActor source, Vector2 direction, float speed, float gravity, float radius, int visualIndex = -1)
         {
             if (source.Target == null || source.Defeated) return;
             EnemyProjectile shot = null;
@@ -45,6 +48,8 @@ namespace RuleGame.Gameplay.Enemy
                 go.AddComponent<RuleAffectedBody>();
             }
             shot._source = source; shot._age = 0f; shot._gravity = gravity; shot._radius = radius;
+            shot._visualIndex = visualIndex >= 0 ? Mathf.Clamp(visualIndex, 0, 2)
+                : Mathf.FloorToInt((source.Brain?.SimulationAge ?? 0f) * 8f) % 3;
             shot._velocity = direction.normalized * speed; shot._inPool = false;
             shot.transform.position = source.transform.position;
             if (gravity == 0f && radius >= 0.3f)
@@ -92,12 +97,13 @@ namespace RuleGame.Gameplay.Enemy
             }
             _body.MovePosition(_body.position + _velocity * dt);
         }
-        private struct Data { public EnemyActor Source; public Vector2 Velocity; public float Age, Gravity, Radius; }
-        public object CaptureSnapshotState() => new Data { Source = _source, Velocity = _velocity, Age = _age, Gravity = _gravity, Radius = _radius };
+        private struct Data { public EnemyActor Source; public Vector2 Velocity; public float Age, Gravity, Radius; public int VisualIndex; }
+        public object CaptureSnapshotState() => new Data { Source = _source, Velocity = _velocity, Age = _age, Gravity = _gravity, Radius = _radius, VisualIndex = _visualIndex };
         public void RestoreSnapshotState(object state)
         {
             if (!(state is Data data)) return;
             _source = data.Source; _velocity = data.Velocity; _age = data.Age; _gravity = data.Gravity; _radius = data.Radius;
+            _visualIndex = data.VisualIndex;
             transform.localScale = Vector3.one * _radius * 2f;
             if (_source != null) _renderer.sprite = _source.ProjectileSprite;
         }

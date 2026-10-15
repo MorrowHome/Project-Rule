@@ -11,6 +11,8 @@ namespace RuleGame.Presentation.Enemy
         public Material BeamMaterial;
         public Material BeamCoreMaterial;
         public Sprite ProjectileSprite;
+        public EnemySpriteSequence[] ProjectileAnimations = System.Array.Empty<EnemySpriteSequence>();
+        public Material ProjectileMaterial;
         public Color Accent = new Color(1f, .6f, .2f);
         public Color Secondary = new Color(.85f, .35f, .1f);
         [Min(.1f)] public float ImpactSize = 6f;

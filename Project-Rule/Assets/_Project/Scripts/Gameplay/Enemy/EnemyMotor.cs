@@ -34,6 +34,7 @@ namespace RuleGame.Gameplay.Enemy
         {
             if (_actor.Definition == null || dt <= 0f) return;
             EnemyDefinition config = _actor.Definition;
+            bool flying = _actor.IsFlying;
             if (Physics2D.gravity.sqrMagnitude > 0.001f) Up = -Physics2D.gravity.normalized;
             var filter = new ContactFilter2D { useTriggers = false };
             filter.SetLayerMask(SolidMask);
@@ -46,11 +47,11 @@ namespace RuleGame.Gameplay.Enemy
             float direction = Intent.x;
             var attributes = RuleSystem.Instance?.Attributes;
             if (Grounded && attributes != null && attributes.Values.FrictionInverted) direction = -direction;
-            float acceleration = config.Flying ? Mathf.Max(35f, config.FlightAcceleration) : 35f;
+            float acceleration = flying ? Mathf.Max(35f, config.FlightAcceleration) : 35f;
             if (Grounded && attributes != null)
                 acceleration *= Mathf.Max(0.02f, attributes.Values.FrictionScale);
             velocity.x = Mathf.MoveTowards(velocity.x, direction * config.MoveSpeed * SpeedMultiplier, acceleration * dt);
-            if (config.Flying && !_actor.Defeated)
+            if (flying && !_actor.Defeated)
                 velocity.y = Mathf.MoveTowards(velocity.y, Intent.y * config.MoveSpeed * SpeedMultiplier,
                     Mathf.Max(1f, config.FlightAcceleration) * dt);
             else
@@ -75,7 +76,7 @@ namespace RuleGame.Gameplay.Enemy
                 layerMask = SolidMask | _actor.PlayerMask, useAttachedTriggers = false, useSimulationMove = true
             };
             // 飞行实体不能使用 Slide 的默认贴地吸附，否则落地后向上飞仍会被拉回地面。
-            if (config.Flying) movement.surfaceAnchor = Vector2.zero;
+            if (flying) movement.surfaceAnchor = Vector2.zero;
             var slide = _body.Slide(velocity + _impulse, dt, movement);
             if (slide.slideHit.collider != null)
             {

@@ -13,6 +13,8 @@ namespace RuleGame.Presentation.Enemy
         private TrailRenderer _trail;
         private EnemyVfxProfile _profile;
         private EnemyActor _source;
+        private EnemySpriteSequence ProjectileAnimation => _profile != null && _profile.ProjectileAnimations.Length > 0
+            ? _profile.ProjectileAnimations[_shot.VisualIndex % _profile.ProjectileAnimations.Length] : null;
         private void Awake() => _shot = GetComponent<EnemyProjectile>();
         public void Configure(EnemyVfxProfile profile)
         {
@@ -29,10 +31,12 @@ namespace RuleGame.Presentation.Enemy
             _source = _shot.Source;
             if (_source != null) _source.Restored += OnRestore;
             // Shot 是带透明收尾的一次性发射闪光；飞行弹体必须保持独立弹芯，不能循环该序列。
-            _body.sprite = profile.ProjectileSprite;
+            EnemySpriteSequence animation = ProjectileAnimation;
+            _body.sprite = animation != null && animation.Frames.Length > 0 ? animation.Frames[0] : profile.ProjectileSprite;
             _body.enabled = true;
-            _body.sharedMaterial = profile.Material;
-            _body.color = profile.Accent;
+            _body.sharedMaterial = animation != null && profile.ProjectileMaterial != null
+                ? profile.ProjectileMaterial : profile.Material;
+            _body.color = animation != null ? Color.white : profile.Accent;
             if (_trail == null)
             {
                 _trail = gameObject.AddComponent<TrailRenderer>();
@@ -78,6 +82,12 @@ namespace RuleGame.Presentation.Enemy
                 }
             }
             if (_profile == null) return;
+            EnemySpriteSequence animation = ProjectileAnimation;
+            if (animation != null && animation.Frames.Length > 0)
+            {
+                int frame = Mathf.FloorToInt(_shot.Age * animation.FrameRate) % animation.Frames.Length;
+                _body.sprite = animation.Frames[frame];
+            }
             // 已发射弹体继续独立飞行，不跟随发射者的单体暂停。
             bool paused = TimeManager.Instance?.IsPaused == true;
             _trail.emitting = !paused;
@@ -87,7 +97,8 @@ namespace RuleGame.Presentation.Enemy
             bool ground = _shot.Gravity == 0f && _shot.Radius >= .3f;
             _body.transform.localRotation = Quaternion.Euler(0f, 0f, ground ? 0f :
                 Mathf.Atan2(_shot.Velocity.y, _shot.Velocity.x) * Mathf.Rad2Deg);
-            _body.transform.localScale = ground ? new Vector3(1.7f, .8f, 1f) : Vector3.one * 1.7f;
+            _body.transform.localScale = animation != null ? Vector3.one
+                : ground ? new Vector3(1.7f, .8f, 1f) : Vector3.one * 1.7f;
         }
     }
 }

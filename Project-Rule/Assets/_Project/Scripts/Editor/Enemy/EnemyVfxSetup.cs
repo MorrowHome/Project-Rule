@@ -54,6 +54,11 @@ namespace RuleGame.Editor.Enemy
                 profile.SlashSize = 5.2f; profile.CastSize = kind == EnemyKind.ClockBoss ? 7f : 5.5f;
                 profile.CameraImpulse = kind == EnemyKind.BrickBoss ? .12f : .07f;
                 EditorUtility.SetDirty(profile);
+                if (kind == EnemyKind.RabbitBoss)
+                {
+                    var animations = AssetDatabase.LoadAssetAtPath<EnemyAnimationSet>("Assets/_Project/Data/Enemies/RabbitBoss_Animations.asset");
+                    if (animations != null) EnemyLabBuilder.ConfigureRabbitProjectiles(animations);
+                }
                 string prefab = "Assets/_Project/Prefabs/Enemies/" + kind + ".prefab";
                 var root = PrefabUtility.LoadPrefabContents(prefab);
                 try { Wire(root.GetComponent<EnemyActor>(), profile); PrefabUtility.SaveAsPrefabAsset(root, prefab); }

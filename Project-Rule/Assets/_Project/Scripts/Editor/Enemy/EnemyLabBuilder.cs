@@ -32,6 +32,64 @@ namespace RuleGame.Editor.Enemy
         private static Material _material;
         private static Font _font;
 
+        [MenuItem("RuleGame/Enemies/打开兔子动画测试场景")]
+        public static void OpenRabbitLab()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode || SceneManager.GetActiveScene().isDirty) return;
+            EditorSceneManager.OpenScene(SceneFolder + "/Test_Enemy_RabbitBoss.unity");
+        }
+
+        [MenuItem("RuleGame/Enemies/导入兔子动画（保留战斗配置）")]
+        public static void RefreshRabbitPresentation()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                throw new InvalidOperationException("请先退出 Play Mode，再更新兔子资源。");
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            EnemyArtImporter.ImportActor("RabbitBoss");
+            EnemyAnimationSet animations = CreateAnimationSet(EnemyKind.RabbitBoss, EnemyArtImporter.Load());
+            EnemySpriteSequence idle = Array.Find(animations.Sequences, sequence => sequence.Action == "Idle");
+            if (idle == null || idle.Frames.Length == 0) throw new InvalidOperationException("兔子 Idle 帧缺失。");
+            EnemyDefinition definition = AssetDatabase.LoadAssetAtPath<EnemyDefinition>(DataFolder + "/RabbitBoss_Definition.asset");
+            var timings = new List<EnemyActionTiming>(definition.Timings);
+            foreach (EnemySpriteSequence sequence in animations.Sequences)
+            {
+                if (sequence.Action.StartsWith("Projectile") || timings.Exists(timing => timing.Action == sequence.Action)) continue;
+                timings.Add(new EnemyActionTiming { Action = sequence.Action, Duration = Mathf.Max(.2f, sequence.Duration) });
+            }
+            definition.Timings = timings.ToArray();
+            EditorUtility.SetDirty(definition);
+            AssetDatabase.SaveAssetIfDirty(definition);
+            ConfigureRabbitProjectiles(animations);
+            string path = PrefabFolder + "/RabbitBoss.prefab";
+            GameObject contents = PrefabUtility.LoadPrefabContents(path);
+            try
+            {
+                EnemyActor actor = contents.GetComponent<EnemyActor>();
+                Transform visual = contents.transform.Find("Visual");
+                visual.localPosition = Vector3.down * definition.BodySize.y * .5f;
+                visual.localScale = Vector3.one;
+                var renderer = visual.GetComponent<SpriteRenderer>();
+                renderer.sprite = idle.Frames[0]; renderer.color = Color.white;
+                visual.GetComponent<EnemySpriteAnimator>().AnimationSet = animations;
+                actor.ProjectileSprite = Array.Find(animations.Sequences, sequence => sequence.Action == "ProjectileBall").Frames[0];
+                PrefabUtility.SaveAsPrefabAsset(contents, path);
+            }
+            finally { PrefabUtility.UnloadPrefabContents(contents); }
+            Debug.Log("[RabbitArt] 兔子动画、脚底锚点、三类投掷物已接入；保留原战斗配置和场景。");
+        }
+
+        public static void ConfigureRabbitProjectiles(EnemyAnimationSet animations)
+        {
+            EnemyVfxProfile profile = AssetDatabase.LoadAssetAtPath<EnemyVfxProfile>(DataFolder + "/Vfx/RabbitBoss_Vfx.asset");
+            if (profile == null) return;
+            profile.ProjectileAnimations = Array.FindAll(animations.Sequences, sequence => sequence.Action.StartsWith("Projectile"));
+            if (profile.ProjectileAnimations.Length == 0) return;
+            profile.ProjectileSprite = profile.ProjectileAnimations[0].Frames[0];
+            profile.ProjectileMaterial = AssetDatabase.LoadAssetAtPath<Material>(DataFolder + "/EnemySprite_Mat.mat");
+            EditorUtility.SetDirty(profile);
+            AssetDatabase.SaveAssetIfDirty(profile);
+        }
+
         /// <summary>只更新闹钟表现；保留六个场景和已调好的敌人参数。</summary>
         public static void RefreshClockPresentation()
         {
@@ -148,7 +206,8 @@ namespace RuleGame.Editor.Enemy
                 sequences.Add(new EnemySpriteSequence
                 {
                     Action = kind == EnemyKind.BatMinion && entry.action == "Fly" ? "Walk" : entry.action,
-                    Frames = frames, ClockFaceCenters = centers, FrameRate = manifest.frameRate, FacesRight = entry.facesRight
+                    Frames = frames, ClockFaceCenters = centers, FrameRate = manifest.frameRate,
+                    FacesRight = entry.facesRight, NativeFrameRate = entry.nativeFrameRate
                 });
             }
             if (kind == EnemyKind.BatBoss)
@@ -167,6 +226,7 @@ namespace RuleGame.Editor.Enemy
             }
             set.Sequences = sequences.ToArray();
             EditorUtility.SetDirty(set); AssetDatabase.SaveAssetIfDirty(set);
+            if (kind == EnemyKind.RabbitBoss) ConfigureRabbitProjectiles(set);
             return set;
         }
         private static EnemyDefinition CreateDefinition(EnemyKind kind, EnemyAnimationSet animations)
@@ -228,11 +288,18 @@ namespace RuleGame.Editor.Enemy
             var renderer = visual.AddComponent<SpriteRenderer>(); renderer.sharedMaterial = _material; renderer.sortingOrder = 5;
             renderer.sprite = animations.Sequences.Length > 0 ? animations.Sequences[0].Frames[0] : _square;
             var animator = visual.AddComponent<EnemySpriteAnimator>(); animator.Actor = actor; animator.AnimationSet = animations;
-            if (definition.Kind == EnemyKind.RabbitBoss)
+            if (definition.Kind == EnemyKind.RabbitBoss && animations.Sequences.Length == 0)
             {
                 visual.transform.localPosition = Vector3.zero;
                 visual.transform.localScale = new Vector3(definition.BodySize.x, definition.BodySize.y, 1f);
                 renderer.color = new Color(0.65f, 0.62f, 0.56f);
+            }
+            else if (definition.Kind == EnemyKind.RabbitBoss)
+            {
+                renderer.sprite = Array.Find(animations.Sequences, sequence => sequence.Action == "Idle").Frames[0];
+                actor.ProjectileSprite = Array.Find(animations.Sequences, sequence => sequence.Action == "ProjectileBall").Frames[0];
+                var profile = AssetDatabase.LoadAssetAtPath<EnemyVfxProfile>(DataFolder + "/Vfx/RabbitBoss_Vfx.asset");
+                if (profile != null) go.AddComponent<EnemyVfxPresenter>().Profile = profile;
             }
             if (definition.Kind == EnemyKind.BatMinion) visual.transform.localScale = Vector3.one * 0.375f;
             if (definition.Kind == EnemyKind.ClockBoss)
