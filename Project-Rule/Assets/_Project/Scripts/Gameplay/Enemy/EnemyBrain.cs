@@ -235,7 +235,10 @@ namespace RuleGame.Gameplay.Enemy
         }
         public object Capture() => new Data
         {
-            Root = Root.ActiveStateName, Action = Actions.ActiveStateName, Transition = TransitionName,
+            // Transition / Dead 会退出 Alive，HFSM 此时主动清空子状态；只记录仍在运行的动作。
+            Root = Root.ActiveStateName,
+            Action = Root.ActiveStateName == "Alive" ? Actions.ActiveStateName : null,
+            Transition = TransitionName,
             Age = Age, Elapsed = Elapsed, Attack = NextAttack, Hurt = NextHurt, Duration = TransitionDuration,
             Phase = Phase, NextPhase = NextPhase, Pulses = Pulses, Extra = CaptureExtra(),
             StaggerDamage = _staggerDamage, LastStaggerHit = _lastStaggerHit,

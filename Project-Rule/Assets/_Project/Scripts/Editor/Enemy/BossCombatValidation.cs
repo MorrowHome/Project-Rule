@@ -1,6 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
+using RuleGame.Presentation.Enemy;
+using RuleGame.Infrastructure.Snapshot;
+using UnityEngine.Rendering;
 using RuleGame.Core.Rules;
 using RuleGame.Gameplay.Enemy;
 using RuleGame.Infrastructure;
@@ -17,6 +21,7 @@ namespace RuleGame.Editor.Enemy
     {
         private const string Pending = "RuleGame.Enemy.CombatValidation";
         private const string Tactics = "RuleGame.Enemy.TacticsValidation";
+        private const string SnapshotCamera = "RuleGame.Enemy.SnapshotCameraValidation";
         private static readonly List<EnemyActor> Actors = new List<EnemyActor>();
         private static readonly List<Action<EnemyActor>> Cases = new List<Action<EnemyActor>>();
         private static int _passed, _failed;
@@ -24,6 +29,12 @@ namespace RuleGame.Editor.Enemy
         private static bool _tactics;
         private static string Output => Environment.GetEnvironmentVariable("RULE_BOSS_OUTPUT")
             ?? Path.GetFullPath(Path.Combine(Application.dataPath, _tactics ? "../Logs/BossTacticsValidation.txt" : "../Logs/BossCombatValidation.txt"));
+
+        public static void RunSnapshotCameraBatch()
+        {
+            SessionState.SetBool(SnapshotCamera, true);
+            RunBatch();
+        }
 
         public static void RunTacticsBatch()
         {
@@ -55,6 +66,12 @@ namespace RuleGame.Editor.Enemy
             RuleSystem.Initialize(ScriptableObject.CreateInstance<RuleCatalog>());
             _deadline = EditorApplication.timeSinceStartup + 30;
             _tactics = SessionState.GetBool(Tactics, false);
+            if (SessionState.GetBool(SnapshotCamera, false))
+            {
+                AddSnapshotCameraCases();
+                EditorApplication.update += AwaitReady;
+                return;
+            }
             if (_tactics)
             {
                 AddTacticsCases();
@@ -289,6 +306,98 @@ namespace RuleGame.Editor.Enemy
             EditorApplication.update += AwaitReady;
         }
 
+        private sealed class SnapshotBody : IRuleAffected
+        {
+            public Rigidbody2D Body { get; }
+            public Collider2D[] Colliders { get; }
+            public SnapshotBody(EnemyActor actor)
+            {
+                Body = actor.GetComponent<Rigidbody2D>();
+                Colliders = actor.GetComponents<Collider2D>();
+            }
+        }
+        private static SnapshotSystem SnapshotsFor(EnemyActor actor)
+        {
+            var registry = new WorldRegistry();
+            registry.Register(new SnapshotBody(actor));
+            return new SnapshotSystem(RuleSystem.Instance, registry);
+        }
+        private static void AddSnapshotCameraCases()
+        {
+            foreach (EnemyKind kind in new[] { EnemyKind.BrickBoss, EnemyKind.ClockBoss, EnemyKind.RabbitBoss, EnemyKind.BatBoss })
+            {
+                Add(kind, a =>
+                {
+                    var snapshots = SnapshotsFor(a);
+                    var alive = snapshots.Capture();
+                    string initial = a.Brain.StateName;
+                    float health = kind == EnemyKind.RabbitBoss ? 40f : kind == EnemyKind.ClockBoss ? 330f : 650f;
+                    a.Status.ApplyHealthDelta(health - a.Status.Health);
+                    Step(a);
+                    string transition = kind == EnemyKind.BrickBoss ? "Split" : kind == EnemyKind.ClockBoss ? "Stun"
+                        : kind == EnemyKind.RabbitBoss ? "Flip" : "Weak";
+                    Check(a.Brain.StateName == transition, kind + " 进入阶段过渡");
+                    float elapsed = a.Brain.ActionElapsed;
+                    var saved = snapshots.Capture();
+                    snapshots.CaptureToBuffer();
+                    Check(saved.Entities.Count == 1, kind + " 阶段过渡中可采集实体和时间缓冲");
+                    Step(a, .1f);
+                    snapshots.Restore(saved);
+                    Check(a.Brain.StateName == transition && Mathf.Approximately(a.Brain.ActionElapsed, elapsed),
+                        kind + " 恢复阶段过渡及计时");
+                    Step(a, .02f);
+                    snapshots.Restore(alive);
+                    Check(a.Brain.StateName == initial && a.Status.Health == a.Definition.Health,
+                        kind + " 过渡后可回溯 Alive 动作与生命");
+                });
+                Add(kind, a =>
+                {
+                    var snapshots = SnapshotsFor(a);
+                    a.Status.ApplyHealthDelta(-a.Status.Health);
+                    Step(a);
+                    Check(a.Brain.StateName == "Dead", kind + " 进入死亡");
+                    var saved = snapshots.Capture();
+                    snapshots.CaptureToBuffer();
+                    Check(saved.Entities.Count == 1, kind + " 死亡中可采集实体和时间缓冲");
+                    Step(a, 2f);
+                    snapshots.Restore(saved);
+                    Check(a.gameObject.activeSelf && a.Defeated && a.Brain.StateName == "Dead",
+                        kind + " 回溯死亡动作且不重开 Alive");
+                });
+            }
+            Add(EnemyKind.BrickMinion, _ => CheckCameraRelease(false));
+            Add(EnemyKind.BrickMinion, _ => CheckCameraRelease(true));
+        }
+        private static void CheckCameraRelease(bool disable)
+        {
+            var go = new GameObject("CameraImpulseValidation");
+            try
+            {
+                var camera = go.AddComponent<Camera>();
+                camera.enabled = false;
+                go.transform.position = new Vector3(0f, 0f, -10f);
+                var impulse = go.AddComponent<BossCameraImpulse>();
+                var flags = BindingFlags.NonPublic | BindingFlags.Instance;
+                var before = typeof(BossCameraImpulse).GetMethod("BeforeRender", flags);
+                var after = typeof(BossCameraImpulse).GetMethod("AfterRender", flags);
+                for (int i = 0; i < 2; i++)
+                {
+                    Vector3 position = go.transform.position;
+                    BossCameraImpulse.Pulse(.3f, .2f);
+                    before.Invoke(impulse, new object[] { default(ScriptableRenderContext), camera });
+                    Check(Vector3.Distance(camera.worldToCameraMatrix.MultiplyPoint3x4(position), Vector3.zero) > .01f,
+                        "震屏在渲染阶段生效");
+                    if (disable) impulse.enabled = false;
+                    else after.Invoke(impulse, new object[] { default(ScriptableRenderContext), camera });
+                    go.transform.position += new Vector3(3f, 2f, 0f);
+                    Check(camera.worldToCameraMatrix.MultiplyPoint3x4(go.transform.position).sqrMagnitude < .00001f,
+                        disable ? "停用震屏后视图继续跟随摄像机位置" : "震屏结束后视图继续跟随摄像机位置");
+                    impulse.enabled = true;
+                }
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
         private static void AddTacticsCases()
         {
             Add(EnemyKind.BrickBoss, a =>
@@ -456,6 +565,7 @@ namespace RuleGame.Editor.Enemy
         {
             SessionState.SetBool(Pending, false);
             SessionState.SetBool(Tactics, false);
+            SessionState.SetBool(SnapshotCamera, false);
             if (error != null) { _failed++; Debug.LogError(error); }
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(Output)));
             File.WriteAllText(Output, $"Passed: {_passed}\nFailed: {_failed}\n{error}\n");

@@ -66,6 +66,8 @@ manifest 已有 Coplay Unity MCP，仓库 `.mcp.json` 指向 `localhost:8080/mcp
 
 2026-10-16 蝙蝠新增 Approach：高空休息结束后主动降至玩家侧面，近身优先连斩；近战后轮换远程或阶段招式，不再一直停留在高处，也不再刚接近就先撤离。距离/高度/尝试时长/速度均可调，近战偏好参加快照。EnemyDefinitionEditor 将全部 65 个参数、枚举选项和动作时长列表中文化，保留原字段名、Undo、多选与数值范围。本轮只运行蝙蝠相关的 22 项物理/行为检查并通过编译，未重复运行三 Boss 或全量验证。日志 `/tmp/rule-bat-approach-inspector.log`。用户同期在本地调整了三份 Definition、两份 Boss Prefab、字体和项目设置，未纳入本轮代码提交。
 
+2026-10-16 修复快照异常与震屏后镜头停住：UnityHFSM 2.3.0 的子状态机退出时会清空 activeState，阶段过渡/死亡期间不应读取 Actions.ActiveStateName；EnemyBrain.Capture 现在仅在 Root 为 Alive 时记录动作，恢复逻辑继续按 Root 分支处理。BossCameraImpulse 结束渲染/停用时改为 ResetWorldToCameraMatrix，归还随 Transform 更新的自动视图计算；写回旧矩阵仍会保留手动模式。隔离 Play Mode 先复现四种 Boss 过渡/死亡采集异常，以及震屏收尾/停用后的视图冻结，共 10 个失败用例；同组修复后 36 项断言通过、退出码 0。验证入口 BossCombatValidation.RunSnapshotCameraBatch，日志 /tmp/rule-snapshot-camera-{baseline,fixed}.log，结果 Logs/SnapshotCameraValidation.txt。摄像机通过调用实际渲染回调并检查移动后的视图矩阵验证，未运行完整白盒画面验收或全量战斗套件。
+
 ## 证据
 
 `CLAUDE.md`、`Doc/系统模块架构.md`、`Doc/敌人系统接入.md`；工程内 `Packages/manifest.json`、`ProjectSettings/{ProjectVersion.txt,QualitySettings.asset,GraphicsSettings.asset,EditorBuildSettings.asset,ProjectSettings.asset}`；一方 `.asmdef`；`Scripts/Gameplay/Enemy/*.cs`、`Gameplay/Player/EntityStatus.cs`、`PlayerController.cs`、`RuleReleaseService.cs`、`Scripts/Editor/Enemy/EnemyLabBuilder.cs`、`Scripts/Rules/RuleSystemDriver.cs`。
