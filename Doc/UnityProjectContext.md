@@ -78,6 +78,8 @@ manifest 已有 Coplay Unity MCP，仓库 `.mcp.json` 指向 `localhost:8080/mcp
 
 2026-10-16 在兔子交付资源基础上强化 AI：目标超射程时持续追近；投掷先跟踪、出手前 0.35 秒锁定，按距离和高度选弹珠平射/跳棋高抛。藏帽只沿锁定路线向外撤退，墙角无空间就反击；冒出动画结束后保留完整撤退冷却，避免反复藏身。翻转后由实例 Brain.IsFlying 驱动 EnemyMotor 实际升空换侧，不改共享 Definition；用鸭子打两轮三发交错扇形，结束后悬停休息且仍可受伤。飞行路线与弹道选择参加快照，回溯到第一阶段恢复地面模式。新增六项中文 Inspector 参数。用户提供路径的 111 张运行时帧已核对来源哈希，身体原件未改，其它角色清单未改。本轮只运行 RunRabbitTacticsBatch：Unity 6000.6.4f1 独立副本 /tmp/rule-rabbit-ai-20261016 中 23 项通过，含真实物理升空、实际精灵选择、平射/高抛、墙角反击、撤退冷却、扇形角度、休息/暂停/快照；日志 /tmp/rule-rabbit-ai.log。前述 58 项资源播放检查为接入时的历史结果，本轮未重跑。同期时钟发射器等改动不纳入本次提交。
 
+2026-10-16 用户补充微信目录中的“敌人逻辑”，并明确“不必完全参考”。原始文本与八张 drawio 已保存到 Doc/References/EnemyLogic，作为可调整的角色/阶段/招式参考；本轮兔子主动换位、实际飞行、有限散射和休息节奏保留，不回退为原图的机械循环。原文本普通投掷写 0.5 秒、行为图写 2 秒；当前沿用交付 16 帧、8 fps 的 2 秒投掷动作及其原画出手点。该轮仅补充参考与约束说明，没有修改已经通过 23 项检查的运行代码。
+
 ## 证据
 
 `CLAUDE.md`、`Doc/系统模块架构.md`、`Doc/敌人系统接入.md`；工程内 `Packages/manifest.json`、`ProjectSettings/{ProjectVersion.txt,QualitySettings.asset,GraphicsSettings.asset,EditorBuildSettings.asset,ProjectSettings.asset}`；一方 `.asmdef`；`Scripts/Gameplay/Enemy/*.cs`、`Gameplay/Player/EntityStatus.cs`、`PlayerController.cs`、`RuleReleaseService.cs`、`Scripts/Editor/Enemy/EnemyLabBuilder.cs`、`Scripts/Rules/RuleSystemDriver.cs`。
