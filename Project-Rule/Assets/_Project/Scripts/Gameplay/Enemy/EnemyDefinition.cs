@@ -45,6 +45,16 @@ namespace RuleGame.Gameplay.Enemy
         [Range(0f, 120f)] public float BrickThrowSpread = 54f;
         [Min(1f)] public float BrickThrowSpeed = 9f;
         [Range(1, 11)] public int RabbitLobCount = 1;
+        [Tooltip("一阶段每套连续投掷次数；每次使用完整投掷动画与独立锁定，整套结束后休息。")]
+        [Range(1, 4)] public int RabbitGroundVolleyCount = 1;
+        [Tooltip("一阶段两次施法检查的间隔；已开始的连续投掷不会被施法中断。")]
+        [Min(5f)] public float RabbitGroundMagicInterval = 8f;
+        [Tooltip("一阶段每次上抛同时释放的低位瞄准散射数量；0 关闭。共用本次锁定点，不追踪玩家。")]
+        [Range(0, 15)] public int RabbitGroundFanCount;
+        [Range(10f, 100f)] public float RabbitGroundFanSpread = 60f;
+        [Min(1f)] public float RabbitGroundFanSpeed = 14f;
+        [Tooltip("一阶段隔颗提高弧顶，令同次投掷的落弹错峰到达；1 保持原弧线。")]
+        [Range(1f, 4f)] public float RabbitGroundArcStagger = 1f;
         [Min(.1f)] public float RabbitLandingSpread = 1.1f;
         [Range(3, 17)] public int RabbitFanCount = 3;
         [Range(0f, 160f)] public float RabbitFanSpread;

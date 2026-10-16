@@ -50,7 +50,7 @@ namespace RuleGame.Editor.Enemy
                 Case("三倍重力高抛", 8.5f, 0f, true, 3f);
                 Case("近处高抛", 3.2f, 0f, true, 1f);
                 Case("失重平射", 6f, 0f, false, 0f);
-                Case("贴身时先重新站位", 1.4f, 0f, false, 1f, true);
+                Case("投掷中贴近仍从身体外完整出手", 1.4f, 0f, false, 1f, true);
                 FlightCase(false);
                 FlightCase(true);
             }
@@ -66,7 +66,7 @@ namespace RuleGame.Editor.Enemy
             EditorApplication.Exit(_failed == 0 ? 0 : 1);
         }
 
-        private static void Case(string name, float distance, float fallingSpeed, bool lob, float gravityScale, bool reposition = false)
+        private static void Case(string name, float distance, float fallingSpeed, bool lob, float gravityScale, bool committedCloseThrow = false)
         {
             GameObject root = new GameObject(name);
             try
@@ -85,6 +85,8 @@ namespace RuleGame.Editor.Enemy
                 var config = UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<EnemyDefinition>(
                     "Assets/_Project/Data/Enemies/RabbitBoss_Definition.asset"));
                 config.Energy = 0f; config.RabbitEscapeDistance = 1f;
+                // 本组只检查单条原始上抛弹道，混合弹幕由战术用例覆盖。
+                config.RabbitGroundFanCount = 0; config.RabbitGroundArcStagger = 1f;
                 actor.Definition = config; actor.Target = target.transform;
                 go.SetActive(true); actor.SendMessage("Start");
                 actor.GetComponent<BoxCollider2D>().size = config.BodySize;
@@ -100,10 +102,11 @@ namespace RuleGame.Editor.Enemy
                     if (cue.Kind == EnemyFeedbackKind.ProjectileSpawn) shot = (EnemyProjectile)cue.Subject;
                 };
                 actor.Brain.Tick(.8f); actor.Brain.Tick(.71f);
-                if (reposition)
+                if (committedCloseThrow)
                 {
-                    if (shot != null || actor.Brain.StateName != "Reposition")
-                        throw new InvalidOperationException("贴身仍从身体中心向脚下丢出弹体");
+                    if (shot == null || actor.Brain.StateName != "Throw"
+                        || shot.transform.position.x - actor.transform.position.x < config.BodySize.x * .5f)
+                        throw new InvalidOperationException("贴身取消了已承诺的投掷，或没有从身体外出手");
                     _passed++; Debug.Log("PASS: " + name);
                     return;
                 }
@@ -169,7 +172,7 @@ namespace RuleGame.Editor.Enemy
                 target.transform.position = new Vector2(6f, .65f);
                 target.AddComponent<BoxCollider2D>().size = new Vector2(.7f, 1.1f);
                 actor.Target = target.transform; actor.SendMessage("Start");
-                actor.Status.ApplyHealthDelta(40f - actor.Status.Health);
+                actor.Status.ApplyHealthDelta(actor.Definition.Health * .4f - actor.Status.Health);
                 int shots = 0; float firstShotHeight = 0f;
                 actor.Feedback += cue =>
                 {

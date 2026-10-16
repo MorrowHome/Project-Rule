@@ -16,12 +16,18 @@ namespace RuleGame.Gameplay.Enemy
         private string _resume = "Pop";
         private float _resumeElapsed, _burrowX;
         private int _resumePulses, _pattern;
+        private int _groundThrows;
         private uint _random = 3917;
         private Vector2 _aim;
         protected override string[] ActionNames => new[] { "Pop", "Reposition", "Throw", "Hide", "Burrow", "HideThrow", "AirReposition", "FlipThrow", "Hurt" };
         public override bool IsFlying => base.IsFlying || (_flipped && !Actor.Defeated);
-        protected override string FirstAction => "Pop";
-        public RabbitBossBrain(EnemyActor actor) : base(actor) { }
+        // 开场已在场地中，不再先播放完整的藏帽冒出；撤退后的 Pop 仍保留原画时长。
+        protected override string FirstAction => "Reposition";
+        public RabbitBossBrain(EnemyActor actor) : base(actor)
+        {
+            _nextBurrow = Mathf.Max(1f, Config.RabbitBurrowCooldown);
+            _magicCheck = Mathf.Max(5f, Config.RabbitGroundMagicInterval);
+        }
         private sealed class Data
         {
             public float Cycle, Magic, Burrow, ResumeElapsed, BurrowX;
@@ -32,7 +38,7 @@ namespace RuleGame.Gameplay.Enemy
             public float AirStallTime, AirMoveDeadline;
             public int AirFailedMoves;
             public string Resume;
-            public int ResumePulses, Pattern;
+            public int ResumePulses, Pattern, GroundThrows;
             public uint Random;
             public Vector2 Aim;
         }
@@ -43,7 +49,7 @@ namespace RuleGame.Gameplay.Enemy
             ResumePulses = _resumePulses, Pattern = _pattern, Random = _random, Aim = _aim,
             Lob = _lob, AirSide = _airSide, AirDestination = _airDestination,
             AirLastPosition = _airLastPosition, AirStallTime = _airStallTime,
-            AirMoveDeadline = _airMoveDeadline, AirFailedMoves = _airFailedMoves
+            AirMoveDeadline = _airMoveDeadline, AirFailedMoves = _airFailedMoves, GroundThrows = _groundThrows
         };
         protected override void RestoreExtra(object state)
         {
@@ -52,6 +58,7 @@ namespace RuleGame.Gameplay.Enemy
             _lob = data.Lob; _airSide = data.AirSide; _airDestination = data.AirDestination;
             _airLastPosition = data.AirLastPosition; _airStallTime = data.AirStallTime;
             _airMoveDeadline = data.AirMoveDeadline; _airFailedMoves = data.AirFailedMoves;
+            _groundThrows = data.GroundThrows;
             _cycle = data.Cycle; _magicCheck = data.Magic; _nextBurrow = data.Burrow;
             _resumeElapsed = data.ResumeElapsed; _burrowX = data.BurrowX; _flipped = data.Flipped;
             _canBurrow = data.CanBurrow; _resume = data.Resume; _resumePulses = data.ResumePulses;
@@ -61,7 +68,7 @@ namespace RuleGame.Gameplay.Enemy
         {
             if (Root.ActiveStateName != "Alive") return;
             _cycle += Delta;
-            if (!_flipped && Actor.Status.Health <= 50f)
+            if (!_flipped && Actor.Status.Health <= Config.Health * .5f)
             {
                 _flipped = true;
                 Transition("Flip", 2, Actor.Duration("Flip", .8f));
@@ -71,16 +78,18 @@ namespace RuleGame.Gameplay.Enemy
             bool preparing = StateName == "Reposition" || StateName == "Throw" || StateName == "FlipThrow"
                 || (StateName == "Pop" && Elapsed >= .5f);
             if (!preparing) return;
-            if (Age >= _nextBurrow && Pulses == 0
+            // 只在重新选站位时撤退；已经开始的投掷不能被玩家靠近反复取消。
+            bool canEscape = StateName == "Reposition" || (StateName == "Pop" && Elapsed >= .5f);
+            if (canEscape && Age >= _nextBurrow && Pulses == 0
                 && (CombatDistance < Mathf.Max(1f, Config.RabbitEscapeDistance) || _cycle >= Config.RabbitCycle))
             {
                 Go(_flipped ? "AirReposition" : "Hide");
                 return;
             }
             // 只在投掷起手或重新站位时选择施法，不中断已经释放的散射或藏身。
-            if (Age < _magicCheck || CombatDistance > RangedRange || Pulses != 0
+            if ((!_flipped && _groundThrows > 0) || Age < _magicCheck || CombatDistance > RangedRange || Pulses != 0
                 || (StateName != "Reposition" && Elapsed > .1f)) return;
-            _magicCheck = Age + 8f;
+            _magicCheck = Age + (_flipped ? 8f : Mathf.Max(5f, Config.RabbitGroundMagicInterval));
             _random ^= _random << 13; _random ^= _random >> 17; _random ^= _random << 5;
             if (Actor.Status.Energy <= 50f || (_random & 1) == 0) return;
             _resume = StateName; _resumeElapsed = Elapsed; _resumePulses = Pulses;
@@ -110,7 +119,11 @@ namespace RuleGame.Gameplay.Enemy
                 case "Rest":
                     if (_flipped) Actor.Cue("Flight", Actor.Duration("Flight"), true);
                     break;
-                case "Reposition": Actor.Cue("Walk", Actor.Duration("Walk", .6f), true); break;
+                case "Reposition":
+                    _groundThrows = 0;
+                    Actor.Cue("Walk", Actor.Duration("Walk", .6f), true);
+                    break;
+                case "Pop": _groundThrows = 0; break;
                 case "Hide":
                     _cycle = 0f;
                     _nextBurrow = Age + Mathf.Max(1f, Config.RabbitBurrowCooldown);
@@ -135,6 +148,7 @@ namespace RuleGame.Gameplay.Enemy
                 case "HideThrow":
                     float height = HasTarget ? Vector2.Dot(Actor.Target.position - Actor.transform.position, Actor.Motor.Up) : 0f;
                     _lob = name == "HideThrow" || CombatDistance < Config.PreferredDistance * .7f
+                        || (!_flipped && (_groundThrows & 1) == 1)
                         || height > Config.BodySize.y * .35f || (_pattern % 3 == 2 && CombatDistance < Config.PreferredDistance + 1f);
                     _aim = PredictThrowTarget(.25f);
                     Actor.Cue(name, Mathf.Max(Actor.Duration(name, .5f), Config.RabbitThrowInterval));
@@ -183,14 +197,8 @@ namespace RuleGame.Gameplay.Enemy
                     {
                         if (Mathf.Abs(_aim.x - Actor.transform.position.x) < MinimumThrowDistance)
                         {
-                            // 空中换位已连续失败时也使用墙角退路，否则备用抛投又会被送回换位。
-                            bool airFallback = _flipped && _airFailedMoves >= 2;
-                            if (name != "HideThrow" && !airFallback)
-                            {
-                                Go("Reposition");
-                                break;
-                            }
-                            // 墙角没有退路时仍向外起弧，落点至少越过自己的身体，避免原地往脚下倒。
+                            // 投掷已承诺出手：贴近时向身体外起弧，不再取消攻击去重新站位。
+                            // 同样覆盖墙角与空中备用抛投，避免原地往脚下倒。
                             float side = Mathf.Abs(_aim.x - Actor.transform.position.x) > .1f
                                 ? Mathf.Sign(_aim.x - Actor.transform.position.x) : Actor.Facing;
                             _aim.x = Actor.transform.position.x + side * MinimumThrowDistance;
@@ -259,9 +267,28 @@ namespace RuleGame.Gameplay.Enemy
             Vector2 origin = ThrowOrigin();
             int count = Mathf.Clamp(Config.RabbitLobCount, 1, 11);
             for (int i = 0; i < count; i++)
-                FireLobAt(origin, _aim + Vector2.right * ((i - (count - 1) * .5f) * Config.RabbitLandingSpread));
+            {
+                // 高低弧覆盖同一片落地区，但不同时落下，避免一次跳跃就清空整轮威胁。
+                float arc = !_flipped && (i & 1) == 1 ? Mathf.Clamp(Config.RabbitGroundArcStagger, 1f, 4f) : 1f;
+                FireLobAt(origin, _aim + Vector2.right * ((i - (count - 1) * .5f) * Config.RabbitLandingSpread), arc);
+            }
+            if (!_flipped)
+            {
+                if (Config.RabbitGroundFanCount > 0)
+                {
+                    float side = Mathf.Abs(_aim.x - Actor.transform.position.x) > .1f
+                        ? Mathf.Sign(_aim.x - Actor.transform.position.x) : Actor.Facing;
+                    // 上抛从手部出发，快弹从帽沿低位出发；填补身体前下方的安全盲区。
+                    Vector2 lowOrigin = (Vector2)Actor.transform.position - Actor.Motor.Up * (Config.BodySize.y * .25f)
+                        + Vector2.right * (side * (Config.BodySize.x * .5f + .25f));
+                    Actor.ShootFan((_aim - lowOrigin).normalized, Mathf.Clamp(Config.RabbitGroundFanCount, 1, 15),
+                        Mathf.Clamp(Config.RabbitGroundFanSpread, 10f, 100f), Mathf.Max(1f, Config.RabbitGroundFanSpeed),
+                        0f, .22f, visualIndex: 2, origin: lowOrigin);
+                }
+                _groundThrows++;
+            }
         }
-        private void FireLobAt(Vector2 origin, Vector2 target)
+        private void FireLobAt(Vector2 origin, Vector2 target, float arcMultiplier)
         {
             // 每个落点单独求上抛弹道，扩散的是覆盖区域，不扭曲已经调好的主弹初速度。
             Vector2 delta = target - origin;
@@ -275,7 +302,7 @@ namespace RuleGame.Gameplay.Enemy
             }
             Vector2 up = -Physics2D.gravity.normalized;
             float height = Vector2.Dot(delta, up);
-            float rise = Mathf.Max(0f, height) + Mathf.Max(.3f, Config.RabbitThrowArcHeight) * (_lob ? 1.6f : 1f);
+            float rise = Mathf.Max(0f, height) + Mathf.Max(.3f, Config.RabbitThrowArcHeight) * (_lob ? 1.6f : 1f) * arcMultiplier;
             float verticalSpeed = Mathf.Sqrt(2f * acceleration * rise);
             float time = verticalSpeed / acceleration + Mathf.Sqrt(2f * (rise - height) / acceleration);
             // 弧顶必须高于出手点和目标，保证先向上抛，再落向锁定点，而非直接向低处发射。
@@ -314,6 +341,13 @@ namespace RuleGame.Gameplay.Enemy
         }
         private void FinishVolley()
         {
+            // 地面连投逐次播放完整原画、重新瞄准并锁定；不把多轮弹体塞进同一出手帧。
+            if (!_flipped && _groundThrows > 0 && _groundThrows < Mathf.Clamp(Config.RabbitGroundVolleyCount, 1, 4)
+                && HasTarget && CombatDistance <= RangedRange)
+            {
+                Go("Throw");
+                return;
+            }
             _pattern++;
             RestAfterAttack(_flipped ? "AirReposition" : "Reposition");
         }

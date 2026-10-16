@@ -15,7 +15,7 @@ MonoBehaviour:
   Kind: 3
   DisplayName: "\u6BDB\u7ED2\u5154\u5B50 Boss"
   BodySize: {x: 2, y: 3}
-  Health: 100
+  Health: 600
   Damage: 24
   ContactDamage: 1
   ContactInterval: 0.4
@@ -41,8 +41,8 @@ MonoBehaviour:
   ClockBeamSpread: 14
   RabbitBurrowDuration: 0.65
   RabbitBurrowSpeedMultiplier: 3.5
-  RabbitBurrowCooldown: 1.8
-  RabbitEscapeDistance: 3.8
+  RabbitBurrowCooldown: 7
+  RabbitEscapeDistance: 2.8
   RabbitBurstCount: 3
   RabbitBurstInterval: 0.2
   RabbitRepositionDuration: 0.65
@@ -78,7 +78,7 @@ MonoBehaviour:
   BatRestPatrolDistance: 2.5
   BatRestSpeedMultiplier: 0.85
   ImpactFraction: 0.6
-  RabbitCycle: 10
+  RabbitCycle: 14
   RabbitThrowInterval: 1
   RabbitThrowArcHeight: 1
   ClockHourInterval: 12
@@ -91,8 +91,14 @@ MonoBehaviour:
   ClockCoreHealth: 15
   ProjectileLifetime: 7
   RabbitFanCount: 11
-  RabbitLandingSpread: 1.1
-  RabbitLobCount: 7
+  RabbitLandingSpread: 1.05
+  RabbitLobCount: 11
+  RabbitGroundVolleyCount: 4
+  RabbitGroundMagicInterval: 16
+  RabbitGroundFanCount: 7
+  RabbitGroundFanSpread: 60
+  RabbitGroundFanSpeed: 14
+  RabbitGroundArcStagger: 2.4
   RabbitFanSpread: 110
   ProjectileBudget: 192
   Timings:

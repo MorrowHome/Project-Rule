@@ -356,11 +356,77 @@ namespace RuleGame.Editor.Enemy
             });
         private static void RabbitFlip(EnemyActor actor)
         {
-            actor.Status.ApplyHealthDelta(50f - actor.Status.Health);
+            actor.Status.ApplyHealthDelta(actor.Definition.Health * .5f - actor.Status.Health);
             Step(actor); Step(actor, actor.AnimationDuration + .01f);
         }
         private static void AddRabbitTacticsCases()
         {
+            AddRabbitCase(a =>
+            {
+                a.Definition.Health = 600f;
+                a.Status.InitializeVitals(600f, 0f);
+                Target(a, 6);
+                a.Status.ApplyHealthDelta(-250f); Step(a);
+                Check(a.Brain.Phase == 1 && !a.Defeated, "提高总生命后兔子一阶段仍持续到半血");
+                a.Status.ApplyHealthDelta(-50f); Step(a);
+                Check(a.Brain.StateName == "Flip", "兔子 600 生命在 300 生命翻转");
+                a.Status.ApplyHealthDelta(119f - a.Status.Health); Step(a);
+                Check(a.Defeated, "兔子退场阈值按最大生命的 20% 变化");
+            });
+            AddRabbitCase(a =>
+            {
+                a.Definition.RabbitLobCount = 3; a.Definition.RabbitGroundFanCount = 3;
+                a.Definition.RabbitGroundArcStagger = 2.4f;
+                int low = 0, arcs = 0; float minRise = float.MaxValue, maxRise = 0f;
+                bool lowOrigin = true;
+                a.Feedback += cue =>
+                {
+                    if (cue.Kind != EnemyFeedbackKind.ProjectileSpawn) return;
+                    var shot = (EnemyProjectile)cue.Subject;
+                    if (shot.Gravity <= 0f)
+                    {
+                        low++;
+                        lowOrigin &= shot.transform.position.y < a.transform.position.y - .5f;
+                    }
+                    else
+                    {
+                        arcs++;
+                        minRise = Mathf.Min(minRise, shot.Velocity.y);
+                        maxRise = Mathf.Max(maxRise, shot.Velocity.y);
+                    }
+                };
+                Target(a, 6); Step(a, a.Definition.RabbitRepositionDuration + .01f); Step(a, 1.51f);
+                Check(low == 3 && arcs == 3 && lowOrigin, "同次出手同时覆盖近地快弹与上抛落弹");
+                Check(maxRise > minRise * 1.4f, "交错弧顶使用不同起飞速度，落弹不会同时清空");
+            });
+            AddRabbitCase(a =>
+            {
+                a.Definition.RabbitGroundVolleyCount = 3;
+                Target(a, 6);
+                int shots = 0;
+                a.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.ProjectileSpawn) shots++; };
+                Step(a, a.Definition.RabbitRepositionDuration + .01f);
+                Check(a.Brain.StateName == "Throw", "兔子开场直接站位出招，不等待完整冒出动画");
+                Step(a, 1.51f);
+                object saved = a.CaptureSnapshotState();
+                Target(a, 1.4f);
+                for (int i = 0; i < 2; i++)
+                {
+                    Step(a, a.AnimationDuration - a.Brain.ActionElapsed + .01f);
+                    Step(a, 1.51f);
+                }
+                Step(a, a.AnimationDuration - a.Brain.ActionElapsed + .01f);
+                Check(shots == 3 && a.Brain.StateName == "Rest", "贴近不取消连投，三次完整投掷后统一休息");
+                a.RestoreSnapshotState(saved);
+                int before = shots;
+                for (int i = 0; i < 2; i++)
+                {
+                    Step(a, a.AnimationDuration - a.Brain.ActionElapsed + .01f);
+                    Step(a, 1.51f);
+                }
+                Step(a, a.AnimationDuration - a.Brain.ActionElapsed + .01f);
+                Check(shots == before + 2 && a.Brain.StateName == "Rest", "回溯恢复剩余连投次数，不跳过或补满整套攻击");
+            });
             AddRabbitCase(a =>
             {
                 Target(a, 14); int shots = 0;
@@ -392,7 +458,7 @@ namespace RuleGame.Editor.Enemy
             AddRabbitCase(a =>
             {
                 a.transform.position = new Vector3(10.8f, 2f, 0f); Target(a, -2);
-                Step(a, .6f); Step(a, a.AnimationDuration + .01f);
+                AdvanceTo(a, "HideThrow");
                 Check(a.Brain.StateName == "HideThrow", "墙角无撤退空间时原地反击，不倒退穿过玩家");
                 EnemyProjectile shot = null;
                 a.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.ProjectileSpawn) shot = (EnemyProjectile)cue.Subject; };
@@ -402,7 +468,7 @@ namespace RuleGame.Editor.Enemy
             });
             AddRabbitCase(a =>
             {
-                Target(a, 2); Step(a, .6f); Step(a, a.AnimationDuration + .01f); Step(a);
+                Target(a, 2); AdvanceTo(a, "Burrow"); Step(a);
                 Check(a.Brain.StateName == "Burrow" && a.Motor.Intent.x < 0f, "近身先缩回再用空帽跳跃撤退");
                 object saved = a.CaptureSnapshotState(); Target(a, -2); Step(a);
                 Check(a.Motor.Intent.x < 0f, "撤退路线不随玩家穿越而抽搐换向");
@@ -783,7 +849,7 @@ namespace RuleGame.Editor.Enemy
                     var snapshots = SnapshotsFor(a);
                     var alive = snapshots.Capture();
                     string initial = a.Brain.StateName;
-                    float health = kind == EnemyKind.RabbitBoss ? 40f : kind == EnemyKind.ClockBoss ? 330f : 650f;
+                    float health = kind == EnemyKind.RabbitBoss ? a.Definition.Health * .4f : kind == EnemyKind.ClockBoss ? 330f : 650f;
                     a.Status.ApplyHealthDelta(health - a.Status.Health);
                     Step(a);
                     string transition = kind == EnemyKind.BrickBoss ? "Split" : kind == EnemyKind.ClockBoss ? "Stun"
@@ -941,7 +1007,7 @@ namespace RuleGame.Editor.Enemy
             {
                 int shots = 0;
                 a.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.ProjectileSpawn) shots++; };
-                Target(a, 6); a.Status.ApplyHealthDelta(-950); Step(a); Step(a, .81f);
+                Target(a, 6); a.Status.ApplyHealthDelta(a.Definition.Health * .5f - a.Status.Health); Step(a); Step(a, .81f);
                 Step(a, .36f); Step(a, .36f); Step(a, .4f);
                 Check(shots == 6 && a.Brain.StateName == "Rest", "兔子翻转后两轮三发散射，结束后休息");
             });

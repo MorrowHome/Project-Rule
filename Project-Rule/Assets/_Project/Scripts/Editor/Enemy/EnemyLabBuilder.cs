@@ -239,7 +239,8 @@ namespace RuleGame.Editor.Enemy
             definition.Kind = kind;
             definition.DisplayName = new[] { "积木分裂小怪", "积木 Boss", "发条 Boss", "毛绒兔子 Boss", "毛绒蝙蝠魔王", "蝙蝠召唤物" }[(int)kind];
             definition.Flying = kind == EnemyKind.BatBoss || kind == EnemyKind.BatMinion;
-            definition.Health = kind == EnemyKind.BrickMinion ? 11f : kind == EnemyKind.BatMinion ? 25f : kind == EnemyKind.ClockBoss ? 150f : kind == EnemyKind.BatBoss ? 300f : 100f;
+            definition.Health = kind == EnemyKind.BrickMinion ? 11f : kind == EnemyKind.BatMinion ? 25f
+                : kind == EnemyKind.ClockBoss ? 150f : kind == EnemyKind.BatBoss ? 300f : kind == EnemyKind.RabbitBoss ? 600f : 100f;
             definition.Damage = kind == EnemyKind.BrickMinion || kind == EnemyKind.BatMinion ? 5f : 10f;
             definition.BodySize = kind == EnemyKind.BrickMinion ? new Vector2(0.9f, 1f)
                 : kind == EnemyKind.BatMinion ? new Vector2(1f, 1.05f)

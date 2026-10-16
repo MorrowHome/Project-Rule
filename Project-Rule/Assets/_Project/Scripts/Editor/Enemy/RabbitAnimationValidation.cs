@@ -157,7 +157,7 @@ namespace RuleGame.Editor.Enemy
                         _actor.RestoreSnapshotState(rest);
                         _actor.Target.position = _actor.transform.position + Vector3.right * 6f;
                         _actor.Status.SetPaused(false);
-                        _actor.Status.ApplyHealthDelta(50f - _actor.Status.Health);
+                        _actor.Status.ApplyHealthDelta(_actor.Definition.Health * .5f - _actor.Status.Health);
                         Step(.02f);
                         Check(_actor.Brain.StateName == "Flip" && _actor.AnimationDuration >= 3f, "翻转完整播放缩回和帽子反转");
                         _actor.Status.SetPaused(true);

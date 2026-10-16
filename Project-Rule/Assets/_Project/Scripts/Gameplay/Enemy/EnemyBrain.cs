@@ -93,7 +93,8 @@ namespace RuleGame.Gameplay.Enemy
         {
             if (dt <= 0f || Actor.Status.IsPaused) return;
             Delta = dt; Age += dt; Elapsed += dt;
-            bool end = Actor.Status.Health <= 0f || (Config.Kind == EnemyKind.RabbitBoss && Actor.Status.Health < 20f);
+            // 兔子的退场与半血翻转都按最大生命比例判断，调总血量不会让阶段阈值失真。
+            bool end = Actor.Status.Health <= 0f || (Config.Kind == EnemyKind.RabbitBoss && Actor.Status.Health < Config.Health * .2f);
             if (end && Root.ActiveStateName != "Dead")
             {
                 Actor.MarkDefeated();

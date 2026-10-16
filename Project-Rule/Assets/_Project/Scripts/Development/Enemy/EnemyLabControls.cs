@@ -49,7 +49,8 @@ namespace RuleGame.Development.Enemy
             {
                 case EnemyKind.ClockBoss:
                 case EnemyKind.BatBoss: health = Enemy.Definition.Health * (Enemy.Brain.Phase == 1 ? 2f / 3f : Enemy.Brain.Phase == 2 ? 1f / 3f : 0f); break;
-                case EnemyKind.RabbitBoss: health = Enemy.Status.Health > 50f ? 50f : 19f; break;
+                case EnemyKind.RabbitBoss:
+                    health = Enemy.Definition.Health * (Enemy.Brain.Phase == 1 ? .5f : .19f); break;
                 default: health = Mathf.Max(0f, Enemy.Status.Health - Enemy.Definition.Health * 0.26f); break;
             }
             Enemy.Status.ApplyHealthDelta(health - Enemy.Status.Health);
