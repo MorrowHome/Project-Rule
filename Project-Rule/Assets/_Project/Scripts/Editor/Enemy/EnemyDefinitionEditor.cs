@@ -62,6 +62,7 @@ namespace RuleGame.Editor.Enemy
             { nameof(EnemyDefinition.ClockChargeCooldown), "冲撞冷却（秒）" },
             { nameof(EnemyDefinition.ClockBeamWarning), "每次激光预警（秒）" },
             { nameof(EnemyDefinition.ClockBeamDuration), "每次激光持续（秒）" },
+            { nameof(EnemyDefinition.ClockBeamMaxSweepAngle), "单束最大扫射角（度）" },
             { nameof(EnemyDefinition.ClockBeamSpread), "激光封路夹角（度）" },
             { nameof(EnemyDefinition.RabbitBurrowDuration), "藏身撤退最长时长（秒）" },
             { nameof(EnemyDefinition.RabbitBurrowSpeedMultiplier), "藏身撤退速度倍率" },

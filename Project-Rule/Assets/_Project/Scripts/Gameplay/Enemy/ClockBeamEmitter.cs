@@ -31,8 +31,10 @@ namespace RuleGame.Gameplay.Enemy
         public float HandProgress(int hand) => IsHandActive(hand)
             ? Mathf.Clamp01(1f - _remaining[hand] / RotationPeriod(hand)) : 0f;
         public float HandRotation(int hand) => -HandProgress(hand) * 360f;
-        public Vector2 HandDirection(int hand) => _actor.transform.TransformDirection(
-            Quaternion.Euler(0f, 0f, HandRotation(hand)) * Vector3.up);
+        public Vector2 HandDirection(int hand, float secondsAhead = 0f) => _actor.transform.TransformDirection(
+            Quaternion.Euler(0f, 0f, HandRotation(hand) - Mathf.Max(0f, secondsAhead) * 360f / RotationPeriod(hand)) * Vector3.up);
+        public float FireDuration(int hand) => Mathf.Min(Mathf.Max(.05f, Config.ClockBeamDuration),
+            RotationPeriod(hand) * Mathf.Clamp(Config.ClockBeamMaxSweepAngle, 30f, 180f) / 360f);
 
         public void Tick(float delta)
         {

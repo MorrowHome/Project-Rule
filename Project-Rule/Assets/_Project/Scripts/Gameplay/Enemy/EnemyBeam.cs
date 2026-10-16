@@ -7,7 +7,7 @@ using RuleGame.Infrastructure.Time;
 
 namespace RuleGame.Gameplay.Enemy
 {
-    /// <summary>有限时长的光束；时钟光束在预警与发射期间跟随对应指针，结束后消失。</summary>
+    /// <summary>有限时长的光束；预警提前显示起射方向，发射期间跟随指针并限制最大扫射角。</summary>
     [DefaultExecutionOrder(30)] // 物理判定晚于 Actor 推进；显示晚于 ClockHandView 更新表盘原点。
     public sealed class EnemyBeam : MonoBehaviour, ISnapshotParticipant
     {
@@ -26,7 +26,12 @@ namespace RuleGame.Gameplay.Enemy
         public bool DiscardWhenMissing => true;
         public EnemyActor Source => _source;
         public Vector2 Direction => FollowsClockHand && _source != null && _source.ClockBeams != null
-            ? _source.ClockBeams.HandDirection(_clockHand) : _direction;
+            ? _source.ClockBeams.HandDirection(_clockHand, Mathf.Max(0f, _warning - _age)) : _direction;
+        public Vector2 SweepEndDirection => FollowsClockHand && _source != null && _source.ClockBeams != null
+            ? _source.ClockBeams.HandDirection(_clockHand, Mathf.Max(0f, _warning + _duration - _age)) : _direction;
+        public float SweepAngle => FollowsClockHand && _source != null && _source.ClockBeams != null
+            ? _duration * 360f / _source.ClockBeams.RotationPeriod(_clockHand) : 0f;
+        public Vector2 SweepEndPoint => Origin + SweepEndDirection * Length(Origin, SweepEndDirection);
         public bool FollowsClockHand => _clockHand >= 0;
         public int ClockHand => _clockHand;
         public float Age => _age;
@@ -61,7 +66,7 @@ namespace RuleGame.Gameplay.Enemy
             beam._source = source; beam._width = width; beam._warning = warning;
             beam._age = 0f; beam._hit = false; beam._inPool = false;
             beam._clockHand = hand; beam._nextHit = 0f;
-            beam._duration = hand >= 0 ? Mathf.Max(.05f, source.Definition.ClockBeamDuration) : .35f;
+            beam._duration = hand >= 0 ? source.ClockBeams.FireDuration(hand) : .35f;
             beam._direction = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad));
             beam.gameObject.SetActive(true);
             source.EmitFeedback(EnemyFeedbackKind.BeamSpawn, source.transform.position, beam.Direction, beam);
@@ -105,7 +110,7 @@ namespace RuleGame.Gameplay.Enemy
         }
         private float Length(Vector2 origin, Vector2 direction)
         {
-            RaycastHit2D wall = Physics2D.Raycast(origin, direction, 32f, 1 << 8);
+            RaycastHit2D wall = Physics2D.Raycast(origin, direction, 32f, _source.Motor.SolidMask);
             return wall.collider != null ? wall.distance : 32f;
         }
         private void LateUpdate()

@@ -82,6 +82,8 @@ namespace RuleGame.Gameplay.Enemy
         [Tooltip("每次短暂扫射开始造成伤害前的预警时间。")]
         [Min(0.3f)] public float ClockBeamWarning = 0.7f;
         [Min(0.05f)] public float ClockBeamDuration = 0.35f;
+        [Tooltip("每束激光最多扫过的角度；实际持续时间取配置时长与该角度对应时长的较小值，不改变指针转速。")]
+        [Range(30f, 180f)] public float ClockBeamMaxSweepAngle = 90f;
         // 旧版瞄准散射参数，仅保留序列化兼容；扫射方向完全由指针决定。
         [HideInInspector] public float ClockBeamSpread = 14f;
         [Header("兔子藏身与弹幕")]

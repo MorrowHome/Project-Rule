@@ -38,6 +38,7 @@ MonoBehaviour:
   ClockChargeCooldown: 3.2
   ClockBeamWarning: 0.45
   ClockBeamDuration: 0.55
+  ClockBeamMaxSweepAngle: 90
   ClockBeamSpread: 14
   RabbitBurrowDuration: 1
   RabbitBurrowSpeedMultiplier: 2.8

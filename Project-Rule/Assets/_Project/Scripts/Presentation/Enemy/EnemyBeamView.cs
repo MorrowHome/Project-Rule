@@ -8,7 +8,7 @@ namespace RuleGame.Presentation.Enemy
     public sealed class EnemyBeamView : MonoBehaviour
     {
         private EnemyBeam _beam;
-        private LineRenderer _outer, _core;
+        private LineRenderer _outer, _core, _sweepEnd, _sweepArc;
         private SpriteRenderer _art;
         private EnemyVfxProfile _profile;
         private float _lastAge;
@@ -27,6 +27,13 @@ namespace RuleGame.Presentation.Enemy
             }
             // 核心用无纹理实线，外层单独保留作者的柔和渐变，避免核心也被纹理压窄。
             _core.sharedMaterial = profile.BeamCoreMaterial;
+            if (_sweepEnd == null)
+            {
+                _sweepEnd = CreateWarningLine("SweepEnd", 2);
+                _sweepArc = CreateWarningLine("SweepArc", 17);
+            }
+            _sweepEnd.sharedMaterial = _sweepArc.sharedMaterial = profile.BeamCoreMaterial;
+            _sweepEnd.enabled = _sweepArc.enabled = false;
             if (_art == null && profile.BeamAnimations.Length > 0)
             {
                 var go = new GameObject("DeliveredBeam"); go.transform.SetParent(transform, false);
@@ -49,6 +56,7 @@ namespace RuleGame.Presentation.Enemy
             _outer.SetPosition(0, start); _core.SetPosition(0, start); _core.SetPosition(1, end);
             float progress = Mathf.Clamp01(_beam.Age / Mathf.Max(.01f, _beam.WarningDuration));
             bool firing = _beam.Age >= _beam.WarningDuration;
+            DrawSweepWarning(start, progress, firing);
             float fade = firing ? Mathf.Clamp01(1f - (_beam.Age - _beam.WarningDuration) / _beam.FireDuration) : 1f;
             _outer.enabled = true;
             _outer.startWidth = _outer.endWidth = firing ? _beam.Width * (10f + fade * 6f) : .1f + progress * .06f;
@@ -65,6 +73,33 @@ namespace RuleGame.Presentation.Enemy
                 if (!authored) presenter?.Play(_profile.Shot, start, 1.8f, Color.white, duration: .24f);
                 presenter?.Play(_profile.Impact, end, authored ? .65f : 2f, Color.white, duration: .25f);
                 BossCameraImpulse.Pulse(_profile.CameraImpulse * .3f, .09f);
+            }
+        }
+        private LineRenderer CreateWarningLine(string name, int points)
+        {
+            var go = new GameObject(name); go.transform.SetParent(transform, false);
+            var line = go.AddComponent<LineRenderer>();
+            line.useWorldSpace = true; line.positionCount = points; line.sortingOrder = 13;
+            line.startWidth = line.endWidth = .045f;
+            return line;
+        }
+        private void DrawSweepWarning(Vector3 start, float progress, bool firing)
+        {
+            bool visible = _beam.FollowsClockHand && !firing;
+            _sweepEnd.enabled = _sweepArc.enabled = visible;
+            if (!visible) return;
+            Color color = new Color(1f, .78f, .35f, .18f + progress * .35f);
+            _sweepEnd.startColor = _sweepEnd.endColor = color;
+            _sweepArc.startColor = _sweepArc.endColor = color;
+            Vector3 end = _beam.SweepEndPoint; end.z = start.z;
+            _sweepEnd.SetPosition(0, start); _sweepEnd.SetPosition(1, end);
+            // 近轴短弧标明旋转方向和覆盖角；整场只复用两条提示线，不生成粒子弹幕。
+            float radius = Mathf.Max(1f, _beam.Source.Definition.BodySize.x * .75f);
+            for (int i = 0; i < _sweepArc.positionCount; i++)
+            {
+                Vector3 direction = Quaternion.Euler(0f, 0f, -_beam.SweepAngle * i / (_sweepArc.positionCount - 1))
+                    * (Vector3)_beam.Direction;
+                _sweepArc.SetPosition(i, start + direction * radius);
             }
         }
         private bool DrawAuthoredBeam(Vector3 start, Vector3 end, bool firing, float progress, float fade)
@@ -94,6 +129,8 @@ namespace RuleGame.Presentation.Enemy
         {
             if (_core != null) _core.enabled = false;
             if (_art != null) _art.enabled = false;
+            if (_sweepEnd != null) _sweepEnd.enabled = false;
+            if (_sweepArc != null) _sweepArc.enabled = false;
         }
     }
 }
