@@ -49,6 +49,19 @@ namespace RuleGame.Presentation.Player
         public const string ParamGravityFlipped = "GravityFlipped";
         public const string ParamRising         = "Rising";
 
+        /// <summary>
+        /// 这次重力反转该不该播那条翻转动画 = 重力已反转 <b>且</b> <b>本轮</b>还没播过。
+        /// </summary>
+        /// <remarks>
+        /// <para>⚠️ 这是本类<b>算出来</b>的参数，不是从玩法层透传的原始状态。之所以不直接在边上
+        /// 挂「<c>GravityFlipped</c> 再加一个 <c>WeightlessPlayed</c>」：那样
+        /// <c>→ Weightless</c> 与 <c>→ Fall</c> 两条出边的条件会<b>同时成立</b>，谁赢取决于
+        /// 过渡在列表里的先后 —— 顺序一改行为就变。拆成同一个参数的正反两面之后，
+        /// 两条边天然互斥，与顺序无关。</para>
+        /// <para>它的反面（<c>IfNot</c>）就是「按当前重力滞空，但不用播翻转动画」。</para>
+        /// </remarks>
+        public const string ParamPlayFlip = "PlayFlip";
+
         public const string ParamJump     = "Jump";
 
         /// <summary>二段跳（空中段）。与 <see cref="ParamJump"/> 分开：起跳和空中那一下是两个动作。</summary>
@@ -69,6 +82,15 @@ namespace RuleGame.Presentation.Player
         /// <summary>重击（下 + 攻击）。**不先进拔剑**，直接从 AnyState 进 <c>SlashDown</c>。</summary>
         public const string ParamHeavy = "HeavyAttack";
 
+        /// <summary>
+        /// 重力反转专用的那套**倒立版**滞空动画的 state 名。
+        /// </summary>
+        /// <remarks>
+        /// ⚠️ 这是<b>状态名</b>、不是参数名，但同样要保持单一真相：建图脚本直接引用本常量
+        /// 填进它的 state 列表，所以改名只需改这一处。
+        /// </remarks>
+        public const string StateWeightless = "Weightless";
+
         private static readonly int HSpeed          = Animator.StringToHash(ParamSpeed);
         private static readonly int HMoving         = Animator.StringToHash(ParamMoving);
         private static readonly int HGrounded       = Animator.StringToHash(ParamGrounded);
@@ -76,6 +98,7 @@ namespace RuleGame.Presentation.Player
         private static readonly int HWallSliding    = Animator.StringToHash(ParamWallSliding);
         private static readonly int HGravityFlipped = Animator.StringToHash(ParamGravityFlipped);
         private static readonly int HRising         = Animator.StringToHash(ParamRising);
+        private static readonly int HPlayFlip       = Animator.StringToHash(ParamPlayFlip);
 
         private static readonly int HJump         = Animator.StringToHash(ParamJump);
         private static readonly int HAirJump      = Animator.StringToHash(ParamAirJump);
@@ -107,6 +130,26 @@ namespace RuleGame.Presentation.Player
         private float _lastHealth;
         private bool  _warnedNoAnimator;
         private bool  _reactionPending;
+
+        /// <summary>
+        /// <b>本轮</b>重力反转里，那条翻转动画（<c>Weightless</c>）**已经播过**了。
+        /// </summary>
+        /// <remarks>
+        /// <para><b>锁的粒度是「一次重力反转」，不是「一整局」</b>：重力一恢复成正常方向就解锁，
+        /// 下次再反转又是一个新的「第一次」，照样播。</para>
+        ///
+        /// <para>为什么要这个锁：那条剪辑是「从站姿起、边播边把人物翻过去」的一次性动作
+        /// （贴图最底下一行 14 帧，<c>m_LoopTime = 0</c>）。不锁的话，反转期间每次重新滞空都会
+        /// 从第 1 帧重演一遍翻滚 —— 表现是「在天花板上落地 → <c>Land</c> → <c>Idle</c>，
+        /// 走出边缘又弹回正立、再翻一次」。</para>
+        ///
+        /// <para>⚠️ 锁在<b>动画真的开始播</b>那一刻才落下（<c>IsWeightlessPlaying</c> 为真，
+        /// 含正在淡入的那一帧），不是「重力一反转就落」：在地面上按反转、条件还没凑齐
+        /// （<c>Grounded</c> 仍为 true）时不会白白浪费掉这次机会。</para>
+        ///
+        /// <para>不做持久化也不跨场景：跟着对象走，场景重载即重置。</para>
+        /// </remarks>
+        private bool _flipPlayed;
 
         // ==================================================================
         //  生命周期
@@ -205,7 +248,56 @@ namespace RuleGame.Presentation.Player
         /// </remarks>
         private void LateUpdate()
         {
-            if (_renderer != null && _player != null) _renderer.flipX = _player.Facing < 0f;
+            if (_renderer == null || _player == null) return;
+
+            // ⚠️ 重力反转时**整个身体已经在 PlayerController 里转了 180°**（为了让碰撞箱的「脚」
+            //    那面翻到朝上那侧），Visual 作为子对象一起转过去了。所以视觉这边要给的是**抵消**：
+            //
+            //    ① 那次旋转把**左右也带翻了** → 朝向要异或回来，否则会左右镜像；
+            //    ② Weightless 那条剪辑演的就是「正立 → 倒立」本身（贴图最底下一行 14 帧），
+            //       它要的是**严格按原画播**，所以根对象那 180° 也得抵消掉。
+            //
+            //    ①② 各补一个镜像；两个镜像 + 根对象那 180° = 净值为零 —— 于是反转期间
+            //    Weightless 按原画播：第 1 帧正立起步，边播边把人物翻过去。
+            //
+            // ⚠️ 判据必须是 `_player.IsBodyFlipped`（= 根对象**实际**转没转），**不是** Physics2D.gravity。
+            //    重力在规则的 Update（顺序 −100）里就改了，身体要等下一个 FixedUpdate 才转 —— 差一帧。
+            //    按重力判的话这两下补偿会超前生效，等于在没转的身体上多叠 180°，表现是
+            //    「反转瞬间闪一帧倒立的人物」。详见 PlayerController.IsBodyFlipped 的说明。
+            //
+            // 放 LateUpdate 的理由和上面 flipX 那段原有说明完全相同（Animator 会覆盖渲染器属性）。
+            bool flipped    = _player.IsBodyFlipped;
+            bool weightless = IsWeightlessPlaying;
+
+            // 锁：那条动画**真开始播了**（含正在淡入的那一帧）就把本轮这次机会用掉 ——
+            // 反转期间再滞空只走 Fall，不会再翻滚一遍。
+            // 重力恢复成正常方向时 PushContinuousParameters 会把锁清掉，下次反转重新可播。
+            if (weightless) _flipPlayed = true;
+
+            _renderer.flipX = (_player.Facing < 0f) != flipped;
+            _renderer.flipY = flipped && weightless;
+        }
+
+        /// <summary>当前是否在播重力反转专用的那套**倒立版**滞空动画。</summary>
+        /// <remarks>
+        /// ⚠️ <b>「正在过渡进 Weightless」也得算进来</b>。过渡进行中
+        /// <c>GetCurrentAnimatorStateInfo</c> 报的是<b>源</b>状态（Idle / Fall），目标状态在
+        /// <c>GetNextAnimatorStateInfo</c> 里 —— 只看 Current 的话，整个淡入窗口
+        /// （<c>Idle→Weightless</c> 0.10 秒 / <c>Fall→Weightless</c> 0.12 秒）里 <c>flipY</c> 都是
+        /// <c>false</c>，可身体早就被根对象转了 180°。于是那段时间看到的是
+        /// <b>「正常朝向的图被倒着播」</b>，读起来就像「反转之后还先播了一下 Fall」。
+        /// </remarks>
+        private bool IsWeightlessPlaying
+        {
+            get
+            {
+                if (_animator == null) return false;
+
+                if (_animator.GetCurrentAnimatorStateInfo(0).IsName(StateWeightless)) return true;
+
+                return _animator.IsInTransition(0)
+                    && _animator.GetNextAnimatorStateInfo(0).IsName(StateWeightless);
+            }
         }
 
         // ==================================================================
@@ -227,7 +319,22 @@ namespace RuleGame.Presentation.Player
             _animator.SetBool(HGrounded, _player.IsGrounded);
             _animator.SetBool(HDashing,  _player.IsDashing);
             _animator.SetBool(HWallSliding, _player.IsWallSliding);
-            _animator.SetBool(HGravityFlipped, Physics2D.gravity.y > 0f);
+
+            // 「重力是不是反的」和「这次该不该播那条翻转动画」是两件事 ——
+            // 后者还要「本轮还没播过」。重力的原始值后面还有一条边要判（Weightless → Fall），
+            // 所以两个都留着。见 ParamPlayFlip 与 _flipPlayed 的说明。
+            bool gravityFlipped = Physics2D.gravity.y > 0f;
+
+            // 回到正常重力 → 解锁：下一次反转又是一个新的「第一次」，动画照样播。
+            //
+            // ⚠️ 每帧无条件写（不是只在「刚恢复」那个边沿写）：从 Weightless 淡出到 Fall 的那几帧里
+            //    LateUpdate 可能顺手又把锁落上（那时 Current 仍是 Weightless），下一帧这里会再清掉。
+            //    反正 `PlayFlip = gravityFlipped && ...`，重力正常时前面那项就是 false，振荡不影响行为。
+            if (!gravityFlipped) _flipPlayed = false;
+
+            _animator.SetBool(HGravityFlipped, gravityFlipped);
+            _animator.SetBool(HPlayFlip, gravityFlipped && !_flipPlayed);
+
             _animator.SetBool(HRising, Vector2.Dot(velocity, Up) > 0.1f);
         }
 
@@ -245,17 +352,29 @@ namespace RuleGame.Presentation.Player
         private void HandleLanded()     => SetTrigger(HLand);
 
         /// <summary>
-        /// 挥了一刀。第一次是「起手」（拔剑 → 第一段），之后每一下是「接续」（下一段）。
+        /// 挥了一刀。第一次是起手（进 <c>Slash1</c>），之后每一下是接续（进 <c>Slash2</c>）。
         /// </summary>
         /// <remarks>
-        /// 用两个触发器而不是一个，是因为 <c>AnyState → DrawSword</c> 的优先级高于一切 ——
-        /// 用一个 <c>Attack</c> 的话，连段中途再按会从拔剑重来。
+        /// 用两个触发器而不是一个，是因为 <c>AnyState → Slash1</c> 不带任何附加条件 ——
+        /// 共用一个 <c>Attack</c> 的话，连段中途再按会从第一刀重来。
         /// </remarks>
         private void HandleAttacked()
-            => SetTrigger(_player.AttackComboIndex <= 0 ? HAttack : HAttackNext);
+        {
+            if (_player.AttackComboIndex <= 0)
+            {
+                // 新起手：先清掉上一轮可能残留的 AttackNext。
+                // ⚠️ 触发器**只在过渡被走通时才消耗** —— 按晚了（图上已经回 Idle）那一下会一直挂着，
+                //    等到下一次进 CD 时被它带走，凭空接出一刀。
+                if (_animator != null) _animator.ResetTrigger(HAttackNext);
+                SetTrigger(HAttack);
+                return;
+            }
+
+            SetTrigger(HAttackNext);
+        }
 
         /// <summary>
-        /// 重击。**不走 <see cref="ParamAttack"/>** —— 那条路会先进 <c>DrawSword</c>（拔剑）；
+        /// 重击。**不走 <see cref="ParamAttack"/>** —— 那条是两刀连段（<c>Slash1 → CD → Slash2</c>）；
         /// 重击是直接劈下去的单发动作，所以给图上一条独立的 AnyState 过渡。
         /// </summary>
         private void HandleHeavyAttacked() => SetTrigger(HHeavy);
