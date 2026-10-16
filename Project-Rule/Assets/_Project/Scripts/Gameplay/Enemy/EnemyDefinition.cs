@@ -33,6 +33,37 @@ namespace RuleGame.Gameplay.Enemy
         public float MoveSpeed = 2.5f;
         public float AttackRange = 3.5f;
         public float AttackCooldown = 1.8f;
+        [Header("弹幕压力")]
+        [Tooltip("单个 Boss 同时存活的弹体上限；命中、超时或回溯移除后归还名额。")]
+        [Range(16, 384)] public int ProjectileBudget = 192;
+        [Min(1f)] public float ProjectileLifetime = 7f;
+        [Range(1, 5)] public int BrickGroundWaves = 1;
+        [Min(.12f)] public float BrickWaveInterval = .24f;
+        [Tooltip("砸地横向半径，0 仅发原有冲击波。")]
+        [Min(0f)] public float BrickSlamRange;
+        [Range(1, 15)] public int BrickThrowCount = 1;
+        [Range(0f, 120f)] public float BrickThrowSpread = 54f;
+        [Min(1f)] public float BrickThrowSpeed = 9f;
+        [Range(1, 11)] public int RabbitLobCount = 1;
+        [Min(.1f)] public float RabbitLandingSpread = 1.1f;
+        [Range(3, 17)] public int RabbitFanCount = 3;
+        [Range(0f, 160f)] public float RabbitFanSpread;
+        [Range(1, 8)] public int BatVolleyWaves = 4;
+        [Range(3, 21)] public int BatFanCount = 5;
+        [Min(.1f)] public float BatVolleyInterval = .25f;
+        [Range(10f, 160f)] public float BatFanSpread = 48f;
+        [Range(0, 48)] public int BatRingCount;
+        [Header("时钟变速与齿轮弹幕")]
+        [Tooltip("上一条时间规则结束后的间隔（游戏秒）；0 关闭自动变速。时间槽有生效规则时等待，不提前覆盖。")]
+        [Min(0f)] public float ClockTimeRuleInterval;
+        [Tooltip("额外环形弹幕默认关闭；白盒中可独立切换，不影响策划原有激光和乱跑。")]
+        public bool ClockExtraBarrageEnabled;
+        [Range(0, 48)] public int ClockBurstCount;
+        [Min(.4f)] public float ClockBurstInterval = 1.6f;
+        [Min(.2f)] public float ClockBurstWarning = .45f;
+        [Min(1f)] public float ClockBurstSpeed = 8f;
+        [Min(.05f)] public float ClockBeamWidth = .1f;
+        [Min(0f)] public float ClockBeamWidthStep = .08f;
         [Header("Boss 进攻后的喘息")]
         [Tooltip("一套攻击结束后不再出招的时间；地面 Boss 原地休息，蝙蝠高空巡飞。不随阶段加速缩短。")]
         [Min(0.1f)] public float BossRestDuration = 1.8f;
@@ -45,7 +76,7 @@ namespace RuleGame.Gameplay.Enemy
         [Tooltip("第二阶段起一套攻击的最大招数，每招仍有完整前摇，结束后休息。")]
         [Range(1, 3)] public int BrickComboLimit = 2;
         [Header("发条封路与冲撞")]
-        [Min(0.2f)] public float ClockChargeDuration = 1.15f;
+        [Min(0.2f)] public float ClockChargeDuration = 3f;
         [Min(1f)] public float ClockChargeSpeedMultiplier = 3.5f;
         [Min(1f)] public float ClockChargeCooldown = 7f;
         [Tooltip("每次短暂扫射开始造成伤害前的预警时间。")]

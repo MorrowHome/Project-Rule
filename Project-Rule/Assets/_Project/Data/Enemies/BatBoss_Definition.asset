@@ -16,18 +16,18 @@ MonoBehaviour:
   DisplayName: "\u6BDB\u7ED2\u8759\u8760\u9B54\u738B"
   BodySize: {x: 2.5, y: 2.8}
   Health: 300
-  Damage: 10
+  Damage: 24
   ContactDamage: 1
-  ContactInterval: 0.6
+  ContactInterval: 0.4
   ContactPadding: 0.05
   Energy: 100
   EnergyRegen: 2
   RuleAttribute: 0
   RuleRelation: 1
-  MoveSpeed: 5.5
-  AttackRange: 3.5
-  AttackCooldown: 1.1
-  BossRestDuration: 2
+  MoveSpeed: 7.2
+  AttackRange: 5
+  AttackCooldown: 0.6
+  BossRestDuration: 0.35
   ClockBeamVolleysBeforeRest: 2
   BrickAdvanceDuration: 0.9
   BrickAdvanceSpeedMultiplier: 2.2
@@ -46,23 +46,23 @@ MonoBehaviour:
   RabbitBurstInterval: 0.35
   PreferredDistance: 5
   SpacingTolerance: 0.6
-  RangedRange: 9
+  RangedRange: 15
   RetreatSpeedMultiplier: 0.8
-  StaggerDamageThreshold: 40
+  StaggerDamageThreshold: 60
   StaggerResetDelay: 1.5
-  HurtCooldown: 4
-  BossHurtDuration: 0.45
+  HurtCooldown: 5
+  BossHurtDuration: 0.18
   GravityScale: 1
   Flying: 1
-  FlightAcceleration: 70
+  FlightAcceleration: 36
   BatOrbitDistance: 4.5
   BatHoverHeight: 3
-  BatDashCooldown: 4
-  BatDashWindup: 0.5
-  BatDashDuration: 0.65
-  BatEvadeCooldown: 2.5
-  BatEvadeDuration: 0.65
-  BatRecoverDuration: 0.45
+  BatDashCooldown: 1.8
+  BatDashWindup: 0.4
+  BatDashDuration: 0.8
+  BatEvadeCooldown: 1.2
+  BatEvadeDuration: 0.45
+  BatRecoverDuration: 0.25
   BatRestHeightRatio: 0.8
   BatRestPatrolDistance: 2.5
   BatRestSpeedMultiplier: 0.85
@@ -72,6 +72,16 @@ MonoBehaviour:
   ClockHourInterval: 12
   ClockCoreWindow: 3
   ClockCoreHealth: 15
+  BatApproachSpeedMultiplier: 1.4
+  BatApproachDuration: 0.9
+  ProjectileLifetime: 7
+  BatApproachDistance: 3.6
+  BatVolleyWaves: 6
+  BatFanCount: 13
+  BatVolleyInterval: 0.18
+  BatFanSpread: 96
+  BatRingCount: 24
+  ProjectileBudget: 256
   Timings:
   - Action: Fly
     Duration: 0.625

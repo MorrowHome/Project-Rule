@@ -174,14 +174,45 @@ namespace RuleGame.Gameplay.Enemy
         {
             if (HasTarget) EnemyProjectile.Spawn(this, direction, speed, gravity, radius, visualIndex, origin);
         }
+        /// <summary>围绕锁定方向展开等角扇形；每发仍使用共用弹池与战斗结算。</summary>
+        public void ShootFan(Vector2 direction, int count, float spread, float speed, float gravity = 0f,
+            float radius = .22f, int visualIndex = -1, Vector2? origin = null)
+        {
+            count = Mathf.Clamp(count, 1, 48);
+            float middle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            for (int i = 0; i < count; i++)
+            {
+                float angle = (middle + (count == 1 ? 0f : Mathf.Lerp(-spread * .5f, spread * .5f, i / (float)(count - 1)))) * Mathf.Deg2Rad;
+                Shoot(new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)), speed, gravity, radius, visualIndex, origin);
+            }
+        }
+        public void ShootRing(int count, float speed, float offset = 0f, float radius = .2f, Vector2? origin = null)
+        {
+            count = Mathf.Clamp(count, 1, 48);
+            for (int i = 0; i < count; i++)
+            {
+                float angle = (offset + i * 360f / count) * Mathf.Deg2Rad;
+                Shoot(new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)), speed, 0f, radius, origin: origin);
+            }
+        }
+        public void AttackArea(Vector2 center, Vector2 size)
+        {
+            if (Combat == null || !HasTarget) return;
+            _swingTargets.Clear();
+            Combat.PerformAttack(this, center, size, PlayerMask, Definition.Damage, 7f, _swingTargets);
+            EmitFeedback(EnemyFeedbackKind.AreaStrike, center, Motor.Up);
+        }
         public void Beam(float angle, float width, float warning = 0.65f)
         {
             if (HasTarget) EnemyBeam.Spawn(this, angle, width, warning);
         }
-        public bool CastRule()
+        public bool CastRule() => CastRule(Definition.RuleAttribute, Definition.RuleRelation);
+
+        /// <summary>临时选择施法组合，不改团队共享的 EnemyDefinition 资产。</summary>
+        public bool CastRule(AttributeId attribute, RelationId relation)
         {
             if (_release == null || RuleSystem.Instance == null) return false;
-            bool released = _release.TryRelease(Definition.RuleAttribute, Definition.RuleRelation, RuleSource.Enemy).Succeeded;
+            bool released = _release.TryRelease(attribute, relation, RuleSource.Enemy).Succeeded;
             if (released) EmitFeedback(EnemyFeedbackKind.RuleCast, transform.position, Motor.Up);
             return released;
         }
@@ -193,15 +224,33 @@ namespace RuleGame.Gameplay.Enemy
             if (prefab == null) return;
             PruneSummons();
             count = Mathf.Min(count, 8 - _summons.Count);
-            for (int i = 0; i < count; i++)
+            int spawned = 0;
+            var spawnFilter = new ContactFilter2D { useTriggers = false };
+            spawnFilter.SetLayerMask(Motor.SolidMask | Motor.BodyBlockMask | PlayerMask);
+            Vector2 size = prefab.Definition.BodySize;
+            // 开启敌人身体阻挡后，出生点也必须在 Boss 体外；否则双方会从重叠状态互相卡住。
+            for (int candidate = 0; candidate < 16 && spawned < count; candidate++)
             {
-                Vector3 offset = flying ? new Vector3((i - (count - 1) * 0.5f) * 1.5f, 2f, 0f)
-                    : new Vector3((i - (count - 1) * 0.5f) * 1.3f, -Definition.BodySize.y * 0.5f + 0.8f, 0f);
-                EnemyActor child = Instantiate(prefab, transform.position + offset, Quaternion.identity);
-                child.Target = Target; child.Combat = Combat; child.Summoner = this; child.RuntimeSpawned = true;
+                float side = (candidate & 1) == 0 ? -1f : 1f;
+                float distance = (Definition.BodySize.x + size.x) * .5f + .25f
+                    + (candidate / 2) * (size.x + .25f);
+                Vector2 position = (Vector2)transform.position + Vector2.right * (side * distance)
+                    + Motor.Up * (flying ? 2f : (size.y - Definition.BodySize.y) * .5f + .05f);
+                if (flying && ArenaY.y - ArenaY.x > size.y + .3f)
+                    position.y = Mathf.Clamp(position.y, ArenaY.x + size.y * .5f + .15f,
+                        ArenaY.y - size.y * .5f - .15f);
+                if (position.x - size.x * .5f < ArenaX.x || position.x + size.x * .5f > ArenaX.y) continue;
+                if (flying && (position.y - size.y * .5f < ArenaY.x || position.y + size.y * .5f > ArenaY.y)) continue;
+                if (Physics2D.OverlapBox(position, size + Vector2.one * .02f, 0f, spawnFilter, _contacts) > 0) continue;
+                EnemyActor child = Instantiate(prefab, position, Quaternion.identity);
+                child.Target = Target; child.Combat = Combat; child.PlayerMask = PlayerMask;
+                child.Motor.SolidMask = Motor.SolidMask; child.Motor.BodyBlockMask = Motor.BodyBlockMask;
+                child.ArenaX = ArenaX; child.ArenaY = ArenaY;
+                child.Summoner = this; child.RuntimeSpawned = true;
                 _summons.Add(child);
+                spawned++;
             }
-            if (count > 0) EmitFeedback(EnemyFeedbackKind.Summon, transform.position, Motor.Up);
+            if (spawned > 0) EmitFeedback(EnemyFeedbackKind.Summon, transform.position, Motor.Up);
         }
         private void PruneSummons() => _summons.RemoveAll(item => item == null || !item.gameObject.activeInHierarchy || item.Defeated);
         public int SummonCount { get { PruneSummons(); return _summons.Count; } }

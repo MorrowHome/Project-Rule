@@ -180,7 +180,7 @@ namespace RuleGame.Editor.Enemy
             }
             Debug.Log("[EnemyLabs] 六个独立白盒与六个敌人 Prefab 已生成，主角默认可受伤，F5 切换无敌，Build Settings 未修改。");
         }
-        private static EnemyAnimationSet CreateAnimationSet(EnemyKind kind, EnemyArtManifest manifest)
+        internal static EnemyAnimationSet CreateAnimationSet(EnemyKind kind, EnemyArtManifest manifest)
         {
             string path = DataFolder + "/" + kind + "_Animations.asset";
             EnemyAnimationSet set = LoadOrCreate<EnemyAnimationSet>(path);
@@ -231,7 +231,11 @@ namespace RuleGame.Editor.Enemy
         }
         private static EnemyDefinition CreateDefinition(EnemyKind kind, EnemyAnimationSet animations)
         {
-            EnemyDefinition definition = LoadOrCreate<EnemyDefinition>(DataFolder + "/" + kind + "_Definition.asset");
+            string path = DataFolder + "/" + kind + "_Definition.asset";
+            // 配置资产是策划调参的权威；重建场景 / Prefab 不能把已经调整的难度覆盖回白盒默认值。
+            EnemyDefinition definition = AssetDatabase.LoadAssetAtPath<EnemyDefinition>(path);
+            if (definition != null) return definition;
+            definition = LoadOrCreate<EnemyDefinition>(path);
             definition.Kind = kind;
             definition.DisplayName = new[] { "积木分裂小怪", "积木 Boss", "发条 Boss", "毛绒兔子 Boss", "毛绒蝙蝠魔王", "蝙蝠召唤物" }[(int)kind];
             definition.Flying = kind == EnemyKind.BatBoss || kind == EnemyKind.BatMinion;

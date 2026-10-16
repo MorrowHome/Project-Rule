@@ -9,6 +9,8 @@ namespace RuleGame.Gameplay.Enemy
     public sealed class EnemyMotor : MonoBehaviour, IKnockbackReceiver
     {
         public LayerMask SolidMask = 1 << 8;
+        [Tooltip("仅阻挡身体移动，不作为地面或悬崖支撑。默认 Enemy 层，包含 Boss 与召唤小兵。")]
+        public LayerMask BodyBlockMask = 1 << 9;
         public Vector2 Intent { get; set; }
         public float SpeedMultiplier { get; set; } = 1f;
         public bool Grounded { get; private set; }
@@ -73,7 +75,7 @@ namespace RuleGame.Gameplay.Enemy
                 surfaceUp = Up, surfaceSlideAngle = 60f, gravitySlipAngle = 0f,
                 gravity = Vector2.zero, maxIterations = 6, useLayerMask = true,
                 // 玩家身体只参与位移阻挡，不作为接地或悬崖探测的支撑面。
-                layerMask = SolidMask | _actor.PlayerMask, useAttachedTriggers = false, useSimulationMove = true
+                layerMask = SolidMask | _actor.PlayerMask | BodyBlockMask, useAttachedTriggers = false, useSimulationMove = true
             };
             // 飞行实体不能使用 Slide 的默认贴地吸附，否则落地后向上飞仍会被拉回地面。
             if (flying) movement.surfaceAnchor = Vector2.zero;
@@ -88,6 +90,22 @@ namespace RuleGame.Gameplay.Enemy
             Velocity = velocity;
         }
 
+        /// <summary>检查真实身体阻挡；不能把摩擦导致的低速误判成撞到了玩家。</summary>
+        public bool HasHorizontalObstacle(float direction)
+        {
+            float side = Mathf.Sign(direction);
+            var filter = new ContactFilter2D { useTriggers = false };
+            filter.SetLayerMask(SolidMask | BodyBlockMask | _actor.PlayerMask);
+            // Rigidbody.Cast 排除自身；只接受迎面接触，不把脚下地面当成横向墙壁。
+            int count = _body.Cast(Vector2.right * side, filter, _hits, .035f);
+            for (int i = 0; i < count; i++)
+                if (_hits[i].normal.x * side < -.5f) return true;
+            if (!Grounded) return false;
+            EnemyDefinition config = _actor.Definition;
+            Vector2 probe = _body.position - Up * (config.BodySize.y * .5f - .1f)
+                + Vector2.right * side * (config.BodySize.x * .5f + .15f);
+            return !Physics2D.Raycast(probe, -Up, .45f, SolidMask);
+        }
         public void AddImpulse(Vector2 impulse) => _impulse += impulse / Mathf.Max(0.1f, _body.mass);
         public void Stop() { Intent = Vector2.zero; Velocity = _impulse = Vector2.zero; SpeedMultiplier = 1f; }
         public Vector2 CaptureImpulse() => _impulse;

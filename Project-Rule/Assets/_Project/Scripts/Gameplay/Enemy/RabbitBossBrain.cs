@@ -214,13 +214,12 @@ namespace RuleGame.Gameplay.Enemy
                         Vector2 direction = (_aim - origin).normalized;
                         float spread = Mathf.Clamp(Config.RabbitFanAngle, 5f, 40f);
                         float sweep = ((Pulses + _pattern) & 1) == 0 ? -spread * .25f : spread * .25f;
-                        for (int i = -1; i <= 1; i++)
-                        {
-                            float angle = (sweep + i * spread) * Mathf.Deg2Rad;
-                            Vector2 shot = new Vector2(direction.x * Mathf.Cos(angle) - direction.y * Mathf.Sin(angle),
-                                direction.x * Mathf.Sin(angle) + direction.y * Mathf.Cos(angle));
-                            Actor.Shoot(shot, 9f, .2f, visualIndex: 2, origin: origin);
-                        }
+                        float turn = sweep * Mathf.Deg2Rad;
+                        Vector2 middle = new Vector2(direction.x * Mathf.Cos(turn) - direction.y * Mathf.Sin(turn),
+                            direction.x * Mathf.Sin(turn) + direction.y * Mathf.Cos(turn));
+                        Actor.ShootFan(middle, Mathf.Clamp(Config.RabbitFanCount, 3, 17),
+                            Config.RabbitFanSpread > 0f ? Config.RabbitFanSpread : spread * 2f,
+                            11f, .2f, visualIndex: 2, origin: origin);
                         Pulses++;
                         _aim = PredictThrowTarget(.2f);
                     }
@@ -232,7 +231,14 @@ namespace RuleGame.Gameplay.Enemy
         private void FireLob()
         {
             Vector2 origin = ThrowOrigin();
-            Vector2 delta = _aim - origin;
+            int count = Mathf.Clamp(Config.RabbitLobCount, 1, 11);
+            for (int i = 0; i < count; i++)
+                FireLobAt(origin, _aim + Vector2.right * ((i - (count - 1) * .5f) * Config.RabbitLandingSpread));
+        }
+        private void FireLobAt(Vector2 origin, Vector2 target)
+        {
+            // 每个落点单独求上抛弹道，扩散的是覆盖区域，不扭曲已经调好的主弹初速度。
+            Vector2 delta = target - origin;
             float gravity = _lob ? .65f : .95f;
             float acceleration = Physics2D.gravity.magnitude * gravity;
             if (acceleration < .001f)

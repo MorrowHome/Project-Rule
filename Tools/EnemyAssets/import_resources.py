@@ -175,8 +175,11 @@ def main():
     manifest_path = DEST / "EnemyArtManifest.json"
     if manifest_path.exists():
         previous = json.loads(manifest_path.read_text(encoding="utf-8"))
-        manifest["frames"] += [f for f in previous["frames"] if "/RabbitBoss/" in f["path"]]
-        manifest["sequences"] += [s for s in previous["sequences"] if s["actor"] == "RabbitBoss"]
+        extras = [s for s in previous["sequences"] if s["actor"] == "RabbitBoss"
+                  or s['action'] in ('ProjectileCube', 'BeamThin', 'BeamMedium', 'BeamThick')]
+        extra_paths = {path for sequence in extras for path in sequence['frames']}
+        manifest["frames"] += [f for f in previous["frames"] if f['path'] in extra_paths]
+        manifest["sequences"] += extras
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Copied {len(manifest['frames'])} frames; {len(manifest['sequences'])} sequences.")
 

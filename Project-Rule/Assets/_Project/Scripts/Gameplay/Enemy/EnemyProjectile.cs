@@ -11,6 +11,8 @@ namespace RuleGame.Gameplay.Enemy
     public sealed class EnemyProjectile : MonoBehaviour, ISnapshotParticipant
     {
         private static readonly Stack<EnemyProjectile> Pool = new Stack<EnemyProjectile>();
+        private static readonly Dictionary<EnemyActor, int> ActiveBySource = new Dictionary<EnemyActor, int>();
+        private EnemyActor _countedSource;
         private EnemyActor _source;
         private Rigidbody2D _body;
         private SpriteRenderer _renderer;
@@ -26,10 +28,13 @@ namespace RuleGame.Gameplay.Enemy
         public float Gravity => _gravity;
         public float Age => _age;
         public int VisualIndex => _visualIndex;
+        public static int ActiveCount(EnemyActor source)
+            => !ReferenceEquals(source, null) && ActiveBySource.TryGetValue(source, out int count) ? count : 0;
 
         public static void Spawn(EnemyActor source, Vector2 direction, float speed, float gravity, float radius, int visualIndex = -1, Vector2? origin = null)
         {
             if (source.Target == null || source.Defeated) return;
+            if (ActiveCount(source) >= Mathf.Clamp(source.Definition.ProjectileBudget, 16, 384)) return;
             EnemyProjectile shot = null;
             while (Pool.Count > 0 && shot == null)
             {
@@ -64,9 +69,28 @@ namespace RuleGame.Gameplay.Enemy
             source.EmitFeedback(EnemyFeedbackKind.ProjectileSpawn, shot.transform.position, direction, shot);
         }
         private void Awake() { _body = GetComponent<Rigidbody2D>(); _renderer = GetComponent<SpriteRenderer>(); }
-        private void OnEnable() => _inPool = false;
+        private void OnEnable()
+        {
+            _inPool = false;
+            RegisterActive();
+        }
+        private void RegisterActive()
+        {
+            if (ReferenceEquals(_source, null) || !ReferenceEquals(_countedSource, null)) return;
+            _countedSource = _source;
+            ActiveBySource[_source] = ActiveCount(_source) + 1;
+        }
+        private void UnregisterActive()
+        {
+            if (ReferenceEquals(_countedSource, null)) return;
+            int remaining = ActiveCount(_countedSource) - 1;
+            if (remaining <= 0) ActiveBySource.Remove(_countedSource);
+            else ActiveBySource[_countedSource] = remaining;
+            _countedSource = null;
+        }
         private void OnDisable()
         {
+            UnregisterActive();
             if (_inPool) return;
             _inPool = true;
             Pool.Push(this);
@@ -77,7 +101,7 @@ namespace RuleGame.Gameplay.Enemy
             if (_source == null || _source.Defeated) { gameObject.SetActive(false); return; }
             float dt = Time.fixedDeltaTime;
             _age += dt;
-            if (_age > 7f) { gameObject.SetActive(false); return; }
+            if (_age > Mathf.Max(1f, _source.Definition.ProjectileLifetime)) { gameObject.SetActive(false); return; }
             _velocity += Physics2D.gravity * _gravity * dt;
             var filter = new ContactFilter2D { useTriggers = false };
             filter.SetLayerMask(_source.PlayerMask | (1 << 8));
@@ -102,7 +126,9 @@ namespace RuleGame.Gameplay.Enemy
         public void RestoreSnapshotState(object state)
         {
             if (!(state is Data data)) return;
+            UnregisterActive();
             _source = data.Source; _velocity = data.Velocity; _age = data.Age; _gravity = data.Gravity; _radius = data.Radius;
+            if (isActiveAndEnabled) RegisterActive();
             _visualIndex = data.VisualIndex;
             transform.localScale = Vector3.one * _radius * 2f;
             if (_source != null) _renderer.sprite = _source.ProjectileSprite;

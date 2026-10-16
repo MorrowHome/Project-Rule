@@ -13,6 +13,10 @@ namespace RuleGame.Presentation.Enemy
         public Sprite ProjectileSprite;
         public EnemySpriteSequence[] ProjectileAnimations = System.Array.Empty<EnemySpriteSequence>();
         public Material ProjectileMaterial;
+        [Tooltip("实体投掷物沿用原画旋转，不附加发光拖尾或发射爆闪。")]
+        public bool PhysicalProjectiles;
+        public EnemySpriteSequence[] BeamAnimations = System.Array.Empty<EnemySpriteSequence>();
+        public Material BeamSpriteMaterial;
         public Color Accent = new Color(1f, .6f, .2f);
         public Color Secondary = new Color(.85f, .35f, .1f);
         [Min(.1f)] public float ImpactSize = 6f;

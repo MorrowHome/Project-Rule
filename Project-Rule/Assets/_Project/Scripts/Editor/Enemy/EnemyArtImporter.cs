@@ -42,6 +42,19 @@ namespace RuleGame.Editor.Enemy
             EnemyArtManifest manifest = Load();
             EnemyArtFrame[] frames = Array.FindAll(manifest.frames,
                 frame => actor == null || frame.path.Contains("/" + actor + "/"));
+            ImportFrames(frames);
+        }
+        public static void ImportSequences(params string[] actions)
+        {
+            EnemyArtManifest manifest = Load();
+            var paths = new System.Collections.Generic.HashSet<string>();
+            foreach (EnemyArtSequence sequence in manifest.sequences)
+                if (Array.IndexOf(actions, sequence.action) >= 0)
+                    foreach (string path in sequence.frames) paths.Add(path);
+            ImportFrames(Array.FindAll(manifest.frames, frame => paths.Contains(frame.path)));
+        }
+        private static void ImportFrames(EnemyArtFrame[] frames)
+        {
             AssetDatabase.StartAssetEditing();
             try
             {

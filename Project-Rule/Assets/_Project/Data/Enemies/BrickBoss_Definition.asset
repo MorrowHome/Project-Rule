@@ -16,27 +16,52 @@ MonoBehaviour:
   DisplayName: "\u79EF\u6728 Boss"
   BodySize: {x: 2, y: 3.2}
   Health: 100
-  Damage: 10
+  Damage: 24
   ContactDamage: 1
-  ContactInterval: 0.6
+  ContactInterval: 0.4
   ContactPadding: 0.05
   Energy: 100
   EnergyRegen: 2
-  RuleAttribute: 4
+  RuleAttribute: 3
   RuleRelation: 3
-  MoveSpeed: 1.8
-  AttackRange: 3.5
-  AttackCooldown: 1.8
-  BossRestDuration: 1.8
+  MoveSpeed: 3.1
+  AttackRange: 6
+  AttackCooldown: 0.5
+  ProjectileBudget: 192
+  ProjectileLifetime: 7
+  BrickGroundWaves: 3
+  BrickWaveInterval: 0.24
+  BrickSlamRange: 6.5
+  BrickThrowCount: 9
+  BrickThrowSpread: 64
+  BrickThrowSpeed: 12
+  RabbitLobCount: 1
+  RabbitLandingSpread: 1.1
+  RabbitFanCount: 3
+  RabbitFanSpread: 0
+  BatVolleyWaves: 4
+  BatFanCount: 5
+  BatVolleyInterval: 0.25
+  BatFanSpread: 48
+  BatRingCount: 0
+  ClockTimeRuleInterval: 0
+  ClockBurstCount: 0
+  ClockBurstInterval: 1.6
+  ClockBurstWarning: 0.45
+  ClockBurstSpeed: 8
+  ClockBeamWidth: 0.1
+  ClockBeamWidthStep: 0.08
+  BossRestDuration: 0.4
   ClockBeamVolleysBeforeRest: 2
-  BrickAdvanceDuration: 0.9
-  BrickAdvanceSpeedMultiplier: 2.2
-  BrickAdvanceCooldown: 4
-  BrickComboLimit: 2
+  BrickAdvanceDuration: 1.15
+  BrickAdvanceSpeedMultiplier: 3
+  BrickAdvanceCooldown: 2
+  BrickComboLimit: 3
   ClockChargeDuration: 1.15
   ClockChargeSpeedMultiplier: 3.5
   ClockChargeCooldown: 7
   ClockBeamWarning: 0.7
+  ClockBeamDuration: 0.35
   ClockBeamSpread: 14
   RabbitBurrowDuration: 1
   RabbitBurrowSpeedMultiplier: 2.8
@@ -44,14 +69,21 @@ MonoBehaviour:
   RabbitEscapeDistance: 2.8
   RabbitBurstCount: 2
   RabbitBurstInterval: 0.35
-  PreferredDistance: 5
+  RabbitRepositionDuration: 2
+  RabbitAimLockLead: 0.35
+  RabbitThrowArcHeight: 1
+  RabbitAirHeight: 2.4
+  RabbitAirMoveDuration: 1.8
+  RabbitAirSpeedMultiplier: 1.6
+  RabbitFanAngle: 18
+  PreferredDistance: 4
   SpacingTolerance: 0.6
-  RangedRange: 9
+  RangedRange: 14
   RetreatSpeedMultiplier: 0.8
-  StaggerDamageThreshold: 20
+  StaggerDamageThreshold: 45
   StaggerResetDelay: 1.5
-  HurtCooldown: 4
-  BossHurtDuration: 0.45
+  HurtCooldown: 5
+  BossHurtDuration: 0.18
   GravityScale: 1
   Flying: 0
   FlightAcceleration: 24
@@ -63,6 +95,10 @@ MonoBehaviour:
   BatEvadeCooldown: 2.5
   BatEvadeDuration: 0.65
   BatRecoverDuration: 0.45
+  BatApproachDistance: 2.5
+  BatApproachHeight: 0.8
+  BatApproachDuration: 2.4
+  BatApproachSpeedMultiplier: 1.15
   BatRestHeightRatio: 0.8
   BatRestPatrolDistance: 2.5
   BatRestSpeedMultiplier: 0.85
@@ -70,6 +106,11 @@ MonoBehaviour:
   RabbitCycle: 20
   RabbitThrowInterval: 2
   ClockHourInterval: 12
+  ClockMinuteInterval: 6
+  ClockSecondInterval: 3
+  ClockHourRotationPeriod: 24
+  ClockMinuteRotationPeriod: 12
+  ClockSecondRotationPeriod: 6
   ClockCoreWindow: 3
   ClockCoreHealth: 15
   Timings:

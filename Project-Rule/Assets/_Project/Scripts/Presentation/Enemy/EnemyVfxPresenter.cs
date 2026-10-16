@@ -1,6 +1,8 @@
 using UnityEngine;
 using RuleGame.Gameplay.Enemy;
 using RuleGame.Infrastructure.Time;
+using RuleGame.Core.Rules;
+using RuleGame.Infrastructure.Rules;
 
 namespace RuleGame.Presentation.Enemy
 {
@@ -25,6 +27,7 @@ namespace RuleGame.Presentation.Enemy
             public Transform Follow;
             public Vector3 Offset;
             public Vector3 Position;
+            public bool BarrageWarning;
         }
         private void Awake()
         {
@@ -53,14 +56,22 @@ namespace RuleGame.Presentation.Enemy
             switch (_actor.AnimationName)
             {
                 case "HammerPlayer": case "HammerGround": case "Throw": case "Slash":
-                case "JumpShake": case "WingSpread": case "DashWindup": case "Roar": case "Magic": case "FlipThrow":
-                    Play(Profile.Charge, transform.position, Profile.CastSize * .55f, Profile.Accent,
+                case "JumpShake": case "WingSpread": case "DashWindup": case "Roar": case "Magic": case "FlipThrow": case "Shake":
+                    Play(Profile.Charge, transform.position,
+                        Profile.CastSize * (_actor.Definition.Kind == EnemyKind.RabbitBoss ? .25f : .55f), Profile.Accent,
                         0f, transform, Mathf.Max(.15f, _actor.AnimationDuration * _actor.Definition.ImpactFraction));
+                    if (_actor.AnimationName == "HammerGround" && _actor.Definition.BrickSlamRange > 0f)
+                        Play(Profile.Cast, Feet, _actor.Definition.BrickSlamRange * 2f,
+                            new Color(Profile.Secondary.r, Profile.Secondary.g, Profile.Secondary.b, .45f),
+                            follow: transform, duration: _actor.AnimationDuration * _actor.Definition.ImpactFraction, aspect: .18f);
                     break;
                 case "Angry": case "Split": case "Flip": case "Weak": case "Recover": case "Rewind":
+                    if (_actor.Definition.Kind == EnemyKind.RabbitBoss) break;
                     Play(Profile.Cast, transform.position, Profile.CastSize, Color.white, duration: .9f);
                     break;
                 case "Pop": case "Hide":
+                    // 兔子的冒出/缩回已有完整交付帧，不再每次换位都叠加一团原地爆发。
+                    if (_actor.Definition.Kind == EnemyKind.RabbitBoss) break;
                     Play(Profile.Cast, Feet, Profile.CastSize * .6f, Color.white, duration: .6f);
                     break;
                 case "Dead":
@@ -91,6 +102,8 @@ namespace RuleGame.Presentation.Enemy
                         if (view == null) view = shot.gameObject.AddComponent<EnemyProjectileView>();
                         view.Configure(Profile);
                     }
+                    // 玩具/石块自身就是出手表现，不能让通用爆发闪光盖住已交付的实体弹体。
+                    if (Profile.PhysicalProjectiles || Profile.ProjectileAnimations.Length > 0) break;
                     // 一次散射只播一个发射爆发，毛团弹和分裂不会淹没角色。
                     if (Time.time - _lastShot < .1f) break;
                     _lastShot = Time.time;
@@ -107,7 +120,9 @@ namespace RuleGame.Presentation.Enemy
                     }
                     break;
                 case EnemyFeedbackKind.ProjectileImpact:
-                    Play(Profile.Impact, cue.Position, Profile.ImpactSize * .4f, Color.white, angle, duration: .35f);
+                    if (Profile.PhysicalProjectiles) break;
+                    Play(Profile.Impact, cue.Position, Profile.ProjectileAnimations.Length > 0 ? .45f : Profile.ImpactSize * .4f,
+                        Color.white, angle, duration: .2f);
                     break;
                 case EnemyFeedbackKind.BeamSpawn:
                     if (cue.Subject is EnemyBeam beam)
@@ -120,14 +135,37 @@ namespace RuleGame.Presentation.Enemy
                 case EnemyFeedbackKind.Hit:
                     Play(Profile.Shot, cue.Position, 2f, Color.white, angle, duration: .25f);
                     break;
-                case EnemyFeedbackKind.RuleCast: case EnemyFeedbackKind.Summon:
+                case EnemyFeedbackKind.BarrageWarning:
+                    Play(Profile.Charge, cue.Position, Profile.CastSize * .65f, Profile.Accent,
+                        follow: transform, duration: _actor.Definition.ClockBurstWarning, barrageWarning: true);
+                    break;
+                case EnemyFeedbackKind.AreaStrike:
+                    Play(Profile.Cast, Feet, _actor.Definition.BrickSlamRange * 2f, Profile.Accent,
+                        duration: .45f, aspect: .18f);
+                    Play(Profile.Impact, cue.Position, Profile.ImpactSize * 1.3f, Color.white, duration: .5f);
+                    BossCameraImpulse.Pulse(Profile.CameraImpulse, .16f);
+                    break;
+                case EnemyFeedbackKind.RuleCast:
+                    CancelFollowing();
+                    Color tint = Color.white;
+                    if (_actor.Definition.Kind == EnemyKind.ClockBoss)
+                    {
+                        var time = RuleSystem.Instance?.Table.GetSlot(AttributeId.Time);
+                        tint = time?.Relation == RelationId.Enhance ? new Color(1f, .4f, .15f) : new Color(.25f, .7f, 1f);
+                    }
+                    bool rabbit = _actor.Definition.Kind == EnemyKind.RabbitBoss;
+                    Play(rabbit ? Profile.Charge : Profile.Cast, cue.Position,
+                        rabbit ? Profile.CastSize * .4f : Profile.CastSize, tint, duration: .7f);
+                    break;
+                case EnemyFeedbackKind.Summon:
                     CancelFollowing();
                     Play(Profile.Cast, cue.Position, Profile.CastSize, Color.white, duration: .9f);
                     break;
             }
         }
         public void Play(EnemyVfxClip clip, Vector3 position, float size, Color tint,
-            float angle = 0f, Transform follow = null, float duration = -1f, bool mirror = false, float aspect = 1f)
+            float angle = 0f, Transform follow = null, float duration = -1f, bool mirror = false, float aspect = 1f,
+            bool barrageWarning = false)
         {
             if (clip == null || Profile == null) return;
             Slot slot = null;
@@ -143,8 +181,15 @@ namespace RuleGame.Presentation.Enemy
                 }
                 if (_slots[i].Clip == null) { slot = _slots[i]; break; }
             }
+            if (slot == null && barrageWarning)
+            {
+                // 密集命中特效占满槽位时，优先让出一个瞬时效果，保证下一圈弹幕的预警可见。
+                foreach (Slot active in _slots)
+                    if (!active.BarrageWarning && (slot == null || active.Age > slot.Age)) slot = active;
+            }
             if (slot == null) return;
             slot.Clip = clip; slot.Age = 0f; slot.Follow = follow;
+            slot.BarrageWarning = barrageWarning;
             slot.Position = position;
             slot.Speed = duration > 0f ? clip.Duration / duration : 1f;
             slot.Offset = follow == null ? Vector3.zero : position - follow.position;
@@ -160,6 +205,8 @@ namespace RuleGame.Presentation.Enemy
             foreach (Slot slot in _slots)
             {
                 if (slot == null || slot.Clip == null) continue;
+                if (slot.BarrageWarning && (_actor.Defeated || !(_actor.Brain is ClockBossBrain clock) || !clock.BarragePreparing))
+                { slot.Clip = null; slot.Renderer.enabled = false; continue; }
                 slot.Age += Time.deltaTime * slot.Speed;
                 if (slot.Age >= slot.Clip.Duration) { slot.Clip = null; slot.Renderer.enabled = false; continue; }
                 slot.Renderer.transform.position = slot.Follow != null ? slot.Follow.position + slot.Offset : slot.Position;
@@ -169,7 +216,7 @@ namespace RuleGame.Presentation.Enemy
         private void CancelFollowing()
         {
             foreach (Slot slot in _slots)
-                if (slot != null && slot.Clip != null && slot.Follow != null)
+                if (slot != null && slot.Clip != null && slot.Follow != null && !slot.BarrageWarning)
                 { slot.Clip = null; slot.Renderer.enabled = false; }
         }
         private void Clear()

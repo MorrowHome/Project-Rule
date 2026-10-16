@@ -250,6 +250,9 @@ MonoBehaviour:
   SolidMask:
     serializedVersion: 2
     m_Bits: 256
+  BodyBlockMask:
+    serializedVersion: 2
+    m_Bits: 512
 --- !u!114 &8721085266057344802
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -273,8 +276,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   ProjectileSprite: {fileID: 21300000, guid: 36b2976af0b0e39468f739a7537ef56e, type: 3}
+  BeamOrigin: {fileID: 0}
   RuntimeSpawned: 0
   ArenaX: {x: -12, y: 12}
+  ArenaY: {x: 0, y: 10}
 --- !u!114 &5740032521385958856
 MonoBehaviour:
   m_ObjectHideFlags: 0

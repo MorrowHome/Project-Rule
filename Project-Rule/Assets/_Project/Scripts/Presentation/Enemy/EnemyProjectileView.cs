@@ -48,7 +48,7 @@ namespace RuleGame.Presentation.Enemy
             _trail.sharedMaterial = profile.BeamMaterial;
             _trail.time = .18f; _trail.startWidth = .28f; _trail.endWidth = 0f;
             _trail.startColor = profile.Secondary; _trail.endColor = new Color(profile.Accent.r, profile.Accent.g, profile.Accent.b, 0f);
-            _trail.Clear(); _trail.emitting = true;
+            _trail.Clear(); _trail.emitting = !profile.PhysicalProjectiles;
         }
         private void OnRestore() { if (_trail != null) _trail.Clear(); }
         private void OnDisable()
@@ -90,12 +90,12 @@ namespace RuleGame.Presentation.Enemy
             }
             // 已发射弹体继续独立飞行，不跟随发射者的单体暂停。
             bool paused = TimeManager.Instance?.IsPaused == true;
-            _trail.emitting = !paused;
+            _trail.emitting = !paused && !_profile.PhysicalProjectiles;
             // TrailRenderer 的历史点用引擎时间清退，实体暂停时延长寿命以保留现有轨迹。
             _trail.time = paused ? 1000f : .18f;
             if (paused) return;
             bool ground = _shot.Gravity == 0f && _shot.Radius >= .3f;
-            _body.transform.localRotation = Quaternion.Euler(0f, 0f, ground ? 0f :
+            _body.transform.localRotation = Quaternion.Euler(0f, 0f, ground || _profile.PhysicalProjectiles ? 0f :
                 Mathf.Atan2(_shot.Velocity.y, _shot.Velocity.x) * Mathf.Rad2Deg);
             _body.transform.localScale = animation != null ? Vector3.one
                 : ground ? new Vector3(1.7f, .8f, 1f) : Vector3.one * 1.7f;

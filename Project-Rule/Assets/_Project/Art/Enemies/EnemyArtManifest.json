@@ -4713,6 +4713,256 @@
       "pivotY": 0.5,
       "ppu": 89.09090909090908,
       "sourceSha256": "c40149a9b07af21101f5f781870e2191cde40eeff645fbc4f6f83a09445dc784"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_ProjectileCube_01.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/奇怪的旋转方块/旋转方块-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.492578125,
+      "pivotY": 0.5430555555555556,
+      "ppu": 159,
+      "sourceSha256": "781f36b13e5940c79f90f0d1b4644ed2804b10c3358efb0ef41739153ec83a6f"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_ProjectileCube_02.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/奇怪的旋转方块/旋转方块-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.492578125,
+      "pivotY": 0.5430555555555556,
+      "ppu": 159,
+      "sourceSha256": "695a1b09080f27017b719db92d318a9e171ae9202dd8e2c5fe39cd9081280039"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_ProjectileCube_03.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/奇怪的旋转方块/旋转方块-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.492578125,
+      "pivotY": 0.5430555555555556,
+      "ppu": 159,
+      "sourceSha256": "a0fa46f6b87e192a7a762b52f99439adbc697c8f8a5d4717f07fabd8c9baf13a"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_ProjectileCube_04.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/奇怪的旋转方块/旋转方块-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.492578125,
+      "pivotY": 0.5430555555555556,
+      "ppu": 159,
+      "sourceSha256": "b503727a7e5123af703e02e967df43d975d927ac161f96c44dd49aeb7fa9a485"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_01.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/细激光序列/细激光-1.png",
+      "width": 85,
+      "height": 115,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 115,
+      "sourceSha256": "8211fb829fac615e38218feac033fc5d9f3895459e5af5b0b1fb2a8a1af344fa"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_02.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/细激光序列/细激光-2.png",
+      "width": 58,
+      "height": 73,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 73,
+      "sourceSha256": "878dd389481778d85b6269f83cef7882acd87f9b7805aa1635f08eb74aae1da1"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_03.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/细激光序列/细激光-3.png",
+      "width": 689,
+      "height": 20,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 20,
+      "sourceSha256": "1785ebf5c505af670124aa84a7aad58886ba26959491b496929d9adf450a710d"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_04.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/细激光序列/细激光-4.png",
+      "width": 1416,
+      "height": 17,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 17,
+      "sourceSha256": "4b9adf82cbcdae09298e5aed1b9c04246e4f4cf541ec088e9ad1c6bca43b98e9"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_05.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/细激光序列/细激光-5.png",
+      "width": 1390,
+      "height": 25,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 25,
+      "sourceSha256": "c5313a597a6e6d3480aa24f4067a6374fe07d08a0dbf7828b0ef807fb4361de7"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_06.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/细激光序列/细激光-6.png",
+      "width": 1389,
+      "height": 24,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 24,
+      "sourceSha256": "946f172f3b80d07ab157ad5329678fe4fa094405369f2fa60ac1f216bb8e00a3"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_07.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/细激光序列/细激光-7.png",
+      "width": 1413,
+      "height": 23,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 23,
+      "sourceSha256": "0722ef9ce023de19ee43afd7929ddb5b0d61356c6222c2e1c004963889452ba6"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_01.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/中激光序列/中激光-1.png",
+      "width": 113,
+      "height": 164,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 164,
+      "sourceSha256": "cbd5d7230d0a9c32ffcf4ebd5eb1f6a7d59f3a053a0f7b6edd40742635e9f56e"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_02.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/中激光序列/中激光-2.png",
+      "width": 89,
+      "height": 106,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 106,
+      "sourceSha256": "51dd0e5ccccded86a6370a2ae911ac4cfbf65a7c01e245eb73c3000c54ce4c68"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_03.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/中激光序列/中激光-3.png",
+      "width": 752,
+      "height": 53,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 53,
+      "sourceSha256": "b8bfe22fdae0297a65ca89115080f83d73d3d7b0f06e97f3e284059f7934702a"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_04.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/中激光序列/中激光-4.png",
+      "width": 1450,
+      "height": 50,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 50,
+      "sourceSha256": "b9a52df84dee947c3e0d0aee8b599a4b88a6de3fd8c997a1f3e341b63bbbe399"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_05.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/中激光序列/中激光-5.png",
+      "width": 1450,
+      "height": 55,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 55,
+      "sourceSha256": "f80ce74529e87fb9cedb6ce429f8a0db6d5832b4af88dfbeca7a1fc571cb2fc3"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_06.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/中激光序列/中激光-6.png",
+      "width": 1450,
+      "height": 49,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 49,
+      "sourceSha256": "88fc4e13b54393277e774601439fe8eb710ee2029a2e7524c6ba33365a48691b"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_07.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/中激光序列/中激光-7.png",
+      "width": 1450,
+      "height": 51,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 51,
+      "sourceSha256": "8f6a4746ac52db8216d79add4b669e3eb2ce08573d0e3243a683bb22b7393f69"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_01.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/粗激光序/粗激光-1.png",
+      "width": 293,
+      "height": 277,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 277,
+      "sourceSha256": "0420d1e402882af179c2adc35e3b13b7a27a673373eaf53d120a4b97f30f5bcf"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_02.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/粗激光序/粗激光-2.png",
+      "width": 191,
+      "height": 212,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 212,
+      "sourceSha256": "0b3c8afe9dfb4183b99c5cf065210e238f4864f86e773ba5ecde0686b7f5d1f4"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_03.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/粗激光序/粗激光-3.png",
+      "width": 950,
+      "height": 75,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 75,
+      "sourceSha256": "28c53a588206dac537de4a3e60704cb77ebe5205bb69487e80f556652d02a2ee"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_04.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/粗激光序/粗激光-4.png",
+      "width": 1545,
+      "height": 89,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 89,
+      "sourceSha256": "d88fc2ee572b16c96157624f314dbd4b2a5b83e0b6cae83b3e10389f77e7b3ae"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_05.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/粗激光序/粗激光-5.png",
+      "width": 1545,
+      "height": 90,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 90,
+      "sourceSha256": "596dbdb96e54814ddef8295d7aee00cfac0f360f49d140b59a7ef7daef0facbd"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_06.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/粗激光序/粗激光-6.png",
+      "width": 1545,
+      "height": 77,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 77,
+      "sourceSha256": "7131b5911aab6600e0510ea477e70c92e2230f37d0787c20040d8a48b77cfa72"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_07.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/粗激光序/粗激光-7.png",
+      "width": 1545,
+      "height": 79,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 79,
+      "sourceSha256": "a2ec73d7159bb8008accfaae69374bc9b2f7c1d0c7fde383b6e6c7dba25fb04c"
     }
   ],
   "sequences": [
@@ -5739,6 +5989,63 @@
         "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_27.png",
         "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_28.png",
         "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_29.png"
+      ]
+    },
+    {
+      "actor": "BrickBoss",
+      "action": "ProjectileCube",
+      "facesRight": true,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_ProjectileCube_01.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_ProjectileCube_02.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_ProjectileCube_03.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_ProjectileCube_04.png"
+      ]
+    },
+    {
+      "actor": "ClockBoss",
+      "action": "BeamThin",
+      "facesRight": true,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_01.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_02.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_03.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_04.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_05.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_06.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_07.png"
+      ]
+    },
+    {
+      "actor": "ClockBoss",
+      "action": "BeamMedium",
+      "facesRight": true,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_01.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_02.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_03.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_04.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_05.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_06.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_07.png"
+      ]
+    },
+    {
+      "actor": "ClockBoss",
+      "action": "BeamThick",
+      "facesRight": true,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_01.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_02.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_03.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_04.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_05.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_06.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_07.png"
       ]
     }
   ],

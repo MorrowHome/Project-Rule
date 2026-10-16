@@ -65,7 +65,7 @@ namespace RuleGame.Gameplay.Enemy
             if (name == "Throw")
             {
                 Vector2 delta = PredictTarget(.25f) - (Vector2)Actor.transform.position;
-                float travel = Mathf.Clamp(Mathf.Abs(delta.x) / 9f, .25f, 1.2f);
+                float travel = Mathf.Clamp(Mathf.Abs(delta.x) / Mathf.Max(1f, Config.BrickThrowSpeed), .25f, 1.2f);
                 _throwDirection = (delta - Physics2D.gravity * (.45f * travel * travel * .5f)).normalized;
             }
         }
@@ -109,16 +109,19 @@ namespace RuleGame.Gameplay.Enemy
                 case "HammerGround":
                     if (Impact())
                     {
-                        Actor.Shoot(Vector2.left, 8f, 0f, .35f);
-                        Actor.Shoot(Vector2.right, 8f, 0f, .35f);
+                        GroundWave();
                     }
+                    else if (Pulses > 0 && Pulses < Mathf.Clamp(Config.BrickGroundWaves, 1, 5)
+                        && Elapsed >= Actor.AnimationDuration * Config.ImpactFraction
+                            + Pulses * Mathf.Max(.12f, Config.BrickWaveInterval))
+                    { GroundWave(); Pulses++; }
                     if (Finished) FinishAttack(name);
                     break;
                 case "Throw":
-                    if (Impact()) Actor.Shoot(_throwDirection, 9f, .45f, .4f);
+                    if (Impact()) ThrowFan(_throwDirection);
                     if (Phase >= 3 && Pulses == 1 && Elapsed >= Actor.AnimationDuration * .8f)
                     {
-                        Actor.Shoot(_throwDirection + Actor.Motor.Up * .25f, 9f, .45f, .4f);
+                        ThrowFan(_throwDirection + Actor.Motor.Up * .25f);
                         Pulses++;
                     }
                     if (Finished) FinishAttack(name);
@@ -126,14 +129,27 @@ namespace RuleGame.Gameplay.Enemy
                 case "Hurt": if (Finished) { _combo = 0; Go("Idle"); } break;
             }
         }
+        private void ThrowFan(Vector2 direction)
+            => Actor.ShootFan(direction, Mathf.Clamp(Config.BrickThrowCount, 1, 15), Config.BrickThrowSpread,
+                Config.BrickThrowSpeed, .45f, .4f);
+
+        private void GroundWave()
+        {
+            Actor.Shoot(Vector2.left, 11f, 0f, .5f);
+            Actor.Shoot(Vector2.right, 11f, 0f, .5f);
+            if (Config.BrickSlamRange <= 0f) return;
+            Vector2 feet = (Vector2)Actor.transform.position - Actor.Motor.Up * Config.BodySize.y * .5f;
+            Actor.AttackArea(feet + Actor.Motor.Up * 1.1f, new Vector2(Config.BrickSlamRange * 2f, 2.2f));
+            Actor.ShootFan(Actor.Motor.Up, Config.BrickThrowCount, 150f, 9f, .8f, .25f, origin: feet + Actor.Motor.Up * .5f);
+        }
         private void FinishAttack(string name)
         {
             _lastAttack = name; _combo++;
-            int limit = Phase >= 2 ? Mathf.Clamp(Config.BrickComboLimit, 1, 3) : 1;
+            int limit = Mathf.Clamp(Config.BrickComboLimit - (Phase == 1 ? 1 : 0), 1, 3);
             if (HasTarget && _combo < limit && CombatDistance <= RangedRange)
             {
                 if (name == "HammerPlayer") { Go("HammerGround"); return; }
-                if (name == "HammerGround" && CombatDistance > Config.AttackRange) { Go("Throw"); return; }
+                if (name == "HammerGround") { Go(TargetInMeleeRange ? "HammerPlayer" : "Throw"); return; }
             }
             RestAfterAttack();
         }

@@ -16,18 +16,18 @@ MonoBehaviour:
   DisplayName: "\u6BDB\u7ED2\u5154\u5B50 Boss"
   BodySize: {x: 2, y: 3}
   Health: 100
-  Damage: 10
+  Damage: 24
   ContactDamage: 1
-  ContactInterval: 0.6
+  ContactInterval: 0.4
   ContactPadding: 0.05
   Energy: 100
   EnergyRegen: 2
   RuleAttribute: 0
   RuleRelation: 4
-  MoveSpeed: 2.5
+  MoveSpeed: 3.8
   AttackRange: 3.5
-  AttackCooldown: 1.8
-  BossRestDuration: 1.8
+  AttackCooldown: 0.65
+  BossRestDuration: 0.4
   ClockBeamVolleysBeforeRest: 2
   BrickAdvanceDuration: 0.9
   BrickAdvanceSpeedMultiplier: 2.2
@@ -39,26 +39,26 @@ MonoBehaviour:
   ClockBeamWarning: 0.7
   ClockBeamDuration: 0.35
   ClockBeamSpread: 14
-  RabbitBurrowDuration: 1
-  RabbitBurrowSpeedMultiplier: 2.8
-  RabbitBurrowCooldown: 5
-  RabbitEscapeDistance: 2.8
-  RabbitBurstCount: 2
-  RabbitBurstInterval: 0.35
-  RabbitRepositionDuration: 2
+  RabbitBurrowDuration: 0.65
+  RabbitBurrowSpeedMultiplier: 3.5
+  RabbitBurrowCooldown: 1.8
+  RabbitEscapeDistance: 3.8
+  RabbitBurstCount: 3
+  RabbitBurstInterval: 0.2
+  RabbitRepositionDuration: 0.65
   RabbitAimLockLead: 0.35
-  RabbitAirHeight: 2.4
-  RabbitAirMoveDuration: 1.8
-  RabbitAirSpeedMultiplier: 1.6
-  RabbitFanAngle: 18
+  RabbitAirHeight: 3
+  RabbitAirMoveDuration: 0.9
+  RabbitAirSpeedMultiplier: 2
+  RabbitFanAngle: 24
   PreferredDistance: 5
   SpacingTolerance: 0.6
-  RangedRange: 9
+  RangedRange: 15
   RetreatSpeedMultiplier: 0.8
-  StaggerDamageThreshold: 30
+  StaggerDamageThreshold: 45
   StaggerResetDelay: 1.5
-  HurtCooldown: 4
-  BossHurtDuration: 0.45
+  HurtCooldown: 5
+  BossHurtDuration: 0.18
   GravityScale: 1
   Flying: 0
   FlightAcceleration: 24
@@ -78,8 +78,8 @@ MonoBehaviour:
   BatRestPatrolDistance: 2.5
   BatRestSpeedMultiplier: 0.85
   ImpactFraction: 0.6
-  RabbitCycle: 20
-  RabbitThrowInterval: 2
+  RabbitCycle: 10
+  RabbitThrowInterval: 1
   RabbitThrowArcHeight: 1
   ClockHourInterval: 12
   ClockMinuteInterval: 6
@@ -89,6 +89,12 @@ MonoBehaviour:
   ClockSecondRotationPeriod: 3
   ClockCoreWindow: 3
   ClockCoreHealth: 15
+  ProjectileLifetime: 7
+  RabbitFanCount: 11
+  RabbitLandingSpread: 1.1
+  RabbitLobCount: 7
+  RabbitFanSpread: 110
+  ProjectileBudget: 192
   Timings:
   - Action: Pop
     Duration: 3.625

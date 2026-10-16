@@ -59,11 +59,14 @@ namespace RuleGame.Gameplay.Enemy
                 EnemyBeam beam = _beams[i];
                 if (beam != null && beam.gameObject.activeSelf && beam.Source == _actor && beam.ClockHand == i) continue;
                 if (i >= previousHands) continue;
+                // 时间失效关闭冷却机制：指针动画仍旋转，已有激光收尾，但不再启动新一束。
+                if (TimeManager.Instance?.TimeMechanicsEnabled == false) continue;
                 // 停火计时从上一束光消失后开始，不能让短周期把预警与扫射拼成常驻光束。
                 _cooldowns[i] -= delta;
                 if (_cooldowns[i] <= .00001f)
                 {
-                    _beams[i] = EnemyBeam.SpawnClockHand(_actor, i, .1f + i * .08f, Mathf.Max(.3f, Config.ClockBeamWarning));
+                    _beams[i] = EnemyBeam.SpawnClockHand(_actor, i,
+                        Mathf.Max(.05f, Config.ClockBeamWidth + i * Config.ClockBeamWidthStep), Mathf.Max(.3f, Config.ClockBeamWarning));
                     _cooldowns[i] = HandInterval(i);
                 }
             }

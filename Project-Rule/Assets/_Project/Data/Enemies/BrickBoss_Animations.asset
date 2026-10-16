@@ -40,8 +40,35 @@ MonoBehaviour:
     - {fileID: 21300000, guid: ff56b69a63df51346b07a23db149b203, type: 3}
     - {fileID: 21300000, guid: 405e8aca10ff6d8438d76bdd065327da, type: 3}
     - {fileID: 21300000, guid: 861a6fed0057c9a43bc2a5935d1683ee, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
     FrameRate: 8
     FacesRight: 0
+    NativeFrameRate: 0
   - Action: Hurt
     Frames:
     - {fileID: 21300000, guid: 9fe56b1966cadb24c9ce1a7d1b53fcba, type: 3}
@@ -50,8 +77,16 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 04be41e6fca168d40978958afea5b5c7, type: 3}
     - {fileID: 21300000, guid: d6f055b59891d354fa9e478bd99b835b, type: 3}
     - {fileID: 21300000, guid: cbc5d2f676d7556468682e8259dbcd40, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
     FrameRate: 8
     FacesRight: 0
+    NativeFrameRate: 0
   - Action: HammerPlayer
     Frames:
     - {fileID: 21300000, guid: dda91cb164d0f534f98b8cf14bcc3daf, type: 3}
@@ -69,8 +104,25 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 74b6ef29552b40f4e839f7a5e08d44ef, type: 3}
     - {fileID: 21300000, guid: 2529ec95019d6bb4bbc88fea52276724, type: 3}
     - {fileID: 21300000, guid: 58cf4aaa4284d1143a67bcfa51033cf0, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
     FrameRate: 8
     FacesRight: 0
+    NativeFrameRate: 0
   - Action: HammerGround
     Frames:
     - {fileID: 21300000, guid: e3c87faee0342674284716d5be51b1c9, type: 3}
@@ -88,8 +140,25 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 64736cebc28a40543b83fd0755354964, type: 3}
     - {fileID: 21300000, guid: 4134c18c65ccf8c4f953e29b20962721, type: 3}
     - {fileID: 21300000, guid: d4edb2a65c4fa46429aa8955c5011143, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
     FrameRate: 8
     FacesRight: 0
+    NativeFrameRate: 0
   - Action: Throw
     Frames:
     - {fileID: 21300000, guid: b07c72b877101c04b80c57103aad28ea, type: 3}
@@ -106,8 +175,24 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 11e18ee028d8efe4695215d230c80b6d, type: 3}
     - {fileID: 21300000, guid: be81a31d0cea63b40b4b420a9e1653e6, type: 3}
     - {fileID: 21300000, guid: dd3fae608a5d65940aa4e3a9891f8f65, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
     FrameRate: 8
     FacesRight: 0
+    NativeFrameRate: 0
   - Action: Split
     Frames:
     - {fileID: 21300000, guid: 6678219f7a1b7804b928e0564e28d8ad, type: 3}
@@ -120,8 +205,20 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 565f76d21b575e841b8259f8cd4a85f0, type: 3}
     - {fileID: 21300000, guid: 95952b1cfc31c1143b3ddafca09739b7, type: 3}
     - {fileID: 21300000, guid: bee246b779ab1ac4da5bb84992ae3aa8, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
     FrameRate: 8
     FacesRight: 0
+    NativeFrameRate: 0
   - Action: Angry
     Frames:
     - {fileID: 21300000, guid: 6bdf6bd48d9174848950b2279ee4e6c2, type: 3}
@@ -132,8 +229,18 @@ MonoBehaviour:
     - {fileID: 21300000, guid: eb4c488268fff3f4f9c223e2afe0c7d0, type: 3}
     - {fileID: 21300000, guid: 556483e1fb2835942a51a91b0a0f08cc, type: 3}
     - {fileID: 21300000, guid: e07e95a3c9401fe4092fc83bcc4fa189, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
     FrameRate: 8
     FacesRight: 0
+    NativeFrameRate: 0
   - Action: Dead
     Frames:
     - {fileID: 21300000, guid: fc61036c6464ef542a72054ac4e5116c, type: 3}
@@ -148,10 +255,41 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 8a0b8aabb41f06e4fb7433938125ff4a, type: 3}
     - {fileID: 21300000, guid: cbc8fcefbaf1c604092bfbe869da3f13, type: 3}
     - {fileID: 21300000, guid: 17b4d4d79083dd249ba66682d7445229, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
     FrameRate: 8
     FacesRight: 0
+    NativeFrameRate: 0
   - Action: Idle
     Frames:
     - {fileID: 21300000, guid: 22918b50434c6384eacab995e0d10c9e, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 0}
     FrameRate: 8
     FacesRight: 0
+    NativeFrameRate: 0
+  - Action: ProjectileCube
+    Frames:
+    - {fileID: 21300000, guid: 25b5e85731b20d8419c456b9473aa542, type: 3}
+    - {fileID: 21300000, guid: fff2680f407dd7b4f94e2e2b328f9547, type: 3}
+    - {fileID: 21300000, guid: 760ab350b40492348b0abf375f1835e6, type: 3}
+    - {fileID: 21300000, guid: bf2c137b8212ec043ad50e4d7bcfaca1, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    FrameRate: 8
+    FacesRight: 1
+    NativeFrameRate: 1

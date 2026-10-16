@@ -59,6 +59,9 @@ namespace RuleGame.Editor.Enemy
                     var animations = AssetDatabase.LoadAssetAtPath<EnemyAnimationSet>("Assets/_Project/Data/Enemies/RabbitBoss_Animations.asset");
                     if (animations != null) EnemyLabBuilder.ConfigureRabbitProjectiles(animations);
                 }
+                if (kind == EnemyKind.BrickBoss || kind == EnemyKind.ClockBoss)
+                    EnemyDeliverySetup.Configure(kind, AssetDatabase.LoadAssetAtPath<EnemyAnimationSet>(
+                        "Assets/_Project/Data/Enemies/" + kind + "_Animations.asset"));
                 string prefab = "Assets/_Project/Prefabs/Enemies/" + kind + ".prefab";
                 var root = PrefabUtility.LoadPrefabContents(prefab);
                 try { Wire(root.GetComponent<EnemyActor>(), profile); PrefabUtility.SaveAsPrefabAsset(root, prefab); }

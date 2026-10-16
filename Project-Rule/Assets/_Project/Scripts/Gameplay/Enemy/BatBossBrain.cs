@@ -92,7 +92,10 @@ namespace RuleGame.Gameplay.Enemy
                     ChooseFlightPoint();
                     Actor.Cue("Fly", Config.BatRecoverDuration, true);
                     break;
-                case "Shake": Actor.Cue("Shake", Mathf.Max(0.9f, 1.3f / Tempo)); break;
+                case "Shake":
+                    Actor.Cue("Shake", Mathf.Max(.9f, 1.3f / Tempo,
+                        Mathf.Clamp(Config.BatVolleyWaves, 1, 8) * Mathf.Max(.1f, Config.BatVolleyInterval) + .2f));
+                    break;
             }
         }
 
@@ -179,9 +182,14 @@ namespace RuleGame.Gameplay.Enemy
                 case "Shake":
                     // 发射弹幕后缓慢侧移，不在同一点持续站桩。
                     SteerTo(_destination, 0.65f * Tempo);
-                    if (Elapsed >= 0.25f * (Pulses + 1) && Pulses < 4)
+                    if (Elapsed >= Mathf.Max(.1f, Config.BatVolleyInterval) * (Pulses + 1)
+                        && Pulses < Mathf.Clamp(Config.BatVolleyWaves, 1, 8))
                     {
-                        for (int i = -2; i <= 2; i++) Actor.Shoot(Actor.TowardTarget + Vector2.up * i * 0.22f, 8f);
+                        float sweep = (Pulses & 1) == 0 ? -6f : 6f;
+                        Vector2 middle = Quaternion.Euler(0f, 0f, sweep) * Actor.TowardTarget;
+                        Actor.ShootFan(middle, Config.BatFanCount, Config.BatFanSpread, 11f, radius: .24f);
+                        if (Pulses == 0 && Config.BatRingCount > 0)
+                            Actor.ShootRing(Config.BatRingCount, 6.5f, Age * 17f, .18f);
                         Pulses++;
                     }
                     if (Finished) FinishAttack();
@@ -195,6 +203,7 @@ namespace RuleGame.Gameplay.Enemy
                         if (name == "Roar") Actor.SpawnMinions(true, 3);
                         else if (name == "WingSpread") Actor.CastRule();
                         else Actor.CommandSummons();
+                        if (Config.BatRingCount > 0) Actor.ShootRing(Config.BatRingCount, 8f, Age * 23f);
                     }
                     if (Finished) FinishAttack();
                     break;
