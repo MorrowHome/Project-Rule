@@ -208,7 +208,8 @@ namespace RuleGame.Gameplay.Enemy
                     Actor.FaceDirection(Vector2.right * _chargeFacing);
                     Actor.Motor.SpeedMultiplier = Mathf.Max(1f, Config.ClockChargeSpeedMultiplier);
                     Actor.Motor.Intent = Vector2.right * _chargeFacing;
-                    Actor.Attack(Config.AttackRange);
+                    // 乱跑只用 EnemyActor 的身体接触伤害，不叠加普通近战的远距离矩形。
+                    // 身体被玩家阻挡时会折返，伤害范围仍与可见身体一致。
                     break;
                 case "Hurt": if (Finished) Go("Idle"); break;
             }
