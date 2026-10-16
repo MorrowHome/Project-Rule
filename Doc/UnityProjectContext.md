@@ -92,8 +92,14 @@ manifest 已有 Coplay Unity MCP，仓库 `.mcp.json` 指向 `localhost:8080/mcp
 
 2026-10-16 用户澄清“不是倒立散射，是不倒立时也往脚底丢”。本轮只改站立 Throw/HideThrow 的初速度求解：旧普通弹 y 速度为 -2.42，旧近处/远处高抛实际仅升高 0.06/0.11 米；改为按目标与出手点之上的弧顶求解，普通弹默认上抛 1 米、高抛 1.6 米后落向锁定的主角位置。新增中文 Inspector 参数 RabbitThrowArcHeight（站立投掷上抛高度），倒立散射不使用该参数且未改动。世界失重时沿用直线运动，正常重力/增强重力均按实际加速度计算上抛。RabbitProjectileValidation 原有 10 项加入初速度向上、实际升高和到达目标检查后，旧实现 5 项失败，修复后 10 项通过；实测普通弹升高 0.96 米、高抛 1.56 米并到达目标，三倍重力为 1.52 米。RunRabbitTacticsBatch 的 23 项通过，锁定用例改验低弧向上而非旧低重力平射。日志 /tmp/rule-rabbit-standing-arc-before.log、/tmp/rule-rabbit-standing-arc-after.log、/tmp/rule-rabbit-standing-arc-tactics.log。未跑其他 Boss 或全量构建。
 
+2026-10-17 按新增动作需求表接入九种关卡小怪：StoneGuard、ExplosiveBlock、BrickSoldier、SpringToy、ClockMouse、ClockBomb、PlushBird、HugBear、PlushSeal。用户确认弹簧怪同样可重组、默认等待7秒。EnemyKind只追加，Definition.IsBoss显式区分四Boss；旧两种召唤物保留MinionBrain。新增FieldMinionBrain共享感知/巡逻/散架/快照，按行为分七种Brain。Actor新增身体/移动/接触开关及去重范围伤害，Motor提供真实跳跃，PlayerController的持有者集合仅限制自主移动、保留挥剑。拥抱通过反击、距离、超时、死亡/停用释放；回溯恢复限制。新增9配置/9白盒预制体/9可玩场景与保留参数的生成菜单，正式美术未交付时用FieldMinionView；旧Boss生成器范围固定原六种避免误建新类型。需求摘要保存在Doc/References/EnemyLogic/FieldMinionRequirements.json。Unity6000.6.4f1隔离PlayMode的FieldMinionValidation46项通过，日志/tmp/rule-field-minions-validation.log；未跑全Boss、正式关卡验收或Player构建。当前分支feat/minion-ai来自feat/brick-city-components，本轮未合并上游或改地图摆放。
+
 ## 证据
 
 `CLAUDE.md`、`Doc/系统模块架构.md`、`Doc/敌人系统接入.md`；工程内 `Packages/manifest.json`、`ProjectSettings/{ProjectVersion.txt,QualitySettings.asset,GraphicsSettings.asset,EditorBuildSettings.asset,ProjectSettings.asset}`；一方 `.asmdef`；`Scripts/Gameplay/Enemy/*.cs`、`Gameplay/Player/EntityStatus.cs`、`PlayerController.cs`、`RuleReleaseService.cs`、`Scripts/Editor/Enemy/EnemyLabBuilder.cs`、`Scripts/Rules/RuleSystemDriver.cs`。
 
 <!-- unity-onboarding:generated:end -->
+
+用户分支命名要求：不使用 codex/ 前缀；新功能分支使用 feat/ 等项目惯用前缀。
+
+2026-10-17 小怪战术复查：守卫新增限距追击/短时视线记忆，飞鸟保持射程，海豹按可达距离/施法可用性选技能并增加滑行前摇；弹簧空中锁向、发条鼠限时钻地。关卡小怪累计破韧阈值（重型20/其他12）与1.2秒硬直保护；近战前摇早期跟随、出手锁向，命中去重，保留不硬直时闪白。参数中文可调。修改前7组针对性用例失败，修改后隔离PlayMode65项通过，日志/tmp/rule-minion-tactics-after.log；未验证正式关卡整体难度。

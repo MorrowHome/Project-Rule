@@ -29,7 +29,11 @@ namespace RuleGame.Gameplay.Enemy
         public virtual bool DamageLocked => false;
         public virtual bool IsFlying => Config.Flying;
         protected bool HasTarget => Actor.HasTarget;
-        protected bool IsBoss => Config.Kind != EnemyKind.BrickMinion && Config.Kind != EnemyKind.BatMinion;
+        protected bool IsBoss => Config.IsBoss;
+        public virtual bool BodyEnabled => true;
+        public virtual bool MovementEnabled => true;
+        public virtual bool ContactDamageEnabled => true;
+        public virtual void OnDisabled() { }
         protected float CombatDistance => !HasTarget ? float.PositiveInfinity : Actor.IsFlying
             ? Actor.Distance : Mathf.Abs(Actor.Target.position.x - Actor.transform.position.x);
         protected bool TargetInMeleeRange => HasTarget && CombatDistance <= Config.AttackRange
@@ -47,6 +51,15 @@ namespace RuleGame.Gameplay.Enemy
                 case EnemyKind.ClockBoss: return new ClockBossBrain(actor);
                 case EnemyKind.RabbitBoss: return new RabbitBossBrain(actor);
                 case EnemyKind.BatBoss: return new BatBossBrain(actor);
+                case EnemyKind.StoneGuard:
+                case EnemyKind.BrickSoldier: return new PatrolGuardBrain(actor);
+                case EnemyKind.ExplosiveBlock:
+                case EnemyKind.ClockBomb: return new ExplosiveMinionBrain(actor);
+                case EnemyKind.SpringToy: return new SpringMinionBrain(actor);
+                case EnemyKind.ClockMouse: return new ClockMouseBrain(actor);
+                case EnemyKind.PlushBird: return new PlushBirdBrain(actor);
+                case EnemyKind.HugBear: return new HugBearBrain(actor);
+                case EnemyKind.PlushSeal: return new PlushSealBrain(actor);
                 default: return new MinionBrain(actor);
             }
         }
@@ -95,7 +108,7 @@ namespace RuleGame.Gameplay.Enemy
             Delta = dt; Age += dt; Elapsed += dt;
             // 兔子的退场与半血翻转都按最大生命比例判断，调总血量不会让阶段阈值失真。
             bool end = Actor.Status.Health <= 0f || (Config.Kind == EnemyKind.RabbitBoss && Actor.Status.Health < Config.Health * .2f);
-            if (end && Root.ActiveStateName != "Dead")
+            if (end && Root.ActiveStateName != "Dead" && !TryHandleDeath())
             {
                 Actor.MarkDefeated();
                 Root.RequestStateChange("Dead", true);
@@ -204,6 +217,7 @@ namespace RuleGame.Gameplay.Enemy
             Go("Rest");
         }
         protected virtual void TickGlobal() { }
+        protected virtual bool TryHandleDeath() => false;
         protected virtual void TickRest() => Actor.Motor.Intent = Vector2.zero;
         protected virtual void TickTransition() { }
         protected virtual void AfterTransition(string name) { }

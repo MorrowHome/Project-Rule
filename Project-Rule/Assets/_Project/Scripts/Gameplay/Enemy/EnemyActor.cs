@@ -69,6 +69,7 @@ namespace RuleGame.Gameplay.Enemy
             _release = new RuleReleaseService(RuleSystem.Instance, Status, AllUnlockedRuleUnlocks.Instance);
             Brain = EnemyBrain.Create(this);
             Brain.Initialize();
+            if (_bodyCollider != null) _bodyCollider.enabled = Brain.BodyEnabled;
             if (Definition.Kind == EnemyKind.ClockBoss) ClockBeams = new ClockBeamEmitter(this);
         }
         private void FixedUpdate()
@@ -79,13 +80,15 @@ namespace RuleGame.Gameplay.Enemy
             if (!Defeated) Status.RestoreEnergy(Definition.EnergyRegen * dt);
             Brain.Tick(dt);
             ClockBeams?.Tick(dt);
-            Motor.Tick(dt);
+            if (_bodyCollider != null) _bodyCollider.enabled = Brain.BodyEnabled;
+            if (Brain.MovementEnabled) Motor.Tick(dt);
+            else Motor.Stop();
             TickContactDamage(dt);
         }
         private void TickContactDamage(float dt)
         {
             _contactCooldown = Mathf.Max(0f, _contactCooldown - dt);
-            if (Defeated || !Definition.ContactDamage || Combat == null || _contactCooldown > 0f
+            if (Defeated || Brain?.ContactDamageEnabled == false || !Definition.ContactDamage || Combat == null || _contactCooldown > 0f
                 || _bodyCollider == null || !_bodyCollider.enabled) return;
             // 用身体盒检查接触，不依赖 Kinematic 刚体是否触发碰撞回调。
             // 身体接触与招式攻击共用战斗结算，持续重叠也不会每帧掉血。
@@ -106,7 +109,7 @@ namespace RuleGame.Gameplay.Enemy
             }
             if (_contactTargets.Count > 0) _contactCooldown = Mathf.Max(0.05f, Definition.ContactInterval);
         }
-        private void OnDisable() => Motor?.Stop();
+        private void OnDisable() { Motor?.Stop(); Brain?.OnDisabled(); }
 
         public void Cue(string action, float duration, bool loop = false)
         {
@@ -148,7 +151,7 @@ namespace RuleGame.Gameplay.Enemy
             }
             // 普通 Boss 保持稳定；规则使其变轻后可被推开，实际位移仍按刚体质量结算。
             // 挂账产生的 0 伤害也保留击退，不绕过统一伤害处理。
-            if (Definition.Kind == EnemyKind.BrickMinion || Definition.Kind == EnemyKind.BatMinion || Motor.MassReduced)
+            if (!Definition.IsBoss || Motor.MassReduced)
                 Motor.AddImpulse(TowardAttacker(damage.Attacker) * -damage.Knockback);
         }
         private Vector2 TowardAttacker(object attacker)
@@ -174,6 +177,22 @@ namespace RuleGame.Gameplay.Enemy
         public void Shoot(Vector2 direction, float speed = 8f, float gravity = 0f, float radius = 0.22f, int visualIndex = -1, Vector2? origin = null)
         {
             if (HasTarget) EnemyProjectile.Spawn(this, direction, speed, gravity, radius, visualIndex, origin);
+        }
+        public void AreaAttack(float radius)
+        {
+            if (Combat == null) return;
+            var filter = new ContactFilter2D { useTriggers = false };
+            filter.SetLayerMask(PlayerMask);
+            int count = Physics2D.OverlapCircle(transform.position, radius, filter, _contacts);
+            _contactTargets.Clear();
+            for (int i = 0; i < count; i++)
+            {
+                var target = _contacts[i].GetComponentInParent<IDamageable>();
+                var faction = _contacts[i].GetComponentInParent<IFactionMember>();
+                if (target != null && faction?.Faction == Faction.Player && _contactTargets.Add(target))
+                    Combat.ApplyDamage(this, target, Definition.Damage, 4f);
+            }
+            EmitFeedback(EnemyFeedbackKind.Strike, transform.position, Motor.Up);
         }
         /// <summary>围绕锁定方向展开等角扇形；每发仍使用共用弹池与战斗结算。</summary>
         public void ShootFan(Vector2 direction, int count, float spread, float speed, float gravity = 0f,
@@ -208,6 +227,8 @@ namespace RuleGame.Gameplay.Enemy
             if (HasTarget) EnemyBeam.Spawn(this, angle, width, warning);
         }
         public bool CastRule() => CastRule(Definition.RuleAttribute, Definition.RuleRelation);
+        public bool CanCastRule => _release != null && RuleSystem.Instance != null
+            && _release.CanRelease(Definition.RuleAttribute, Definition.RuleRelation);
 
         /// <summary>临时选择施法组合，不改团队共享的 EnemyDefinition 资产。</summary>
         public bool CastRule(AttributeId attribute, RelationId relation)
@@ -264,6 +285,7 @@ namespace RuleGame.Gameplay.Enemy
         {
             if (Defeated) return;
             Defeated = true;
+            Brain?.OnDisabled();
             Motor.Stop();
             foreach (EnemyActor summon in _summons) if (summon != null) summon.gameObject.SetActive(false);
             OnDefeated?.Invoke(this);
@@ -301,6 +323,7 @@ namespace RuleGame.Gameplay.Enemy
             _contactCooldown = data.ContactCooldown;
             _summons.Clear(); _summons.AddRange(data.Summons);
             Brain?.Restore(data.Brain);
+            if (_bodyCollider != null) _bodyCollider.enabled = Brain?.BodyEnabled ?? true;
             ClockBeams?.Restore(data.ClockBeams);
             _swingTargets.Clear();
             foreach (IDamageable target in data.SwingTargets) _swingTargets.Add(target);

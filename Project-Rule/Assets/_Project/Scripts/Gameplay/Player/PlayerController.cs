@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using RuleGame.Core.Rules;
@@ -40,6 +41,14 @@ namespace RuleGame.Gameplay.Player
     [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
     public class PlayerController : MonoBehaviour, IKnockbackReceiver, IRuleSelectionInputGate
     {
+        private readonly HashSet<object> _movementHolders = new HashSet<object>();
+        public bool MovementHeld => _movementHolders.Count > 0;
+        /// <summary>拥抱只限制自主移动，保留挥剑反击；多只敌人各自释放自己的限制。</summary>
+        public void SetMovementHeld(object owner, bool held)
+        {
+            if (held) _movementHolders.Add(owner);
+            else _movementHolders.Remove(owner);
+        }
         // ==================================================================
         //  序列化字段
         // ==================================================================
@@ -418,6 +427,7 @@ namespace RuleGame.Gameplay.Player
 
             // ① 接触：Sense 内部先解出「上」方向（探测得先知道哪边是下），再扫地面与左右墙。
             PlayerInput.State   input   = _input.Sample();
+            if (MovementHeld) input = new PlayerInput.State(Vector2.zero, false, input.JumpReleased, false, input.AttackPressed);
             ContactSensor.State contact = _contacts.Sense(tuning);
             if (contact.JustLanded) OnLanded?.Invoke();
 

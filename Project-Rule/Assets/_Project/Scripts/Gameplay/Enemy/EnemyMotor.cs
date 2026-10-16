@@ -133,6 +133,12 @@ namespace RuleGame.Gameplay.Enemy
             return !Physics2D.Raycast(probe, -Up, .45f, SolidMask);
         }
         public void AddImpulse(Vector2 impulse) => _impulse += impulse / Mathf.Max(0.1f, _body.mass);
+        public void Jump(float height)
+        {
+            if (!Grounded) return;
+            float speed = Mathf.Sqrt(2f * Mathf.Max(.01f, Physics2D.gravity.magnitude * _actor.Definition.GravityScale) * height);
+            Velocity += Up * (speed - Vector2.Dot(Velocity, Up));
+        }
         public void Stop() { Intent = Vector2.zero; Velocity = _impulse = GravityDrift = Vector2.zero; SpeedMultiplier = 1f; }
         public Vector2 CaptureImpulse() => _impulse;
         public void Restore(Vector2 velocity, Vector2 impulse, Vector2 gravityDrift = default)

@@ -29,6 +29,7 @@ namespace RuleGame.Editor.Enemy
         private const string PrefabFolder = "Assets/_Project/Prefabs/Enemies";
         public const string SceneFolder = "Assets/_Project/Scenes/EnemyLabs";
         private static Sprite _square, _circle;
+        private static readonly EnemyKind[] LabKinds = new[] { EnemyKind.BrickMinion, EnemyKind.BrickBoss, EnemyKind.ClockBoss, EnemyKind.RabbitBoss, EnemyKind.BatBoss, EnemyKind.BatMinion };
         private static Material _material;
         private static Font _font;
 
@@ -140,7 +141,7 @@ namespace RuleGame.Editor.Enemy
             EnemyArtManifest manifest = EnemyArtImporter.Load();
             var definitions = new Dictionary<EnemyKind, EnemyDefinition>();
             var animations = new Dictionary<EnemyKind, EnemyAnimationSet>();
-            foreach (EnemyKind kind in Enum.GetValues(typeof(EnemyKind)))
+            foreach (EnemyKind kind in LabKinds)
             {
                 EnemyAnimationSet animation = CreateAnimationSet(kind, manifest);
                 animations[kind] = animation;
@@ -155,7 +156,7 @@ namespace RuleGame.Editor.Enemy
             EditorSceneManager.SaveScene(generation, generationPath);
             try
             {
-            foreach (EnemyKind kind in Enum.GetValues(typeof(EnemyKind)))
+            foreach (EnemyKind kind in LabKinds)
                 prefabs[kind] = CreatePrefab(definitions[kind], animations[kind]);
             // Prefab 引用用第二遍写入，避免召唤物对生成次序的依赖。
             foreach (EnemyKind kind in new[] { EnemyKind.BrickBoss, EnemyKind.BatBoss })
@@ -170,7 +171,7 @@ namespace RuleGame.Editor.Enemy
                 prefabs[kind] = AssetDatabase.LoadAssetAtPath<EnemyActor>(path);
             }
             GameObject playerPrefab = CreatePlayerPrefab();
-            foreach (EnemyKind kind in Enum.GetValues(typeof(EnemyKind))) BuildScene(kind, prefabs[kind], playerPrefab);
+            foreach (EnemyKind kind in LabKinds) BuildScene(kind, prefabs[kind], playerPrefab);
             }
             finally
             {
@@ -392,7 +393,7 @@ namespace RuleGame.Editor.Enemy
         {
             GameObject playerPrefab = CreatePlayerPrefab();
             Scene previous = SceneManager.GetActiveScene();
-            foreach (EnemyKind kind in Enum.GetValues(typeof(EnemyKind)))
+            foreach (EnemyKind kind in LabKinds)
             {
                 string path = SceneFolder + "/Test_Enemy_" + kind + ".unity";
                 Scene scene = SceneManager.GetSceneByPath(path);
@@ -425,7 +426,7 @@ namespace RuleGame.Editor.Enemy
             Scene previous = SceneManager.GetActiveScene();
             try
             {
-                foreach (EnemyKind kind in Enum.GetValues(typeof(EnemyKind)))
+                foreach (EnemyKind kind in LabKinds)
                 {
                     string path = SceneFolder + "/Test_Enemy_" + kind + ".unity";
                     Scene scene = SceneManager.GetSceneByPath(path);
