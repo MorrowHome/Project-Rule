@@ -183,7 +183,9 @@ namespace RuleGame.Gameplay.Enemy
                     {
                         if (Mathf.Abs(_aim.x - Actor.transform.position.x) < MinimumThrowDistance)
                         {
-                            if (name != "HideThrow")
+                            // 空中换位已连续失败时也使用墙角退路，否则备用抛投又会被送回换位。
+                            bool airFallback = _flipped && _airFailedMoves >= 2;
+                            if (name != "HideThrow" && !airFallback)
                             {
                                 Go("Reposition");
                                 break;
