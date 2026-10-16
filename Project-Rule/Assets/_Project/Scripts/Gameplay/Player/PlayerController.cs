@@ -468,6 +468,8 @@ namespace RuleGame.Gameplay.Player
         /// <remarks>给表现层用（动画判上升/下降、跑步快慢）。玩法逻辑不要读它做判断 ——
         /// 那样会把「速度怎么算」泄漏到外面。</remarks>
         public Vector2 Velocity => _mover != null ? _mover.Velocity : Vector2.zero;
+        /// <summary>移动平台入口。自身速度仍由 MotionMover 管理，平台只贡献本物理帧的承载位移。</summary>
+        public void CarryOnPlatform(Vector2 displacement, Collider2D platform) => _mover?.CarryOnPlatform(displacement, platform);
 
         /// <summary>
         /// 当前朝向：+1 右，−1 左。
