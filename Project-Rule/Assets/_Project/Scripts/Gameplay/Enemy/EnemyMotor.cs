@@ -73,12 +73,13 @@ namespace RuleGame.Gameplay.Enemy
             var movement = new Rigidbody2D.SlideMovement
             {
                 surfaceUp = Up, surfaceSlideAngle = 60f, gravitySlipAngle = 0f,
+                // 只在贴着当前重力方向的支撑面时吸附。默认世界向下的 Anchor 会把反重力实体拉回旧地面。
+                surfaceAnchor = !flying && Grounded && Vector2.Dot(velocity, Up) <= .01f
+                    ? -Up * .05f : Vector2.zero,
                 gravity = Vector2.zero, maxIterations = 6, useLayerMask = true,
                 // 玩家身体只参与位移阻挡，不作为接地或悬崖探测的支撑面。
                 layerMask = SolidMask | _actor.PlayerMask | BodyBlockMask, useAttachedTriggers = false, useSimulationMove = true
             };
-            // 飞行实体不能使用 Slide 的默认贴地吸附，否则落地后向上飞仍会被拉回地面。
-            if (flying) movement.surfaceAnchor = Vector2.zero;
             var slide = _body.Slide(velocity + _impulse, dt, movement);
             if (slide.slideHit.collider != null)
             {
@@ -109,6 +110,11 @@ namespace RuleGame.Gameplay.Enemy
         public void AddImpulse(Vector2 impulse) => _impulse += impulse / Mathf.Max(0.1f, _body.mass);
         public void Stop() { Intent = Vector2.zero; Velocity = _impulse = Vector2.zero; SpeedMultiplier = 1f; }
         public Vector2 CaptureImpulse() => _impulse;
-        public void Restore(Vector2 velocity, Vector2 impulse) { Velocity = velocity; _impulse = impulse; }
+        public void Restore(Vector2 velocity, Vector2 impulse)
+        {
+            Velocity = velocity; _impulse = impulse;
+            // 全局重力随快照恢复后，立即更新派生朝上方向，避免原画和弱点仍用未来时间线的方向。
+            if (Physics2D.gravity.sqrMagnitude > .001f) Up = -Physics2D.gravity.normalized;
+        }
     }
 }

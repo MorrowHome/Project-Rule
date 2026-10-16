@@ -73,7 +73,7 @@ namespace RuleGame.Development.Enemy
                 GUILayout.Label($"世界时间：{word}    Boss 已施放 {clock.TimeRuleCastCount} 次变速", _style);
             }
             GUILayout.Label($"主角生命 {Player.Health:0}/{Player.HealthMax:0}    无敌{(Invincible ? "开启" : "关闭")}", _style);
-            GUILayout.Label("F1 进入下一阶段   F2 击破露出的发条", _style);
+            GUILayout.Label("F1 调阶段   F2 强制击破发条（调试）", _style);
             GUILayout.Label("F3 重开   F4 暂停   F5 无敌开关   Shift 规则轮盘", _style);
             if (Enemy.Brain is ClockBossBrain clockControls && GUILayout.Button(
                 $"额外环形弹幕：{(clockControls.ExtraBarrageEnabled ? "开启" : "关闭")}",

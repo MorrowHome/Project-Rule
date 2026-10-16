@@ -12,8 +12,17 @@ namespace RuleGame.Gameplay.Enemy
         public bool Opened { get; private set; }
         public float Health { get; private set; }
         private float _maximum;
+        private Vector3 _normalOffset;
         public Faction Faction => Faction.Enemy;
         public bool DiscardWhenMissing => false;
+        private void Awake() => _normalOffset = transform.localPosition;
+        private void LateUpdate()
+        {
+            if (Owner == null || Owner.Motor == null) return;
+            // 身体翻到天花板时，发条也应露在可攻击的一侧，不能继续藏在身体上方的墙内。
+            transform.localPosition = Owner.Motor.Up.y < 0f
+                ? new Vector3(_normalOffset.x, -_normalOffset.y, _normalOffset.z) : _normalOffset;
+        }
         public void Open(float health) { _maximum = Health = health; Broken = false; Opened = true; SetVisible(true); }
         public void Close() { Opened = false; SetVisible(false); }
         private void SetVisible(bool visible)
