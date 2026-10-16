@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Ground_Logic
   m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.Tilemaps.Tile
   m_Sprite: {fileID: 21300000, guid: 9b5eafd33cff0664fbc036648e432475, type: 3}
-  m_Color: {r: 0.12, g: 0.13, b: 0.17, a: 0.55}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Transform:
     e00: 1
     e01: 0
