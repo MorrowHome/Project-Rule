@@ -2,9 +2,11 @@
     <ui:Style src="RuleWheel.uss" />
     <ui:VisualElement class="wheel-screen" picking-mode="Ignore">
         <ui:VisualElement name="wheelRoot" class="wheel-root hidden" picking-mode="Ignore">
-            <ui:Label name="selectedToken" class="selected-token" />
             <wheel:RuleFan name="ruleFan" class="rule-fan" outer-radius="184" inner-radius="102" start-angle="-84" end-angle="84" />
-            <ui:Label name="feedback" class="wheel-feedback" />
+            <ui:VisualElement name="relationGroup" class="relation-group hidden" picking-mode="Ignore">
+                <wheel:RuleFan name="relationFan" class="relation-fan" outer-radius="288" inner-radius="206" start-angle="-84" end-angle="36" />
+                <ui:Label name="feedback" class="wheel-feedback" />
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

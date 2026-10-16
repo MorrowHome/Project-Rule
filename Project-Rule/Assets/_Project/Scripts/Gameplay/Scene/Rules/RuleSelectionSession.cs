@@ -41,7 +41,8 @@ namespace RuleGame.Gameplay.Scene.Rules
 
         public bool SelectAttribute(AttributeId attribute)
         {
-            if (Stage != RuleSelectionStage.Attribute || !IsAttributeAvailable(attribute)) return false;
+            // 一级轮盘始终保留，关系预览期间也允许直接悬停切换属性。
+            if (Stage == RuleSelectionStage.Closed || !IsAttributeAvailable(attribute)) return false;
             Attribute = attribute;
             Stage = RuleSelectionStage.Relation;
             return true;

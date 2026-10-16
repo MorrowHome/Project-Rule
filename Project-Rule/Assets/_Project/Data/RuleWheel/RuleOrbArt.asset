@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28fe7c0b2c00d3f4e9c65189132c0c3d, type: 3}
+  m_Name: RuleOrbArt
+  m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.RuleWheel.RuleOrbArt
+  Atlas: {fileID: 2800000, guid: 29a87fadcf3ed3e4a959d931c7e99f77, type: 3}
+  CellSize: {x: 512, y: 384}
+  Columns: 4
+  DrawCount: 8
+  HoldCount: 4
+  ReturnCount: 5
+  FramesPerSecond: 8
+  PixelsPerUnit: 270
+  BodyHeight: 1.014
+  DrawDuration: 0.28
+  ReturnDuration: 0.22
+  FootPivot: {x: 0.5, y: 0.0390625}
+  OrbOffset: {x: -0.608, y: 0.74}
+  BodyMaterial: {fileID: 2100000, guid: 9b006a56ab9861a418db6183d3f8e74d, type: 2}
+  HaloMaterial: {fileID: 2100000, guid: 96889bfa1950b6c42addb2493c0206cc, type: 2}
