@@ -55,6 +55,10 @@ namespace RuleGame.Gameplay.Player
         [Tooltip("水平最大速度。按住方向键时速度会朝这个值加速（不是瞬间到）。")]
         [SerializeField] private float _moveSpeedMax = 8f;
 
+        [Tooltip("**攻击期间**（含收招 / CD）的水平最大速度。出刀时人走不快，打击才有分量。" +
+                 "见 IsAttacking：轻击连段与重击都算。")]
+        [SerializeField] private float _attackMoveSpeedMax = 4f;
+
         [Tooltip("地面水平加速度。到全速的时间 ≈ 最大速度 / 本值（200 → 约 0.04 秒，近乎瞬时）。")]
         [SerializeField] private float _groundAccel = 200f;
 
@@ -180,38 +184,35 @@ namespace RuleGame.Gameplay.Player
         [SerializeField] private LayerMask _attackMask;
 
         // ------------------------------------------------------------------
-        //  攻击节奏：判定三段管玩法节奏，动画速度是另一件事
+        //  攻击节奏：起手 / 生效 / 收招三段
         // ------------------------------------------------------------------
 
         /// <summary>
         /// 起手：从按键到「判定开窗」的基准秒数。**它要对齐刀刃的视觉接触时刻**。
         /// </summary>
         /// <remarks>
-        /// <para>第一刀在图上要走 <c>DrawSword</c>（拔剑）再进 <c>Slash1</c>，刀刃扫到目标
-        /// 差不多是 <c>Slash1</c> 的第二、三帧 —— 那是 0.3 秒出头，不是 0.1 秒。
-        /// 起手太短 = **判定比视觉早**，看着像"没打到就掉血"。</para>
-        /// <para>⚠️ 它和 <see cref="AttackSwingSeconds"/> 是**两件事**：动画提速 → 接触时刻提前
-        /// → 这个数要跟着缩短。改一个记得看另一个。</para>
+        /// <para>按攻击**直接**进 <c>Slash1</c>（拔剑那一段已删），刀刃扫到目标差不多是它的
+        /// 第二、三帧 —— 12fps 下约 0.17~0.25 秒。起手太短 = **判定比视觉早**，
+        /// 看着像"没打到就掉血"。</para>
+        /// <para>动画按剪辑原生速度播（不做变速），所以这个数直接对着帧号量就行。</para>
         /// </remarks>
         public const float AttackWindupBase = 0.30f;
 
         /// <summary>生效：判定窗的基准时长。</summary>
         public const float AttackActiveBase = 0.12f;
 
-        /// <summary>收招：连段窗口的基准时长。</summary>
-        public const float AttackRecoverBase = 0.30f;
-
         /// <summary>
-        /// 一刀动画的目标时长（秒）—— <c>HeroAnimatorBuilder</c> 按它算 <c>AnimatorState.speed</c>。
+        /// 收招：连段窗口的基准时长。
         /// </summary>
         /// <remarks>
-        /// <para>「一刀」按图上的**连续段**算：第一刀 = <c>DrawSword + Slash1</c>，
-        /// 第二刀 = <c>Slash2</c>（回旋）。每一段各自的剪辑时长除以本值 = 该段的播放倍率。</para>
-        /// <para>⚠️ 它**不是**判定一个循环的长度，别把两边绑一起：判定循环 = 起手 + 生效 + 收招
-        /// = <see cref="AttackWindupBase"/> + <see cref="AttackActiveBase"/>
-        /// + <see cref="AttackRecoverBase"/>。判定管「多久能再打」，本值管「动画多快播完」。</para>
+        /// <para><b>它要和「动画一刀的长度」对齐</b>：图上一次挥砍是
+        /// <c>Slash1</c>(0.417s) + <c>AttackCd1</c>(0.1s) = <b>0.517 秒</b>，
+        /// 所以起手 + 生效 + 收招 = 0.30 + 0.12 + <b>0.10</b> = 0.52 ✓ 逐帧吻合。</para>
+        /// <para>⚠️ 这个数**不能比动画长**。长了的话动画已经回 Idle、代码还在收招段里，
+        /// 那段时间按下的攻击会被 <c>AttackSolver</c> 当"连段已满"直接**吞掉**（不缓冲），
+        /// 表现就是「第二刀播完要愣 0.3 秒才能再出刀」。</para>
         /// </remarks>
-        public const float AttackSwingSeconds = 0.8f;
+        public const float AttackRecoverBase = 0.10f;
 
         [Tooltip("起手：从按键到「判定开窗」的秒数。")]
         [SerializeField] private float _attackWindup = AttackWindupBase;
@@ -232,18 +233,10 @@ namespace RuleGame.Gameplay.Player
         // ------------------------------------------------------------------
 
         /// <summary>
-        /// 重击动画的目标时长（秒）—— <c>HeroAnimatorBuilder</c> 按它算 <c>SlashDown</c> 的
-        /// <c>AnimatorState.speed</c>。
-        /// </summary>
-        /// <remarks>取 0.70 是因为 <c>Hero_SlashDown</c> 原始 0.9167 秒 → 倍率约 1.31，
-        /// **比轻击的 1.70 慢** —— 同一段素材放慢，读起来才有分量。</remarks>
-        public const float HeavySwingSeconds = 0.70f;
-
-        /// <summary>
         /// 重击起手。**要对齐刀刃的视觉接触时刻**，和 <see cref="AttackWindupBase"/> 同一条道理。
         /// </summary>
-        /// <remarks>⚠️ 这个数是量出来的、不是拍的：先用动画测试窗把 <c>SlashDown</c> 逐帧走一遍，
-        /// 记下刀刃扫到目标那一帧 k（12fps），则接触真时 = (k / 12) × (0.70 / 0.9167)。</remarks>
+        /// <remarks>⚠️ 这个数是量出来的、不是拍的：把 <c>SlashDown</c> 逐帧走一遍，
+        /// 记下刀刃扫到目标那一帧 k（12fps），接触真时 = k / 12 秒。</remarks>
         public const float HeavyWindupBase = 0.32f;
 
         /// <summary>重击生效：判定窗时长。</summary>
@@ -370,13 +363,35 @@ namespace RuleGame.Gameplay.Player
 
         private void Update()
         {
-            // 暂停 / 被 UI 接管 / 门禁刚释放的恢复帧 —— 三种都不读键，并清空粘滞标记。
-            _input.Tick(IsPaused || _input.IsSuppressed);
+            // 暂停 / 已阵亡 / 被 UI 接管 / 门禁刚释放的恢复帧 —— 四种都不读键，并清空粘滞标记。
+            _input.Tick(IsPaused || IsDead || _input.IsSuppressed);
         }
 
         // ==================================================================
         //  物理（固定帧）
         // ==================================================================
+
+        /// <summary>
+        /// 让身体「顺着」当前重力：重力朝上时整个根对象转 180°。
+        /// </summary>
+        /// <remarks>
+        /// <para>转的是**根对象**，所以 <c>Collider2D</c> 的 <c>offset</c> 一并翻过去 ——
+        /// 「脚」（原本在碰撞箱偏下那侧）翻转后正好朝上，贴天花板时接触的就是它。
+        /// 视觉（<c>Visual</c> 子对象）自动跟着转，不需要另外处理。</para>
+        /// <para>⚠️ 必须在 <c>ContactSensor.Sense</c> **之前**调用：探测扫的是碰撞体的当前形状，
+        /// 转完再探才拿得到新朝向下的接触。</para>
+        /// <para>Kinematic 刚体上的 <c>FreezeRotation</c> 只挡物理转动，代码写 <c>transform</c> 照样生效。</para>
+        /// <para>失重（重力为零向量）不转：没有重力就没有「哪边是上」。</para>
+        /// <para>结果同时记进 <see cref="IsBodyFlipped"/>，供表现层对齐——见那个属性的说明。</para>
+        /// </remarks>
+        private void ApplyGravityFacing()
+        {
+            IsBodyFlipped = Physics2D.gravity.y > 0f;
+
+            transform.localRotation = IsBodyFlipped
+                ? Quaternion.Euler(0f, 0f, 180f)
+                : Quaternion.identity;
+        }
 
         private void FixedUpdate()
         {
@@ -392,6 +407,9 @@ namespace RuleGame.Gameplay.Player
 
             // 参数每物理帧重打包一次（运行期改字段立刻生效），这一帧内共用同一份。
             MotionTuning tuning = BuildTuning();
+
+            // ⓪ 朝向：先按重力把身体摆正，后面所有探测与位移都基于转过的碰撞箱。
+            ApplyGravityFacing();
 
             // ① 接触：Sense 内部先解出「上」方向（探测得先知道哪边是下），再扫地面与左右墙。
             PlayerInput.State   input   = _input.Sample();
@@ -461,6 +479,20 @@ namespace RuleGame.Gameplay.Player
         public bool IsGrounded => _contacts != null && _contacts.Grounded;
 
         /// <summary>
+        /// 身体现在是不是已经按重力倒过来了（<see cref="ApplyGravityFacing"/> 的结果）。
+        /// </summary>
+        /// <remarks>
+        /// <para>⚠️ <b>表现层要判「人是不是倒的」，读这个，<u>不要</u>读 <c>Physics2D.gravity</c>。</b>
+        /// 重力在规则的 <c>Update</c>（<c>RuleSystemDriver</c> 顺序 −100）里就已经改了，
+        /// 而身体要到<b>下一个</b> <c>FixedUpdate</c> 才转 —— 两者差一帧。</para>
+        /// <para>按重力判断的话，视觉那侧的补偿（<c>flipX</c> / <c>flipY</c>）会<b>超前</b>一帧生效：
+        /// 根对象还没转就先叠上了「抵消 180°」的那两下，合计是净 180° 旋转 ——
+        /// 表现就是「反转瞬间闪一帧倒立的人物」，然后才进 Weightless。</para>
+        /// <para>读这个属性则天然与根对象同步：它只在真正转的那一刻变。</para>
+        /// </remarks>
+        public bool IsBodyFlipped { get; private set; }
+
+        /// <summary>
         /// 当前速度（自己维护的那个，<b>不含</b>击退等外部冲量）。
         /// </summary>
         /// <remarks>给表现层用（动画判上升/下降、跑步快慢）。玩法逻辑不要读它做判断 ——
@@ -521,6 +553,32 @@ namespace RuleGame.Gameplay.Player
         /// <summary>暂停中不读输入、不推进物理。</summary>
         /// <remarks>暂停状态由 <c>EntityStatus.SetPaused</c> 驱动 —— 暂停持有者（P1 的时间管理器）负责调用。</remarks>
         private bool IsPaused => _status != null && _status.IsPaused;
+
+        /// <summary>
+        /// 生命归零：**不再接受任何输入**（移动 / 跳 / 冲刺 / 攻击 / 重击全断），但物理照常推进。
+        /// </summary>
+        /// <remarks>
+        /// <para>判据取 <c>Health &lt;= 0</c> 而不是 <c>EntityDamageable.IsDead</c>：前者对**任何**掉血路径都成立
+        /// （伤害链路 / 调试浮层直接改血 / 快照回滚），而且和 <c>PlayerAnimationDriver</c> 里
+        /// 「掉到 0 → 播 Die」用的是同一个判据，两边不会各判各的。</para>
+        /// <para>⚠️ <b>不像暂停那样整帧 <c>return</c></b>：那样人会**冻在半空**。
+        /// 这里是「不许操作」，不是「时间停止」—— 重力、碰撞、击退、规则影响都还在，
+        /// 所以空中阵亡会照常落地。</para>
+        /// <para>已经在跑的冲刺 / 挥砍不会被打断，只是不再接受新的输入 —— 自然收尾。</para>
+        /// </remarks>
+        private bool IsDead => _status != null && _status.Health <= 0f;
+
+        /// <summary>
+        /// 正在出招：轻击连段（起手 / 生效 / 收招，含两刀之间的 CD）**或**重击。
+        /// </summary>
+        /// <remarks>
+        /// <para>用来把水平最大速度压到 <c>_attackMoveSpeedMax</c>（见 <c>BuildTuning</c>）。</para>
+        /// <para>轻击取 <c>ComboIndex &gt;= 0</c>：<c>AttackSolver</c> 直到收招结束才把它置回 −1，
+        /// 所以这个判据恰好等于「三段里任意一段」，不需要给它加新 API。</para>
+        /// </remarks>
+        private bool IsAttacking
+            => (_attack != null && _attack.ComboIndex >= 0)
+            || (_heavy  != null && _heavy.IsBusy);
 
         // ==================================================================
         //  输入门禁
@@ -598,7 +656,10 @@ namespace RuleGame.Gameplay.Player
         /// 几十个浮点的拷贝，50Hz 下可以忽略。</remarks>
         private MotionTuning BuildTuning() => new MotionTuning
         {
-            MoveSpeedMax         = _moveSpeedMax,
+            // 攻击期间把「目标水平速度」压低 —— 这就是「出刀时走不快」的全部实现。
+            // 注意 MoveSpeedMax 在 VelocitySolver 里是 MoveTowards 的**目标值**，不是硬夹：
+            // 已经在高速（冲刺 / 被击退）时不会瞬间被掐到 4，而是按加速度收敛过去。
+            MoveSpeedMax         = IsAttacking ? _attackMoveSpeedMax : _moveSpeedMax,
             GroundAccel          = _groundAccel,
             AirAccel             = _airAccel,
             AirDrag              = _airDrag,

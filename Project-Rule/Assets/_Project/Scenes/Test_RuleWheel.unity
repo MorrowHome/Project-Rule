@@ -245,8 +245,16 @@ MonoBehaviour:
     m_Bits: 512
   _attackWindup: 0.3
   _attackActive: 0.12
-  _attackRecover: 0.3
+  _attackRecover: 0.1
   _maxCombo: 2
+  _heavyWindup: 0.32
+  _heavyActive: 0.14
+  _heavyRecover: 0.36
+  _heavyCooldown: 1.2
+  _heavyDamage: 24
+  _heavyKnockback: 12
+  _heavyBoxSize: {x: 1.4, y: 1.2}
+  _heavyBoxOffset: 0.9
   _energyPerHit: 4
 --- !u!114 &279477526
 MonoBehaviour:
@@ -1846,7 +1854,7 @@ MonoBehaviour:
     ScreenPosition: {x: 0, y: 0}
     DeadZone:
       Enabled: 1
-      Size: {x: 0.084, y: 0}
+      Size: {x: 0.084375, y: 0.08}
     HardLimits:
       Enabled: 0
       Size: {x: 0.8, y: 0.8}
@@ -1856,7 +1864,7 @@ MonoBehaviour:
   Damping: {x: 0.12, y: 0.06, z: 0}
   Lookahead:
     Enabled: 1
-    Time: 0.02
+    Time: 0.2
     Smoothing: 0
     IgnoreY: 0
 --- !u!114 &2039390973
