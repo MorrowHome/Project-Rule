@@ -118,6 +118,10 @@ namespace RuleGame.Presentation.Player
             if (_status   == null) _status   = GetComponent<EntityStatus>();
             if (_animator == null) _animator = GetComponentInChildren<Animator>();
             if (_renderer == null) _renderer = GetComponentInChildren<SpriteRenderer>();
+
+            // 旧场景和运行时生成的玩家同样接入，无需逐份修改 Prefab/场景。
+            if (_player != null && _player.GetComponent<PlayerAttackVfx>() == null)
+                _player.gameObject.AddComponent<PlayerAttackVfx>();
         }
 
         private void OnEnable()

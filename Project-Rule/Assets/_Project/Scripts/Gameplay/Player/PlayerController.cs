@@ -338,6 +338,9 @@ namespace RuleGame.Gameplay.Player
         /// </summary>
         public event Action OnHeavyAttacked;
 
+        /// <summary>实际判定开窗；表现层直接使用同一次攻击的世界范围，空挥也会通知。</summary>
+        public event Action<PlayerAttackCue> OnAttackStruck;
+
         // ==================================================================
         //  生命周期
         // ==================================================================
@@ -420,7 +423,7 @@ namespace RuleGame.Gameplay.Player
                 dt);
             if (heavy.Swing)  OnHeavyAttacked?.Invoke();
             if (heavy.Strike)
-                PerformAttackHit(_heavyDamage, _heavyKnockback, _heavyBoxSize, _heavyBoxOffset);
+                PerformAttackHit(_heavyDamage, _heavyKnockback, _heavyBoxSize, _heavyBoxOffset, true);
 
             // ③″ 攻击连段：起手 → 生效 → 收招。判定本身留在本类（要用 CombatSystem 与位置）。
             AttackSolver.Decision attack = _attack.Advance(tuning, lightPressed, dt);
@@ -553,12 +556,14 @@ namespace RuleGame.Gameplay.Player
         /// <para>放在速度解算**之前**调用，所以读到的朝向是上一帧末的 ——
         /// 与重构前一致（原来 ③′ 也在 ④ 之前）。</para>
         /// </remarks>
-        private void PerformAttackHit(float damage, float knockback, Vector2 boxSize, float boxOffset)
+        private void PerformAttackHit(float damage, float knockback, Vector2 boxSize, float boxOffset, bool heavy = false)
         {
-            if (_combat == null) return;
-
             // 发起方只组织「打哪儿、打多大」，最终伤害由伤害处理模块按当前规则算。
             Vector2 center = (Vector2)transform.position + new Vector2(_mover.Facing * boxOffset, 0f);
+            OnAttackStruck?.Invoke(new PlayerAttackCue(center, boxSize, _mover.Facing,
+                heavy, heavy ? -1 : AttackComboIndex));
+
+            if (_combat == null) return;
 
             int hits = _combat.PerformAttack(this, center, boxSize, _attackMask, damage, knockback);
 
