@@ -133,11 +133,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Player.PlayerController
   _inputActions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
-  _moveSpeedMax: 8
+  _moveSpeedMax: 6
   _groundAccel: 200
-  _jumpSpeed: 16.5
+  _jumpSpeed: 14.6884
   _maxAirJumps: 1
-  _airJumpSpeed: 12.2
+  _airJumpSpeed: 10.9299
   _gravityScale: 3.83
   _fallGravityMultiplier: 2
   _maxFallSpeed: 30
@@ -180,6 +180,14 @@ MonoBehaviour:
   _attackActive: 0.12
   _attackRecover: 0.3
   _maxCombo: 2
+  _heavyWindup: 0.32
+  _heavyActive: 0.14
+  _heavyRecover: 0.36
+  _heavyCooldown: 1.2
+  _heavyDamage: 24
+  _heavyKnockback: 12
+  _heavyBoxSize: {x: 1.4, y: 1.2}
+  _heavyBoxOffset: 0.9
   _energyPerHit: 4
 --- !u!114 &2895808581285521288
 MonoBehaviour:
@@ -258,8 +266,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.007185757, y: 0.06467193}
-  m_Size: {x: 0.84191287, y: 1.1006018}
+  m_Offset: {x: -0.03821665, y: 0.1082499}
+  m_Size: {x: 0.76489246, y: 1.1877577}
   m_Direction: 0
 --- !u!114 &6048151562633117209
 MonoBehaviour:
@@ -331,7 +339,7 @@ Transform:
   m_GameObject: {fileID: 3221797611552797144}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.5, z: 0}
+  m_LocalPosition: {x: -0.11, y: -0.49, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -391,7 +399,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 2.8907218, y: 1.796875}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -575,8 +583,11 @@ MonoBehaviour:
   _deadZone: {x: 1.2, y: 1.6}
   _smoothTimeX: 0.12
   _smoothTimeY: 0.28
+  _smoothTimeYFast: 0.06
+  _fastFollowSpeed: 8
   _lookAhead: 1.2
   _lookAheadSmoothTime: 0.25
+  _maxLagY: 3
 --- !u!114 &8558544339893391542
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -3,6 +3,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using RuleGame.Gameplay.Scene;
 
 namespace RuleGame.Editor.Level
 {
@@ -94,13 +95,46 @@ namespace RuleGame.Editor.Level
             var cell = grid.cellSize;
             var bounds = tilemap.cellBounds;
 
+            // 危险瓦片（刺等）不是几何：既不给它铺墙皮，也不能让它参与暴露面判断。
+            var hazards = tilemap.GetComponent<HazardField>();
+            // 暗墙是几何（照常铺墙皮），但要单独记账：揭开时墙皮要跟着消失。
+            var secretWalls = tilemap.GetComponent<SecretWallField>();
+
             var solid = new HashSet<Vector3Int>();
+            var secret = new HashSet<Vector3Int>();
+            var misplaced = new HashSet<string>();
+            int misplacedCells = 0;
+
             for (int x = bounds.xMin; x < bounds.xMax; x++)
                 for (int y = bounds.yMin; y < bounds.yMax; y++)
                 {
                     var p = new Vector3Int(x, y, 0);
-                    if (tilemap.HasTile(p)) solid.Add(p);
+                    var tile = tilemap.GetTile(p);
+                    if (tile == null) continue;
+
+                    if (hazards != null && hazards.IsHazardCell(p)) continue;   // 刺：不是几何
+
+                    bool isSecret = secretWalls != null && secretWalls.IsSecretCell(p);
+
+                    // 既没被声明成暗墙、Collider Type 又是 None 的瓦片，基本是**画错层**了
+                    // （最常见：刷遮罩时目标层还停在 Logic）。当成几何会凭空造出「墙」，
+                    // 把正常墙的外露面挡掉 → 转角整块没有美术。
+                    if (!isSecret && tile is Tile bare && bare.colliderType == Tile.ColliderType.None)
+                    {
+                        misplaced.Add(tile.name);
+                        misplacedCells++;
+                        continue;
+                    }
+
+                    solid.Add(p);
+                    if (isSecret) secret.Add(p);
                 }
+
+            if (misplacedCells > 0)
+                Debug.LogWarning($"[铺装] 逻辑层里有 {misplacedCells} 格不属于逻辑层的瓦片（{string.Join("、", misplaced)}），" +
+                                 "已按「不是墙」处理。多半是刷遮罩时选错了目标层 —— " +
+                                 "用菜单 Tools/规则游戏/关卡瓦片/② 把它们移到 Mask 层。");
+
             if (solid.Count == 0) { Debug.Log("[铺装] 白盒是空的，没有可铺的面。"); return; }
 
             bool Has(int x, int y) => solid.Contains(new Vector3Int(x, y, 0));
@@ -162,9 +196,18 @@ namespace RuleGame.Editor.Level
             {
                 if (kv.Value.Count == 0) continue;
                 bool vertical = kv.Key == Face.Left || kv.Key == Face.Right;
-                foreach (var run in GroupRuns(kv.Value, vertical))
+                foreach (var run in GroupRuns(kv.Value, vertical, secret))
                 {
+                    // 暗墙那一段的构件要能被单独销毁：先记下本段新建了哪些子物体。
+                    bool secretRun = secret.Contains(run[0]);
+                    int firstNew = artRoot.childCount;
+
                     pieces += DressRun(artRoot, kv.Key, run, grid, cell, kits, solid);
+
+                    if (secretRun)
+                        for (int i = firstNew; i < artRoot.childCount; i++)
+                            Undo.AddComponent<SecretArt>(artRoot.GetChild(i).gameObject);
+
                     runs++;
                 }
             }
@@ -179,7 +222,124 @@ namespace RuleGame.Editor.Level
             Debug.Log($"[铺装] 完成：{runs} 段，{pieces} 个构件。白盒层已隐藏（Ctrl+Shift+L 可再显示）。");
         }
 
-        private static List<List<Vector3Int>> GroupRuns(List<Vector3Int> cells, bool vertical)
+        // ==================================================================
+        //  逻辑层瓦片体检 / 纠错
+        // ==================================================================
+
+        /// <summary>
+        /// 抓「把遮罩刷进了逻辑层」这类选错目标层的事故。
+        /// </summary>
+        /// <remarks>
+        /// Tile Palette 的刷子只认**当前选中的目标层**：选了 Mask_Black 但目标层还停在 Logic 时，
+        /// 遮罩就刷进了逻辑层 —— 逻辑层从此多出一堆「看不见的墙」，
+        /// 铺装器的外露面判断全歪，表现为**转角整块没有美术**。
+        /// </remarks>
+        [MenuItem("Tools/规则游戏/关卡瓦片/① 体检：逻辑层里有哪些瓦片", false, 40)]
+        public static void InspectLogicTiles()
+        {
+            if (!TryGetLogicAndMask(out Tilemap logic, out Tilemap mask)) return;
+
+            var logicTiles = CountTiles(logic);
+            var maskNames = new HashSet<string>(CountTiles(mask).Keys);
+            var lines = new List<string> { "[瓦片体检] 逻辑层：" };
+            var stray = new List<string>();
+
+            foreach (var kv in logicTiles)
+            {
+                lines.Add($"  {kv.Key} x {kv.Value}");
+                if (maskNames.Contains(kv.Key)) stray.Add(kv.Key);
+            }
+
+            if (stray.Count == 0)
+            {
+                lines.Add("[瓦片体检] 没有发现刷错层的遮罩瓦片。");
+                Debug.Log(string.Join("\n", lines));
+                return;
+            }
+
+            lines.Add($"[瓦片体检] 逻辑层里有遮罩瓦片：{string.Join("、", stray)}。" +
+                      "跑「② 把遮罩瓦片移回 Mask 层」清理，然后重铺一次。");
+            Debug.LogWarning(string.Join("\n", lines));
+        }
+
+        /// <summary>把误画在逻辑层的遮罩瓦片搬回 Mask 层（保留你刷的位置）。</summary>
+        [MenuItem("Tools/规则游戏/关卡瓦片/② 把遮罩瓦片移回 Mask 层", false, 41)]
+        public static void MoveStrayMaskTiles()
+        {
+            if (!TryGetLogicAndMask(out Tilemap logic, out Tilemap mask)) return;
+
+            // 「遮罩瓦片」= 出现在 Mask 层上的瓦片。不用手填名字，换素材也不会失效。
+            var maskNames = new HashSet<string>(CountTiles(mask).Keys);
+            var cells = new List<Vector3Int>();
+            var bounds = logic.cellBounds;
+            for (int x = bounds.xMin; x < bounds.xMax; x++)
+                for (int y = bounds.yMin; y < bounds.yMax; y++)
+                {
+                    var c = new Vector3Int(x, y, 0);
+                    var tile = logic.GetTile(c);
+                    if (tile != null && maskNames.Contains(tile.name)) cells.Add(c);
+                }
+
+            if (cells.Count == 0)
+            {
+                Debug.Log("[瓦片纠错] 逻辑层里没有遮罩瓦片，不需要处理。");
+                return;
+            }
+
+            Undo.RecordObjects(new Object[] { logic, mask }, "移动刷错层的遮罩瓦片");
+            foreach (var c in cells)
+            {
+                var tile = logic.GetTile(c);
+                if (!mask.HasTile(c)) mask.SetTile(c, tile);
+                logic.SetTile(c, null);
+            }
+            logic.RefreshAllTiles();
+            mask.RefreshAllTiles();
+            EditorUtility.SetDirty(logic);
+            EditorUtility.SetDirty(mask);
+
+            Debug.Log($"[瓦片纠错] 已把 {cells.Count} 格遮罩瓦片从逻辑层移回 Mask 层。现在选中 Grid 重铺一次（Ctrl+Shift+G）。");
+        }
+
+        private static Dictionary<string, int> CountTiles(Tilemap map)
+        {
+            var result = new Dictionary<string, int>();
+            var bounds = map.cellBounds;
+            for (int x = bounds.xMin; x < bounds.xMax; x++)
+                for (int y = bounds.yMin; y < bounds.yMax; y++)
+                {
+                    var tile = map.GetTile(new Vector3Int(x, y, 0));
+                    if (tile == null) continue;
+                    result[tile.name] = result.TryGetValue(tile.name, out int n) ? n + 1 : 1;
+                }
+            return result;
+        }
+
+        private static bool TryGetLogicAndMask(out Tilemap logic, out Tilemap mask)
+        {
+            logic = null;
+            mask = null;
+
+            var root = Selection.activeGameObject;
+            if (root == null)
+            {
+                Debug.LogError("[瓦片工具] 请先在 Hierarchy 里选中逻辑 Grid 物体。");
+                return false;
+            }
+
+            foreach (var map in root.GetComponentsInChildren<Tilemap>(true))
+            {
+                if (map.gameObject.name.Equals("Logic", System.StringComparison.OrdinalIgnoreCase)) logic = map;
+                if (map.gameObject.name.Equals("Mask", System.StringComparison.OrdinalIgnoreCase)) mask = map;
+            }
+
+            if (logic == null) { Debug.LogError("[瓦片工具] 找不到名为 Logic 的 Tilemap。"); return false; }
+            if (mask == null) { Debug.LogError("[瓦片工具] 找不到名为 Mask 的 Tilemap。"); return false; }
+            return true;
+        }
+
+        private static List<List<Vector3Int>> GroupRuns(List<Vector3Int> cells, bool vertical,
+                                                       HashSet<Vector3Int> secret)
         {
             var result = new List<List<Vector3Int>>();
             foreach (var line in cells.GroupBy(c => vertical ? c.x : c.y))
@@ -190,7 +350,12 @@ namespace RuleGame.Editor.Level
                 {
                     int prev = vertical ? sorted[i - 1].y : sorted[i - 1].x;
                     int now = vertical ? sorted[i].y : sorted[i].x;
-                    if (now == prev + 1) cur.Add(sorted[i]);
+
+                    // 暗墙边界必须断开：一段要么全是暗墙、要么全是普通墙。
+                    // 否则同一段墙皮会横跨两种格子，揭开时要么留残块、要么在正常墙上开洞。
+                    bool sameKind = secret.Contains(sorted[i]) == secret.Contains(sorted[i - 1]);
+
+                    if (now == prev + 1 && sameKind) cur.Add(sorted[i]);
                     else { result.Add(cur); cur = new List<Vector3Int> { sorted[i] }; }
                 }
                 result.Add(cur);

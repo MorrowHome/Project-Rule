@@ -213,7 +213,7 @@ namespace RuleGame.Gameplay.Player
         /// = <see cref="AttackWindupBase"/> + <see cref="AttackActiveBase"/>
         /// + <see cref="AttackRecoverBase"/>。判定管「多久能再打」，本值管「动画多快播完」。</para>
         /// </remarks>
-        public const float AttackSwingSeconds = 0.54f;
+        public const float AttackSwingSeconds = 0.8f;
 
         [Tooltip("起手：从按键到「判定开窗」的秒数。")]
         [SerializeField] private float _attackWindup = AttackWindupBase;
