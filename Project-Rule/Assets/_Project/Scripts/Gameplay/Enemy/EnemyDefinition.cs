@@ -98,7 +98,7 @@ namespace RuleGame.Gameplay.Enemy
         [Min(0.3f)] public float RabbitThrowArcHeight = 1f;
         [Tooltip("翻转后相对玩家的目标高度差；起飞会同时保证身体与地面的安全间距。")]
         [Min(1f)] public float RabbitAirHeight = 2.4f;
-        [Tooltip("换侧到达该时长后，仍须实际离地并拉开侧向距离才可投掷；不会超时后贴地出招。")]
+        [Tooltip("单次空中换位的最长尝试时间。散射仍须离地并拉开侧向距离；连续换位失败时改用普通抛投。")]
         [Min(0.5f)] public float RabbitAirMoveDuration = 1.8f;
         [Min(1f)] public float RabbitAirSpeedMultiplier = 1.6f;
         [Range(5f, 40f)] public float RabbitFanAngle = 18f;

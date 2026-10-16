@@ -10,6 +10,9 @@ namespace RuleGame.Gameplay.Enemy
         private uint _restoreRevision;
         private int _airSide;
         private Vector2 _airDestination;
+        private Vector2 _airLastPosition;
+        private float _airStallTime, _airMoveDeadline;
+        private int _airFailedMoves;
         private string _resume = "Pop";
         private float _resumeElapsed, _burrowX;
         private int _resumePulses, _pattern;
@@ -25,6 +28,9 @@ namespace RuleGame.Gameplay.Enemy
             public bool Flipped, CanBurrow, Lob;
             public int AirSide;
             public Vector2 AirDestination;
+            public Vector2 AirLastPosition;
+            public float AirStallTime, AirMoveDeadline;
+            public int AirFailedMoves;
             public string Resume;
             public int ResumePulses, Pattern;
             public uint Random;
@@ -35,13 +41,17 @@ namespace RuleGame.Gameplay.Enemy
             Cycle = _cycle, Magic = _magicCheck, Burrow = _nextBurrow, ResumeElapsed = _resumeElapsed,
             BurrowX = _burrowX, Flipped = _flipped, CanBurrow = _canBurrow, Resume = _resume,
             ResumePulses = _resumePulses, Pattern = _pattern, Random = _random, Aim = _aim,
-            Lob = _lob, AirSide = _airSide, AirDestination = _airDestination
+            Lob = _lob, AirSide = _airSide, AirDestination = _airDestination,
+            AirLastPosition = _airLastPosition, AirStallTime = _airStallTime,
+            AirMoveDeadline = _airMoveDeadline, AirFailedMoves = _airFailedMoves
         };
         protected override void RestoreExtra(object state)
         {
             if (!(state is Data data)) return;
             _restoreRevision++;
             _lob = data.Lob; _airSide = data.AirSide; _airDestination = data.AirDestination;
+            _airLastPosition = data.AirLastPosition; _airStallTime = data.AirStallTime;
+            _airMoveDeadline = data.AirMoveDeadline; _airFailedMoves = data.AirFailedMoves;
             _cycle = data.Cycle; _magicCheck = data.Magic; _nextBurrow = data.Burrow;
             _resumeElapsed = data.ResumeElapsed; _burrowX = data.BurrowX; _flipped = data.Flipped;
             _canBurrow = data.CanBurrow; _resume = data.Resume; _resumePulses = data.ResumePulses;
@@ -116,6 +126,7 @@ namespace RuleGame.Gameplay.Enemy
                     break;
                 case "AirReposition":
                     _cycle = 0f;
+                    _airFailedMoves = 0;
                     Actor.Cue("Flight", Actor.Duration("Flight", .5f), true);
                     ChooseAirPoint();
                     _nextBurrow = Age + Mathf.Max(1f, Config.RabbitBurrowCooldown) + Config.RabbitAirMoveDuration;
@@ -191,13 +202,26 @@ namespace RuleGame.Gameplay.Enemy
                     Vector2 offset = _airDestination - (Vector2)Actor.transform.position;
                     Actor.FaceTarget();
                     bool airborne = HasAirClearance();
-                    // 先垂直升空，再横向换位；超时只结束换位，不能跳过离地与侧向站位条件。
+                    // 先离地再换侧；受阻或超时后必须重新决策，不能永久追逐一个不可达点。
                     Actor.Motor.Intent = !airborne ? Actor.Motor.Up : offset.sqrMagnitude > .16f ? offset.normalized : Vector2.zero;
                     Actor.Motor.SpeedMultiplier = Mathf.Max(1f, Config.RabbitAirSpeedMultiplier);
-                    if (airborne && (offset.sqrMagnitude <= .16f || Elapsed >= Mathf.Max(.5f, Config.RabbitAirMoveDuration)))
+                    bool arrived = offset.sqrMagnitude <= .16f;
+                    if (airborne && HasAirAttackSpacing() && CombatDistance <= RangedRange
+                        && (arrived || Age >= _airMoveDeadline))
                     {
-                        if (HasAirAttackSpacing() && CombatDistance <= RangedRange) Go("FlipThrow");
-                        else if (offset.sqrMagnitude <= .16f) ChooseAirPoint();
+                        Go("FlipThrow");
+                        break;
+                    }
+                    Vector2 position = Actor.transform.position;
+                    _airStallTime = (position - _airLastPosition).sqrMagnitude < .01f
+                        ? _airStallTime + Delta : 0f;
+                    if ((position - _airLastPosition).sqrMagnitude >= .01f) _airLastPosition = position;
+                    if (arrived || Age >= _airMoveDeadline || _airStallTime >= .6f)
+                    {
+                        _airFailedMoves++;
+                        // 低顶或复杂地形无法满足空中散射条件时，退回已有的锁定抛投，仍保留前摇。
+                        if (_airFailedMoves >= 2 && CombatDistance <= RangedRange) { Go("Throw"); break; }
+                        ChooseAirPoint();
                     }
                     break;
                 case "FlipThrow":
@@ -293,6 +317,9 @@ namespace RuleGame.Gameplay.Enemy
         }
         private void ChooseAirPoint()
         {
+            _airLastPosition = Actor.transform.position;
+            _airStallTime = 0f;
+            _airMoveDeadline = Age + Mathf.Max(.5f, Config.RabbitAirMoveDuration);
             if (!HasTarget) { _airDestination = Actor.transform.position; return; }
             Vector2 target = Actor.Target.position;
             if (_airSide == 0) _airSide = Actor.transform.position.x < target.x ? -1 : 1;
