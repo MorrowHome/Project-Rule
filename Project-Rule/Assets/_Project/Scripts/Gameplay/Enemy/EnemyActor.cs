@@ -146,8 +146,9 @@ namespace RuleGame.Gameplay.Enemy
                 EmitFeedback(EnemyFeedbackKind.Hit, transform.position, -TowardAttacker(damage.Attacker));
                 Brain.OnHit(appliedDamage);
             }
-            // 挂账产生的 0 伤害仍可击退；Boss 的免疫是实体属性，不在规则类里特判。
-            if (Definition.Kind == EnemyKind.BrickMinion || Definition.Kind == EnemyKind.BatMinion)
+            // 普通 Boss 保持稳定；规则使其变轻后可被推开，实际位移仍按刚体质量结算。
+            // 挂账产生的 0 伤害也保留击退，不绕过统一伤害处理。
+            if (Definition.Kind == EnemyKind.BrickMinion || Definition.Kind == EnemyKind.BatMinion || Motor.MassReduced)
                 Motor.AddImpulse(TowardAttacker(damage.Attacker) * -damage.Knockback);
         }
         private Vector2 TowardAttacker(object attacker)
@@ -280,11 +281,13 @@ namespace RuleGame.Gameplay.Enemy
             public bool Defeated;
             public bool StrikeAnnounced;
             public EnemyActor[] Summons;
+            public Vector2 GravityDrift;
             public IDamageable[] SwingTargets;
         }
         public object CaptureSnapshotState() => new Data
         {
             Brain = Brain?.Capture(), Velocity = Motor.Velocity, Impulse = Motor.CaptureImpulse(),
+            GravityDrift = Motor.GravityDrift,
             ClockBeams = ClockBeams?.Capture(),
             Facing = Facing, Invulnerability = _invulnerability, Defeated = Defeated, Summons = _summons.ToArray(),
             ContactCooldown = _contactCooldown,
@@ -301,7 +304,7 @@ namespace RuleGame.Gameplay.Enemy
             ClockBeams?.Restore(data.ClockBeams);
             _swingTargets.Clear();
             foreach (IDamageable target in data.SwingTargets) _swingTargets.Add(target);
-            Motor.Restore(data.Velocity, data.Impulse);
+            Motor.Restore(data.Velocity, data.Impulse, data.GravityDrift);
             _strikeAnnounced = data.StrikeAnnounced;
             Restored?.Invoke();
         }

@@ -279,7 +279,12 @@ namespace RuleGame.Editor.Enemy
         private static EnemyActor CreatePrefab(EnemyDefinition definition, EnemyAnimationSet animations)
         {
             var go = new GameObject(definition.Kind.ToString()); go.layer = 9;
-            go.AddComponent<Rigidbody2D>();
+            // 与交付 prefab 的基准质量一致；质量反转按参考值 1 取倒数，不能所有 Boss 都填 1。
+            var body = go.AddComponent<Rigidbody2D>();
+            body.mass = definition.Kind == EnemyKind.BrickBoss ? 12f
+                : definition.Kind == EnemyKind.ClockBoss ? 6f
+                : definition.Kind == EnemyKind.RabbitBoss ? 2f
+                : definition.Kind == EnemyKind.BatBoss ? .5f : 1f;
             go.AddComponent<BoxCollider2D>().size = definition.BodySize;
             EntityStatus status = go.AddComponent<EntityStatus>();
             SetFloat(status, "_healthMax", definition.Health); SetFloat(status, "_health", definition.Health);
