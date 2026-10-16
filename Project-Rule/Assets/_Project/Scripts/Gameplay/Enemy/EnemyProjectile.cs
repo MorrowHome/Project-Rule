@@ -104,18 +104,27 @@ namespace RuleGame.Gameplay.Enemy
             if (_age > Mathf.Max(1f, _source.Definition.ProjectileLifetime)) { gameObject.SetActive(false); return; }
             _velocity += Physics2D.gravity * _gravity * dt;
             var filter = new ContactFilter2D { useTriggers = false };
-            filter.SetLayerMask(_source.PlayerMask | (1 << 8));
+            int solidMask = _source.Motor.SolidMask;
+            filter.SetLayerMask(_source.PlayerMask | solidMask);
             int count = Physics2D.CircleCast(_body.position, _radius, _velocity.normalized, filter, _hits, _velocity.magnitude * dt);
             if (count > 0)
             {
-                _source.EmitFeedback(EnemyFeedbackKind.ProjectileImpact, _hits[0].point, -_velocity.normalized, this);
-                for (int i = 0; i < count; i++)
+                // 普通弹体不穿透：只处理最近的实体，同一角色的多个碰撞体也只发一次伤害。
+                // 接触距离相同时地形优先，避免紧贴墙后的角色被穿墙结算。
+                int nearest = 0;
+                for (int i = 1; i < count; i++)
                 {
-                    IDamageable receiver = _hits[i].collider.GetComponentInParent<IDamageable>();
-                    IFactionMember faction = _hits[i].collider.GetComponentInParent<IFactionMember>();
-                    if (receiver != null && faction?.Faction == Faction.Player)
-                        _source.Combat?.ApplyDamage(_source, receiver, _source.Definition.Damage, 4f);
+                    bool solid = (solidMask & (1 << _hits[i].collider.gameObject.layer)) != 0;
+                    if (_hits[i].distance < _hits[nearest].distance
+                        || (Mathf.Approximately(_hits[i].distance, _hits[nearest].distance) && solid)) nearest = i;
                 }
+                RaycastHit2D hit = _hits[nearest];
+                _source.EmitFeedback(EnemyFeedbackKind.ProjectileImpact, hit.point, -_velocity.normalized, this);
+                bool blocked = (solidMask & (1 << hit.collider.gameObject.layer)) != 0;
+                IDamageable receiver = hit.collider.GetComponentInParent<IDamageable>();
+                IFactionMember faction = hit.collider.GetComponentInParent<IFactionMember>();
+                if (!blocked && receiver != null && faction?.Faction == Faction.Player)
+                    _source.Combat?.ApplyDamage(_source, receiver, _source.Definition.Damage, 4f);
                 gameObject.SetActive(false);
                 return;
             }
