@@ -1,10 +1,11 @@
 using System;
 using RuleGame.Infrastructure.Interaction;
+using RuleGame.Gameplay.Player;
 using UnityEngine;
 
 namespace RuleGame.Presentation.RuleWheel
 {
-    /// <summary>P4 临时特写：选择时推近并给玩家右侧留出空间，结束后归还场景原有跟随组件。</summary>
+    /// <summary>选择时推近并给角色前方留出空间，结束后归还场景原有跟随组件。</summary>
     [RequireComponent(typeof(Camera))]
     public sealed class RuleSelectionCamera : MonoBehaviour, IRuleSelectionFocus
     {
@@ -16,18 +17,28 @@ namespace RuleGame.Presentation.RuleWheel
         [SerializeField, Min(0.1f)] private float _selectionSize = 2.8f;
         [SerializeField, Min(0.01f)] private float _transitionTime = 0.18f;
         private Camera _camera;
+        private PlayerController _player;
         private float _normalSize, _sizeVelocity;
         private Vector3 _positionVelocity;
         private int _focusCount;
         private bool _returning, _followWasEnabled;
         private Vector3 _entryOffset;
         public bool IsFocused => _focusCount > 0;
-        public void BindTarget(Transform target) => _target = target;
+        public void BindTarget(Transform target)
+        {
+            _target = target;
+            _player = target != null ? target.GetComponent<PlayerController>() : null;
+        }
 
-        private void Awake() { _camera = GetComponent<Camera>(); _normalSize = _camera.orthographicSize; }
+        private void Awake()
+        {
+            _camera = GetComponent<Camera>(); _normalSize = _camera.orthographicSize;
+            BindTarget(_target);
+        }
         public IDisposable AcquireSelectionFocus()
         {
             if (!isActiveAndEnabled || _target == null) return null;
+            if (_player == null || _player.transform != _target) BindTarget(_target);
             if (_focusCount == 0 && _normalFollow != null)
             {
                 if (!_returning)
@@ -47,6 +58,8 @@ namespace RuleGame.Presentation.RuleWheel
             if (_target == null) return;
             if (_normalFollow != null && !IsFocused && !_returning) return;
             Vector2 offset = IsFocused ? _selectionOffset : _followOffset;
+            // 特写给角色前方留空间；正常跟随和回拉仍使用原场景的偏移。
+            if (IsFocused && _player != null && _player.Facing < 0f) offset.x = -offset.x;
             Vector3 position = _target.position + (Vector3)offset;
             position.z = transform.position.z;
             if (_normalFollow != null && !IsFocused) position = _target.position + _entryOffset;

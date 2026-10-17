@@ -451,6 +451,7 @@ GameObject:
   - component: {fileID: 298160629}
   - component: {fileID: 298160628}
   - component: {fileID: 298160627}
+  - component: {fileID: 298160630}
   m_Layer: 0
   m_Name: Rule Wheel
   m_TagString: Untagged
@@ -475,7 +476,7 @@ MonoBehaviour:
   _unlocks: {fileID: 279477532}
   _cameraFocus: {fileID: 519420034}
   _worldCamera: {fileID: 519420031}
-  _selectionScale: 0.1
+  _selectionScale: 0.001
   _playerOffset: {x: 70, y: 0}
 --- !u!114 &298160628
 MonoBehaviour:
@@ -515,6 +516,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &298160630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 298160626}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e225e27a527a12b469a0375de9efb27a, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.RuleWheel.RuleSelectionOrbView
+  _art: {fileID: 11400000, guid: 9c570e4d34fea6f43a2207b644fdf9e4, type: 2}
 --- !u!1 &441830012
 GameObject:
   m_ObjectHideFlags: 0
