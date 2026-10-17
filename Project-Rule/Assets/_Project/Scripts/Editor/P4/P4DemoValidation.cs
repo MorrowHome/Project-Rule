@@ -49,12 +49,12 @@ namespace RuleGame.Editor.P4
                 EditorSceneManager.OpenScene("Assets/_Project/Scenes/SampleScene.unity");
                 P4DemoSceneBuilder.Build();
                 EditorSceneManager.OpenScene(P4DemoSceneBuilder.ScenePath);
-                var demo = UnityEngine.Object.FindFirstObjectByType<P4DemoController>();
-                demo.Configure(UnityEngine.Object.FindFirstObjectByType<P4HudPresenter>(),
+                var demo = UnityEngine.Object.FindAnyObjectByType<P4DemoController>();
+                demo.Configure(UnityEngine.Object.FindAnyObjectByType<P4HudPresenter>(),
                     AssetDatabase.LoadAssetAtPath<TextAsset>("Assets/_Project/UI/P4/Resources/P4RulePreviews.json"),
                     P4DemoSceneBuilder.EnsureGravityDemoCatalog());
                 EditorUtility.SetDirty(demo);
-                var pawnBody = UnityEngine.Object.FindFirstObjectByType<P4DemoPawn>().GetComponent<Rigidbody2D>();
+                var pawnBody = UnityEngine.Object.FindAnyObjectByType<P4DemoPawn>().GetComponent<Rigidbody2D>();
                 pawnBody.bodyType = RigidbodyType2D.Kinematic;
                 pawnBody.gravityScale = 0f;
                 pawnBody.useFullKinematicContacts = true;
@@ -113,8 +113,8 @@ namespace RuleGame.Editor.P4
             {
                 _captureSurface = new RenderTexture(1280, 720, 24, RenderTextureFormat.ARGB32);
                 _captureSurface.Create();
-                UnityEngine.Object.FindFirstObjectByType<Camera>().targetTexture = _captureSurface;
-                UnityEngine.Object.FindFirstObjectByType<UIDocument>().panelSettings.targetTexture = _captureSurface;
+                UnityEngine.Object.FindAnyObjectByType<Camera>().targetTexture = _captureSurface;
+                UnityEngine.Object.FindAnyObjectByType<UIDocument>().panelSettings.targetTexture = _captureSurface;
             }
             EditorApplication.update -= Step;
             _nextStep = EditorApplication.timeSinceStartup + 1.5;
@@ -156,8 +156,8 @@ namespace RuleGame.Editor.P4
                 switch (_stage++)
                 {
                     case 0:
-                        _hud = UnityEngine.Object.FindFirstObjectByType<P4HudPresenter>();
-                        _demo = UnityEngine.Object.FindFirstObjectByType<P4DemoController>();
+                        _hud = UnityEngine.Object.FindAnyObjectByType<P4HudPresenter>();
+                        _demo = UnityEngine.Object.FindAnyObjectByType<P4DemoController>();
                         Require(_hud != null && _demo != null, "Scene contains HUD and demo data source");
                         _document = _hud.GetComponent<UIDocument>();
                         root = _document.rootVisualElement;
@@ -259,8 +259,8 @@ namespace RuleGame.Editor.P4
                         ClickButton("confirmButton");
                         Require(_confirmCount == 1 && Mathf.Approximately(_demo.Energy, 80f), "Re-enable does not multiply click subscriptions");
                         _demo.ResetDemo();
-                        P4DemoPawn pawn = UnityEngine.Object.FindFirstObjectByType<P4DemoPawn>();
-                        P4DemoGoal goal = UnityEngine.Object.FindFirstObjectByType<P4DemoGoal>();
+                        P4DemoPawn pawn = UnityEngine.Object.FindAnyObjectByType<P4DemoPawn>();
+                        P4DemoGoal goal = UnityEngine.Object.FindAnyObjectByType<P4DemoGoal>();
                         pawn.GetComponent<Rigidbody2D>().position = goal.transform.position;
                         Physics2D.SyncTransforms();
                         SimulationMode2D previousMode = Physics2D.simulationMode;
@@ -273,7 +273,7 @@ namespace RuleGame.Editor.P4
                         Require(_document.rootVisualElement.Q<Label>("objective").text.Contains("已抵达"), "Goal trigger completes the whitebox route");
                         _demo.ResetDemo();
                         Require(!_demo.IsWorldPaused && Mathf.Approximately(_demo.Energy, 100f), "Reset restores the demo");
-                        Require(UnityEngine.Object.FindFirstObjectByType<P4DemoPawn>().GetComponent<Rigidbody2D>().position.x < 1f, "Reset returns pawn to spawn");
+                        Require(UnityEngine.Object.FindAnyObjectByType<P4DemoPawn>().GetComponent<Rigidbody2D>().position.x < 1f, "Reset returns pawn to spawn");
                         Finish(!_failed, _failed ? "Runtime Console reported errors; inspect validation log." : "All 35 combinations, 4 pending labels, 7 simultaneous slots, full layout, costs, pause/resume, replacement and reset passed.");
                         break;
                 }
@@ -289,8 +289,8 @@ namespace RuleGame.Editor.P4
             switch (_stage++)
             {
                 case 0:
-                    _hud = UnityEngine.Object.FindFirstObjectByType<P4HudPresenter>();
-                    _demo = UnityEngine.Object.FindFirstObjectByType<P4DemoController>();
+                    _hud = UnityEngine.Object.FindAnyObjectByType<P4HudPresenter>();
+                    _demo = UnityEngine.Object.FindAnyObjectByType<P4DemoController>();
                     _document = _hud.GetComponent<UIDocument>();
                     Require(RuleSystem.Instance != null, "P2 rule system initialized by the demo");
                     RuleCatalog catalog = AssetDatabase.LoadAssetAtPath<RuleCatalog>(P4DemoSceneBuilder.GravityCatalogPath);
@@ -298,7 +298,7 @@ namespace RuleGame.Editor.P4
                     var probe = new GameObject("Validation gravity probe", typeof(Rigidbody2D));
                     Rigidbody2D probeBody = probe.GetComponent<Rigidbody2D>();
                     probeBody.position = new Vector2(1000f, 0f);
-                    P4DemoPawn pawn = UnityEngine.Object.FindFirstObjectByType<P4DemoPawn>();
+                    P4DemoPawn pawn = UnityEngine.Object.FindAnyObjectByType<P4DemoPawn>();
                     Rigidbody2D pawnBody = pawn.GetComponent<Rigidbody2D>();
                     Require(pawnBody.bodyType == RigidbodyType2D.Kinematic && Physics2D.simulationMode == SimulationMode2D.Script,
                         "Kinematic actor and manual physics match the design");
@@ -376,7 +376,7 @@ namespace RuleGame.Editor.P4
                     break;
                 case 1:
                     _pausedRemaining = RuleSystem.Instance.Table.GetSlot(AttributeId.Gravity).Value.Remaining;
-                    Require(!UnityEngine.Object.FindFirstObjectByType<P4DemoPawn>().GetComponent<Rigidbody2D>().simulated, "Assembly freezes the demo body");
+                    Require(!UnityEngine.Object.FindAnyObjectByType<P4DemoPawn>().GetComponent<Rigidbody2D>().simulated, "Assembly freezes the demo body");
                     Screenshot("gravity-assembly.png");
                     _nextStep = EditorApplication.timeSinceStartup + 1.2;
                     break;
@@ -395,7 +395,7 @@ namespace RuleGame.Editor.P4
                     Require(!RuleSystem.Instance.Table.IsActive(AttributeId.Gravity)
                         && Mathf.Approximately(Physics2D.gravity.y, -9.81f)
                         && _document.rootVisualElement.Q("gravityRule").ClassListContains("hidden"), "Expiry restores gravity and removes HUD slot");
-                    P4DemoPawn motor = UnityEngine.Object.FindFirstObjectByType<P4DemoPawn>();
+                    P4DemoPawn motor = UnityEngine.Object.FindAnyObjectByType<P4DemoPawn>();
                     Rigidbody2D motorBody = motor.GetComponent<Rigidbody2D>();
                     _demo.ResetDemo();
                     for (int step = 0; step < 25; step++)
@@ -436,7 +436,7 @@ namespace RuleGame.Editor.P4
                         && Mathf.Approximately(_demo.Energy, 100f), "Reset clears real rules and restores energy");
                     _hud.SetAssemblyOpen(true);
                     ClickButton("confirmButton");
-                    UnityEngine.Object.FindFirstObjectByType<P4DemoPawn>().enabled = false;
+                    UnityEngine.Object.FindAnyObjectByType<P4DemoPawn>().enabled = false;
                     UnityEngine.Object.DestroyImmediate(_demo);
                     Require(RuleSystem.Instance == null && Mathf.Approximately(Physics2D.gravity.y, -9.81f)
                         && (int)Physics2D.simulationMode == SessionState.GetInt(SimulationModeKey, -1), "Scene teardown restores gravity, simulation mode and singleton");

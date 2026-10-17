@@ -35,7 +35,7 @@ namespace RuleGame.Editor.Enemy
                     var actor = AssetDatabase.LoadAssetAtPath<GameObject>(path).GetComponent<EnemyActor>();
                     var boxes = actor.GetComponentsInChildren<Hurtbox>(true);
                     var body = actor.GetComponent<BoxCollider2D>();
-                    Check(actor.UseSpawnRelativeArena && boxes.Length == 1 && boxes[0].GetComponentInParent<IDamageable>(true) == actor
+                    Check(actor.UseSpawnRelativeArena && boxes.Length == 1 && (UnityEngine.Object)boxes[0].GetComponentInParent<IDamageable>(true) == actor
                         && boxes[0].gameObject.layer == Hurtbox.Layer && boxes[0].GetComponent<BoxCollider2D>().isTrigger
                         && boxes[0].GetComponent<BoxCollider2D>().size == body.size, kind + " 放置模式和独立受击箱正确");
                     saved[path] = File.ReadAllText(path);
@@ -76,7 +76,7 @@ namespace RuleGame.Editor.Enemy
             var actor = Spawn(new Vector2(100f, 50.85f));
             Check(actor.Target == null && actor.Combat != null, "玩家尚未出现时，敌人安全等待并自动取得战斗服务");
             var another = Spawn(new Vector2(120f, 50.85f));
-            Check(another.Combat == actor.Combat && UnityEngine.Object.FindObjectsByType<CombatSystem>(FindObjectsSortMode.None).Length == 1,
+            Check(another.Combat == actor.Combat && UnityEngine.Object.FindObjectsByType<CombatSystem>().Length == 1,
                 "多只拖入的小怪共享同一个场景战斗服务");
             Check(actor.ArenaX == new Vector2(90f, 110f) && actor.ArenaY == new Vector2(40.85f, 60.85f),
                 "远离世界原点时，以实际出生点生成活动边界");

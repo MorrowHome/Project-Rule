@@ -145,7 +145,7 @@ namespace RuleGame.Editor.Enemy
             catch (Exception error) { _failed++; Debug.LogError(name + ": " + error.Message); }
             finally
             {
-                foreach (var shot in UnityEngine.Object.FindObjectsByType<EnemyProjectile>(FindObjectsSortMode.None))
+                foreach (var shot in UnityEngine.Object.FindObjectsByType<EnemyProjectile>())
                     shot.gameObject.SetActive(false);
                 UnityEngine.Object.DestroyImmediate(root);
                 Physics2D.SyncTransforms();

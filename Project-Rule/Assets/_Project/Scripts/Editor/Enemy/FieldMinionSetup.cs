@@ -139,7 +139,7 @@ namespace RuleGame.Editor.Enemy
             actor.UseSpawnRelativeArena = true;
             Hurtbox hurtbox = null;
             foreach (var existing in actor.GetComponentsInChildren<Hurtbox>(true))
-                if (existing.GetComponentInParent<IDamageable>(true) == actor) { hurtbox = existing; break; }
+                if ((UnityEngine.Object)existing.GetComponentInParent<IDamageable>(true) == actor) { hurtbox = existing; break; }
             if (hurtbox == null)
             {
                 var go = new GameObject("Hurtbox"); go.transform.SetParent(actor.transform, false);
