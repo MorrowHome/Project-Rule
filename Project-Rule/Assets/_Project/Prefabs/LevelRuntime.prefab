@@ -166,6 +166,9 @@ MonoBehaviour:
   _solidLayer:
     serializedVersion: 2
     m_Bits: 256
+  _bodyBlockLayer:
+    serializedVersion: 2
+    m_Bits: 512
   _groundProbeDistance: 0.08
   _surfaceAnchorDistance: 0.05
   _surfaceSlideAngle: 90
@@ -739,6 +742,7 @@ GameObject:
   - component: {fileID: 1386674587553236161}
   - component: {fileID: 6004299917009494610}
   - component: {fileID: 4518600675149302340}
+  - component: {fileID: 5176214626023696707}
   m_Layer: 0
   m_Name: Rule Wheel
   m_TagString: Untagged
@@ -803,6 +807,19 @@ MonoBehaviour:
   _worldCamera: {fileID: 705297260991742413}
   _selectionScale: 0.001
   _playerOffset: {x: 70, y: 0}
+--- !u!114 &5176214626023696707
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4974943283484232420}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e225e27a527a12b469a0375de9efb27a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.RuleWheel.RuleSelectionOrbView
+  _art: {fileID: 11400000, guid: 9c570e4d34fea6f43a2207b644fdf9e4, type: 2}
 --- !u!1 &6617420305150054304
 GameObject:
   m_ObjectHideFlags: 0
