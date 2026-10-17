@@ -206,6 +206,34 @@ namespace RuleGame.Editor.Enemy
                     beam.SendMessage("FixedUpdate"); beam.gameObject.SetActive(false);
                 }
                 Check(health.Health == hp - _actor.Definition.Damage, "光束通过统一准入命中 Trigger 受击箱");
+                int hitCues = 0; EnemyFeedback lastHit = default;
+                _actor.Feedback += cue => { if (cue.Kind == EnemyFeedbackKind.Hit) { hitCues++; lastHit = cue; } };
+                float bodyHealth = _actor.Status.Health;
+                _actor.Combat.PerformAttack(receiver, _actor.transform.position, Vector2.one, 1f, 0f);
+                Check(_actor.Status.Health == bodyHealth - 1f && hitCues == 1 && lastHit.Damage == 1f,
+                    "新受击箱攻击与受伤视觉事件同时生效且不重复通知");
+                bodyHealth = _actor.Status.Health; hitCues = 0;
+                var weakObject = new GameObject("WeakPoint"); weakObject.transform.SetParent(_actor.transform, false);
+                weakObject.transform.localPosition = Vector2.up * 2f;
+                weakObject.AddComponent<BoxCollider2D>(); weakObject.AddComponent<SpriteRenderer>();
+                var weak = weakObject.AddComponent<EnemyWeakPoint>(); weak.Owner = _actor;
+                HurtboxChild(weakObject);
+                var weakBox = weakObject.GetComponentInChildren<Hurtbox>();
+                weak.Open(5f); weak.Close(); Physics2D.SyncTransforms();
+                _actor.Combat.PerformAttack(receiver, weak.transform.position, Vector2.one, 3f, 0f);
+                Check(!weakBox.Area.enabled && weak.Health == 5f && hitCues == 0,
+                    "关闭的弱点同时关闭受击箱，攻击不扣血也不闪光");
+                weak.Open(5f); Physics2D.SyncTransforms();
+                Check(weakBox.Area.enabled, "打开弱点恢复真实受击箱");
+                _actor.Combat.PerformAttack(receiver, weak.transform.position, Vector2.one, 3f, 0f);
+                Check(weak.Health == 2f && hitCues == 1 && lastHit.Subject == weak && lastHit.Damage == 3f,
+                    "弱点经统一结算扣血并向本体发送一次弱点受伤通知");
+                Check(_actor.Status.Health == bodyHealth, "弱点命中不额外扣除本体生命");
+                _actor.Combat.PerformAttack(receiver, weak.transform.position, Vector2.one, 4f, 0f);
+                Check(weak.Broken && hitCues == 2 && lastHit.Staggered,
+                    "弱点破坏保留受伤视觉的强化通知");
+                weak.Close();
+                Check(!weakBox.Area.enabled, "弱点再次收回不会留下可命中的判定框");
             });
         }
         private static void RangeCases()
