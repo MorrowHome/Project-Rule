@@ -144,6 +144,27 @@ namespace RuleGame.Gameplay.Player
             return Physics2D.OverlapCircle(point, radius, filter, _climbHits) > 0;
         }
 
+        /// <summary>
+        /// 查脚下**那一格瓦片**自己声明的摩擦系数（<see cref="RuleGame.Gameplay.Scene.SurfaceTile"/>）。
+        /// </summary>
+        /// <remarks>
+        /// <para>命中的碰撞体是 Tilemap 时，把它换算成格子去取瓦片；不是 Tilemap（普通碰撞体）就返回
+        /// <c>NaN</c> 表示「这块地不表态」，交给碰撞体的材质决定。</para>
+        /// <para>⚠️ 探测点取在**接触点往里一点**：命中点正好压在格子的上边界上，
+        /// 直接用 <c>WorldToCell</c> 会掉进上面那一格（空的），读到 null。</para>
+        /// </remarks>
+        private static float ReadTileFriction(RaycastHit2D hit)
+        {
+            if (!(hit.collider is UnityEngine.Tilemaps.TilemapCollider2D tilemapCollider)) return float.NaN;
+
+            var map = tilemapCollider.GetComponent<UnityEngine.Tilemaps.Tilemap>();
+            if (map == null) return float.NaN;
+
+            Vector2 probe = hit.point - hit.normal * 0.05f;
+            var tile = map.GetTile(map.WorldToCell(probe));
+            return tile is RuleGame.Gameplay.Scene.SurfaceTile surface ? surface.Friction : float.NaN;
+        }
+
         /// <summary>沿当前「上」方向的反向做一次碰撞体扫描，看脚下有没有支撑面。</summary>
         /// <remarks>顺带记住脚下这块地的摩擦系数（<see cref="_groundFriction"/>），供减速使用。</remarks>
         private bool ProbeGround(MotionTuning tuning)
@@ -159,9 +180,13 @@ namespace RuleGame.Gameplay.Player
                 // 只有法线朝着「上」的接触才算支撑面；墙面法线是水平的，会被排除。
                 if (Vector2.Dot(_groundHits[i].normal, _up) <= 0.5f) continue;
 
-                // 地形用 PhysicsMaterial2D 表达材质：冰面给个小的 friction 即可。
+                // 地形用 PhysicsMaterial2D 表达材质。但一整张 Tilemap 只有一个碰撞体，
+                // 没法逐格设摩擦 —— 所以瓦片自己也可以声明（SurfaceTile，冰面那种）。
                 var material = _groundHits[i].collider.sharedMaterial;
                 if (material != null) _groundFriction = material.friction;
+
+                float surface = ReadTileFriction(_groundHits[i]);
+                if (!float.IsNaN(surface)) _groundFriction = surface;
 
                 return true;
             }

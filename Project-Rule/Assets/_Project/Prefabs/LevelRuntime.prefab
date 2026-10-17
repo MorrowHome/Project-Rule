@@ -679,7 +679,7 @@ MonoBehaviour:
   _unlocks: {fileID: 372902075844652135}
   _cameraFocus: {fileID: 8558544339893391542}
   _worldCamera: {fileID: 705297260991742413}
-  _selectionScale: 0.1
+  _selectionScale: 0.001
   _playerOffset: {x: 70, y: 0}
 --- !u!1 &8918909928772190229
 GameObject:

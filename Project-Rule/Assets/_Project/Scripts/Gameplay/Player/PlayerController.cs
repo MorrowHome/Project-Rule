@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 using RuleGame.Core.Rules;
 using RuleGame.Gameplay.Combat;
 using RuleGame.Infrastructure.Interaction;
+using RuleGame.Infrastructure.Rules;
 
 namespace RuleGame.Gameplay.Player
 {
@@ -374,6 +375,19 @@ namespace RuleGame.Gameplay.Player
             _input.Tick(IsPaused || _input.IsSuppressed);
         }
 
+        /// <summary>
+        /// 时间恒定（定点回溯）的控制入口。
+        /// </summary>
+        /// <remarks>
+        /// <para>回溯键**独占一个键**（架构 D16）：键盘 Q / 手柄 LB，见 <c>PlayerInput.Tick</c>。
+        /// 窗口由时间恒定的规则类持有，没开窗口时这里什么都不做。</para>
+        /// <para>取用方式是接口查询而不是直接引用时间规则类 —— 玩家侧不认识规则系统内部。</para>
+        /// </remarks>
+        private static void TryRewindTime()
+        {
+            if (RuleSystem.Instance is ITimeRewindControl control) control.TryRewind();
+        }
+
         // ==================================================================
         //  物理（固定帧）
         // ==================================================================
@@ -395,6 +409,11 @@ namespace RuleGame.Gameplay.Player
 
             // ① 接触：Sense 内部先解出「上」方向（探测得先知道哪边是下），再扫地面与左右墙。
             PlayerInput.State   input   = _input.Sample();
+
+            // 时间恒定：窗口内的定点回溯。窗口没开时 TryRewind() 返回 false，是空操作。
+            // 放在物理帧：回溯会直接写回所有实体的刚体位置，与物理步进同一节拍更安全。
+            if (input.RewindPressed) TryRewindTime();
+
             ContactSensor.State contact = _contacts.Sense(tuning);
             if (contact.JustLanded) OnLanded?.Invoke();
 

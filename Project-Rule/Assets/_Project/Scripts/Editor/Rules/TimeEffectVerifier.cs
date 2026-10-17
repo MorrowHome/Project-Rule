@@ -58,6 +58,7 @@ namespace RuleGame.Editor.Rules
 
             // ---- 起环境 ----
             WorldRegistry.Initialize();
+            SnapshotRoster.Initialize();     // 必须在造实体之前：RuleAffectedBody.Awake 会登记进名册
             TimeManager.Initialize();
             RuleSystem.Initialize(catalog);
             RuleSystem sys = RuleSystem.Instance;
@@ -78,7 +79,7 @@ namespace RuleGame.Editor.Rules
             var status = go.AddComponent<EntityStatus>();
             var body = go.AddComponent<RuleAffectedBody>();   // 登记进 WorldRegistry
 
-            SnapshotSystem.Initialize(sys, WorldRegistry.Instance);
+            SnapshotSystem.Initialize(sys, SnapshotRoster.Instance);
 
             h.Section("0b 实体就位");
             h.Check("实体已登记", body.IsRegistered && WorldRegistry.Instance.Count >= 1,
@@ -214,6 +215,7 @@ namespace RuleGame.Editor.Rules
             Physics2D.simulationMode = savedSimMode;
 
             SnapshotSystem.Reset();
+            SnapshotRoster.Reset();
             TimeManager.Reset();
             RuleSystem.Reset();
             WorldRegistry.Reset();

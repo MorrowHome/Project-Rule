@@ -37,6 +37,11 @@ namespace RuleGame.Editor.Level
         private const int ArtSortingOrder = 1;
         private const int SpaceProbe = 64;
 
+        /// <summary>冰面层：单独一张 Tilemap，碰撞体带 0 摩擦物理材质。</summary>
+        private const string IceChildName = "Ice";
+        private const string IceMaterialPath = "Assets/_Project/Data/Config/Ice_Surface.physicsMaterial2D";
+        private const int IceSortingOrder = 0;
+
         private enum Face { Up, Down, Left, Right }
 
         [MenuItem("Tools/规则游戏/铺装美术/① 全部（地板 + 墙 + 薄板） %#g", false, 10)]
@@ -57,19 +62,28 @@ namespace RuleGame.Editor.Level
         [MenuItem("Tools/规则游戏/铺装美术/⑥ 清空美术 %#h", false, 30)]
         public static void Clear()
         {
-            var root = Selection.activeGameObject;
-            if (root == null) { Debug.LogError("[铺装] 请先选中逻辑 Grid。"); return; }
-            var artRoot = root.transform.Find(ArtChildName);
-            if (artRoot != null) ClearChildren(artRoot);
-            Debug.Log("[铺装] 已清空美术层。");
+            var selected = Selection.activeGameObject;
+            if (selected == null) { Debug.LogError("[铺装] 请先选中逻辑 Grid。"); return; }
+
+            var root = ResolveRoot(selected);
+            var artRoot = root.Find(ArtChildName);
+            if (artRoot == null)
+            {
+                Debug.LogWarning($"[铺装] {root.name} 下面没有 {ArtChildName} 层，没什么可清的。");
+                return;
+            }
+
+            int count = artRoot.childCount;
+            ClearChildren(artRoot);
+            Debug.Log($"[铺装] 已清空美术层：删掉 {count} 个构件。");
         }
 
         [MenuItem("Tools/规则游戏/铺装美术/⑦ 显示 / 隐藏白盒 %#l", false, 32)]
         public static void ToggleLogicRenderer()
         {
-            var root = Selection.activeGameObject;
-            if (root == null) { Debug.LogError("[铺装] 请先选中逻辑 Grid。"); return; }
-            var tilemap = FindLogicTilemap(root);
+            var selected = Selection.activeGameObject;
+            if (selected == null) { Debug.LogError("[铺装] 请先选中逻辑 Grid。"); return; }
+            var tilemap = FindLogicTilemap(ResolveRoot(selected).gameObject);
             if (tilemap == null) { Debug.LogError("[铺装] 找不到 Tilemap。"); return; }
             var renderer = tilemap.GetComponent<TilemapRenderer>();
             if (renderer == null) return;
@@ -77,16 +91,45 @@ namespace RuleGame.Editor.Level
             Debug.Log("[铺装] 白盒显示 = " + renderer.enabled);
         }
 
+        /// <summary>建（或复用）冰面层，并把逻辑层里画着的冰面格搬过去。</summary>
+        [MenuItem("Tools/规则游戏/铺装美术/⑧ 建冰面层（0 摩擦）", false, 33)]
+        public static void BuildIceLayer()
+        {
+            var selected = Selection.activeGameObject;
+            if (selected == null) { Debug.LogError("[铺装] 请先在 Hierarchy 里选中逻辑 Grid 物体。"); return; }
+
+            var root = ResolveRoot(selected).gameObject;
+            var logic = FindLogicTilemap(root);
+            if (logic == null) { Debug.LogError("[铺装] 选中的物体下面找不到 Tilemap。"); return; }
+
+            var ice = EnsureIceLayer(root, logic);
+            int moved = MigrateIceCells(logic, ice);
+            Debug.Log($"[铺装] 冰面层就绪：{IceChildName}（0 摩擦材质），从逻辑层搬过来 {moved} 格冰面。");
+        }
+
         private static void Dress(Face[] only, bool includeThickDown)
         {
-            var root = Selection.activeGameObject;
-            if (root == null) { Debug.LogError("[铺装] 请先在 Hierarchy 里选中逻辑 Grid 物体。"); return; }
+            var selected = Selection.activeGameObject;
+            if (selected == null) { Debug.LogError("[铺装] 请先在 Hierarchy 里选中逻辑 Grid 物体。"); return; }
+
+            // 选中 Grid 或它下面的 Logic / Mask / Art 都行：统一往上解析成 Grid。
+            var root = ResolveRoot(selected).gameObject;
 
             var tilemap = FindLogicTilemap(root);
             if (tilemap == null) { Debug.LogError("[铺装] 选中的物体下面找不到 Tilemap。"); return; }
 
             var kits = LoadKits();
             if (kits == null) return;
+
+            // 冰面必须单独一层（碰撞体才能带 0 摩擦材质）：先把逻辑层里画着的冰面格搬过去，
+            // 否则它会以「实心几何」的身份参与暴露面判断、还会被当成墙去铺装。
+            var iceLayer = EnsureIceLayer(root, tilemap);
+            int movedIce = MigrateIceCells(tilemap, iceLayer);
+            if (movedIce > 0)
+            {
+                Debug.Log($"[铺装] 已把 {movedIce} 格冰面从逻辑层搬到 {IceChildName} 层" +
+                          "（同一格、高度不变，碰撞与 0 摩擦材质都归冰面层）。");
+            }
 
             var artRoot = EnsureArtRoot(root);
             ClearChildren(artRoot);
@@ -102,6 +145,9 @@ namespace RuleGame.Editor.Level
 
             var solid = new HashSet<Vector3Int>();
             var secret = new HashSet<Vector3Int>();
+            // 表面瓦片（冰面等）：**是**实心几何（要挡住下面的外露面），但自己不铺装 ——
+            // 它的贴图就是最终画面，直接搬到美术层。
+            var surfaces = new HashSet<Vector3Int>();
             var misplaced = new HashSet<string>();
             int misplacedCells = 0;
 
@@ -128,6 +174,7 @@ namespace RuleGame.Editor.Level
 
                     solid.Add(p);
                     if (isSecret) secret.Add(p);
+                    if (tile is RuleGame.Gameplay.Scene.SurfaceTile) surfaces.Add(p);
                 }
 
             if (misplacedCells > 0)
@@ -150,6 +197,7 @@ namespace RuleGame.Editor.Level
 
             foreach (var p in solid)
             {
+                if (surfaces.Contains(p)) continue;      // 表面瓦片自带贴图，不铺装
                 int x = p.x, y = p.y;
                 bool up = !Has(x, y + 1);
                 bool down = !Has(x, y - 1);
@@ -212,6 +260,9 @@ namespace RuleGame.Editor.Level
                 }
             }
 
+            // 表面瓦片（冰面等）：把自己的贴图搬到美术层，隐藏白盒之后它还看得见。
+            pieces += DressSurfaces(artRoot, surfaces, tilemap, grid, cell);
+
             var logicRenderer = tilemap.GetComponent<TilemapRenderer>();
             if (logicRenderer != null && logicRenderer.enabled)
             {
@@ -219,7 +270,17 @@ namespace RuleGame.Editor.Level
                 EditorUtility.SetDirty(logicRenderer);
             }
 
-            Debug.Log($"[铺装] 完成：{runs} 段，{pieces} 个构件。白盒层已隐藏（Ctrl+Shift+L 可再显示）。");
+            // 铺完就把遮罩切成纯黑：这时候是「看最终效果」，半透明会让人误以为遮罩没生效。
+            // 想改回半透明继续对位，跑菜单「③ 遮罩：半透明 ↔ 纯黑」。
+            var maskLayer = root.GetComponentInChildren<MaskLayer>(true);
+            if (maskLayer != null)
+            {
+                maskLayer.SetEditorAlpha(1f);
+                EditorUtility.SetDirty(maskLayer);
+            }
+
+            Debug.Log($"[铺装] 完成：{runs} 段，{pieces} 个构件。白盒层已隐藏（Ctrl+Shift+L 可再显示）；" +
+                      $"遮罩已切纯黑（菜单 ③ 可切回半透明）。");
         }
 
         // ==================================================================
@@ -301,6 +362,74 @@ namespace RuleGame.Editor.Level
             Debug.Log($"[瓦片纠错] 已把 {cells.Count} 格遮罩瓦片从逻辑层移回 Mask 层。现在选中 Grid 重铺一次（Ctrl+Shift+G）。");
         }
 
+        /// <summary>遮罩预览：在「编辑器半透明」和「纯黑」之间切换（运行时始终纯黑）。</summary>
+        [MenuItem("Tools/规则游戏/关卡瓦片/③ 遮罩：半透明 ↔ 纯黑", false, 42)]
+        public static void ToggleMaskPreview()
+        {
+            var root = Selection.activeGameObject;
+            if (root == null) { Debug.LogError("[遮罩] 请先在 Hierarchy 里选中逻辑 Grid 物体。"); return; }
+
+            var layer = ResolveRoot(root).GetComponentInChildren<MaskLayer>(true);
+            if (layer == null)
+            {
+                Debug.LogError("[遮罩] 没找到 MaskLayer 组件（应该挂在 Grid/Mask 上）。");
+                return;
+            }
+
+            bool opaque = layer.EditorAlpha > 0.99f;
+            layer.SetEditorAlpha(opaque ? 0.5f : 1f);
+            EditorUtility.SetDirty(layer);
+
+            Debug.Log($"[遮罩] 编辑器预览已切到 {(opaque ? "半透明 0.5" : "纯黑 1")}（运行时始终纯黑）。");
+        }
+
+        /// <summary>一键清掉逻辑层里的暗墙瓦片（改主意、不想留暗门时用）。</summary>
+        [MenuItem("Tools/规则游戏/关卡瓦片/④ 清掉逻辑层里的暗墙瓦片", false, 43)]
+        public static void ClearSecretTiles()
+        {
+            var selected = Selection.activeGameObject;
+            if (selected == null) { Debug.LogError("[瓦片工具] 请先在 Hierarchy 里选中逻辑 Grid 物体。"); return; }
+
+            var root = ResolveRoot(selected);
+            var logic = FindLayer(root, "Logic");
+            if (logic == null) { Debug.LogError("[瓦片工具] 找不到名为 Logic 的 Tilemap。"); return; }
+
+            var field = logic.GetComponent<SecretWallField>();
+            if (field == null) { Debug.LogWarning("[瓦片工具] Logic 上没有 SecretWallField，不知道哪些算暗墙。"); return; }
+
+            var cells = new List<Vector3Int>();
+            var bounds = logic.cellBounds;
+            for (int x = bounds.xMin; x < bounds.xMax; x++)
+                for (int y = bounds.yMin; y < bounds.yMax; y++)
+                {
+                    var c = new Vector3Int(x, y, 0);
+                    if (field.IsSecretCell(c)) cells.Add(c);
+                }
+
+            if (cells.Count == 0)
+            {
+                Debug.Log("[瓦片工具] 逻辑层里没有暗墙瓦片，不需要处理。");
+                return;
+            }
+
+            Undo.RecordObject(logic, "清除暗墙瓦片");
+            foreach (var c in cells) logic.SetTile(c, null);
+            logic.RefreshAllTiles();
+            EditorUtility.SetDirty(logic);
+
+            var where = new List<string>();
+            for (int i = 0; i < cells.Count && i < 12; i++) where.Add(cells[i].ToString());
+            Debug.Log($"[瓦片工具] 已清掉 {cells.Count} 格暗墙瓦片：{string.Join(" ", where)}" +
+                      (cells.Count > 12 ? " …" : "") + "。现在选中 Grid 重铺一次（Ctrl+Shift+G）。");
+        }
+
+        private static Tilemap FindLayer(Transform root, string name)
+        {
+            foreach (var map in root.GetComponentsInChildren<Tilemap>(true))
+                if (map.gameObject.name.Equals(name, System.StringComparison.OrdinalIgnoreCase)) return map;
+            return null;
+        }
+
         private static Dictionary<string, int> CountTiles(Tilemap map)
         {
             var result = new Dictionary<string, int>();
@@ -320,18 +449,16 @@ namespace RuleGame.Editor.Level
             logic = null;
             mask = null;
 
-            var root = Selection.activeGameObject;
-            if (root == null)
+            var selected = Selection.activeGameObject;
+            if (selected == null)
             {
                 Debug.LogError("[瓦片工具] 请先在 Hierarchy 里选中逻辑 Grid 物体。");
                 return false;
             }
 
-            foreach (var map in root.GetComponentsInChildren<Tilemap>(true))
-            {
-                if (map.gameObject.name.Equals("Logic", System.StringComparison.OrdinalIgnoreCase)) logic = map;
-                if (map.gameObject.name.Equals("Mask", System.StringComparison.OrdinalIgnoreCase)) mask = map;
-            }
+            var root = ResolveRoot(selected);
+            logic = FindLayer(root, "Logic");
+            mask = FindLayer(root, "Mask");
 
             if (logic == null) { Debug.LogError("[瓦片工具] 找不到名为 Logic 的 Tilemap。"); return false; }
             if (mask == null) { Debug.LogError("[瓦片工具] 找不到名为 Mask 的 Tilemap。"); return false; }
@@ -366,6 +493,11 @@ namespace RuleGame.Editor.Level
         private static int DressRun(Transform artRoot, Face face, List<Vector3Int> run, GridLayout grid,
                                     Vector3 cell, Kit kit, HashSet<Vector3Int> solid)
         {
+            // 新素材是「一格一个方块」：四个朝向都用它 —— 每格一块，不拼接、不缩放，
+            // 方块自带「粗糙的上边」，靠旋转让粗糙边朝外（地板朝上、天花板朝下、墙朝左右）。
+            if (kit.WallBlocks != null && kit.WallBlocks.Count > 0)
+                return DressBlocks(artRoot, face, run, grid, cell, kit);
+
             bool vertical = face == Face.Left || face == Face.Right;
             float span = (vertical ? cell.y : cell.x) * run.Count;
 
@@ -450,6 +582,191 @@ namespace RuleGame.Editor.Level
             return count;
         }
 
+        /// <summary>
+        /// 每格一块方块（新素材 <c>Wall_Stone_Block_*</c>），四个朝向通用。
+        /// </summary>
+        /// <remarks>
+        /// 方块自带「粗糙的上边」，靠旋转让粗糙边朝外：
+        /// 地板 0°（朝上）、天花板 180°（朝下）、左墙 +90°、右墙 −90°。
+        /// 旋转后贴图从锚点向另一侧伸展，所以锚点要放在格子对应的对角。
+        /// </remarks>
+        private static int DressBlocks(Transform artRoot, Face face, List<Vector3Int> run,
+                                       GridLayout grid, Vector3 cell, Kit kit)
+        {
+            int count = 0;
+            foreach (var c in run)
+            {
+                var sprite = kit.WallBlocks[VariantIndex(c, kit.WallBlocks.Count)];
+                Vector3 origin = grid.CellToWorld(c);
+
+                // 旋转后贴图从锚点伸出的方向不同，锚点放在「对角」才能盖住这一格。
+                Vector3 anchor;
+                float rotZ;
+                switch (face)
+                {
+                    case Face.Down:
+                        anchor = new Vector3(origin.x + cell.x, origin.y + cell.y, 0f);   // 右上角
+                        rotZ = 180f;
+                        break;
+                    case Face.Left:
+                        anchor = new Vector3(origin.x + cell.x, origin.y, 0f);            // 右下角
+                        rotZ = 90f;
+                        break;
+                    case Face.Right:
+                        anchor = new Vector3(origin.x, origin.y + cell.y, 0f);            // 左上角
+                        rotZ = -90f;
+                        break;
+                    default:                                                              // Face.Up
+                        anchor = new Vector3(origin.x, origin.y, 0f);                     // 左下角
+                        rotZ = 0f;
+                        break;
+                }
+
+                var go = new GameObject(face + "_" + sprite.name);
+                go.transform.SetParent(artRoot, false);
+                go.transform.position = anchor;
+                go.transform.rotation = Quaternion.Euler(0f, 0f, rotZ);
+                go.transform.localScale = Vector3.one;
+
+                var sr = go.AddComponent<SpriteRenderer>();
+                sr.sprite = sprite;
+                sr.sortingOrder = ArtSortingOrder;
+                Undo.RegisterCreatedObjectUndo(go, "铺装美术");
+                count++;
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// 建（或复用）冰面层：单独一张 Tilemap + 自带 0 摩擦物理材质的碰撞体。
+        /// </summary>
+        /// <remarks>
+        /// <para><b>为什么冰面不能和地面同层</b>：摩擦是**碰撞体**的属性，而一整张 Tilemap
+        /// 只有一个碰撞体 —— 同层就没法逐格设摩擦，物理驱动的物体（石头、投掷物）踩上去也不会打滑。</para>
+        /// <para>冰面层自己渲染、自己有碰撞体，所以逻辑层那一格要**空出来**（由
+        /// <see cref="MigrateIceCells"/> 负责），高度才不会多出半格。</para>
+        /// </remarks>
+        private static Tilemap EnsureIceLayer(GameObject root, Tilemap logic)
+        {
+            var existing = root.transform.Find(IceChildName);
+            GameObject go;
+            if (existing != null)
+            {
+                go = existing.gameObject;
+            }
+            else
+            {
+                go = new GameObject(IceChildName);
+                go.transform.SetParent(root.transform, false);
+                Undo.RegisterCreatedObjectUndo(go, "建冰面层");
+            }
+
+            // ⚠️ AddComponent<Tilemap>() **不会**自动带上 TilemapRenderer（没有 RequireComponent），
+            // 少了渲染器冰面就是隐形的 —— 所以这里显式补齐，老的层也能被修好。
+            var map = go.GetComponent<Tilemap>() ?? go.AddComponent<Tilemap>();
+
+            var renderer = go.GetComponent<TilemapRenderer>();
+            if (renderer == null) renderer = go.AddComponent<TilemapRenderer>();
+            var logicRenderer = logic.GetComponent<TilemapRenderer>();
+            renderer.sortingLayerID = logicRenderer != null ? logicRenderer.sortingLayerID : 0;
+            renderer.sortingOrder = IceSortingOrder;        // 逻辑层 −2、美术 1：冰面夹在中间
+            renderer.enabled = true;
+
+            var collider = go.GetComponent<TilemapCollider2D>();
+            if (collider == null) collider = go.AddComponent<TilemapCollider2D>();
+
+            var material = AssetDatabase.LoadAssetAtPath<PhysicsMaterial2D>(IceMaterialPath);
+            if (material != null)
+            {
+                collider.sharedMaterial = material;
+            }
+            else
+            {
+                Debug.LogWarning($"[铺装] 找不到冰面物理材质 {IceMaterialPath}，" +
+                                 "冰面会按引擎默认摩擦处理（玩家仍会打滑，但物理物体不会）。");
+            }
+
+            return map;
+        }
+
+        /// <summary>
+        /// 把逻辑层里的表面瓦片（冰面）搬到冰面层：**同一格、高度不变**，碰撞交给冰面层。
+        /// </summary>
+        private static int MigrateIceCells(Tilemap logic, Tilemap ice)
+        {
+            if (ice == null || ice == logic) return 0;
+
+            var bounds = logic.cellBounds;
+            int moved = 0;
+            for (int x = bounds.xMin; x < bounds.xMax; x++)
+                for (int y = bounds.yMin; y < bounds.yMax; y++)
+                {
+                    var c = new Vector3Int(x, y, 0);
+                    var tile = logic.GetTile(c);
+                    if (!(tile is SurfaceTile)) continue;
+
+                    ice.SetTile(c, tile);
+                    logic.SetTile(c, null);
+                    moved++;
+                }
+
+            if (moved > 0)
+            {
+                EditorUtility.SetDirty(logic);
+                EditorUtility.SetDirty(ice);
+                ice.RefreshAllTiles();
+
+                // 编辑器里没有帧循环，TilemapCollider2D 不会自己重建形状（冰面会"看得见但踩空"）。
+                // 关一下再开，逼它重算。
+                var iceCollider = ice.GetComponent<TilemapCollider2D>();
+                if (iceCollider != null)
+                {
+                    iceCollider.enabled = false;
+                    iceCollider.enabled = true;
+                }
+            }
+            return moved;
+        }
+
+        /// <summary>
+        /// 把表面瓦片（冰面等）自己的贴图搬到美术层。
+        /// </summary>
+        /// <remarks>
+        /// 这类瓦片**不参与铺装**（铺装器跳过它们），贴图就是最终画面 ——
+        /// 但铺完会把白盒层的 Renderer 关掉，不搬一份的话它们就跟着一起消失了。
+        /// </remarks>
+        private static int DressSurfaces(Transform artRoot, HashSet<Vector3Int> surfaces,
+                                         Tilemap tilemap, GridLayout grid, Vector3 cell)
+        {
+            int count = 0;
+            foreach (var c in surfaces)
+            {
+                var sprite = tilemap.GetTile(c) is Tile plain ? plain.sprite : null;
+                if (sprite == null) continue;
+
+                var go = new GameObject("Surface_" + tilemap.GetTile(c).name);
+                go.transform.SetParent(artRoot, false);
+                // 瓦片贴图用中心轴心，所以对齐到格子中心
+                go.transform.position = grid.CellToWorld(c) + new Vector3(cell.x * 0.5f, cell.y * 0.5f, 0f);
+                go.transform.localScale = Vector3.one;
+
+                var sr = go.AddComponent<SpriteRenderer>();
+                sr.sprite = sprite;
+                sr.sortingOrder = ArtSortingOrder + 1;   // 压在石头墙皮之上：它就是地面最表面
+                Undo.RegisterCreatedObjectUndo(go, "铺装美术");
+                count++;
+            }
+            return count;
+        }
+
+        /// <summary>按格子坐标稳定地挑一个变体（同一格每次重铺都挑到同一块）。</summary>
+        private static int VariantIndex(Vector3Int c, int variants)
+        {
+            int h = c.x * 73856093 ^ c.y * 19349663;
+            h = (h ^ (h >> 13)) & 0x7fffffff;
+            return h % variants;
+        }
+
         private static void Place(Transform parent, Sprite sprite, Face face, Vector3 anchor,
                                   Quaternion rot, bool flipY, bool mirror, float scale, Vector3 cellSize)
         {
@@ -476,6 +793,8 @@ namespace RuleGame.Editor.Level
             public List<Sprite> GroundSlabs;
             public Sprite SlabCapLeft, SlabCapRight, SlabShort;
             public List<Sprite> SlabSlabs;
+            /// <summary>墙面方块（新素材，一格一块）。空则退回旧的石片逻辑。</summary>
+            public List<Sprite> WallBlocks;
         }
 
         private static Kit LoadKits()
@@ -491,7 +810,13 @@ namespace RuleGame.Editor.Level
                 SlabCapRight = L("Platform_Stone_CapRight"),
                 SlabShort = L("Platform_Stone_Short_01"),
                 SlabSlabs = new List<Sprite>(),
+                WallBlocks = new List<Sprite>(),
             };
+            for (int i = 1; i <= 16; i++)
+            {
+                var b = L($"Spawn/Wall_Stone_Block_{i:00}");
+                if (b != null) kit.WallBlocks.Add(b);
+            }
             for (int i = 4; i <= 8; i++)
             {
                 var s = L($"Ground_Stone_Slab_{i:00}");
@@ -506,6 +831,19 @@ namespace RuleGame.Editor.Level
                 return null;
             }
             return kit;
+        }
+
+        /// <summary>
+        /// 把 Hierarchy 里选中的东西统一解析成「逻辑 Grid」的 Transform。
+        /// </summary>
+        /// <remarks>
+        /// 菜单里选中的可能是 Grid，也可能是它下面的 Logic / Mask / Art。
+        /// 以前「清空美术」只找选中物体**直接**的子物体 Art，选中 Logic 时就静默什么都不做 —— 看着像功能坏了。
+        /// </remarks>
+        private static Transform ResolveRoot(GameObject selected)
+        {
+            var grid = selected.GetComponentInParent<UnityEngine.Grid>();
+            return grid != null ? grid.transform : selected.transform;
         }
 
         private static Transform EnsureArtRoot(GameObject root)

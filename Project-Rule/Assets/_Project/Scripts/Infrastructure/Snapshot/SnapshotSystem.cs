@@ -11,11 +11,11 @@ namespace RuleGame.Infrastructure.Snapshot
     /// <see cref="ISnapshotSystem"/> 的默认实现。
     /// </summary>
     /// <remarks>
-    /// <para><b>采集范围 = 对象注册表</b>：遍历 <see cref="IWorldRegistry.All"/>，
-    /// 不做 <c>FindObjectsOfType</c>（对象注册表的存在的意义）。</para>
-    /// <para><b>恢复顺序</b>：对象激活状态 → 规则表 / 属性管理器 → 实体物理与动画 → 触发
-    /// <see cref="OnRestored"/>。先恢复激活状态，保证后面写刚体 / 状态的对象都处于「应该在的那一侧」；
-    /// 规则 / 属性在实体前写回，实体恢复后的下一帧读到的就是快照时刻的世界。</para>
+    /// <para><b>采集范围 = 快照名册</b>（<see cref="ISnapshotRoster"/>），<b>不是</b>活动实体注册表。
+    /// 名册的成员资格是「生命周期」，所以采集时禁用的对象也在里面 —— 这是「世界回到那一刻」
+    /// 对禁用对象也成立的前提。两个集合的分工见 <see cref="ISnapshotRoster"/>。</para>
+    /// <para><b>恢复顺序</b>：回退未来 → 激活状态 → 规则表 / 属性管理器 → 实体物理与动画 →
+    /// <b>重建规则效果</b> → 触发 <see cref="OnRestored"/>。</para>
     /// <para><b>纯 C# 类</b>（与 <c>RuleSystem</c> 同一套单例模式），由
     /// <c>RuleSystemDriver</c> 在 Awake 里初始化。</para>
     /// </remarks>
@@ -31,8 +31,8 @@ namespace RuleGame.Infrastructure.Snapshot
         public static SnapshotSystem Instance => _instance;
 
         /// <summary>初始化单例。重复调用会覆盖（重开关卡 / 切场景时有用）。</summary>
-        public static void Initialize(IRuleSystem rules, IWorldRegistry registry)
-            => _instance = new SnapshotSystem(rules, registry);
+        public static void Initialize(IRuleSystem rules, ISnapshotRoster roster)
+            => _instance = new SnapshotSystem(rules, roster);
 
         /// <summary>仅测试用：注入替身。</summary>
         public static void SetInstanceForTesting(SnapshotSystem instance) => _instance = instance;
@@ -48,17 +48,22 @@ namespace RuleGame.Infrastructure.Snapshot
         private const int BufferCapacity = 8;
 
         private readonly IRuleSystem _rules;
-        private readonly IWorldRegistry _registry;
+        private readonly ISnapshotRoster _roster;
 
         private readonly List<Snapshot> _buffer = new List<Snapshot>();
         private int _nextSeq;
 
+        /// <summary>定点快照（时间恒定用）。存储归本系统，何时 Pin 由规则类决定。</summary>
+        private Snapshot _pinned;
+        private int _pinnedHandle;
+        private int _nextPinHandle;
+
         public event Action OnRestored;
 
-        public SnapshotSystem(IRuleSystem rules, IWorldRegistry registry)
+        public SnapshotSystem(IRuleSystem rules, ISnapshotRoster roster)
         {
             _rules = rules ?? throw new ArgumentNullException(nameof(rules));
-            _registry = registry ?? throw new ArgumentNullException(nameof(registry));
+            _roster = roster ?? throw new ArgumentNullException(nameof(roster));
         }
 
         // ==================================================================
@@ -70,19 +75,22 @@ namespace RuleGame.Infrastructure.Snapshot
             // 全限定：RuleGame.Infrastructure 下的 Time 命名空间会遮蔽 UnityEngine.Time。
             var snap = new Snapshot { CapturedAt = UnityEngine.Time.time };
 
-            IReadOnlyList<IRuleAffected> entities = _registry.All;
-            for (int i = 0; i < entities.Count; i++)
+            IReadOnlyList<IRuleAffected> targets = _roster.Targets;
+            for (int i = 0; i < targets.Count; i++)
             {
-                IRuleAffected entity = entities[i];
+                IRuleAffected entity = targets[i];
                 Rigidbody2D body = entity.Body;
-                if (body == null) continue;         // 已销毁：注册表会清理，这里再兜一层
+                if (body == null) continue;         // 已销毁：名册会清理，这里再兜一层
+
+                GameObject go = body.gameObject;
 
                 var es = new EntityState
                 {
-                    Entity   = entity,
-                    Position = body.position,
-                    Velocity = body.linearVelocity, // Unity 6 API（旧 velocity 已弃用）
-                    Rotation = body.rotation,
+                    Entity     = entity,
+                    Position   = body.position,
+                    Velocity   = body.linearVelocity, // Unity 6 API（旧 velocity 已弃用）
+                    Rotation   = body.rotation,
+                    ActiveSelf = go.activeSelf,       // 含「采集时就是禁用」的对象
                 };
 
                 if (TryReadAnimator(body, out int hash, out float normalized))
@@ -95,14 +103,19 @@ namespace RuleGame.Infrastructure.Snapshot
                     es.Status = status.ToData();
 
                 if (body.TryGetComponent<ISnapshotParticipant>(out ISnapshotParticipant module))
+                {
+                    es.HasModuleState = true;
                     es.ModuleState = module.CaptureSnapshotState();
+                    if (es.ModuleState == null)
+                    {
+                        Debug.LogWarning(
+                            $"[SnapshotSystem] {go.name} 的 ISnapshotParticipant.CaptureSnapshotState() " +
+                            "返回了 null。契约要求返回非 null（无状态就给一个空结构体），否则恢复侧无法区分" +
+                            "「没有模块」与「模块状态是 null」。", go);
+                    }
+                }
 
                 snap.Entities.Add(es);
-                snap.ObjectStates.Add(new ObjectActiveState
-                {
-                    GameObject = body.gameObject,
-                    ActiveSelf = body.gameObject.activeSelf,
-                });
             }
 
             snap.RuleSlots  = _rules.Table.SnapshotSlots();
@@ -114,25 +127,43 @@ namespace RuleGame.Infrastructure.Snapshot
         {
             if (snap == null) return;
 
-            // 回到召唤/发射之前时，之后出生的临时实体不能继续留在世界里。
-            // 只处理主动声明的模块，静态关卡物体及已有调用方不受影响。
+            // ⓪ 回退后未来作废：名册里有、快照里没有、且主动声明 DiscardWhenMissing 的临时对象
+            //    不能继续留在世界里。只处理主动声明的模块，静态关卡物体及已有调用方不受影响。
             var present = new HashSet<Rigidbody2D>();
-            foreach (EntityState state in snap.Entities)
-                if (state.Entity?.Body != null) present.Add(state.Entity.Body);
-            var currentBodies = new List<Rigidbody2D>();
-            foreach (IRuleAffected entity in _registry.All)
-                if (entity.Body != null) currentBodies.Add(entity.Body);
-            foreach (Rigidbody2D body in currentBodies)
-                if (!present.Contains(body) && body.TryGetComponent<ISnapshotParticipant>(out ISnapshotParticipant module)
-                    && module.DiscardWhenMissing) body.gameObject.SetActive(false);
-
-            // ① 对象激活状态：先把「该复活的」「该睡下的」都摆到位（架构 D15）。
-            for (int i = 0; i < snap.ObjectStates.Count; i++)
+            for (int i = 0; i < snap.Entities.Count; i++)
             {
-                ObjectActiveState os = snap.ObjectStates[i];
-                if (os.GameObject == null) continue;        // 已被销毁的对象无法恢复
-                if (os.GameObject.activeSelf != os.ActiveSelf)
-                    os.GameObject.SetActive(os.ActiveSelf);
+                Rigidbody2D body = snap.Entities[i].Entity?.Body;
+                if (body != null) present.Add(body);
+            }
+
+            IReadOnlyList<IRuleAffected> targets = _roster.Targets;
+            var currentBodies = new List<Rigidbody2D>();
+            for (int i = 0; i < targets.Count; i++)
+            {
+                Rigidbody2D body = targets[i].Body;
+                if (body != null) currentBodies.Add(body);
+            }
+            for (int i = 0; i < currentBodies.Count; i++)
+            {
+                Rigidbody2D body = currentBodies[i];
+                if (present.Contains(body)) continue;
+                if (body.TryGetComponent<ISnapshotParticipant>(out ISnapshotParticipant module)
+                    && module.DiscardWhenMissing) body.gameObject.SetActive(false);
+            }
+
+            // ① 激活状态：先把「该复活的」「该睡下的」都摆到位（架构 D15）。
+            //    含「采集时就是禁用」的对象 —— 名册记住了它，这里才能把它关回去。
+            for (int i = 0; i < snap.Entities.Count; i++)
+            {
+                EntityState es = snap.Entities[i];
+                IRuleAffected entity = es.Entity;
+                if (entity == null) continue;
+
+                Rigidbody2D body = entity.Body;
+                if (body == null) continue;         // 已被销毁的对象无法恢复
+
+                GameObject go = body.gameObject;
+                if (go.activeSelf != es.ActiveSelf) go.SetActive(es.ActiveSelf);
             }
 
             // ② 规则与属性。直接覆盖槽位，不经过 Request —— 按契约不触发规则系统事件，
@@ -140,17 +171,19 @@ namespace RuleGame.Infrastructure.Snapshot
             if (snap.RuleSlots != null) _rules.Table.RestoreSlots(snap.RuleSlots);
             _rules.Attributes.RestoreValues(snap.Attributes);
 
-            // ③ 实体：物理量 + 动画 + 实体状态。
+            // ③ 实体：物理量 + 动画 + 实体状态 + 模块状态。
             for (int i = 0; i < snap.Entities.Count; i++)
             {
                 EntityState es = snap.Entities[i];
                 IRuleAffected entity = es.Entity;
-                if (entity == null || entity.Body == null) continue;    // 已销毁：跳过
+                if (entity == null) continue;
 
                 Rigidbody2D body = entity.Body;
-                body.position      = es.Position;
+                if (body == null) continue;         // 已销毁：跳过
+
+                body.position       = es.Position;
                 body.linearVelocity = es.Velocity;
-                body.rotation      = es.Rotation;
+                body.rotation       = es.Rotation;
 
                 if (es.AnimatorStateHash != 0 &&
                     body.TryGetComponent<Animator>(out Animator animator) &&
@@ -176,11 +209,19 @@ namespace RuleGame.Infrastructure.Snapshot
                     }
                 }
 
-                if (es.ModuleState != null && body.TryGetComponent<ISnapshotParticipant>(out ISnapshotParticipant module))
+                if (es.HasModuleState &&
+                    body.TryGetComponent<ISnapshotParticipant>(out ISnapshotParticipant module))
+                {
                     module.RestoreSnapshotState(es.ModuleState);
+                }
             }
 
-            // ④ 全部写完才广播（先写状态，再广播 —— 与规则系统同一条纪律）。
+            // ④ 重建规则效果。恢复按契约不触发任何规则事件（OnRulesChanged 也是 ✗），
+            //    所以质量 / 摩擦 / 重力这些「值回去了但没落到世界上」的效果必须在这里补。
+            //    ReapplyActiveEffects 走静默路径，不触发规则生命周期事件，也不广播 OnRulesChanged。
+            _rules.ReapplyActiveEffects();
+
+            // ⑤ 全部写完才广播（先写状态，再广播 —— 与规则系统同一条纪律）。
             OnRestored?.Invoke();
         }
 
@@ -189,7 +230,7 @@ namespace RuleGame.Infrastructure.Snapshot
         /// </summary>
         /// <remarks>
         /// 动画是「锦上添花」：实体位置恢复后即使动画停在原地，下一帧也会被状态机接管。
-        /// 所以这里宁可少记也不让快照采集抛异常。
+        /// 所以这里宁可少记也不让快照采集抛异常。禁用中的对象拿不到状态，属正常。
         /// </remarks>
         private static bool TryReadAnimator(Rigidbody2D body, out int hash, out float normalizedTime)
         {
@@ -232,6 +273,15 @@ namespace RuleGame.Infrastructure.Snapshot
             return true;
         }
 
+        public bool TryPeekOldest(out Snapshot snap)
+        {
+            snap = null;
+            if (_buffer.Count == 0) return false;
+
+            snap = _buffer[0];                          // 最旧的一张（开局第一帧垫的那张）
+            return true;
+        }
+
         public void DiscardNewerThan(int index)
         {
             // 倒序移除：Seq 单调递增，尾部一定是最新。
@@ -243,5 +293,32 @@ namespace RuleGame.Infrastructure.Snapshot
         }
 
         public void ClearBuffer() => _buffer.Clear();
+
+        // ==================================================================
+        //  定点快照（时间恒定）
+        // ==================================================================
+
+        public int Pin()
+        {
+            _pinned = Capture();
+            _pinnedHandle = ++_nextPinHandle;           // 句柄从 1 起，0 表示「没有」
+            return _pinnedHandle;
+        }
+
+        public bool TryRestorePinned(int handle, RestoreMode mode = RestoreMode.Full)
+        {
+            if (_pinned == null) return false;
+            if (handle == 0 || handle != _pinnedHandle) return false;
+
+            Restore(_pinned, mode);
+            return true;
+        }
+
+        public void Unpin(int handle)
+        {
+            if (handle == 0 || handle != _pinnedHandle) return;
+            _pinned = null;
+            _pinnedHandle = 0;
+        }
     }
 }

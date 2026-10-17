@@ -2,6 +2,7 @@ using UnityEngine;
 using RuleGame.Core.Rules;
 using RuleGame.Infrastructure.Common;
 using RuleGame.Infrastructure.Rules;
+using RuleGame.Infrastructure.Snapshot;
 
 namespace RuleGame.Gameplay.Common
 {
@@ -47,7 +48,7 @@ namespace RuleGame.Gameplay.Common
     /// </remarks>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody2D))]
-    public sealed class RuleAffectedBody : MonoBehaviour, IRuleAffected
+    public sealed class RuleAffectedBody : MonoBehaviour, IRuleAffected, IRuleApplier
     {
         /// <summary>摩擦独占材质的兜底克隆来源，放在 <c>Assets/_Project/Data/Resources/</c>。</summary>
         private const string DefaultMaterialResourceName = "RuleDefaultMaterial2D";
@@ -142,6 +143,10 @@ namespace RuleGame.Gameplay.Common
             if (_body != null) _baseMass = _body.mass;
 
             CaptureBaseFriction();
+
+            // 快照名册：成员资格 = 生命周期，所以登记在 Awake、注销在 OnDestroy。
+            // ⚠️ 初始就禁用的预置对象不会走到 Awake —— 那批由 SnapshotScope 场景扫描补上。
+            SnapshotRoster.Instance?.Register(this);
         }
 
         private void OnEnable()
@@ -184,11 +189,18 @@ namespace RuleGame.Gameplay.Common
             // OnDisable 正常会先跑；这里只是兜底，两个操作都是幂等的。
             if (_rules != null) _rules.OnRulesChanged -= Apply;
             ReleaseOverride();
+
+            // 名册的注销跟着生命周期走（不是 OnDisable）—— 禁用中的对象必须留在快照里。
+            SnapshotRoster.Instance?.Unregister(this);
         }
 
         // ==================================================================
         //  应用
         // ==================================================================
+
+        /// <inheritdoc />
+        /// <remarks>快照恢复后由 <c>RuleSystem.ReapplyActiveEffects()</c> 统一调用 —— 恢复不发规则事件。</remarks>
+        public void ApplyRuleValues() => Apply();
 
         /// <summary>
         /// 读取当前属性值并应用到自己的刚体与碰撞体上。

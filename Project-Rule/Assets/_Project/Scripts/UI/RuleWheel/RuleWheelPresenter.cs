@@ -139,7 +139,9 @@ namespace RuleGame.UI.RuleWheel
             RuleReleaseResult result = _session.Confirm(Relations[index]);
             if (result.Succeeded) { Close(); return true; }
             _feedback.text = result.Status == RuleReleaseStatus.NotEnoughEnergy ? "能量不足"
-                : result.Status == RuleReleaseStatus.OnCooldown ? "还在冷却" : "尚不可用";
+                : result.Status == RuleReleaseStatus.OnCooldown ? "还在冷却"
+                : result.Status == RuleReleaseStatus.NoResource ? "没有可用快照"
+                : "尚不可用";
             _fan.SetAvailable(Availability());
             return false;
         }

@@ -29,6 +29,7 @@ namespace RuleGame.Gameplay.Player
         private bool    _jumpReleased;
         private bool    _dashPressed;
         private bool    _attackPressed;
+        private bool    _rewindPressed;
 
         private int _blockCount;
         private int _resumeFrame;
@@ -85,6 +86,7 @@ namespace RuleGame.Gameplay.Player
                 _jumpReleased  = false;
                 _dashPressed   = false;
                 _attackPressed = false;
+                _rewindPressed = false;
                 return;
             }
 
@@ -94,6 +96,13 @@ namespace RuleGame.Gameplay.Player
             if (_jumpAction != null && _jumpAction.WasReleasedThisFrame())    _jumpReleased  = true;   // 可变跳跃高度：松键那一刻削速
             if (_dashAction != null && _dashAction.WasPressedThisFrame())     _dashPressed   = true;
             if (_attackAction != null && _attackAction.WasPressedThisFrame()) _attackPressed = true;
+
+            // 时间恒定的「定点回溯」：**独占一个键**（键盘 Q / 手柄 LB）。
+            // ⚠️ 不用 R —— RuleWheelLabHUD 的 R 是「清空规则」，会撞车。
+            // ⚠️ 不走 .inputactions 的 Interact —— 那个动作带 Hold 交互，
+            //    按住才会触发，不适合「按一下退一步」。
+            if (Keyboard.current?.qKey.wasPressedThisFrame == true
+                || Gamepad.current?.leftShoulder.wasPressedThisFrame == true) _rewindPressed = true;
         }
 
         /// <summary>
@@ -101,12 +110,13 @@ namespace RuleGame.Gameplay.Player
         /// </summary>
         public State Sample()
         {
-            var state = new State(_move, _jumpPressed, _jumpReleased, _dashPressed, _attackPressed);
+            var state = new State(_move, _jumpPressed, _jumpReleased, _dashPressed, _attackPressed, _rewindPressed);
 
             _jumpPressed   = false;
             _jumpReleased  = false;
             _dashPressed   = false;
             _attackPressed = false;
+            _rewindPressed = false;
 
             return state;
         }
@@ -148,13 +158,18 @@ namespace RuleGame.Gameplay.Player
             public readonly bool    DashPressed;
             public readonly bool    AttackPressed;
 
-            public State(Vector2 move, bool jumpPressed, bool jumpReleased, bool dashPressed, bool attackPressed)
+            /// <summary>时间恒定的定点回溯键（Q / LB）。窗口没开时是空操作。</summary>
+            public readonly bool    RewindPressed;
+
+            public State(Vector2 move, bool jumpPressed, bool jumpReleased, bool dashPressed, bool attackPressed,
+                         bool rewindPressed = false)
             {
                 Move          = move;
                 JumpPressed   = jumpPressed;
                 JumpReleased  = jumpReleased;
                 DashPressed   = dashPressed;
                 AttackPressed = attackPressed;
+                RewindPressed = rewindPressed;
             }
         }
     }
