@@ -29,7 +29,11 @@ namespace RuleGame.Gameplay.Enemy
         public virtual bool DamageLocked => false;
         public virtual bool IsFlying => Config.Flying;
         protected bool HasTarget => Actor.HasTarget;
-        protected bool IsBoss => Config.Kind != EnemyKind.BrickMinion && Config.Kind != EnemyKind.BatMinion;
+        protected bool IsBoss => Config.IsBoss;
+        public virtual bool BodyEnabled => true;
+        public virtual bool MovementEnabled => true;
+        public virtual bool ContactDamageEnabled => true;
+        public virtual void OnDisabled() { }
         protected float CombatDistance => !HasTarget ? float.PositiveInfinity : Actor.IsFlying
             ? Actor.Distance : Mathf.Abs(Actor.Target.position.x - Actor.transform.position.x);
         protected bool TargetInMeleeRange => HasTarget && CombatDistance <= Config.AttackRange
@@ -47,6 +51,15 @@ namespace RuleGame.Gameplay.Enemy
                 case EnemyKind.ClockBoss: return new ClockBossBrain(actor);
                 case EnemyKind.RabbitBoss: return new RabbitBossBrain(actor);
                 case EnemyKind.BatBoss: return new BatBossBrain(actor);
+                case EnemyKind.StoneGuard:
+                case EnemyKind.BrickSoldier: return new PatrolGuardBrain(actor);
+                case EnemyKind.ExplosiveBlock:
+                case EnemyKind.ClockBomb: return new ExplosiveMinionBrain(actor);
+                case EnemyKind.SpringToy: return new SpringMinionBrain(actor);
+                case EnemyKind.ClockMouse: return new ClockMouseBrain(actor);
+                case EnemyKind.PlushBird: return new PlushBirdBrain(actor);
+                case EnemyKind.HugBear: return new HugBearBrain(actor);
+                case EnemyKind.PlushSeal: return new PlushSealBrain(actor);
                 default: return new MinionBrain(actor);
             }
         }
@@ -95,7 +108,7 @@ namespace RuleGame.Gameplay.Enemy
             Delta = dt; Age += dt; Elapsed += dt;
             // 兔子的退场与半血翻转都按最大生命比例判断，调总血量不会让阶段阈值失真。
             bool end = Actor.Status.Health <= 0f || (Config.Kind == EnemyKind.RabbitBoss && Actor.Status.Health < Config.Health * .2f);
-            if (end && Root.ActiveStateName != "Dead")
+            if (end && Root.ActiveStateName != "Dead" && !TryHandleDeath())
             {
                 Actor.MarkDefeated();
                 Root.RequestStateChange("Dead", true);
@@ -114,11 +127,12 @@ namespace RuleGame.Gameplay.Enemy
                 Actor.Motor.Stop();
                 return;
             }
-            float duration = name == "Hurt" && IsBoss
-                ? Mathf.Min(Actor.Duration(name), Mathf.Max(0.05f, Config.BossHurtDuration)) : Actor.Duration(name);
+            float duration = name == "Hurt"
+                ? Mathf.Min(Actor.Duration(name), Mathf.Max(0.05f, IsBoss ? Config.BossHurtDuration : Config.MinionHurtDuration))
+                : Actor.Duration(name);
             Actor.Cue(name, duration, name == "Idle" || name == "Walk" || name == "Fly");
             // 从受击恢复后开始完整冷却，长受击动画不能吃掉保护窗口。
-            if (name == "Hurt") NextHurt = Age + (IsBoss ? duration : 0f) + Mathf.Max(0f, Config.HurtCooldown);
+            if (name == "Hurt") NextHurt = Age + duration + Mathf.Max(0f, Config.HurtCooldown);
         }
         protected void Go(string action)
         {
@@ -204,6 +218,7 @@ namespace RuleGame.Gameplay.Enemy
             Go("Rest");
         }
         protected virtual void TickGlobal() { }
+        protected virtual bool TryHandleDeath() => false;
         protected virtual void TickRest() => Actor.Motor.Intent = Vector2.zero;
         protected virtual void TickTransition() { }
         protected virtual void AfterTransition(string name) { }
@@ -214,13 +229,11 @@ namespace RuleGame.Gameplay.Enemy
         {
             if (damage <= 0f || Actor.Status.Health <= 0f || Root.ActiveStateName != "Alive"
                 || StateName == "Hurt" || Age < NextHurt) return;
-            if (IsBoss)
-            {
-                if (Age - _lastStaggerHit > Mathf.Max(0.1f, Config.StaggerResetDelay)) _staggerDamage = 0f;
-                _lastStaggerHit = Age;
-                _staggerDamage += damage;
-                if (_staggerDamage < Mathf.Max(1f, Config.StaggerDamageThreshold)) return;
-            }
+            if (Age - _lastStaggerHit > Mathf.Max(0.1f, Config.StaggerResetDelay)) _staggerDamage = 0f;
+            _lastStaggerHit = Age;
+            _staggerDamage += damage;
+            float threshold = IsBoss ? Config.StaggerDamageThreshold : Config.MinionStaggerThreshold;
+            if (_staggerDamage < Mathf.Max(1f, threshold)) return;
             _staggerDamage = 0f;
             Go("Hurt");
         }
@@ -268,28 +281,66 @@ namespace RuleGame.Gameplay.Enemy
     {
         private bool _commanded;
         private Vector2 _home;
+        private float _lastSeenAt = float.NegativeInfinity;
+        private Vector2 _lastSeen;
+        private Transform _observedTarget;
+        private RuleGame.Gameplay.Player.EntityStatus _targetHealth;
         protected override string[] ActionNames => new[] { "Walk", "Idle", "Hurt" };
         protected override string FirstAction => "Walk";
         public MinionBrain(EnemyActor actor) : base(actor) { _home = actor.transform.position; }
         public override void CommandAttack() => _commanded = true;
-        protected override object CaptureExtra() => new object[] { _commanded, _home };
+        protected override object CaptureExtra() => new object[] { _commanded, _home, _lastSeenAt, _lastSeen };
         protected override void RestoreExtra(object state)
         {
             if (!(state is object[] data)) return;
             _commanded = (bool)data[0]; _home = (Vector2)data[1];
+            _lastSeenAt = (float)data[2]; _lastSeen = (Vector2)data[3];
+        }
+        protected override void TickGlobal()
+        {
+            if (_observedTarget != Actor.Target)
+            {
+                _observedTarget = Actor.Target;
+                _targetHealth = HasTarget ? Actor.Target.GetComponentInParent<RuleGame.Gameplay.Player.EntityStatus>() : null;
+                _lastSeenAt = float.NegativeInfinity;
+            }
+            if (!HasTarget || (_targetHealth != null && _targetHealth.Health <= 0f)
+                || Actor.Distance > Config.MinionSenseRange
+                || Vector2.Distance(Actor.Target.position, _home) > Config.MinionLeashRange
+                || Vector2.Distance(Actor.transform.position, _home) > Config.MinionLeashRange
+                || Physics2D.Linecast(Actor.transform.position, Actor.Target.position, Actor.Motor.SolidMask))
+            {
+                if (!float.IsNegativeInfinity(_lastSeenAt) && (!HasTarget || (_targetHealth != null && _targetHealth.Health <= 0f)
+                    || Age - _lastSeenAt > Config.MinionTargetMemory))
+                {
+                    _lastSeenAt = float.NegativeInfinity; Actor.Navigation?.Repath();
+                }
+                return;
+            }
+            if (Age - _lastSeenAt > Config.MinionTargetMemory) Actor.Navigation?.Repath();
+            _lastSeenAt = Age; _lastSeen = Actor.Target.position;
         }
         protected override void TickAction(string name)
         {
             if (name == "Hurt") { if (Finished) Go("Walk"); return; }
-            if (Actor.Target == null || !Actor.Target.gameObject.activeInHierarchy) { Actor.Motor.Intent = Vector2.zero; return; }
+            if (!HasTarget && !Config.Flying && Config.MinionNavigationEnabled && Actor.Navigation.ContinueTraversal(Age)) return;
             if (Config.Flying && !_commanded && Actor.Summoner != null)
             {
                 Vector2 orbit = _home + new Vector2(Mathf.Sin(Age) * 0.8f, Mathf.Cos(Age) * 0.3f);
                 Actor.Motor.Intent = Vector2.ClampMagnitude(orbit - (Vector2)Actor.transform.position, 1f);
                 return;
             }
-            if (Config.Flying) Actor.Motor.Intent = Actor.TowardTarget;
-            else WalkToTarget();
+            bool pursue = HasTarget && (_targetHealth == null || _targetHealth.Health > 0f)
+                && Age - _lastSeenAt <= Config.MinionTargetMemory
+                && Vector2.Distance(Actor.transform.position, _home) <= Config.MinionLeashRange;
+            Vector2 destination = pursue ? _lastSeen : _home;
+            if (Config.Flying) Actor.Motor.Intent = Vector2.ClampMagnitude(destination - (Vector2)Actor.transform.position, 1f);
+            else if (Config.MinionNavigationEnabled) Actor.Navigation.MoveTo(destination, _home, Age);
+            else
+            {
+                Vector2 offset = destination - (Vector2)Actor.transform.position;
+                Actor.Motor.Intent = Mathf.Abs(offset.x) > .12f ? Vector2.right * Mathf.Sign(offset.x) : Vector2.zero;
+            }
         }
     }
 }

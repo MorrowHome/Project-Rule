@@ -132,9 +132,6 @@ namespace RuleGame.Presentation.Enemy
                         view.Configure(Profile);
                     }
                     break;
-                case EnemyFeedbackKind.Hit:
-                    Play(Profile.Shot, cue.Position, 2f, Color.white, angle, duration: .25f);
-                    break;
                 case EnemyFeedbackKind.BarrageWarning:
                     Play(Profile.Charge, cue.Position, Profile.CastSize * .65f, Profile.Accent,
                         follow: transform, duration: _actor.Definition.ClockBurstWarning, barrageWarning: true);

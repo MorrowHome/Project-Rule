@@ -92,7 +92,6 @@ namespace RuleGame.Gameplay.Enemy
             if (_age >= _warning + _duration) { gameObject.SetActive(false); return; }
             if (_age < _warning || (FollowsClockHand ? _age < _nextHit : _hit)) return;
             Vector2 origin = Origin;
-            // 方向与长度取 #10 的战术层（光束跟着指针转），命中查询走受击箱口径。
             Vector2 direction = Direction;
             float length = Length(origin, direction);
             var filter = new ContactFilter2D { useTriggers = true };
@@ -101,7 +100,6 @@ namespace RuleGame.Gameplay.Enemy
                 Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg, filter, _hits);
             for (int i = 0; i < count; i++)
             {
-                // 光束从本体扫出去，起点常常盖住 Boss **自己**的受击箱 —— CanHit 会把它挡掉。
                 if (!CombatSystem.TryResolveTarget(_hits[i], _source, out IDamageable receiver)) continue;
                 _source.Combat?.ApplyDamage(_source, receiver, _source.Definition.Damage, 4f);
                 _hit = true;

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using RuleGame.Gameplay.Player;
 using RuleGame.Gameplay.Combat;
 using RuleGame.Core.Rules;
@@ -18,14 +19,16 @@ namespace RuleGame.Gameplay.Enemy
         public EnemyDefinition Definition;
         public Transform Target;
         public CombatSystem Combat;
+        [Tooltip("开启后，活动边界以出生位置为基准。旧 Boss 的世界坐标配置保持不变。")]
+        public bool UseSpawnRelativeArena;
+        public Vector2 ArenaSize = new Vector2(20f, 20f);
+        public Vector2 ArenaOffset;
         public EnemyActor MinionPrefab;
         public EnemyActor FlyingMinionPrefab;
         public EnemyActor Summoner;
         public EnemyWeakPoint WeakPoint;
-
-        [Tooltip("玩家身体所在的层（默认 Default）。只用于位移阻挡与出生点净空，命中判定一律走 Hurtbox.Mask。")]
+        [Tooltip("只用于身体移动与生成位置避让；伤害判定统一查询 Hurtbox。")]
         public LayerMask PlayerMask = 1;
-
         public Sprite ProjectileSprite;
         [Tooltip("光束原点，例如闹钟表盘轴心；未设置时使用身体中心。")]
         public Transform BeamOrigin;
@@ -38,9 +41,11 @@ namespace RuleGame.Gameplay.Enemy
         public EntityStatus Status { get; private set; }
         public EnemyMotor Motor { get; private set; }
         public EnemyBrain Brain { get; private set; }
+        public EnemyPlatformNavigation Navigation { get; private set; }
         public ClockBeamEmitter ClockBeams { get; private set; }
         public bool IsFlying => Brain?.IsFlying ?? (Definition != null && Definition.Flying);
         public bool HasTarget => Target != null && Target.gameObject.activeInHierarchy;
+        public Vector2 ArenaAnchor => _arenaInitialized ? _arenaOrigin : (Vector2)transform.position;
         public Faction Faction => Faction.Enemy;
         public string AnimationName { get; private set; } = "Idle";
         public float AnimationDuration { get; private set; } = 1f;
@@ -58,6 +63,10 @@ namespace RuleGame.Gameplay.Enemy
         private readonly HashSet<IDamageable> _swingTargets = new HashSet<IDamageable>();
         private readonly List<EnemyActor> _summons = new List<EnemyActor>();
         private RuleReleaseService _release;
+        private Vector2 _arenaOrigin;
+        private bool _arenaInitialized;
+        private bool _automaticTarget;
+        private float _nextBindingAttempt;
 
         private void Awake()
         {
@@ -68,27 +77,46 @@ namespace RuleGame.Gameplay.Enemy
         private void Start()
         {
             if (Definition == null) { Debug.LogError("EnemyActor 缺少 EnemyDefinition。", this); enabled = false; return; }
+            _arenaOrigin = transform.position;
+            _arenaInitialized = true;
+            if (UseSpawnRelativeArena)
+            {
+                Vector2 half = new Vector2(Mathf.Max(Definition.BodySize.x + .1f, ArenaSize.x),
+                    Mathf.Max(Definition.BodySize.y + .1f, ArenaSize.y)) * .5f;
+                Vector2 center = _arenaOrigin + ArenaOffset;
+                ArenaX = new Vector2(center.x - half.x, center.x + half.x);
+                ArenaY = new Vector2(center.y - half.y, center.y + half.y);
+            }
+            _automaticTarget = Target == null;
+            ResolveSceneBindings();
             Status.InitializeVitals(Definition.Health, Definition.Energy);
             _release = new RuleReleaseService(RuleSystem.Instance, Status, AllUnlockedRuleUnlocks.Instance);
+            Navigation = new EnemyPlatformNavigation(this);
             Brain = EnemyBrain.Create(this);
             Brain.Initialize();
+            if (_bodyCollider != null) _bodyCollider.enabled = Brain.BodyEnabled;
             if (Definition.Kind == EnemyKind.ClockBoss) ClockBeams = new ClockBeamEmitter(this);
         }
         private void FixedUpdate()
         {
+            if ((Combat == null || Target == null || (_automaticTarget && !HasTarget))
+                && Time.unscaledTime >= _nextBindingAttempt) ResolveSceneBindings();
             if (Brain == null || TimeManager.Instance?.IsPaused == true || Status.IsPaused) return;
             float dt = Time.fixedDeltaTime;
             _invulnerability = Mathf.Max(0f, _invulnerability - dt);
             if (!Defeated) Status.RestoreEnergy(Definition.EnergyRegen * dt);
+            Motor.AllowLedgeTraversal = false;
             Brain.Tick(dt);
             ClockBeams?.Tick(dt);
-            Motor.Tick(dt);
+            if (_bodyCollider != null) _bodyCollider.enabled = Brain.BodyEnabled;
+            if (Brain.MovementEnabled) Motor.Tick(dt);
+            else Motor.Stop();
             TickContactDamage(dt);
         }
         private void TickContactDamage(float dt)
         {
             _contactCooldown = Mathf.Max(0f, _contactCooldown - dt);
-            if (Defeated || !Definition.ContactDamage || Combat == null || _contactCooldown > 0f
+            if (Defeated || Brain?.ContactDamageEnabled == false || !Definition.ContactDamage || Combat == null || _contactCooldown > 0f
                 || _bodyCollider == null || !_bodyCollider.enabled) return;
             // 用身体盒检查接触，不依赖 Kinematic 刚体是否触发碰撞回调。
             // 身体接触与招式攻击共用战斗结算，持续重叠也不会每帧掉血。
@@ -109,10 +137,40 @@ namespace RuleGame.Gameplay.Enemy
             }
             if (_contactTargets.Count > 0) _contactCooldown = Mathf.Max(0.05f, Definition.ContactInterval);
         }
-        private void OnDisable() => Motor?.Stop();
+        private void OnDisable() { Navigation?.Cancel(); Motor?.Stop(); Brain?.OnDisabled(); }
+        private void OnDrawGizmosSelected()
+        {
+            if (UseSpawnRelativeArena)
+            {
+                Gizmos.color = new Color(1f, .75f, .15f, .8f);
+                Gizmos.DrawWireCube(ArenaAnchor + ArenaOffset, new Vector3(ArenaSize.x, ArenaSize.y, .1f));
+            }
+            Navigation?.DrawGizmos();
+        }
+
+        private void ResolveSceneBindings()
+        {
+            _nextBindingAttempt = Time.unscaledTime + .5f;
+            if (Target == null || (_automaticTarget && !HasTarget))
+            {
+                var player = FindAnyObjectByType<PlayerController>();
+                if (player != null) { Target = player.transform; _automaticTarget = true; }
+            }
+            if (Combat != null) return;
+            foreach (var combat in FindObjectsByType<CombatSystem>(FindObjectsSortMode.None))
+            {
+                if (combat.gameObject.scene != gameObject.scene) continue;
+                Combat = combat;
+                return;
+            }
+            var services = new GameObject("EnemyCombatService");
+            SceneManager.MoveGameObjectToScene(services, gameObject.scene);
+            Combat = services.AddComponent<CombatSystem>();
+        }
 
         public void Cue(string action, float duration, bool loop = false)
         {
+            Navigation?.Cancel();
             AnimationName = action;
             AnimationDuration = Mathf.Max(0.05f, duration);
             AnimationLoop = loop;
@@ -140,18 +198,21 @@ namespace RuleGame.Gameplay.Enemy
             if (Defeated || Brain == null) return;
             if (damage.Amount < 0f) { Status.ApplyHealthDelta(-damage.Amount); return; }
             if (Brain.DamageLocked || _invulnerability > 0f) return;
+            bool wasHurt = Brain.StateName == "Hurt";
             if (damage.Amount > 0f)
             {
                 float next = Brain.ClampHealth(Status.Health - damage.Amount);
                 float appliedDamage = Mathf.Max(0f, Status.Health - next);
                 Status.ApplyHealthDelta(next - Status.Health);
                 _invulnerability = 0.12f;
-                EmitFeedback(EnemyFeedbackKind.Hit, transform.position, -TowardAttacker(damage.Attacker));
                 Brain.OnHit(appliedDamage);
+                if (appliedDamage > 0f)
+                    EmitHitFeedback(appliedDamage, damage.Attacker, !wasHurt && Brain.StateName == "Hurt", next <= 0f);
             }
-            // 普通 Boss 保持稳定；规则使其变轻后可被推开，实际位移仍按刚体质量结算。
-            // 挂账产生的 0 伤害也保留击退，不绕过统一伤害处理。
-            if (Definition.Kind == EnemyKind.BrickMinion || Definition.Kind == EnemyKind.BatMinion || Motor.MassReduced)
+            // 小怪仅在本次破韧时完整击退，避免轻击绕过硬直保护持续推退或叠加冲量。
+            // 质量削弱与挂账的纯击退仍遵守规则，Boss 原有质量约束不变。
+            bool staggered = !wasHurt && Brain.StateName == "Hurt";
+            if (Motor.MassReduced || (!Definition.IsBoss && (staggered || damage.Amount == 0f)))
                 Motor.AddImpulse(TowardAttacker(damage.Attacker) * -damage.Knockback);
         }
         private Vector2 TowardAttacker(object attacker)
@@ -159,6 +220,26 @@ namespace RuleGame.Gameplay.Enemy
             Component component = attacker as Component;
             if (component == null) return Vector2.left * Facing;
             return ((Vector2)(component.transform.position - transform.position)).normalized;
+        }
+
+        /// <summary>仅通知已经发生的扣血；弱点也复用此入口，不改变身体的血量或硬直。</summary>
+        public void EmitHitFeedback(float amount, object attacker, bool staggered = false, bool lethal = false,
+            Component subject = null)
+        {
+            Vector2 direction = -TowardAttacker(attacker);
+            if (direction.sqrMagnitude < .001f) direction = Vector2.right * -Facing;
+            Vector3 position = subject != null ? subject.transform.position : transform.position;
+            if (subject == null && _bodyCollider != null)
+            {
+                // DamageInfo 没有接触点。取身体迎击面的边界，避免所有火花都在腹部爆开。
+                Vector2 center = _bodyCollider.bounds.center;
+                Vector2 extent = _bodyCollider.bounds.extents;
+                float distance = 1f / Mathf.Max(Mathf.Abs(direction.x) / Mathf.Max(.01f, extent.x),
+                    Mathf.Abs(direction.y) / Mathf.Max(.01f, extent.y));
+                position = center - direction * distance * .85f;
+            }
+            Feedback?.Invoke(new EnemyFeedback(EnemyFeedbackKind.Hit, position, direction, subject,
+                amount, staggered, lethal));
         }
         public void Attack(float reach, bool newPulse = false)
         {
@@ -177,6 +258,20 @@ namespace RuleGame.Gameplay.Enemy
         public void Shoot(Vector2 direction, float speed = 8f, float gravity = 0f, float radius = 0.22f, int visualIndex = -1, Vector2? origin = null)
         {
             if (HasTarget) EnemyProjectile.Spawn(this, direction, speed, gravity, radius, visualIndex, origin);
+        }
+        public void AreaAttack(float radius)
+        {
+            if (Combat == null) return;
+            var filter = new ContactFilter2D { useTriggers = true };
+            filter.SetLayerMask(Hurtbox.Mask);
+            int count = Physics2D.OverlapCircle(transform.position, radius, filter, _contacts);
+            _contactTargets.Clear();
+            for (int i = 0; i < count; i++)
+            {
+                if (CombatSystem.TryResolveTarget(_contacts[i], this, out IDamageable target) && _contactTargets.Add(target))
+                    Combat.ApplyDamage(this, target, Definition.Damage, 4f);
+            }
+            EmitFeedback(EnemyFeedbackKind.Strike, transform.position, Motor.Up);
         }
         /// <summary>围绕锁定方向展开等角扇形；每发仍使用共用弹池与战斗结算。</summary>
         public void ShootFan(Vector2 direction, int count, float spread, float speed, float gravity = 0f,
@@ -211,6 +306,8 @@ namespace RuleGame.Gameplay.Enemy
             if (HasTarget) EnemyBeam.Spawn(this, angle, width, warning);
         }
         public bool CastRule() => CastRule(Definition.RuleAttribute, Definition.RuleRelation);
+        public bool CanCastRule => _release != null && RuleSystem.Instance != null
+            && _release.CanRelease(Definition.RuleAttribute, Definition.RuleRelation);
 
         /// <summary>临时选择施法组合，不改团队共享的 EnemyDefinition 资产。</summary>
         public bool CastRule(AttributeId attribute, RelationId relation)
@@ -267,6 +364,7 @@ namespace RuleGame.Gameplay.Enemy
         {
             if (Defeated) return;
             Defeated = true;
+            Brain?.OnDisabled();
             Motor.Stop();
             foreach (EnemyActor summon in _summons) if (summon != null) summon.gameObject.SetActive(false);
             OnDefeated?.Invoke(this);
@@ -279,6 +377,7 @@ namespace RuleGame.Gameplay.Enemy
         {
             public object Brain;
             public object ClockBeams;
+            public object Navigation;
             public Vector2 Velocity, Impulse;
             public float Facing, Invulnerability, ContactCooldown;
             public bool Defeated;
@@ -292,6 +391,7 @@ namespace RuleGame.Gameplay.Enemy
             Brain = Brain?.Capture(), Velocity = Motor.Velocity, Impulse = Motor.CaptureImpulse(),
             GravityDrift = Motor.GravityDrift,
             ClockBeams = ClockBeams?.Capture(),
+            Navigation = Navigation?.Capture(),
             Facing = Facing, Invulnerability = _invulnerability, Defeated = Defeated, Summons = _summons.ToArray(),
             ContactCooldown = _contactCooldown,
             StrikeAnnounced = _strikeAnnounced,
@@ -304,10 +404,12 @@ namespace RuleGame.Gameplay.Enemy
             _contactCooldown = data.ContactCooldown;
             _summons.Clear(); _summons.AddRange(data.Summons);
             Brain?.Restore(data.Brain);
+            if (_bodyCollider != null) _bodyCollider.enabled = Brain?.BodyEnabled ?? true;
             ClockBeams?.Restore(data.ClockBeams);
             _swingTargets.Clear();
             foreach (IDamageable target in data.SwingTargets) _swingTargets.Add(target);
             Motor.Restore(data.Velocity, data.Impulse, data.GravityDrift);
+            Navigation?.Restore(data.Navigation);
             _strikeAnnounced = data.StrikeAnnounced;
             Restored?.Invoke();
         }
