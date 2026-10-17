@@ -22,7 +22,6 @@ namespace RuleGame.Gameplay.Enemy
         public EnemyActor FlyingMinionPrefab;
         public EnemyActor Summoner;
         public EnemyWeakPoint WeakPoint;
-        public LayerMask PlayerMask = 1;
         public Sprite ProjectileSprite;
         [Tooltip("光束原点，例如闹钟表盘轴心；未设置时使用身体中心。")]
         public Transform BeamOrigin;
@@ -92,8 +91,9 @@ namespace RuleGame.Gameplay.Enemy
                 || _bodyCollider == null || !_bodyCollider.enabled) return;
             // 用身体盒检查接触，不依赖 Kinematic 刚体是否触发碰撞回调。
             // 身体接触与招式攻击共用战斗结算，持续重叠也不会每帧掉血。
-            var filter = new ContactFilter2D { useTriggers = false };
-            filter.SetLayerMask(PlayerMask);
+            // 判定的是**对方的受击箱**（挡自伤 / 挡同阵营的规则在 CombatSystem.TryResolveTarget 里）。
+            var filter = new ContactFilter2D { useTriggers = true };
+            filter.SetLayerMask(Hurtbox.Mask);
             Vector3 scale = transform.lossyScale;
             Vector2 size = Vector2.Scale(_bodyCollider.size, new Vector2(Mathf.Abs(scale.x), Mathf.Abs(scale.y)));
             size += Vector2.one * (Mathf.Max(0f, Definition.ContactPadding) * 2f);
@@ -102,9 +102,8 @@ namespace RuleGame.Gameplay.Enemy
             _contactTargets.Clear();
             for (int i = 0; i < count; i++)
             {
-                var receiver = _contacts[i].GetComponentInParent<IDamageable>();
-                var faction = _contacts[i].GetComponentInParent<IFactionMember>();
-                if (receiver == null || faction?.Faction != Faction.Player || !_contactTargets.Add(receiver)) continue;
+                if (!CombatSystem.TryResolveTarget(_contacts[i], this, out IDamageable receiver)) continue;
+                if (!_contactTargets.Add(receiver)) continue;
                 Combat.ApplyDamage(this, receiver, Definition.Damage, 5f);
             }
             if (_contactTargets.Count > 0) _contactCooldown = Mathf.Max(0.05f, Definition.ContactInterval);
@@ -174,7 +173,7 @@ namespace RuleGame.Gameplay.Enemy
                 EmitFeedback(EnemyFeedbackKind.Strike, center, Vector2.right * Facing);
             }
             Combat.PerformAttack(this, center, new Vector2(reach, Definition.BodySize.y * 0.8f),
-                PlayerMask, Definition.Damage, 5f, _swingTargets);
+                Definition.Damage, 5f, _swingTargets);
         }
         public void Shoot(Vector2 direction, float speed = 8f, float gravity = 0f, float radius = 0.22f, int visualIndex = -1, Vector2? origin = null)
         {
