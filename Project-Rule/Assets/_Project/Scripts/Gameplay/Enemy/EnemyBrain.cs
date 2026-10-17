@@ -281,28 +281,66 @@ namespace RuleGame.Gameplay.Enemy
     {
         private bool _commanded;
         private Vector2 _home;
+        private float _lastSeenAt = float.NegativeInfinity;
+        private Vector2 _lastSeen;
+        private Transform _observedTarget;
+        private RuleGame.Gameplay.Player.EntityStatus _targetHealth;
         protected override string[] ActionNames => new[] { "Walk", "Idle", "Hurt" };
         protected override string FirstAction => "Walk";
         public MinionBrain(EnemyActor actor) : base(actor) { _home = actor.transform.position; }
         public override void CommandAttack() => _commanded = true;
-        protected override object CaptureExtra() => new object[] { _commanded, _home };
+        protected override object CaptureExtra() => new object[] { _commanded, _home, _lastSeenAt, _lastSeen };
         protected override void RestoreExtra(object state)
         {
             if (!(state is object[] data)) return;
             _commanded = (bool)data[0]; _home = (Vector2)data[1];
+            _lastSeenAt = (float)data[2]; _lastSeen = (Vector2)data[3];
+        }
+        protected override void TickGlobal()
+        {
+            if (_observedTarget != Actor.Target)
+            {
+                _observedTarget = Actor.Target;
+                _targetHealth = HasTarget ? Actor.Target.GetComponentInParent<RuleGame.Gameplay.Player.EntityStatus>() : null;
+                _lastSeenAt = float.NegativeInfinity;
+            }
+            if (!HasTarget || (_targetHealth != null && _targetHealth.Health <= 0f)
+                || Actor.Distance > Config.MinionSenseRange
+                || Vector2.Distance(Actor.Target.position, _home) > Config.MinionLeashRange
+                || Vector2.Distance(Actor.transform.position, _home) > Config.MinionLeashRange
+                || Physics2D.Linecast(Actor.transform.position, Actor.Target.position, Actor.Motor.SolidMask))
+            {
+                if (!float.IsNegativeInfinity(_lastSeenAt) && (!HasTarget || (_targetHealth != null && _targetHealth.Health <= 0f)
+                    || Age - _lastSeenAt > Config.MinionTargetMemory))
+                {
+                    _lastSeenAt = float.NegativeInfinity; Actor.Navigation?.Repath();
+                }
+                return;
+            }
+            if (Age - _lastSeenAt > Config.MinionTargetMemory) Actor.Navigation?.Repath();
+            _lastSeenAt = Age; _lastSeen = Actor.Target.position;
         }
         protected override void TickAction(string name)
         {
             if (name == "Hurt") { if (Finished) Go("Walk"); return; }
-            if (Actor.Target == null || !Actor.Target.gameObject.activeInHierarchy) { Actor.Motor.Intent = Vector2.zero; return; }
+            if (!HasTarget && !Config.Flying && Config.MinionNavigationEnabled && Actor.Navigation.ContinueTraversal(Age)) return;
             if (Config.Flying && !_commanded && Actor.Summoner != null)
             {
                 Vector2 orbit = _home + new Vector2(Mathf.Sin(Age) * 0.8f, Mathf.Cos(Age) * 0.3f);
                 Actor.Motor.Intent = Vector2.ClampMagnitude(orbit - (Vector2)Actor.transform.position, 1f);
                 return;
             }
-            if (Config.Flying) Actor.Motor.Intent = Actor.TowardTarget;
-            else WalkToTarget();
+            bool pursue = HasTarget && (_targetHealth == null || _targetHealth.Health > 0f)
+                && Age - _lastSeenAt <= Config.MinionTargetMemory
+                && Vector2.Distance(Actor.transform.position, _home) <= Config.MinionLeashRange;
+            Vector2 destination = pursue ? _lastSeen : _home;
+            if (Config.Flying) Actor.Motor.Intent = Vector2.ClampMagnitude(destination - (Vector2)Actor.transform.position, 1f);
+            else if (Config.MinionNavigationEnabled) Actor.Navigation.MoveTo(destination, _home, Age);
+            else
+            {
+                Vector2 offset = destination - (Vector2)Actor.transform.position;
+                Actor.Motor.Intent = Mathf.Abs(offset.x) > .12f ? Vector2.right * Mathf.Sign(offset.x) : Vector2.zero;
+            }
         }
     }
 }

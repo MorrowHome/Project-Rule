@@ -23,6 +23,8 @@ namespace RuleGame.Gameplay.Enemy
         {
             if (name == "Wander")
             {
+                if (Config.MinionNavigationEnabled && Actor.Navigation.ContinueTraversal(Age)) return;
+                if (!CanPursue && ReturnHome()) return;
                 if (Age >= _wanderAt)
                 {
                     _random ^= _random << 13; _random ^= _random >> 17; _random ^= _random << 5;

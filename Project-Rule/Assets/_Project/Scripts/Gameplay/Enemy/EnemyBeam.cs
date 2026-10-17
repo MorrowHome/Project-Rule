@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using RuleGame.Gameplay.Combat;
 using RuleGame.Gameplay.Common;
 using RuleGame.Infrastructure;
 using RuleGame.Infrastructure.Snapshot;
@@ -93,15 +94,13 @@ namespace RuleGame.Gameplay.Enemy
             Vector2 origin = Origin;
             Vector2 direction = Direction;
             float length = Length(origin, direction);
-            var filter = new ContactFilter2D { useTriggers = false };
-            filter.SetLayerMask(_source.PlayerMask);
+            var filter = new ContactFilter2D { useTriggers = true };
+            filter.SetLayerMask(Hurtbox.Mask);
             int count = Physics2D.OverlapBox(origin + direction * length * 0.5f, new Vector2(length, _width),
                 Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg, filter, _hits);
             for (int i = 0; i < count; i++)
             {
-                IDamageable receiver = _hits[i].GetComponentInParent<IDamageable>();
-                IFactionMember faction = _hits[i].GetComponentInParent<IFactionMember>();
-                if (receiver == null || faction?.Faction != Faction.Player) continue;
+                if (!CombatSystem.TryResolveTarget(_hits[i], _source, out IDamageable receiver)) continue;
                 _source.Combat?.ApplyDamage(_source, receiver, _source.Definition.Damage, 4f);
                 _hit = true;
                 _nextHit = _age + Mathf.Max(.05f, _source.Definition.ContactInterval);

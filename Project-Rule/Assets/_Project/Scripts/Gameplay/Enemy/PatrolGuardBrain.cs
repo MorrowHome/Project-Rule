@@ -20,7 +20,8 @@ namespace RuleGame.Gameplay.Enemy
                 return;
             }
             if (name == "Ignore") { Patrol(); if (Elapsed >= Config.MinionIgnoreDuration) Go("Patrol"); return; }
-            if (Age >= ReadyAt && SeesTarget && TargetInMeleeRange) { Go("Attack"); return; }
+            if (!CanPursue && Config.MinionNavigationEnabled && Actor.Navigation.ContinueTraversal(Age)) return;
+            if (Age >= ReadyAt && CanPursue && SeesTarget && TargetInMeleeRange) { Go("Attack"); return; }
             if (CanPursue)
             {
                 if (name != "Chase") Go("Chase");
@@ -29,7 +30,7 @@ namespace RuleGame.Gameplay.Enemy
             else
             {
                 if (name != "Patrol") Go("Patrol");
-                Patrol();
+                if (!ReturnHome()) Patrol();
             }
         }
         protected override bool HandleLethal()

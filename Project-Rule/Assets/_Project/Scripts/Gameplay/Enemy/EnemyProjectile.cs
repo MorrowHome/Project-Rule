@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using RuleGame.Gameplay.Combat;
 using RuleGame.Gameplay.Common;
 using RuleGame.Infrastructure;
 using RuleGame.Infrastructure.Snapshot;
@@ -103,10 +104,17 @@ namespace RuleGame.Gameplay.Enemy
             _age += dt;
             if (_age > Mathf.Max(1f, _source.Definition.ProjectileLifetime)) { gameObject.SetActive(false); return; }
             _velocity += Physics2D.gravity * _gravity * dt;
-            var filter = new ContactFilter2D { useTriggers = false };
+            var filter = new ContactFilter2D { useTriggers = true };
             int solidMask = _source.Motor.SolidMask;
-            filter.SetLayerMask(_source.PlayerMask | solidMask);
+            filter.SetLayerMask(Hurtbox.Mask | solidMask);
             int count = Physics2D.CircleCast(_body.position, _radius, _velocity.normalized, filter, _hits, _velocity.magnitude * dt);
+            int valid = 0;
+            for (int i = 0; i < count; i++)
+            {
+                bool solid = (solidMask & (1 << _hits[i].collider.gameObject.layer)) != 0;
+                if (solid || CombatSystem.TryResolveTarget(_hits[i].collider, _source, out _)) _hits[valid++] = _hits[i];
+            }
+            count = valid;
             if (count > 0)
             {
                 // 普通弹体不穿透：只处理最近的实体，同一角色的多个碰撞体也只发一次伤害。
@@ -121,9 +129,7 @@ namespace RuleGame.Gameplay.Enemy
                 RaycastHit2D hit = _hits[nearest];
                 _source.EmitFeedback(EnemyFeedbackKind.ProjectileImpact, hit.point, -_velocity.normalized, this);
                 bool blocked = (solidMask & (1 << hit.collider.gameObject.layer)) != 0;
-                IDamageable receiver = hit.collider.GetComponentInParent<IDamageable>();
-                IFactionMember faction = hit.collider.GetComponentInParent<IFactionMember>();
-                if (!blocked && receiver != null && faction?.Faction == Faction.Player)
+                if (!blocked && CombatSystem.TryResolveTarget(hit.collider, _source, out IDamageable receiver))
                     _source.Combat?.ApplyDamage(_source, receiver, _source.Definition.Damage, 4f);
                 gameObject.SetActive(false);
                 return;

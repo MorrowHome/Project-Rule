@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using RuleGame.Gameplay.Player;
 using RuleGame.Gameplay.Combat;
 using RuleGame.Core.Rules;
@@ -18,10 +19,16 @@ namespace RuleGame.Gameplay.Enemy
         public EnemyDefinition Definition;
         public Transform Target;
         public CombatSystem Combat;
+        [Tooltip("开启后，活动边界以出生位置为基准。旧 Boss 的世界坐标配置保持不变。")]
+        public bool UseSpawnRelativeArena;
+        public Vector2 ArenaSize = new Vector2(20f, 20f);
+        public Vector2 ArenaOffset;
         public EnemyActor MinionPrefab;
         public EnemyActor FlyingMinionPrefab;
         public EnemyActor Summoner;
         public EnemyWeakPoint WeakPoint;
+        [Tooltip("只用于身体移动与生成位置避让；伤害判定统一查询 Hurtbox。")]
+        public LayerMask PlayerMask = 1;
         public Sprite ProjectileSprite;
         [Tooltip("光束原点，例如闹钟表盘轴心；未设置时使用身体中心。")]
         public Transform BeamOrigin;
@@ -34,9 +41,11 @@ namespace RuleGame.Gameplay.Enemy
         public EntityStatus Status { get; private set; }
         public EnemyMotor Motor { get; private set; }
         public EnemyBrain Brain { get; private set; }
+        public EnemyPlatformNavigation Navigation { get; private set; }
         public ClockBeamEmitter ClockBeams { get; private set; }
         public bool IsFlying => Brain?.IsFlying ?? (Definition != null && Definition.Flying);
         public bool HasTarget => Target != null && Target.gameObject.activeInHierarchy;
+        public Vector2 ArenaAnchor => _arenaInitialized ? _arenaOrigin : (Vector2)transform.position;
         public Faction Faction => Faction.Enemy;
         public string AnimationName { get; private set; } = "Idle";
         public float AnimationDuration { get; private set; } = 1f;
@@ -54,6 +63,10 @@ namespace RuleGame.Gameplay.Enemy
         private readonly HashSet<IDamageable> _swingTargets = new HashSet<IDamageable>();
         private readonly List<EnemyActor> _summons = new List<EnemyActor>();
         private RuleReleaseService _release;
+        private Vector2 _arenaOrigin;
+        private bool _arenaInitialized;
+        private bool _automaticTarget;
+        private float _nextBindingAttempt;
 
         private void Awake()
         {
@@ -64,8 +77,21 @@ namespace RuleGame.Gameplay.Enemy
         private void Start()
         {
             if (Definition == null) { Debug.LogError("EnemyActor 缺少 EnemyDefinition。", this); enabled = false; return; }
+            _arenaOrigin = transform.position;
+            _arenaInitialized = true;
+            if (UseSpawnRelativeArena)
+            {
+                Vector2 half = new Vector2(Mathf.Max(Definition.BodySize.x + .1f, ArenaSize.x),
+                    Mathf.Max(Definition.BodySize.y + .1f, ArenaSize.y)) * .5f;
+                Vector2 center = _arenaOrigin + ArenaOffset;
+                ArenaX = new Vector2(center.x - half.x, center.x + half.x);
+                ArenaY = new Vector2(center.y - half.y, center.y + half.y);
+            }
+            _automaticTarget = Target == null;
+            ResolveSceneBindings();
             Status.InitializeVitals(Definition.Health, Definition.Energy);
             _release = new RuleReleaseService(RuleSystem.Instance, Status, AllUnlockedRuleUnlocks.Instance);
+            Navigation = new EnemyPlatformNavigation(this);
             Brain = EnemyBrain.Create(this);
             Brain.Initialize();
             if (_bodyCollider != null) _bodyCollider.enabled = Brain.BodyEnabled;
@@ -73,10 +99,13 @@ namespace RuleGame.Gameplay.Enemy
         }
         private void FixedUpdate()
         {
+            if ((Combat == null || Target == null || (_automaticTarget && !HasTarget))
+                && Time.unscaledTime >= _nextBindingAttempt) ResolveSceneBindings();
             if (Brain == null || TimeManager.Instance?.IsPaused == true || Status.IsPaused) return;
             float dt = Time.fixedDeltaTime;
             _invulnerability = Mathf.Max(0f, _invulnerability - dt);
             if (!Defeated) Status.RestoreEnergy(Definition.EnergyRegen * dt);
+            Motor.AllowLedgeTraversal = false;
             Brain.Tick(dt);
             ClockBeams?.Tick(dt);
             if (_bodyCollider != null) _bodyCollider.enabled = Brain.BodyEnabled;
@@ -108,10 +137,40 @@ namespace RuleGame.Gameplay.Enemy
             }
             if (_contactTargets.Count > 0) _contactCooldown = Mathf.Max(0.05f, Definition.ContactInterval);
         }
-        private void OnDisable() { Motor?.Stop(); Brain?.OnDisabled(); }
+        private void OnDisable() { Navigation?.Cancel(); Motor?.Stop(); Brain?.OnDisabled(); }
+        private void OnDrawGizmosSelected()
+        {
+            if (UseSpawnRelativeArena)
+            {
+                Gizmos.color = new Color(1f, .75f, .15f, .8f);
+                Gizmos.DrawWireCube(ArenaAnchor + ArenaOffset, new Vector3(ArenaSize.x, ArenaSize.y, .1f));
+            }
+            Navigation?.DrawGizmos();
+        }
+
+        private void ResolveSceneBindings()
+        {
+            _nextBindingAttempt = Time.unscaledTime + .5f;
+            if (Target == null || (_automaticTarget && !HasTarget))
+            {
+                var player = FindAnyObjectByType<PlayerController>();
+                if (player != null) { Target = player.transform; _automaticTarget = true; }
+            }
+            if (Combat != null) return;
+            foreach (var combat in FindObjectsByType<CombatSystem>(FindObjectsSortMode.None))
+            {
+                if (combat.gameObject.scene != gameObject.scene) continue;
+                Combat = combat;
+                return;
+            }
+            var services = new GameObject("EnemyCombatService");
+            SceneManager.MoveGameObjectToScene(services, gameObject.scene);
+            Combat = services.AddComponent<CombatSystem>();
+        }
 
         public void Cue(string action, float duration, bool loop = false)
         {
+            Navigation?.Cancel();
             AnimationName = action;
             AnimationDuration = Mathf.Max(0.05f, duration);
             AnimationLoop = loop;
@@ -182,15 +241,13 @@ namespace RuleGame.Gameplay.Enemy
         public void AreaAttack(float radius)
         {
             if (Combat == null) return;
-            var filter = new ContactFilter2D { useTriggers = false };
-            filter.SetLayerMask(PlayerMask);
+            var filter = new ContactFilter2D { useTriggers = true };
+            filter.SetLayerMask(Hurtbox.Mask);
             int count = Physics2D.OverlapCircle(transform.position, radius, filter, _contacts);
             _contactTargets.Clear();
             for (int i = 0; i < count; i++)
             {
-                var target = _contacts[i].GetComponentInParent<IDamageable>();
-                var faction = _contacts[i].GetComponentInParent<IFactionMember>();
-                if (target != null && faction?.Faction == Faction.Player && _contactTargets.Add(target))
+                if (CombatSystem.TryResolveTarget(_contacts[i], this, out IDamageable target) && _contactTargets.Add(target))
                     Combat.ApplyDamage(this, target, Definition.Damage, 4f);
             }
             EmitFeedback(EnemyFeedbackKind.Strike, transform.position, Motor.Up);
@@ -220,7 +277,7 @@ namespace RuleGame.Gameplay.Enemy
         {
             if (Combat == null || !HasTarget) return;
             _swingTargets.Clear();
-            Combat.PerformAttack(this, center, size, PlayerMask, Definition.Damage, 7f, _swingTargets);
+            Combat.PerformAttack(this, center, size, Definition.Damage, 7f, _swingTargets);
             EmitFeedback(EnemyFeedbackKind.AreaStrike, center, Motor.Up);
         }
         public void Beam(float angle, float width, float warning = 0.65f)
@@ -299,6 +356,7 @@ namespace RuleGame.Gameplay.Enemy
         {
             public object Brain;
             public object ClockBeams;
+            public object Navigation;
             public Vector2 Velocity, Impulse;
             public float Facing, Invulnerability, ContactCooldown;
             public bool Defeated;
@@ -312,6 +370,7 @@ namespace RuleGame.Gameplay.Enemy
             Brain = Brain?.Capture(), Velocity = Motor.Velocity, Impulse = Motor.CaptureImpulse(),
             GravityDrift = Motor.GravityDrift,
             ClockBeams = ClockBeams?.Capture(),
+            Navigation = Navigation?.Capture(),
             Facing = Facing, Invulnerability = _invulnerability, Defeated = Defeated, Summons = _summons.ToArray(),
             ContactCooldown = _contactCooldown,
             StrikeAnnounced = _strikeAnnounced,
@@ -329,6 +388,7 @@ namespace RuleGame.Gameplay.Enemy
             _swingTargets.Clear();
             foreach (IDamageable target in data.SwingTargets) _swingTargets.Add(target);
             Motor.Restore(data.Velocity, data.Impulse, data.GravityDrift);
+            Navigation?.Restore(data.Navigation);
             _strikeAnnounced = data.StrikeAnnounced;
             Restored?.Invoke();
         }

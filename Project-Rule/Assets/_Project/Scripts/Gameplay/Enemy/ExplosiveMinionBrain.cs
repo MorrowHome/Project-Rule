@@ -31,8 +31,8 @@ namespace RuleGame.Gameplay.Enemy
             }
             else
             {
-                Chase(); Actor.Motor.SpeedMultiplier = Config.MinionDashMultiplier;
-                if (!HasTarget || Elapsed >= 3f || Actor.Motor.HasHorizontalObstacle(Actor.Facing)) Arm();
+                Actor.Motor.SpeedMultiplier = Config.MinionDashMultiplier; Chase();
+                if (!HasTarget || Elapsed >= 3f || (!Config.MinionNavigationEnabled && Actor.Motor.HasHorizontalObstacle(Actor.Facing))) Arm();
             }
         }
     }

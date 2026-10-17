@@ -176,8 +176,9 @@ namespace RuleGame.Gameplay.Enemy
         [Min(.5f)] public float MinionSenseRange = 6f;
         [Min(.2f)] public float MinionPatrolDistance = 3f;
         [Min(.1f)] public float MinionIgnoreDuration = 3f;
-        [Tooltip("追击不会离开出生点超过此距离，失去视线后只前往最后看到的位置。")]
+        [Tooltip("以出生点为圆心的追击半径；圈外目标不索敌、不起手攻击，脱战后返回。")]
         [Min(1f)] public float MinionLeashRange = 8f;
+        [Tooltip("失去视线后只搜索最后看到的位置这么久，超时返回；不会持续追踪墙后的实时位置。")]
         [Min(0f)] public float MinionTargetMemory = 1.5f;
         [Tooltip("在受击累计重置时间内承受此伤害才硬直；仍会正常扣血和闪白。")]
         [Min(1f)] public float MinionStaggerThreshold = 12f;
@@ -186,6 +187,16 @@ namespace RuleGame.Gameplay.Enemy
         [Min(.5f)] public float MinionPreferredRange = 4f;
         [Tooltip("近战前摇可转向的比例，超过后锁定方向，留下绕背躲避的机会。")]
         [Range(0f, .5f)] public float MinionAimLockFraction = .25f;
+        [Header("关卡小怪：平台寻路")]
+        public bool MinionNavigationEnabled = true;
+        [Tooltip("普通地面小怪可跳越的高度；0 禁止主动跳跃，弹簧怪沿用自己的跳高。")]
+        [Min(0f)] public float MinionJumpHeight = 1.6f;
+        [Tooltip("主动下落允许的最大高度差；没有可达落脚点时保留悬崖保护。")]
+        [Min(0f)] public float MinionMaxDrop = 2.5f;
+        [Tooltip("平台采样间距；窄于此间距的平台可能不参与路线。每次最多采样 192 个落脚点。")]
+        [Range(.3f, 1f)] public float MinionNavigationSpacing = .5f;
+        [Tooltip("路线重算间隔，使用游戏物理时钟；运动中的跳跃不逐帧改选路线。")]
+        [Min(.2f)] public float MinionRepathInterval = .65f;
         [Header("关卡小怪：重组与自爆")]
         public bool MinionReassembles;
         [Min(.1f)] public float MinionRespawnDelay = 7f;

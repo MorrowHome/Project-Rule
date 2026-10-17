@@ -2,6 +2,8 @@
 
 <!-- unity-onboarding:generated:start -->
 
+2026-10-17 在新分支 feat/minion-pathfinding 接入 EnemyPlatformNavigation：真实 Collider2D 站立点采样、有界 A*、身体扫掠验证的跳跃与安全落差，Motor 仍是位移权威。地面追击与返回出生点使用路线，飞鸟水平巡飞不改。普通默认索敌6米、出生点二维追击半径8米、失去视线后搜索最后位置1.5秒；脱战返回，旧积木/蝙蝠召唤物也遵守范围。中文配置包含开关、1.6米跳高、2.5米落差、0.5米采样和0.65秒重算；暂停/受击/快照接入。每次搜索最多192节点/2400查询，缓存不参与快照，半空运动参加快照。修复继承的 a79c487 合并版本中的敌人端旧战斗接口，攻击统一 Hurtbox，PlayerMask仅保留身体移动用途。Unity6000.6.4f1隔离PlayMode：平台导航16项、索敌脱战9项、受击箱兼容5项通过，合计30项0失败。新增 Test_Minion_Pathfinding 白盒和独立默认范围配置，由EditorAPI生成，日志见 %TEMP%/rule-minion-{navigation,ranges}.log 与 rule-enemy-hurtbox-compat.log。未执行原工程手动白盒、正式地图难度、敌群性能或完整Player构建；移动/单向平台的专用通行和飞行避障未实现。保留同期字体与ProjectSettings修改。
+
 2026-10-17 小怪受击补查：旧 MinionBrain 的召唤物改为累计破韧；新增中文参数 MinionHurtDuration（默认 0.25 秒上限），所有小怪恢复后再计算完整 HurtCooldown。普通伤害仅在本次进入 Hurt 时给小怪完整击退，防止轻击绕过保护持续推退；质量降低和挂账零伤害纯击退保留，Boss 约束不变。FieldMinionBrain 去掉重复受击 Cue/冷却覆盖。弹簧怪先完成已起跳的运动，再在落地后判断丢失目标。Unity 6000.6.4f1 隔离 Play Mode 的 MinionResilienceValidation.RunBatch：旧逻辑 7 组失败，修改后 53 项通过、0 失败；含实际物理、暂停、快照与中文 Inspector 编译。夹具提高实例血量以观测完整保护期，未改资产数值。隔离工程位于 %TEMP%/rule-minion-resilience-20261017，日志 %TEMP%/rule-minion-resilience-{before,after}.log；未跑正式地图难度、全 Boss 或 Player 构建。保留同期字体和 ProjectSettings 的用户修改。
 
 分析日期：2026-10-15；基线 `9af8f80`（最新角色动画），关闭白盒无敌已提交为 `f927297`。当前工作分支 `feat/better-boss`（fork → 原仓库 `p2-p3-merge` 的 PR #10），已衔接之前的 Boss 距离/破韧与身体阻挡，并新增蝙蝠高机动空战。Unity 工程在仓库下的 `Project-Rule/`，不是仓库根目录。
@@ -105,3 +107,5 @@ manifest 已有 Coplay Unity MCP，仓库 `.mcp.json` 指向 `localhost:8080/mcp
 用户分支命名要求：不使用 codex/ 前缀；新功能分支使用 feat/ 等项目惯用前缀。
 
 2026-10-17 小怪战术复查：守卫新增限距追击/短时视线记忆，飞鸟保持射程，海豹按可达距离/施法可用性选技能并增加滑行前摇；弹簧空中锁向、发条鼠限时钻地。关卡小怪累计破韧阈值（重型20/其他12）与1.2秒硬直保护；近战前摇早期跟随、出手锁向，命中去重，保留不硬直时闪白。参数中文可调。修改前7组针对性用例失败，修改后隔离PlayMode65项通过，日志/tmp/rule-minion-tactics-after.log；未验证正式关卡整体难度。
+
+2026-10-17 小怪预制体放置简化：九种 FieldMinions 已通过 Editor API 补齐身体 Hurtbox、显式受击承受方和出生点相对活动范围。EnemyActor 自动绑定玩家、复用场景 CombatSystem（缺少时创建共享服务），缺失/自动绑定的目标失效时每 0.5 秒重试；旧显式引用和 Boss 世界边界保留。新增 UI Toolkit 简化 Inspector 与 Scene 二维边框手柄，默认宽高 20×20，范围固定于出生点。寻路白盒清除临时受击箱，使用预制体继承的一个受击箱和自动接线。使用文档为 Doc/小怪预制体使用指南.md。隔离工程保持实际核心程序集名称编译，20 项定向检查通过，补充核对九种资产的受击承受方与程序集标识；未进行原工程 Play、面板视觉操作、完整 Player 构建和敌群性能验收。

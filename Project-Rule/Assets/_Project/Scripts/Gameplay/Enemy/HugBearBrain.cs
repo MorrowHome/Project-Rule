@@ -33,6 +33,7 @@ namespace RuleGame.Gameplay.Enemy
                 case "Idle": if (SeesTarget) Go("Stand"); break;
                 case "Stand": if (Finished) Go("Chase"); break;
                 case "Chase":
+                    if (!CanPursue && Config.MinionNavigationEnabled && Actor.Navigation.ContinueTraversal(Age)) break;
                     if (!CanPursue) { Go("Return"); break; }
                     Chase();
                     if (Age >= ReadyAt && TouchesTarget) Go("Hug");
@@ -50,6 +51,12 @@ namespace RuleGame.Gameplay.Enemy
                     break;
                 case "Return":
                     if (CanPursue && SeesTarget) { Go("Chase"); break; }
+                    if (Config.MinionNavigationEnabled)
+                    {
+                        Actor.Navigation.MoveTo(Home, Home, Age);
+                        if (Vector2.Distance(Actor.transform.position, Home) <= .25f) Go("Sit");
+                        break;
+                    }
                     float delta = Home.x - Actor.transform.position.x;
                     Actor.Motor.Intent = Mathf.Abs(delta) > .15f ? Vector2.right * Mathf.Sign(delta) : Vector2.zero;
                     Actor.FaceDirection(Actor.Motor.Intent);

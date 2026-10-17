@@ -13,6 +13,7 @@ namespace RuleGame.Gameplay.Enemy
         private float _staggerDamage, _lastHit, _lastSeenAt = float.NegativeInfinity;
         private Vector2 _lastSeen;
         private Transform _cachedTarget;
+        private bool _pursuing, _returning;
         private RuleGame.Gameplay.Player.EntityStatus _targetStatus;
         protected Collider2D TargetBody;
         protected readonly Collider2D Body;
@@ -45,7 +46,9 @@ namespace RuleGame.Gameplay.Enemy
         {
             get
             {
-                if (!LiveTarget || Actor.Distance > Config.MinionSenseRange) return false;
+                if (!LiveTarget || Actor.Distance > Config.MinionSenseRange
+                    || Vector2.Distance(Actor.Target.position, Home) > Config.MinionLeashRange
+                    || Vector2.Distance(Actor.transform.position, Home) > Config.MinionLeashRange) return false;
                 return !Physics2D.Linecast(Actor.transform.position, Actor.Target.position, Actor.Motor.SolidMask);
             }
         }
@@ -61,13 +64,35 @@ namespace RuleGame.Gameplay.Enemy
         }
         protected override void TickGlobal()
         {
-            if (!SeesTarget) return;
-            _lastSeenAt = Age;
-            _lastSeen = Actor.Target.position;
+            if (SeesTarget)
+            {
+                _lastSeenAt = Age; _lastSeen = Actor.Target.position;
+                _pursuing = true; _returning = false;
+            }
+            else if (_pursuing && !CanPursue)
+            {
+                _pursuing = false; _returning = true; Actor.Navigation?.Repath();
+            }
         }
         protected bool CanPursue => LiveTarget && Age - _lastSeenAt <= Config.MinionTargetMemory
-            && Mathf.Abs(_lastSeen.x - Home.x) <= Config.MinionLeashRange
-            && Mathf.Abs(Actor.transform.position.x - Home.x) <= Config.MinionLeashRange;
+            && Vector2.Distance(_lastSeen, Home) <= Config.MinionLeashRange
+            && Vector2.Distance(Actor.transform.position, Home) <= Config.MinionLeashRange;
+        protected Vector2 LastSeenPosition => _lastSeen;
+        protected bool ReturnHome()
+        {
+            if (!_returning) return false;
+            if (Config.MinionNavigationEnabled && Actor.Navigation.ContinueTraversal(Age)) return true;
+            if (Vector2.Distance(Actor.transform.position, Home) <= .25f) { _returning = false; return false; }
+            if (Config.MinionNavigationEnabled)
+                Actor.Navigation.MoveTo(Home, Home, Age, Config.Kind == EnemyKind.SpringToy, Config.MinionHopHeight);
+            else
+            {
+                float side = Mathf.Sign(Home.x - Actor.transform.position.x);
+                Actor.Motor.Intent = Actor.Motor.HasHorizontalObstacle(side) ? Vector2.zero : Vector2.right * side;
+                Actor.FaceDirection(Actor.Motor.Intent);
+            }
+            return true;
+        }
         protected void TrackMeleeWindup()
         {
             if (Elapsed <= Actor.AnimationDuration * Config.MinionAimLockFraction && SeesTarget) Actor.FaceTarget();
@@ -92,7 +117,13 @@ namespace RuleGame.Gameplay.Enemy
         }
         protected void Chase()
         {
+            if (Config.MinionNavigationEnabled && Actor.Navigation.ContinueTraversal(Age)) return;
             if (!CanPursue) { Actor.Motor.Intent = Vector2.zero; return; }
+            if (Config.MinionNavigationEnabled)
+            {
+                Actor.Navigation.MoveTo(_lastSeen, Home, Age);
+                return;
+            }
             float offset = _lastSeen.x - Actor.transform.position.x;
             Actor.FaceDirection(Vector2.right * offset);
             Actor.Motor.Intent = Mathf.Abs(offset) > .12f ? Vector2.right * Mathf.Sign(offset) : Vector2.zero;
@@ -154,14 +185,17 @@ namespace RuleGame.Gameplay.Enemy
             public Vector2 LastSeen;
             public int Pattern;
             public object Behavior;
+            public bool Pursuing, Returning;
         }
         protected override object CaptureExtra() => new Data { Home = Home, Heading = Heading, Ready = ReadyAt, Pattern = Pattern,
-            StaggerDamage = _staggerDamage, LastHit = _lastHit, LastSeenAt = _lastSeenAt, LastSeen = _lastSeen, Behavior = CaptureBehavior() };
+            StaggerDamage = _staggerDamage, LastHit = _lastHit, LastSeenAt = _lastSeenAt, LastSeen = _lastSeen,
+            Pursuing = _pursuing, Returning = _returning, Behavior = CaptureBehavior() };
         protected override void RestoreExtra(object state)
         {
             if (!(state is Data data)) return;
             OnDisabled(); Home = data.Home; Heading = data.Heading; ReadyAt = data.Ready; Pattern = data.Pattern;
             _staggerDamage = data.StaggerDamage; _lastHit = data.LastHit; _lastSeenAt = data.LastSeenAt; _lastSeen = data.LastSeen;
+            _pursuing = data.Pursuing; _returning = data.Returning;
             RestoreBehavior(data.Behavior);
         }
         protected virtual object CaptureBehavior() => null;

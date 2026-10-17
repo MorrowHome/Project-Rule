@@ -10,6 +10,7 @@ using RuleGame.Gameplay.Player;
 using RuleGame.Gameplay.Combat;
 using RuleGame.Gameplay.Common;
 using RuleGame.Presentation.Enemy;
+using RuleGame.Infrastructure;
 
 namespace RuleGame.Editor.Enemy
 {
@@ -95,6 +96,7 @@ namespace RuleGame.Editor.Enemy
             var go = new GameObject(d.Kind.ToString()); go.SetActive(false); go.layer = 9;
             var actor = go.AddComponent<EnemyActor>(); actor.Definition = d;
             go.GetComponent<BoxCollider2D>().size = d.BodySize;
+            ConfigurePlacement(actor);
             var body = go.GetComponent<Rigidbody2D>(); body.bodyType = RigidbodyType2D.Kinematic; body.gravityScale = 0;
             go.AddComponent<RuleAffectedBody>();
             var sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/Sprites/P4WhiteboxSquare.png");
@@ -108,6 +110,50 @@ namespace RuleGame.Editor.Enemy
             actor.ProjectileSprite = sprite;
             go.SetActive(true);
             var saved = PrefabUtility.SaveAsPrefabAsset(go, path); UnityEngine.Object.DestroyImmediate(go); return saved;
+        }
+
+        [MenuItem("RuleGame/Enemies/补齐九种小怪的放置配置（保留战斗参数）")]
+        public static void RepairPlacement()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                throw new InvalidOperationException("请先退出 Play Mode。");
+            foreach (var kind in Kinds)
+            {
+                string path = PrefabFolder + "/" + kind + ".prefab";
+                if (AssetDatabase.LoadAssetAtPath<GameObject>(path) == null)
+                    throw new InvalidOperationException("缺少小怪预制体：" + path);
+                var root = PrefabUtility.LoadPrefabContents(path);
+                try
+                {
+                    ConfigurePlacement(root.GetComponent<EnemyActor>());
+                    PrefabUtility.SaveAsPrefabAsset(root, path);
+                }
+                finally { PrefabUtility.UnloadPrefabContents(root); }
+            }
+            AssetDatabase.SaveAssets();
+            Debug.Log("[FieldMinions] 九种小怪已补齐受击箱和出生点相对活动范围；保留已有战斗参数与场景引用。");
+        }
+
+        private static void ConfigurePlacement(EnemyActor actor)
+        {
+            actor.UseSpawnRelativeArena = true;
+            Hurtbox hurtbox = null;
+            foreach (var existing in actor.GetComponentsInChildren<Hurtbox>(true))
+                if (existing.GetComponentInParent<IDamageable>(true) == actor) { hurtbox = existing; break; }
+            if (hurtbox == null)
+            {
+                var go = new GameObject("Hurtbox"); go.transform.SetParent(actor.transform, false);
+                go.layer = Hurtbox.Layer;
+                var area = go.AddComponent<BoxCollider2D>();
+                var body = actor.GetComponent<BoxCollider2D>();
+                area.size = body.size; area.offset = body.offset; area.isTrigger = true;
+                hurtbox = go.AddComponent<Hurtbox>();
+            }
+            var serialized = new SerializedObject(hurtbox);
+            serialized.FindProperty("_owner").objectReferenceValue = actor;
+            serialized.FindProperty("m_EditorClassIdentifier").stringValue =
+                typeof(Hurtbox).Assembly.GetName().Name + "::" + typeof(Hurtbox).FullName;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
         private static void CreateScene(GameObject prefab, string path)
         {
