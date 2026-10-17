@@ -21,7 +21,26 @@ MonoBehaviour:
   Material: {fileID: 2100000, guid: 08e46b1ca7505bb43a3d68dd6dcdc5a9, type: 2}
   BeamMaterial: {fileID: 2100000, guid: 2d0e251e73812c64da5ac560a2d8cbd8, type: 2}
   BeamCoreMaterial: {fileID: 2100000, guid: 2be33ef7f38048d4b96dc6e3ce3a98a6, type: 2}
-  ProjectileSprite: {fileID: 21300000, guid: f69cf7999f7acb246a8089c0ea6311a6, type: 3}
+  ProjectileSprite: {fileID: 21300000, guid: 25b5e85731b20d8419c456b9473aa542, type: 3}
+  ProjectileAnimations:
+  - Action: ProjectileCube
+    Frames:
+    - {fileID: 21300000, guid: 25b5e85731b20d8419c456b9473aa542, type: 3}
+    - {fileID: 21300000, guid: fff2680f407dd7b4f94e2e2b328f9547, type: 3}
+    - {fileID: 21300000, guid: 760ab350b40492348b0abf375f1835e6, type: 3}
+    - {fileID: 21300000, guid: bf2c137b8212ec043ad50e4d7bcfaca1, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    FrameRate: 8
+    FacesRight: 1
+    NativeFrameRate: 1
+  ProjectileMaterial: {fileID: 2100000, guid: c90dee527ba7a1e4daeeacb1969be2d3, type: 2}
+  PhysicalProjectiles: 1
+  BeamAnimations: []
+  BeamSpriteMaterial: {fileID: 0}
   Accent: {r: 1, g: 0.4, b: 0.14, a: 1}
   Secondary: {r: 0.79, g: 0.32500002, b: 0.1575, a: 1}
   ImpactSize: 6

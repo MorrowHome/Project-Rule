@@ -4,7 +4,7 @@ namespace RuleGame.Gameplay.Player
 {
     /// <summary>
     /// 速度解算：重力 + 终端速度（④）、贴墙下滑（④′）、水平（⑤）、贴地抵消（⑥）、
-    /// 跳跃落地（⑦⑧）。
+    /// 弹簧发射（⑥′）、跳跃落地（⑦⑧）。
     /// </summary>
     /// <remarks>
     /// <para><b>无状态，且不认识任何对象</b>：速度从参数进、从返回值出。
@@ -76,9 +76,18 @@ namespace RuleGame.Gameplay.Player
 
             // ── 横向链：三档互斥，返回新的横向速度（不是变化量）。
             lateral = Horizontal(t, frame, lateral, dt, ref facing);                    // ⑤ 水平
+            // ⑤′ 风（水平分量）：以变化量叠加，不受摩擦反转影响（风不是摩擦）。
+            //    接地时地面摩擦每帧把它往回拉，两者自然对抗 —— 冰面上风就吹得动人。
+            //    冲刺期间不叠加：冲刺的方向由 DashSolver 独占，风不该把它吹歪。
+            if (!dashing)
+            {
+                lateral += frame.WindAccel.x * dt;
+                lateral -= lateral * Mathf.Clamp01(frame.WindDrag * dt);   // 空气阻力
+            }
 
             // ── 竖直链续。必须排在横向之后：蹬墙跳会整体接管横向。
             alongUp += SurfaceCancelDelta(frame.Contact, alongUp);                      // ⑥ 贴地抵消
+            alongUp += LaunchDelta(frame, alongUp);                                     // ⑥′ 弹簧发射
             alongUp += JumpDelta(frame, alongUp, ref lateral, ref facing);              // ⑦ 起跳
             alongUp += JumpCutDelta(t, frame, alongUp);                                 // ⑧ 松键削速
 
@@ -155,14 +164,67 @@ namespace RuleGame.Gameplay.Player
                 return Mathf.MoveTowards(alongUp, -t.WallSlideSpeed, t.WallSlideImpactDecel * dt) - alongUp;
 
             // 否则重力照常积分，再压终端速度（终端速度要读重力之后的值）。
-            float delta = GravityDelta(t, frame.Gravity, frame.Contact.Up, alongUp, dt, dashing);
+            float delta = GravityDelta(t, frame.Gravity, frame.Contact.Up, alongUp, dt, dashing)
+                        + WindVerticalDelta(frame, alongUp, dt, dashing);
             return delta + TerminalFallDelta(t, alongUp + delta);
+        }
+
+        /// <summary>
+        /// ④′ 风的竖直分量这一帧贡献的变化量（沿「上」轴投影）：**加速度 + 空气阻力**。
+        /// **与重力同待遇**：冲刺期间不积分 —— 冲刺是一条平直横线，竖直方向不接受任何外力。
+        /// </summary>
+        /// <remarks>
+        /// <para>阻力项把速度朝 0 收：「停留位置」靠的就是它 —— 只有力的平衡而没有任何耗散时，
+        /// 从低处进来的物体会带着一路攒下的动能冲过平衡点（实测出场速度 18 m/s，永远停不住）。</para>
+        /// <para>衰减量取 <c>Clamp01(drag × dt)</c> 而不是裸乘：阻力被调得极大时也只是
+        /// 「这一帧速度归零」，不会过冲成反向。</para>
+        /// <para>贴墙下滑时本函数**根本不会被调用到**：竖直轴归墙独占的那个分支在上面提前
+        /// <c>return</c> 了。这就是「重力在哪不生效，风就在哪不生效」的全部实现 ——
+        /// 想改成「风吹得动贴墙的人」，把风从那条 return 里放出来即可。</para>
+        /// <para>终端速度不夹风：它只压下落（<c>alongUp &lt; -MaxFallSpeed</c>），
+        /// 风把人往上送多少就是多少 —— 被吹飞也是一条合法的出场方式。</para>
+        /// </remarks>
+        private static float WindVerticalDelta(MotionFrame frame, float alongUp, float dt, bool dashing)
+        {
+            if (dashing) return 0f;
+
+            float delta = Vector2.Dot(frame.WindAccel, frame.Contact.Up) * dt;
+
+            // 空气阻力：朝 0 收敛（与速度反向）。
+            delta -= alongUp * Mathf.Clamp01(frame.WindDrag * dt);
+            return delta;
         }
 
         /// <summary>⑥ 贴地时抵消朝地面累积的速度。<b>返回 0 表示不在接地或本来就在上升。</b></summary>
         /// <remarks>不抵消的话，站在地上每一帧都会往地里攒一点速度，离开地面的那一瞬间才一次性弹出来。</remarks>
         private static float SurfaceCancelDelta(ContactSensor.State contact, float alongUp)
             => contact.Grounded && alongUp < 0f ? -alongUp : 0f;
+
+        /// <summary>
+        /// ⑥′ 弹簧发射：脚下的面（弹簧平台）正在把接触者推出去时，竖直速度归它接管。
+        /// <b>返回 0 表示没被弹、或已经比它快了。</b>
+        /// </summary>
+        /// <remarks>
+        /// <para><b>只往上接管</b>：弹簧报的速度比当前速度小就不动它。这条判据让「弹射」不会变成
+        /// 「减速」—— 正在以更快的速度上升时踩到弹簧，不会被它拽慢。</para>
+        /// <para><b>排在起跳之前</b>：同一帧既被弹又按跳时，玩家的意图（跳跃）优先 ——
+        /// 起跳的 Δ 会把竖直速度整体重写掉。</para>
+        /// <para>⚠️ 发射速度是**世界坐标**向量，这里沿「上」轴投影。重力反转时
+        /// <c>Contact.Up</c> 朝下，点积为负 —— 弹簧不生效。这是有意的：锚点钉在世界下方，
+        /// 重力反转后人「落」在天花板上，此时把它往锚点方向推只会往地里压。</para>
+        /// </remarks>
+        private static float LaunchDelta(MotionFrame frame, float alongUp)
+        {
+            float launch = Vector2.Dot(frame.Contact.LaunchVelocity, frame.Contact.Up);
+
+            // ⚠️ launch <= 0 必须先短路：「没在发射」时接口给的是 0（见 ISpringSurface），
+            //    而下落中 alongUp 是负的 —— 少了这一条，`0 > alongUp` 恒成立，
+            //    每帧把竖直速度拉回 0，角色**永远悬在空中、不落地**（实测踩到过）。
+            //    它同时覆盖「弹簧方向与重力相反」（点积为负），与上面那条说明一致。
+            if (launch <= 0f) return 0f;
+
+            return launch > alongUp ? launch - alongUp : 0f;
+        }
 
         /// <summary>
         /// ⑦ 起跳贡献的变化量。蹬墙跳额外接管横向与朝向。

@@ -1,4 +1,5 @@
 using UnityEngine;
+using RuleGame.Gameplay.Combat;
 using RuleGame.Infrastructure;
 using RuleGame.Infrastructure.Snapshot;
 
@@ -12,14 +13,29 @@ namespace RuleGame.Gameplay.Enemy
         public bool Opened { get; private set; }
         public float Health { get; private set; }
         private float _maximum;
+        private Hurtbox _hurtbox;
+        private Vector3 _normalOffset;
         public Faction Faction => Faction.Enemy;
         public bool DiscardWhenMissing => false;
+        private void Awake() => _normalOffset = transform.localPosition;
+        private void LateUpdate()
+        {
+            if (Owner == null || Owner.Motor == null) return;
+            // 身体翻到天花板时，发条也应露在可攻击的一侧，不能继续藏在身体上方的墙内。
+            transform.localPosition = Owner.Motor.Up.y < 0f
+                ? new Vector3(_normalOffset.x, -_normalOffset.y, _normalOffset.z) : _normalOffset;
+        }
         public void Open(float health) { _maximum = Health = health; Broken = false; Opened = true; SetVisible(true); }
         public void Close() { Opened = false; SetVisible(false); }
         private void SetVisible(bool visible)
         {
             GetComponent<Collider2D>().enabled = visible;
             GetComponent<SpriteRenderer>().enabled = visible;
+
+            // ⚠️ 命中判定看的是**受击箱**，所以它必须跟着开合 ——
+            //    只关自己的身体碰撞体的话，收起来的弱点照样挨打。
+            if (_hurtbox == null) _hurtbox = GetComponentInChildren<Hurtbox>(true);
+            if (_hurtbox != null) _hurtbox.SetHittable(visible);
         }
         private void Start() { if (!Opened) Close(); }
         public void ApplyDamage(in DamageInfo damage)

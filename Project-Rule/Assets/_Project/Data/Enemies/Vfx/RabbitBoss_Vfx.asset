@@ -21,7 +21,39 @@ MonoBehaviour:
   Material: {fileID: 2100000, guid: 67fd13e892940e841b917f424f45efb9, type: 2}
   BeamMaterial: {fileID: 2100000, guid: 934543655ec5a394689b42a060b4aa16, type: 2}
   BeamCoreMaterial: {fileID: 2100000, guid: 1d4138dfb3ce4354c857c42e4cbaf796, type: 2}
-  ProjectileSprite: {fileID: 21300000, guid: f69cf7999f7acb246a8089c0ea6311a6, type: 3}
+  ProjectileSprite: {fileID: 21300000, guid: 5b03d561158084303bbd97618cd85c2c, type: 3}
+  ProjectileAnimations:
+  - Action: ProjectileBall
+    Frames:
+    - {fileID: 21300000, guid: 5b03d561158084303bbd97618cd85c2c, type: 3}
+    - {fileID: 21300000, guid: dc276f6e47a274cccacd91619a9ae8a4, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    FrameRate: 8
+    FacesRight: 0
+    NativeFrameRate: 1
+  - Action: ProjectileChecker
+    Frames:
+    - {fileID: 21300000, guid: 83b6fcb4ecadd497a842ad70d4099e5f, type: 3}
+    - {fileID: 21300000, guid: ab764e4c033f647c49c2fea3546828b0, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    FrameRate: 8
+    FacesRight: 0
+    NativeFrameRate: 1
+  - Action: ProjectileDuck
+    Frames:
+    - {fileID: 21300000, guid: 743fb6f695b004cd09ae157c10f540f5, type: 3}
+    - {fileID: 21300000, guid: 7ae5a116b615d4d0f9e43d270e111932, type: 3}
+    ClockFaceCenters:
+    - {x: 0, y: 0}
+    - {x: 0, y: 0}
+    FrameRate: 8
+    FacesRight: 0
+    NativeFrameRate: 1
+  ProjectileMaterial: {fileID: 2100000, guid: c90dee527ba7a1e4daeeacb1969be2d3, type: 2}
   Accent: {r: 0.95, g: 0.25, b: 0.6, a: 1}
   Secondary: {r: 0.7525, g: 0.2125, b: 0.5025, a: 1}
   ImpactSize: 4

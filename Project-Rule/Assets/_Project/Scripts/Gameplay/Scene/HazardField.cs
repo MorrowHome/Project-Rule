@@ -18,6 +18,9 @@ namespace RuleGame.Gameplay.Scene
     /// <para><b>危险格为什么不带碰撞体</b>：刺是「碰到就受伤」，不是墙。
     /// 瓦片资产的 <c>Collider Type</c> 设成 <c>None</c>，玩家不会被挡住，只被判定。</para>
     ///
+    /// <para><b>判定的是受击箱</b>（<c>Hurtbox</c> 层）：身体碰撞体压到刺上不算数，
+    /// 和挥砍 / 弹体用的是同一套几何 —— 受击箱调小，能擦着刺边走过去。</para>
+    ///
     /// <para><b>伤害走唯一出口</b>：<see cref="CombatSystem.ApplyDamage"/> ——
     /// 伤害缩放 / 反转 / 因果 / 挂账都由 <c>DamageProcessor</c> 处理，这里只传**基础伤害**。
     /// 不要自己算最终值（会绕过伤害规则）。</para>
@@ -60,10 +63,6 @@ namespace RuleGame.Gameplay.Scene
 
         [Tooltip("同一个目标两次受伤的最小间隔（秒）。目标自带无敌帧时以无敌帧为准。")]
         [SerializeField, Min(0f)] private float _repeatInterval = 0.5f;
-
-        [Header("筛选")]
-        [Tooltip("只判定这些图层上的碰撞体。默认全部；非可受伤目标会被自动忽略。")]
-        [SerializeField] private LayerMask _targetMask = ~0;
 
         [Header("引用")]
         [Tooltip("伤害出口。留空则在运行时自动找场景里的 CombatSystem。")]
@@ -113,7 +112,7 @@ namespace RuleGame.Gameplay.Scene
             if (bounds.size.x <= 0f || bounds.size.y <= 0f) return;
 
             var filter = new ContactFilter2D { useTriggers = true };
-            filter.SetLayerMask(_targetMask);
+            filter.SetLayerMask(Hurtbox.Mask);
             int count = Physics2D.OverlapBox(bounds.center, bounds.size, 0f, filter, _hits);
             if (count <= 0) return;
 
@@ -125,7 +124,9 @@ namespace RuleGame.Gameplay.Scene
                 Collider2D hit = _hits[i];
                 if (hit == null) continue;
 
-                var target = hit.GetComponentInParent<IDamageable>();
+                // 只认受击箱（身体碰撞体不算）。⚠️ 这里**不套 CombatSystem 的阵营准入** ——
+                // 刺格对谁都扎：玩家、敌人、中立道具一视同仁。
+                IDamageable target = Hurtbox.ResolveOwner(hit);
                 if (target == null) continue;
 
                 if (!TryFindHazard(hit.bounds, out Hazard hazard, out Vector3Int cell)) continue;

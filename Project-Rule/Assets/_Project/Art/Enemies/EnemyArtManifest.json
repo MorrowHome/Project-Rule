@@ -3603,6 +3603,1366 @@
       "pivotX": 0.382421875,
       "pivotY": 0.4902777777777778,
       "ppu": 157.33333333333334
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_01.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "d0edb5b57c0b95a7061349d26b400fdb10427a9e5b2e9d5531d63daa0a5e3778"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_02.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "e086c24da570168b2799523e0e8bfb6d264876a1425f568070e65c602cb4c782"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_03.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "ccc62920e4a8efc1daeb10385662a0cfb710207d759017fea8e96d57f3140681"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_04.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "a505d1b395574b0518def31e7bfcb9cd223e5f2a983d6d18fb224dc1b921e173"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_05.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "2cbe412a8c745c6cb65fa094ff2adf35d3ca5548225e10181a3f8f9d7bd4888d"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_06.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "90e87bde36e10e9a1c28d3264633e133c68f75314bba92ba3b6ae60fabb3f073"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_07.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "bfceccd4be8850fe3e4e3c456f21941d1cd8509ab457cdcd234738e9993d2a0a"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_08.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "da54865c1c3c0264fd85a932610d818db2a0f418a948f414d34dac329eb8f6a9"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_09.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "cb1e9b133265b780b9d52db6e94e708a5215e6c948979a7bc4ba1d76f796014a"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_10.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "0a3f6794eb46d780dbfb6acb34a81713a80b6a3cbac3cf970320e430a253322d"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_11.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-11.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "68084ccc3bd500725ab3ae02af31b9c84bbb090d92fbfa677ace713afe1757b1"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_12.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-12.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "f4557c12491db3bbb3cee0f406a3c33973f60a0e2cb575a675793288c76b8764"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_13.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-13.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "72fd5b19234989cbde604ffc2f38840fd4fe441cd1419a300fc3a9d43bb0303a"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_14.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-14.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "a505d1b395574b0518def31e7bfcb9cd223e5f2a983d6d18fb224dc1b921e173"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_15.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-15.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "f364466f5748a69f67f6421db712329b29b08f7cd3dda2d203579e7943881581"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_16.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-16.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "d0edb5b57c0b95a7061349d26b400fdb10427a9e5b2e9d5531d63daa0a5e3778"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_17.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-17.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "1a5df1bb72b924e58136e8e54a4fe5b5ee650ef07272f62f9a262c8631831198"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_18.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-18.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "bc21cc2cf2e0b14a2b7193528d12591c5665a663b0bc17d8b4dc6a1d52617982"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_19.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-19.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "e3b39de8e643559accd229998f2ad1c624c9e7961377c736f973d36066ac6e59"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_20.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-20.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "9a3e0598ac0ddb1fc4c23e412affe201a2ad85b5c82bad8290ad5802ed370ac9"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_21.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-21.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "81c782a0e994e62b4fe889dff14a4d4d7f137f5876562ca6b454baab9cbf8693"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_22.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-22.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "ff5f89edede8806232ab8dede512b5d5a02fe70c0d7b4dd4f7dd72962fdf5b35"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_23.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-23.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "ed92cf7bab1ee5921f5c4670c7b67237df534a0e9592e8393b9c9acaf05c5ab5"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_24.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-24.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "aeb71061c6a70a13085577300137d223b2b8fa592c813650a266a7bcf7d446d6"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_25.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-25.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "8ef78beb67ae3e765c77d622c83a6b5096dab4cb2f514c88297a4456d00e3cc2"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_26.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-26.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "bb17cd642c8b10da89a799337eefb6eff3bbf65532f517ac3714c76b530f9700"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_27.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-27.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "53116ebfe623da9b70deaabd1902b3832a988a4783cef48ad9759af74d12d7b7"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_28.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-28.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "5eedf1d534053f340f922cba726ddec380fb48ce23d91b984c0cfb637ddc6c3a"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_29.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子冒出/冒出/兔子冒出-29.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "2ef05b930d96028413dd1a7761f5243d66c80a5f6d46c2b7dcb00f2f7c5850eb"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_01.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子扔东西/扔东西/扔东西-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "1ea438a614cf617f6e60bd359c0b0ce4d2e2c40c5463db39b0becf291dcd91ef"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_02.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子扔东西/扔东西/扔东西-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "978113fddf7c5fe75279e02a723a92c322f7a6b57d34cd949bd2225982e5fddd"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_03.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子扔东西/扔东西/扔东西-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "776247ed3b7d27f2fe95096fb289737dbc426343c33853b6e024032d0b545560"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_04.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子扔东西/扔东西/扔东西-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "b0e9cc638c26589801ac321fb1bd358a6333b6eb7ca5454f63a7e6944ce7481b"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_05.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子扔东西/扔东西/扔东西-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "c95ddc2dbe22dce3e208a6d1d1d0f95acbc6cc0c9ecdcb5221907516056eb261"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_06.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子扔东西/扔东西/扔东西-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "354fa7bc558a453b2da68b1e945af6925a1b370978ca15b0d98154dc146046c0"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_07.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子扔东西/扔东西/扔东西-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "7ab24f408a5f291186edb6554c11e9282caf2e358232d41cb2dc7ab564ee7013"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_08.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子扔东西/扔东西/扔东西-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "9099f900de4fd0f028f07482f7bdb2ce0774c1229e63cb9586efd23d43d8cbfc"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_09.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子扔东西/扔东西/扔东西-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "0cfd163873862c7564e060c1582caf284bad8c053704eb1c2928d811a2daaeae"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_10.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子扔东西/扔东西/扔东西-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "fd4ef60ba66f69f837dffd3dd02209ee740b6b813a872d4cf7565bc6fb2de723"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_11.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子扔东西/扔东西/扔东西-11.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "c95ec36f44838e34971853e4b6aba11caf7e58f85f9d9772eb086cbc22c89aad"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_12.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子扔东西/扔东西/扔东西-12.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "8c75b7120263d9f4c7816412505bcb4534b64dd5d9c439f611c32fb36cd11428"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_13.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子扔东西/扔东西/扔东西-13.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "4466351716adafb98725a45ebc0e691e1f6e0787736accf7fa9cea4da6463db4"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_14.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子扔东西/扔东西/扔东西-14.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "16923c0a0a6274687e3ce9d0f261127ae8e89096502007da463cb2bff0e251da"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_15.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子扔东西/扔东西/扔东西-15.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "458cce45ac4cb3fa532ab6a5ce9feffacc287fdd6cc5ac34f50867740fb6365a"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_16.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子扔东西/扔东西/扔东西-16.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "1ea438a614cf617f6e60bd359c0b0ce4d2e2c40c5463db39b0becf291dcd91ef"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_01.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子缩回/兔子缩/兔子缩回-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "480cdc095440ffc0e7158c1c985f1f4766ec16beaa2f5443406cf549d71b62c9"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_02.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子缩回/兔子缩/兔子缩回-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "ed92cf7bab1ee5921f5c4670c7b67237df534a0e9592e8393b9c9acaf05c5ab5"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_03.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子缩回/兔子缩/兔子缩回-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "62a18f08577f3607b859f616569f84c1d3a873e31c2b654675f1e8ac2e5c0363"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_04.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子缩回/兔子缩/兔子缩回-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "ff5f89edede8806232ab8dede512b5d5a02fe70c0d7b4dd4f7dd72962fdf5b35"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_05.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子缩回/兔子缩/兔子缩回-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "81c782a0e994e62b4fe889dff14a4d4d7f137f5876562ca6b454baab9cbf8693"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_06.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子缩回/兔子缩/兔子缩回-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "9a3e0598ac0ddb1fc4c23e412affe201a2ad85b5c82bad8290ad5802ed370ac9"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_07.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子缩回/兔子缩/兔子缩回-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "e3b39de8e643559accd229998f2ad1c624c9e7961377c736f973d36066ac6e59"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_08.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子缩回/兔子缩/兔子缩回-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "3ff7af139d91a2e8ae43b2d3527d5345471c8b75a47d823032023653b4492f00"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_09.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子缩回/兔子缩/兔子缩回-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "1a5df1bb72b924e58136e8e54a4fe5b5ee650ef07272f62f9a262c8631831198"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_10.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/兔子缩回/兔子缩/兔子缩回-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "90f5a2f1200d89e6a0f0f210a21661f96cbdca89451a904b6792a9ea73dd555e"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_01.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/帽子反转/反转/帽子反转-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "d99e6ef4e9f10df466d5a6363026068e515183c902de005b999b1a09ceee0b2f"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_02.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/帽子反转/反转/帽子反转-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "9ea32eeb4fd7f8e41786d3e1a05fbf8fb141734727d9b9a7dc3fd96cc77e9259"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_03.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/帽子反转/反转/帽子反转-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "21ca94ddcbf4ec136ecd1b344299722609f74a0ca68488441af801f1e4dd7742"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_04.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/帽子反转/反转/帽子反转-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "cab11d7ab5cc8d8f09b9f52e3935082a2cbe68e0bbf15139651e2e6119436ee8"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_05.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/帽子反转/反转/帽子反转-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "4448a633738fbaec085bfb37d8bf9b172d18c7e83f5a116b7a4ce3f0429b1a31"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_06.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/帽子反转/反转/帽子反转-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "734e3874c9544b6c3299faa61633958402a40f9eb1eea2efe44af9c8533c534b"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_07.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/帽子反转/反转/帽子反转-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "e4101132d8995d5e90221e07d890620c06ec8c23f9d59ba7d07b1733b9a49424"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_08.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/帽子反转/反转/帽子反转-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "70bf9381bf64d1ea19ca4fbacb2522ee54647a5bc721bb2bf08063fa69824c04"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_09.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/帽子反转/反转/帽子反转-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "37d5d2a763c4cf339e24adb1219dd66f7ce7333b3debad03788ef07599656797"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_10.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/帽子反转/反转/帽子反转-10.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "7c9b31f09191a6e13dbd9983778258a086e71c3d166673eec630f6aeefba46ed"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_11.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/帽子反转/反转/帽子反转-11.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "cec1cd7b757723256e9fe4c24319795f837db870fc183c1974c3a8782b2d2229"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_12.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/帽子反转/反转/帽子反转-12.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "2a3da8ddb4ab733ae93d3c86dde2df8ddef7c818e3c8c34fe1f5b7c10dfae223"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_13.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/帽子反转/反转/帽子反转-13.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "20bc189319ba4f836f2740d506120a17b145e5d782e539444a5916074ed301bf"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_14.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/帽子反转/反转/帽子反转-14.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "3928a339c6ba290cda6e317dadcf37e946bfcdff0d850b0246539d118b19e77e"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Flight_01.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/帽子正立飞行/飞行/帽子正立飞行-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "d3c2b555f8fd6d6e193d4f934fc334c9d7ef78af54140ee6944a9b7dbe7fd61e"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Flight_02.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/帽子正立飞行/飞行/帽子正立飞行-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "0c14d7b2daa30f68a00ac46013c4ca2703e6c5c281cf83d46ce2fa29f8d0ebb4"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Flight_03.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/帽子正立飞行/飞行/帽子正立飞行-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "8cbd98acef609ae5ada655ad9f6cb1fe6bd25b80ec406875adbace43b486347a"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Flight_04.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/帽子正立飞行/飞行/帽子正立飞行-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "590fca4e438c92986f23de3f8ee46d7f7f0586df3cf26f2b1418f69f6c4d392c"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Dead_01.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/死亡/死亡/死亡坠落-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "63b592162a7edb7f54c9b721ae39bbdcedd7f8640fc43662f7254c345cb6cc70"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Dead_02.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/死亡/死亡/死亡坠落-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "85f61a0fdbb4ef4b7a6e3a857a63f4d2e4c2b236a18cd44ad4e5ef0002f3d895"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Dead_03.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/死亡/死亡/死亡坠落-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "4a32ef5f9c656081c293892c7eb593ca2807c77823c92de99e0c9c556f68607b"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Dead_04.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/死亡/死亡/死亡坠落-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "090e6f1c8c1bf0c66dde8a158fbe69ff060253f38e2656d7b41e40b14dc475e4"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Dead_05.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/死亡/死亡/死亡坠落-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "aaa969fc8d4d5dd386931ed9b8e29fd54f1ad44e6db55e450976951c3ac97442"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Dead_06.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/死亡/死亡/死亡坠落-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "015ee89bd513dd2afcceadfe6cabb853cb502ba56f467fe42d15d8bc25a455c6"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Dead_07.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/死亡/死亡/死亡坠落-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "f617f8c53895ff8bfcd547b1280620c4f4b9a3d65ffc1e136f5608e655b4dfa7"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Dead_08.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/死亡/死亡/死亡坠落-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "4b4b661267301d86bee2cdffbc08298f630509ef765917ac5cb53a157e54882f"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_HatWobble_01.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/礼帽摇晃/礼帽摇晃/帽子蠕动-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "4a4fd67ed01f08221be24e623583461b19be21ba9de587cc890dcbdb76f6f421"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_HatWobble_02.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/礼帽摇晃/礼帽摇晃/帽子蠕动-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "32b999352c84438e3f469e8726b9ddd0954bce5942ffa0bc08480f14e90b0bfc"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_HatWobble_03.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/礼帽摇晃/礼帽摇晃/帽子蠕动-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "d40d3063b76c8508f2550d7198743ebe01d03daf336a031529ce8b9fd5d6cfd9"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_HatWobble_04.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/礼帽摇晃/礼帽摇晃/帽子蠕动-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "ffebf6eb14902855eb5312d0342fbbc5c825be805e79ee360066f0ed6c04c442"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_HatWobble_05.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/礼帽摇晃/礼帽摇晃/帽子蠕动-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "c86bcae1e37dcb0ce04d6e96f343343c8a588364a1fc0cf6efc4e52c94a77619"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_HatWobble_06.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/礼帽摇晃/礼帽摇晃/帽子蠕动-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "952e38981d615f2cc29548da10b1adbc2724cb0e67db2bec59fc6daf7ef43b14"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Walk_01.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/蹦跳前行/前进/蹦跳前行-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "b05ca5db9eedd4ad5cf5def3c2b90edc9bc7c5726c050efa3629908056bcd659"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Walk_02.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/蹦跳前行/前进/蹦跳前行-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "faa456adc92963f90caa02c07ef12e35e3932aaf881ff5190a3fe85a17a749e1"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Walk_03.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/蹦跳前行/前进/蹦跳前行-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "51a691d35c0d1b22a64f92c9c3e033e59db6f6c0716dfe4b79d88245daee9ea4"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Walk_04.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/蹦跳前行/前进/蹦跳前行-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "54116154b65c2b9811287e49ff26186af1cefc5730ee07a5bfa3f211b745a41f"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Walk_05.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/蹦跳前行/前进/蹦跳前行-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "79d2ce16a383aaff76eeb7b9ad30d7dcb195f66734861dee3771188850d96ea0"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Walk_06.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/蹦跳前行/前进/蹦跳前行-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "8286b2e9c1406057ef87e9b57521abf8f27a3af5f86911b033c1b0c2e858dcdc"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Walk_07.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/蹦跳前行/前进/蹦跳前行-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "e5692b8bab0aa0b31c2d8939f38918c848de2ccf49463bacb0da8cb3c709c17a"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Walk_08.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/蹦跳前行/前进/蹦跳前行-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "1f6173309f4da3ab367a490570855c67ea9c84164424c399ea38d7f26c2bc70f"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Walk_09.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/蹦跳前行/前进/蹦跳前行-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "96b2a16be903ffcc78f33d0cb8114b6052ac1b57a055340cdf5a86f3eadc54eb"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Burrow_01.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/蹦跳前行（兔子缩回/前进/蹦跳前行-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "678a610442eb13ffbc052ece039a179620c8668d3daca157ee3a9bd03c4dedca"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Burrow_02.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/蹦跳前行（兔子缩回/前进/蹦跳前行-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "bbc6c766a40aa783b61812fa4a287037fcf619d97d0597d62d8880eb90f217b6"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Burrow_03.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/蹦跳前行（兔子缩回/前进/蹦跳前行-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "79ba465d97c81ce96724f11a3260a0d3765c711077a9f3fcb7d39b873350a0ca"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Burrow_04.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/蹦跳前行（兔子缩回/前进/蹦跳前行-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "e48bb1f0e1a56b7643e974962da6882f8ed90e9e6fce9a23c4652a4122752057"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Burrow_05.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/蹦跳前行（兔子缩回/前进/蹦跳前行-5.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "38105edf8ef20efe5e2af34417ac306b69965aeb5442bf326ee3c560fa5a8074"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Burrow_06.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/蹦跳前行（兔子缩回/前进/蹦跳前行-6.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "64bf71ad64517fecc17a13ff415d4c543dc3bbfa34196365b3a7bbd618b6894d"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Burrow_07.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/蹦跳前行（兔子缩回/前进/蹦跳前行-7.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "090b135d628e6e8bf652c4fa357c0a03989fe6e372f668784c0001939531495c"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Burrow_08.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/蹦跳前行（兔子缩回/前进/蹦跳前行-8.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "efbd29f1d11fb691f4aaf6c768bab0c18364862b7b2d9cf6b7ec88d688601f48"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Burrow_09.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/蹦跳前行（兔子缩回/前进/蹦跳前行-9.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.5,
+      "pivotY": 0.17222222222222228,
+      "ppu": 142.66666666666666,
+      "sourceSha256": "553a1aba8767849270d5828c91a3933778544bd6d64867f760d58dd7d4eab2cc"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_ProjectileBall_01.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/投掷物/弹珠/投掷物-1.png",
+      "width": 67,
+      "height": 66,
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "ppu": 60.90909090909091,
+      "sourceSha256": "97f13d0deaa0a91d2d5c7ef92b94d53b2499f83e0ef1bcbb9f0016e363c5676b"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_ProjectileBall_02.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/投掷物/弹珠/投掷物-2.png",
+      "width": 84,
+      "height": 68,
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "ppu": 60.90909090909091,
+      "sourceSha256": "f9c722f9f77bf6680c6cb85a17b3e968aa811aed0970823705f127c2faa651d9"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_ProjectileChecker_01.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/投掷物/跳棋/投掷物-1.png",
+      "width": 85,
+      "height": 88,
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "ppu": 80.0,
+      "sourceSha256": "1819aa05bd49a6b7701eae336c120d70e0cea1a458cdd2cbbc1fde2663180e40"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_ProjectileChecker_02.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/投掷物/跳棋/投掷物-2.png",
+      "width": 110,
+      "height": 92,
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "ppu": 80.0,
+      "sourceSha256": "ddec1b3882e9f30375b43eb5bb001bdc0c69634de81b4c43fce6eb34192aaab7"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_ProjectileDuck_01.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/投掷物/鸭子/投掷物-1.png",
+      "width": 98,
+      "height": 96,
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "ppu": 89.09090909090908,
+      "sourceSha256": "073e5565c6379c5bd0ebb1f35cdd9b403bd04c6fa3b8e5fb40bb0561c808c2f4"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_ProjectileDuck_02.png",
+      "source": "/Users/morrow/Downloads/动画合集(1)/毛绒兔子boss（1s8已完成/投掷物/鸭子/投掷物-2.png",
+      "width": 127,
+      "height": 114,
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "ppu": 89.09090909090908,
+      "sourceSha256": "c40149a9b07af21101f5f781870e2191cde40eeff645fbc4f6f83a09445dc784"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_ProjectileCube_01.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/奇怪的旋转方块/旋转方块-1.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.492578125,
+      "pivotY": 0.5430555555555556,
+      "ppu": 159,
+      "sourceSha256": "781f36b13e5940c79f90f0d1b4644ed2804b10c3358efb0ef41739153ec83a6f"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_ProjectileCube_02.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/奇怪的旋转方块/旋转方块-2.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.492578125,
+      "pivotY": 0.5430555555555556,
+      "ppu": 159,
+      "sourceSha256": "695a1b09080f27017b719db92d318a9e171ae9202dd8e2c5fe39cd9081280039"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_ProjectileCube_03.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/奇怪的旋转方块/旋转方块-3.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.492578125,
+      "pivotY": 0.5430555555555556,
+      "ppu": 159,
+      "sourceSha256": "a0fa46f6b87e192a7a762b52f99439adbc697c8f8a5d4717f07fabd8c9baf13a"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_ProjectileCube_04.png",
+      "source": "Doc/动画合集/积木人boss动画（1s8帧（完成/扔东西/奇怪的旋转方块/旋转方块-4.png",
+      "width": 1280,
+      "height": 720,
+      "pivotX": 0.492578125,
+      "pivotY": 0.5430555555555556,
+      "ppu": 159,
+      "sourceSha256": "b503727a7e5123af703e02e967df43d975d927ac161f96c44dd49aeb7fa9a485"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_01.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/细激光序列/细激光-1.png",
+      "width": 85,
+      "height": 115,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 115,
+      "sourceSha256": "8211fb829fac615e38218feac033fc5d9f3895459e5af5b0b1fb2a8a1af344fa"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_02.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/细激光序列/细激光-2.png",
+      "width": 58,
+      "height": 73,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 73,
+      "sourceSha256": "878dd389481778d85b6269f83cef7882acd87f9b7805aa1635f08eb74aae1da1"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_03.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/细激光序列/细激光-3.png",
+      "width": 689,
+      "height": 20,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 20,
+      "sourceSha256": "1785ebf5c505af670124aa84a7aad58886ba26959491b496929d9adf450a710d"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_04.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/细激光序列/细激光-4.png",
+      "width": 1416,
+      "height": 17,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 17,
+      "sourceSha256": "4b9adf82cbcdae09298e5aed1b9c04246e4f4cf541ec088e9ad1c6bca43b98e9"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_05.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/细激光序列/细激光-5.png",
+      "width": 1390,
+      "height": 25,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 25,
+      "sourceSha256": "c5313a597a6e6d3480aa24f4067a6374fe07d08a0dbf7828b0ef807fb4361de7"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_06.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/细激光序列/细激光-6.png",
+      "width": 1389,
+      "height": 24,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 24,
+      "sourceSha256": "946f172f3b80d07ab157ad5329678fe4fa094405369f2fa60ac1f216bb8e00a3"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_07.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/细激光序列/细激光-7.png",
+      "width": 1413,
+      "height": 23,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 23,
+      "sourceSha256": "0722ef9ce023de19ee43afd7929ddb5b0d61356c6222c2e1c004963889452ba6"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_01.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/中激光序列/中激光-1.png",
+      "width": 113,
+      "height": 164,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 164,
+      "sourceSha256": "cbd5d7230d0a9c32ffcf4ebd5eb1f6a7d59f3a053a0f7b6edd40742635e9f56e"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_02.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/中激光序列/中激光-2.png",
+      "width": 89,
+      "height": 106,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 106,
+      "sourceSha256": "51dd0e5ccccded86a6370a2ae911ac4cfbf65a7c01e245eb73c3000c54ce4c68"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_03.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/中激光序列/中激光-3.png",
+      "width": 752,
+      "height": 53,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 53,
+      "sourceSha256": "b8bfe22fdae0297a65ca89115080f83d73d3d7b0f06e97f3e284059f7934702a"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_04.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/中激光序列/中激光-4.png",
+      "width": 1450,
+      "height": 50,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 50,
+      "sourceSha256": "b9a52df84dee947c3e0d0aee8b599a4b88a6de3fd8c997a1f3e341b63bbbe399"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_05.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/中激光序列/中激光-5.png",
+      "width": 1450,
+      "height": 55,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 55,
+      "sourceSha256": "f80ce74529e87fb9cedb6ce429f8a0db6d5832b4af88dfbeca7a1fc571cb2fc3"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_06.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/中激光序列/中激光-6.png",
+      "width": 1450,
+      "height": 49,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 49,
+      "sourceSha256": "88fc4e13b54393277e774601439fe8eb710ee2029a2e7524c6ba33365a48691b"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_07.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/中激光序列/中激光-7.png",
+      "width": 1450,
+      "height": 51,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 51,
+      "sourceSha256": "8f6a4746ac52db8216d79add4b669e3eb2ce08573d0e3243a683bb22b7393f69"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_01.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/粗激光序/粗激光-1.png",
+      "width": 293,
+      "height": 277,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 277,
+      "sourceSha256": "0420d1e402882af179c2adc35e3b13b7a27a673373eaf53d120a4b97f30f5bcf"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_02.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/粗激光序/粗激光-2.png",
+      "width": 191,
+      "height": 212,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 212,
+      "sourceSha256": "0b3c8afe9dfb4183b99c5cf065210e238f4864f86e773ba5ecde0686b7f5d1f4"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_03.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/粗激光序/粗激光-3.png",
+      "width": 950,
+      "height": 75,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 75,
+      "sourceSha256": "28c53a588206dac537de4a3e60704cb77ebe5205bb69487e80f556652d02a2ee"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_04.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/粗激光序/粗激光-4.png",
+      "width": 1545,
+      "height": 89,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 89,
+      "sourceSha256": "d88fc2ee572b16c96157624f314dbd4b2a5b83e0b6cae83b3e10389f77e7b3ae"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_05.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/粗激光序/粗激光-5.png",
+      "width": 1545,
+      "height": 90,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 90,
+      "sourceSha256": "596dbdb96e54814ddef8295d7aee00cfac0f360f49d140b59a7ef7daef0facbd"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_06.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/粗激光序/粗激光-6.png",
+      "width": 1545,
+      "height": 77,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 77,
+      "sourceSha256": "7131b5911aab6600e0510ea477e70c92e2230f37d0787c20040d8a48b77cfa72"
+    },
+    {
+      "path": "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_07.png",
+      "source": "Doc/动画合集/发条闹钟boss（1s8帧（已完成/行走及激光（太复杂了自己拆吧，激光该循环的都试了，可以循环只是没拆/粗激光序/粗激光-7.png",
+      "width": 1545,
+      "height": 79,
+      "pivotX": 0,
+      "pivotY": 0.5,
+      "ppu": 79,
+      "sourceSha256": "a2ec73d7159bb8008accfaae69374bc9b2f7c1d0c7fde383b6e6c7dba25fb04c"
     }
   ],
   "sequences": [
@@ -4254,6 +5614,438 @@
       "facesRight": true,
       "frames": [
         "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_Hand_2.png"
+      ]
+    },
+    {
+      "actor": "RabbitBoss",
+      "action": "Pop",
+      "facesRight": false,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_01.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_02.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_03.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_04.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_05.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_06.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_07.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_08.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_09.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_10.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_11.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_12.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_13.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_14.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_15.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_16.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_17.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_18.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_19.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_20.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_21.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_22.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_23.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_24.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_25.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_26.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_27.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_28.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_29.png"
+      ]
+    },
+    {
+      "actor": "RabbitBoss",
+      "action": "Throw",
+      "facesRight": false,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_01.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_02.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_03.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_04.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_05.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_06.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_07.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_08.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_09.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_10.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_11.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_12.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_13.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_14.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_15.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_16.png"
+      ]
+    },
+    {
+      "actor": "RabbitBoss",
+      "action": "Hide",
+      "facesRight": false,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_01.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_02.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_03.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_04.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_05.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_06.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_07.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_08.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_09.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_10.png"
+      ]
+    },
+    {
+      "actor": "RabbitBoss",
+      "action": "Turn",
+      "facesRight": false,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_01.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_02.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_03.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_04.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_05.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_06.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_07.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_08.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_09.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_10.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_11.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_12.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_13.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_14.png"
+      ]
+    },
+    {
+      "actor": "RabbitBoss",
+      "action": "Flight",
+      "facesRight": false,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Flight_01.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Flight_02.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Flight_03.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Flight_04.png"
+      ]
+    },
+    {
+      "actor": "RabbitBoss",
+      "action": "Dead",
+      "facesRight": false,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Dead_01.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Dead_02.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Dead_03.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Dead_04.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Dead_05.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Dead_06.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Dead_07.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Dead_08.png"
+      ]
+    },
+    {
+      "actor": "RabbitBoss",
+      "action": "HatWobble",
+      "facesRight": false,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_HatWobble_01.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_HatWobble_02.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_HatWobble_03.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_HatWobble_04.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_HatWobble_05.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_HatWobble_06.png"
+      ]
+    },
+    {
+      "actor": "RabbitBoss",
+      "action": "Walk",
+      "facesRight": false,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Walk_01.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Walk_02.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Walk_03.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Walk_04.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Walk_05.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Walk_06.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Walk_07.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Walk_08.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Walk_09.png"
+      ]
+    },
+    {
+      "actor": "RabbitBoss",
+      "action": "Burrow",
+      "facesRight": false,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Burrow_01.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Burrow_02.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Burrow_03.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Burrow_04.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Burrow_05.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Burrow_06.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Burrow_07.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Burrow_08.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Burrow_09.png"
+      ]
+    },
+    {
+      "actor": "RabbitBoss",
+      "action": "ProjectileBall",
+      "facesRight": false,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_ProjectileBall_01.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_ProjectileBall_02.png"
+      ]
+    },
+    {
+      "actor": "RabbitBoss",
+      "action": "ProjectileChecker",
+      "facesRight": false,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_ProjectileChecker_01.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_ProjectileChecker_02.png"
+      ]
+    },
+    {
+      "actor": "RabbitBoss",
+      "action": "ProjectileDuck",
+      "facesRight": false,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_ProjectileDuck_01.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_ProjectileDuck_02.png"
+      ]
+    },
+    {
+      "actor": "RabbitBoss",
+      "action": "Idle",
+      "facesRight": false,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_29.png"
+      ]
+    },
+    {
+      "actor": "RabbitBoss",
+      "action": "Hurt",
+      "facesRight": false,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_29.png"
+      ]
+    },
+    {
+      "actor": "RabbitBoss",
+      "action": "Flip",
+      "facesRight": false,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_01.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_02.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_03.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_04.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_05.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_06.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_07.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_08.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_09.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_10.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_01.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_02.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_03.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_04.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_05.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_06.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_07.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_08.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_09.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_10.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_11.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_12.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_13.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Turn_14.png"
+      ]
+    },
+    {
+      "actor": "RabbitBoss",
+      "action": "FlipThrow",
+      "facesRight": false,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Flight_01.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Flight_02.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Flight_03.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Flight_04.png"
+      ]
+    },
+    {
+      "actor": "RabbitBoss",
+      "action": "HideThrow",
+      "facesRight": false,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_01.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_02.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_03.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_04.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_05.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_06.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_07.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_08.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_09.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_10.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_11.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_12.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_13.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_14.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_15.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_16.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_17.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_18.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_19.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_20.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_21.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_22.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_23.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_24.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_25.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_26.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_27.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_28.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_29.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_01.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_02.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_03.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_04.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_05.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_06.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_07.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_08.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_09.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_10.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_11.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_12.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_13.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_14.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_15.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Throw_16.png"
+      ]
+    },
+    {
+      "actor": "RabbitBoss",
+      "action": "Magic",
+      "facesRight": false,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_01.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_02.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_03.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_04.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_05.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_06.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_07.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_08.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_09.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Hide_10.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_HatWobble_01.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_HatWobble_02.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_HatWobble_03.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_HatWobble_04.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_HatWobble_05.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_HatWobble_06.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_01.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_02.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_03.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_04.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_05.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_06.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_07.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_08.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_09.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_10.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_11.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_12.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_13.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_14.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_15.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_16.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_17.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_18.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_19.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_20.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_21.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_22.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_23.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_24.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_25.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_26.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_27.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_28.png",
+        "Assets/_Project/Art/Enemies/RabbitBoss/RabbitBoss_Pop_29.png"
+      ]
+    },
+    {
+      "actor": "BrickBoss",
+      "action": "ProjectileCube",
+      "facesRight": true,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_ProjectileCube_01.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_ProjectileCube_02.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_ProjectileCube_03.png",
+        "Assets/_Project/Art/Enemies/BrickBoss/BrickBoss_ProjectileCube_04.png"
+      ]
+    },
+    {
+      "actor": "ClockBoss",
+      "action": "BeamThin",
+      "facesRight": true,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_01.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_02.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_03.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_04.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_05.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_06.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThin_07.png"
+      ]
+    },
+    {
+      "actor": "ClockBoss",
+      "action": "BeamMedium",
+      "facesRight": true,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_01.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_02.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_03.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_04.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_05.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_06.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamMedium_07.png"
+      ]
+    },
+    {
+      "actor": "ClockBoss",
+      "action": "BeamThick",
+      "facesRight": true,
+      "nativeFrameRate": true,
+      "frames": [
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_01.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_02.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_03.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_04.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_05.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_06.png",
+        "Assets/_Project/Art/Enemies/ClockBoss/ClockBoss_BeamThick_07.png"
       ]
     }
   ],

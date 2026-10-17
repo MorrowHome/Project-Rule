@@ -32,8 +32,22 @@ namespace RuleGame.Gameplay.Player
         /// <summary>全局重力（<c>Physics2D.gravity</c>，已被规则改过）。自己积分要的是原始向量。</summary>
         public readonly Vector2 Gravity;
 
+        /// <summary>
+        /// 本物理帧的风加速度（风场合力 ÷ 质量）。没风时为 <see cref="Vector2.zero"/>。
+        /// </summary>
+        /// <remarks>它是**加速度**不是力 —— 除法由 <see cref="WindSensor"/> 做好，
+        /// 解算器不必认识 <c>Rigidbody2D.mass</c>。与 <see cref="Gravity"/> 同为「环境给的运动学量」。</remarks>
+        public readonly Vector2 WindAccel;
+
         /// <summary>上一帧末的朝向。冲刺方向、蹬墙方向都要用它。</summary>
         public readonly float Facing;
+
+        /// <summary>
+        /// 本物理帧的空气阻力系数（风场给的速度衰减率，每秒）。没风时为 0。
+        /// </summary>
+        /// <remarks>风力的另一半：没有它，风场里的物体会在平衡点附近永远弹射（实测出场速度 18+）。
+        /// 与 <see cref="WindAccel"/> 同命运 —— 冲刺时两者都不生效。</remarks>
+        public readonly float WindDrag;
 
         /// <summary>摩擦规则缩放（1.0 = 正常）。</summary>
         public readonly float FrictionScale;
@@ -43,7 +57,8 @@ namespace RuleGame.Gameplay.Player
 
         public MotionFrame(MotionTuning tuning, PlayerInput.State input, ContactSensor.State contact,
                            JumpSolver.Decision jump, DashSolver.Decision dash, Vector2 gravity,
-                           float facing, float frictionScale, bool frictionInverted)
+                           Vector2 windAccel, float windDrag, float facing,
+                           float frictionScale, bool frictionInverted)
         {
             Tuning           = tuning;
             Input            = input;
@@ -51,6 +66,8 @@ namespace RuleGame.Gameplay.Player
             Jump             = jump;
             Dash             = dash;
             Gravity          = gravity;
+            WindAccel        = windAccel;
+            WindDrag         = windDrag;
             Facing           = facing;
             FrictionScale    = frictionScale;
             FrictionInverted = frictionInverted;

@@ -42,8 +42,9 @@ namespace RuleGame.Gameplay.Player
             _jumpAction   = actions.FindAction("Player/Jump",   false);
             _attackAction = actions.FindAction("Player/Attack", false);
 
-            // ⚠️ 冲刺复用输入资源里**没有任何代码使用**的 Player/Crouch（C 键 /
-            //    手柄 buttonEast）—— 这样不必动团队共享的 .inputactions。
+            // ⚠️ 冲刺主键位是**鼠标右键**（在 Tick 里直接读 Mouse.current，不走输入资源）。
+            //    这里保留 Player/Crouch（C 键 / 手柄 buttonEast）作为**手柄与键盘的后备** ——
+            //    它本来就没人用，保留它不必动团队共享的 .inputactions，手柄也还有得用。
             //    等输入方案定稿，把它重命名成 Dash 再改这一行即可（详见 Doc/玩家动作设计.md §3.6）。
             _dashAction   = actions.FindAction("Player/Crouch", false);
         }
@@ -76,7 +77,7 @@ namespace RuleGame.Gameplay.Player
         /// <summary>
         /// 视觉帧：读键。
         /// </summary>
-        /// <param name="suppressed">暂停 / 被 UI 接管 / 恢复帧 —— 三种情况都不读键，并清空粘滞标记。</param>
+        /// <param name="suppressed">暂停 / 已阵亡 / 被 UI 接管 / 恢复帧 —— 都不读键，并清空粘滞标记。</param>
         public void Tick(bool suppressed)
         {
             if (suppressed)
@@ -94,6 +95,8 @@ namespace RuleGame.Gameplay.Player
 
             if (_jumpAction != null && _jumpAction.WasPressedThisFrame())     _jumpPressed   = true;
             if (_jumpAction != null && _jumpAction.WasReleasedThisFrame())    _jumpReleased  = true;   // 可变跳跃高度：松键那一刻削速
+            // 冲刺：鼠标右键是主键位（直接读设备，不走输入资源），Player/Crouch 作手柄/键盘后备。
+            if (Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame) _dashPressed = true;
             if (_dashAction != null && _dashAction.WasPressedThisFrame())     _dashPressed   = true;
             if (_attackAction != null && _attackAction.WasPressedThisFrame()) _attackPressed = true;
 

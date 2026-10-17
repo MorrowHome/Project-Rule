@@ -107179,9 +107179,6 @@ MonoBehaviour:
     Knockback: 6
   _scanInterval: 0.05
   _repeatInterval: 0.5
-  _targetMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
   _combat: {fileID: 0}
 --- !u!114 &1532415344
 MonoBehaviour:

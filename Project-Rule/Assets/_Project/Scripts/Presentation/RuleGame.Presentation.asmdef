@@ -6,7 +6,10 @@
         "RuleGame.Infrastructure",
         "RuleGame.Gameplay",
         "RuleGame.Persistence",
-        "RuleGame.UI"
+        "RuleGame.UI",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Universal.2D.Runtime",
+        "Unity.RenderPipelines.Core.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

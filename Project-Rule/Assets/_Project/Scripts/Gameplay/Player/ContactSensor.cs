@@ -1,4 +1,5 @@
 using UnityEngine;
+using RuleGame.Gameplay.Common;
 
 namespace RuleGame.Gameplay.Player
 {
@@ -31,6 +32,8 @@ namespace RuleGame.Gameplay.Player
         private bool    _wasGrounded;
         private float   _groundFriction = 1f;
         private Vector2 _up = Vector2.up;
+        private Vector2 _carrierVelocity;
+        private Vector2 _launchVelocity;
 
         public ContactSensor(Rigidbody2D body, Collider2D bodyCollider)
         {
@@ -64,6 +67,12 @@ namespace RuleGame.Gameplay.Player
         /// <summary>脚下这块地的摩擦系数（来自它的 <c>PhysicsMaterial2D</c>）。</summary>
         public float GroundFriction => _groundFriction;
 
+        /// <summary>脚下这块地自己正在走的速度（会动的支撑面），静止地形为 <see cref="Vector2.zero"/>。</summary>
+        public Vector2 CarrierVelocity => _carrierVelocity;
+
+        /// <summary>脚下的面正在**把接触者推出去**时的速度（弹簧平台 / 弹跳板），平时为 <see cref="Vector2.zero"/>。</summary>
+        public Vector2 LaunchVelocity => _launchVelocity;
+
         /// <summary>当前「上」方向 = 重力反方向。</summary>
         public Vector2 Up => _up;
 
@@ -92,6 +101,8 @@ namespace RuleGame.Gameplay.Player
                 WallRight      = _wallRight,
                 Ceiling        = _ceiling,
                 GroundFriction = _groundFriction,
+                CarrierVelocity = _carrierVelocity,
+                LaunchVelocity  = _launchVelocity,
                 Up             = _up,
                 JustLanded     = _grounded && !_wasGrounded,
                 ClimbLeft      = _climbLeft,
@@ -166,10 +177,18 @@ namespace RuleGame.Gameplay.Player
         }
 
         /// <summary>沿当前「上」方向的反向做一次碰撞体扫描，看脚下有没有支撑面。</summary>
-        /// <remarks>顺带记住脚下这块地的摩擦系数（<see cref="_groundFriction"/>），供减速使用。</remarks>
+        /// <remarks>
+        /// <para>顺带记住脚下这块地的摩擦系数（<see cref="_groundFriction"/>），供减速使用；
+        /// 以及它是哪一种**特殊支撑面**：会动的（<see cref="IMovingSurface"/>，承载）
+        /// 和会弹的（<see cref="ISpringSurface"/>，发射）。</para>
+        /// <para>⚠️ 脚下是移动平台 / 弹簧时，这里**照常算接地** —— 承载与发射都不是让玩家脱离地面，
+        /// 而是地面本身带着他走 / 把他推走。判据与普通地面完全一致。</para>
+        /// </remarks>
         private bool ProbeGround(MotionTuning tuning)
         {
-            _groundFriction = 1f;      // 没探到面、或那块地没挂材质 → 按普通地面算
+            _groundFriction  = 1f;                  // 没探到面、或那块地没挂材质 → 按普通地面算
+            _carrierVelocity = Vector2.zero;        // 没探到会动的面 → 没人带
+            _launchVelocity  = Vector2.zero;        // 没探到会弹的面 → 没人弹
 
             var filter = new ContactFilter2D { useTriggers = false };
             filter.SetLayerMask(tuning.SolidLayer);
@@ -187,6 +206,16 @@ namespace RuleGame.Gameplay.Player
 
                 float surface = ReadTileFriction(_groundHits[i]);
                 if (!float.IsNaN(surface)) _groundFriction = surface;
+
+                // 会动的支撑面（滑板车 / 升降台）把速度带上，由 MotionMover 并进位移。
+                // 走接口而不是具体类型：玩家不需要认识任何场景组件。
+                var carrier = _groundHits[i].collider.GetComponentInParent<IMovingSurface>();
+                if (carrier != null) _carrierVelocity = carrier.Velocity;
+
+                // 会弹的面（弹簧平台）报的是**要推我出去的速度**，由 VelocitySolver 落到竖直轴上。
+                // 两个接口各管一半：那个管位置跟随，这个管速度。
+                var spring = _groundHits[i].collider.GetComponentInParent<ISpringSurface>();
+                if (spring != null) _launchVelocity = spring.LaunchVelocity;
 
                 return true;
             }
@@ -257,6 +286,21 @@ namespace RuleGame.Gameplay.Player
 
             /// <summary>脚下这块地的摩擦系数（来自它的 <c>PhysicsMaterial2D</c>）。</summary>
             public float GroundFriction;
+
+            /// <summary>
+            /// 脚下这块地自己正在走的速度（会动的支撑面 / 移动平台）。静止地形为 <see cref="Vector2.zero"/>。
+            /// </summary>
+            /// <remarks><see cref="MotionMover"/> 会把它加进交给 <c>Slide</c> 的速度里 ——
+            /// 玩家于是与平台**同步位移**。它**不是玩家的速度**，不该写回自己的速度状态。</remarks>
+            public Vector2 CarrierVelocity;
+
+            /// <summary>
+            /// 脚下的面正在**把接触者推出去**时的速度（弹簧平台 / 弹跳板），平时为 <see cref="Vector2.zero"/>。
+            /// </summary>
+            /// <remarks>与 <see cref="CarrierVelocity"/> 正好相反：那个是「跟着走」，**不是**自己的速度；
+            /// 这个是「被推走」，由 <c>VelocitySolver</c> 当作一步变化量**写进自己的速度** ——
+            /// 所以人离开面之后仍然带着它飞。</remarks>
+            public Vector2 LaunchVelocity;
 
             /// <summary>当前「上」方向 = 重力反方向。</summary>
             public Vector2 Up;

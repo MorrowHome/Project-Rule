@@ -1,0 +1,17 @@
+.city-screen {
+    position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+    color: #f0eee5; font-size: 32px;
+    -unity-font-definition: url("project://database/Assets/_Project/UI/Fonts/P4ChineseFont.asset");
+}
+.city-vitals { position: absolute; left: 24px; top: 20px; padding: 12px 18px; background-color: rgba(16, 20, 24, 0.92); }
+.city-life { font-size: 40px; -unity-font-style: bold; }
+.city-rules { margin-top: 8px; max-width: 380px; white-space: normal; font-size: 26px; color: #d0d2c5; }
+.city-guide { position: absolute; right: 24px; top: 20px; width: 520px; padding: 14px 18px; background-color: rgba(16, 20, 24, 0.92); }
+.city-area { font-size: 36px; -unity-font-style: bold; margin-bottom: 10px; }
+.city-instruction { white-space: normal; font-size: 30px; }
+.city-rewards { margin-top: 12px; color: #c5c4b6; font-size: 24px; white-space: normal; }
+.city-bottom { position: absolute; left: 24px; right: 24px; bottom: 20px; padding: 12px 18px; background-color: rgba(16, 20, 24, 0.92); }
+.city-bottom Label { white-space: normal; font-size: 26px; }
+.city-bottom .city-prompt { font-size: 36px; -unity-font-style: bold; margin-bottom: 8px; }
+.city-bottom .city-shortcuts { font-size: 24px; margin-top: 8px; color: #c5c4b6; }
+.city-hidden { display: none; }

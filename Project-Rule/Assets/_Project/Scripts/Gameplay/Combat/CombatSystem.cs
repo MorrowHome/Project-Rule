@@ -14,6 +14,8 @@ namespace RuleGame.Gameplay.Combat
     /// <remarks>
     /// <para><b>职责已经收窄</b>：伤害算多少归 <see cref="DamageProcessor"/>（唯一伤害出口），
     /// 这里只做「这一击打到了谁」的物理判定，以及把模块的结果广播出去。</para>
+    /// <para><b>谁算被打到，只认受击箱</b>：查询一律打 <see cref="Hurtbox"/> 层（物理碰撞体不参与），
+    /// 准入规则（自己不打自己 / 不打同阵营）集中在 <see cref="CanHit"/>。</para>
     /// <para><b>只读规则，不写规则</b>（架构约束）。</para>
     /// </remarks>
     public class CombatSystem : MonoBehaviour, ICombatSystem
@@ -58,38 +60,42 @@ namespace RuleGame.Gameplay.Combat
         /// 在指定矩形范围内做一次攻击判定，把命中的目标交给伤害处理模块。
         /// </summary>
         /// <remarks>
-        /// 命中判定归这里（发起方一侧），**伤害算多少归模块** ——
-        /// 发起方拿不到「其余可命中实体」，因果扩散的候选集由模块自己查注册表。
+        /// <para><b>判定范围只认受击箱</b>（<see cref="Hurtbox"/> 层）—— 物理碰撞体不参与命中判定，
+        /// 「能不能被打到」由场景里的受击箱决定，而不是身体碰撞体顺带决定。掩码固定取
+        /// <see cref="Hurtbox.Mask"/>，调用方**不再自带 mask**（那是「谁强谁弱」散落在各处配错的根源）。</para>
+        /// <para>命中判定归这里（发起方一侧），**伤害算多少归模块** ——
+        /// 发起方拿不到「其余可命中实体」，因果扩散的候选集由模块自己查注册表。</para>
         /// </remarks>
         /// <returns>模块实际作用到的目标数；<b>0 表示这一击无效或打空</b>。</returns>
-        public int PerformAttack(object attacker, Vector2 center, Vector2 size, LayerMask mask,
+        public int PerformAttack(object attacker, Vector2 center, Vector2 size,
                                  float baseDamage, float knockback)
-            => PerformAttack(attacker, center, size, mask, baseDamage, knockback, null);
+            => PerformAttack(attacker, center, size, baseDamage, knockback, null);
 
         /// <summary>
         /// 连续攻击窗口：发起方在每次挥刀前清空集合，窗口内按实体去重。
         /// 原有单次判定接口保持不变；伤害、因果传播和挂账仍由 DamageProcessor 处理。
         /// </summary>
-        public int PerformAttack(object attacker, Vector2 center, Vector2 size, LayerMask mask,
+        public int PerformAttack(object attacker, Vector2 center, Vector2 size,
                                  float baseDamage, float knockback, ISet<IDamageable> swingTargets)
         {
             DamageProcessor processor = Processor;
             if (processor == null) return 0;
 
-            var filter = new ContactFilter2D { useTriggers = false };
-            filter.SetLayerMask(mask);
+            // 受击箱是 Trigger，所以 useTriggers 必须开。
+            var filter = new ContactFilter2D { useTriggers = true };
+            filter.SetLayerMask(Hurtbox.Mask);
 
             int count = Physics2D.OverlapBox(center, size, 0f, filter, _hits);
 
             _hitTargets.Clear();
             for (int i = 0; i < count; i++)
             {
-                // 一个目标可能有多个碰撞体：用 GetComponentInParent 找，并按目标去重
-                var damageable = _hits[i].GetComponentInParent<IDamageable>();
-                if (damageable == null || _hitTargets.Contains(damageable)
-                    || (swingTargets != null && swingTargets.Contains(damageable))) continue;
-                _hitTargets.Add(damageable);
-                swingTargets?.Add(damageable);
+                if (!TryResolveTarget(_hits[i], attacker, out IDamageable target)) continue;
+                if (_hitTargets.Contains(target)) continue;                            // 同一实体多个箱子只算一次
+                if (swingTargets != null && swingTargets.Contains(target)) continue;    // 同一次挥砍窗口内去重
+
+                _hitTargets.Add(target);
+                swingTargets?.Add(target);
             }
 
             if (_hitTargets.Count == 0) return 0;           // 打空：连模块都不进
@@ -104,6 +110,81 @@ namespace RuleGame.Gameplay.Combat
             };
 
             return processor.Process(attack);
+        }
+
+        // ==================================================================
+        //  命中准入
+        // ==================================================================
+
+        /// <summary>
+        /// 碰撞体 → 可命中目标。**命中准入的唯一实现** —— 挥砍 / 接触伤害 / 投射物 / 光束都走它，
+        /// 不要在各自那边另写一套过滤。
+        /// </summary>
+        /// <remarks>
+        /// <para>不是受击箱的碰撞体（层上有裸碰撞体 = 配置错误）在这里被丢弃。</para>
+        /// <para>⚠️ 危险瓦片（刺格）**故意不走这里**：它对谁都扎，只解析受击箱、不做阵营过滤。</para>
+        /// </remarks>
+        public static bool TryResolveTarget(Collider2D collider, object attacker, out IDamageable target)
+        {
+            target = Hurtbox.ResolveOwner(collider);
+            return target != null && CanHit(attacker, target);
+        }
+
+        /// <summary>
+        /// 这一击允不允许落到这个承受方身上。
+        /// </summary>
+        /// <remarks>
+        /// <para>受击箱是**所有实体共用**的一层，所以「打谁不打谁」必须有一条显式规则 ——
+        /// 以前是靠「每个调用点各自配一个只含敌方层的 mask」隐式成立的，换成共用层之后就没了：</para>
+        /// <list type="number">
+        /// <item>自己不打自己 —— 玩家长 1.2 的攻击盒会盖到自己的受击箱，不挡就是自伤；</item>
+        /// <item>双方都有阵营时只打**敌对**阵营 —— 敌人的判定同样会盖到同伴的受击箱；</item>
+        /// <item>有一方没有阵营（机关 / 场景道具 / 可破坏物）就放行，免得中立物体莫名免疫。</item>
+        /// </list>
+        /// <para>因果反转（伤害落到发起方自己头上）走的是 <c>DamageProcessor</c> 内部的目标替换，
+        /// 不经过这里，所以不会被第 1 条挡住。</para>
+        /// </remarks>
+        public static bool CanHit(object attacker, IDamageable owner)
+        {
+            if (owner == null) return false;
+
+            if (ReferenceEquals(owner, attacker)) return false;
+            if (attacker is IDamageable self && ReferenceEquals(owner, self)) return false;
+
+            Faction? attackerFaction = FactionOf(attacker);
+            Faction? ownerFaction    = FactionOf(owner);
+            if (attackerFaction.HasValue && ownerFaction.HasValue)
+                return attackerFaction.Value != ownerFaction.Value;
+
+            return true;
+        }
+
+        /// <summary>
+        /// 从任意形式的实体引用上找阵营；**没有阵营返回 null**（与 <c>DamageProcessor</c> 里
+        /// 「找不到按 Enemy」的写法不同 —— 那是数值计算要个默认值，这里要区分「中立」）。
+        /// </summary>
+        private static Faction? FactionOf(object entity)
+        {
+            switch (entity)
+            {
+                case IFactionMember member:
+                    return member.Faction;
+
+                case Component component:
+                {
+                    var found = component.GetComponentInParent<IFactionMember>();
+                    return found != null ? found.Faction : (Faction?)null;
+                }
+
+                case GameObject go:
+                {
+                    var found = go.GetComponentInParent<IFactionMember>();
+                    return found != null ? found.Faction : (Faction?)null;
+                }
+
+                default:
+                    return null;
+            }
         }
 
         /// <summary>

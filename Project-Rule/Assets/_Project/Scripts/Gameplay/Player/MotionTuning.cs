@@ -129,6 +129,7 @@ namespace RuleGame.Gameplay.Player
 
         /// <summary>阻挡移动、并用于接地判定的层。地形与墙体都放这里。</summary>
         public LayerMask SolidLayer;
+        public LayerMask BodyBlockLayer;
 
         /// <summary>接地探测距离（米）。</summary>
         public float GroundProbeDistance;
@@ -138,6 +139,34 @@ namespace RuleGame.Gameplay.Player
 
         /// <summary>可沿其滑行的最大坡面角度。竖直墙是 90°，所以必须小于 90 才会被挡住。</summary>
         public float SurfaceSlideAngle;
+
+        // ------------------------------------------------------------------
+        //  风场
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// 风场所在的层（<c>WindZone</c> 挂在上面）。值为 0 = 这个实体不响应风。
+        /// </summary>
+        /// <remarks>与 <see cref="SolidLayer"/> 一样是**实体自己的能力开关** ——
+        /// 不配层的实体吹不动，配了就吹得动。</remarks>
+        public LayerMask WindLayer;
+
+        // ------------------------------------------------------------------
+        //  推动（重物）
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// 推物体时施加的**力**（牛顿）。0 = 这个实体不会推。
+        /// </summary>
+        /// <remarks>
+        /// ⚠️ 报的是力不是速度：物体那边除以自己的质量才是加速度（判据 ≈ <c>F &gt; μ·m·g</c>）。
+        /// 所以「推不推得动」由**箱子的质量**决定，质量规则改的正是那个质量 ——
+        /// 本参数不需要跟着规则变。
+        /// </remarks>
+        public float PushStrength;
+
+        /// <summary>推动探测距离（米）。按住方向顶上去，这个距离内有可推物体就施力。</summary>
+        public float PushProbeDistance;
 
         // ------------------------------------------------------------------
         //  击退
