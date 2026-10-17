@@ -205,8 +205,9 @@ namespace RuleGame.Gameplay.Enemy
                 float appliedDamage = Mathf.Max(0f, Status.Health - next);
                 Status.ApplyHealthDelta(next - Status.Health);
                 _invulnerability = 0.12f;
-                EmitFeedback(EnemyFeedbackKind.Hit, transform.position, -TowardAttacker(damage.Attacker));
                 Brain.OnHit(appliedDamage);
+                if (appliedDamage > 0f)
+                    EmitHitFeedback(appliedDamage, damage.Attacker, !wasHurt && Brain.StateName == "Hurt", next <= 0f);
             }
             // 小怪仅在本次破韧时完整击退，避免轻击绕过硬直保护持续推退或叠加冲量。
             // 质量削弱与挂账的纯击退仍遵守规则，Boss 原有质量约束不变。
@@ -219,6 +220,26 @@ namespace RuleGame.Gameplay.Enemy
             Component component = attacker as Component;
             if (component == null) return Vector2.left * Facing;
             return ((Vector2)(component.transform.position - transform.position)).normalized;
+        }
+
+        /// <summary>仅通知已经发生的扣血；弱点也复用此入口，不改变身体的血量或硬直。</summary>
+        public void EmitHitFeedback(float amount, object attacker, bool staggered = false, bool lethal = false,
+            Component subject = null)
+        {
+            Vector2 direction = -TowardAttacker(attacker);
+            if (direction.sqrMagnitude < .001f) direction = Vector2.right * -Facing;
+            Vector3 position = subject != null ? subject.transform.position : transform.position;
+            if (subject == null && _bodyCollider != null)
+            {
+                // DamageInfo 没有接触点。取身体迎击面的边界，避免所有火花都在腹部爆开。
+                Vector2 center = _bodyCollider.bounds.center;
+                Vector2 extent = _bodyCollider.bounds.extents;
+                float distance = 1f / Mathf.Max(Mathf.Abs(direction.x) / Mathf.Max(.01f, extent.x),
+                    Mathf.Abs(direction.y) / Mathf.Max(.01f, extent.y));
+                position = center - direction * distance * .85f;
+            }
+            Feedback?.Invoke(new EnemyFeedback(EnemyFeedbackKind.Hit, position, direction, subject,
+                amount, staggered, lethal));
         }
         public void Attack(float reach, bool newPulse = false)
         {

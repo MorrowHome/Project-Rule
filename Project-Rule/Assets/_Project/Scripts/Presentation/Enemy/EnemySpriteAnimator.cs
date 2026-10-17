@@ -29,6 +29,7 @@ namespace RuleGame.Presentation.Enemy
             _visibleAlpha = _renderer.color.a;
             _anchor = transform.localPosition;
             if (Actor == null) Actor = GetComponentInParent<EnemyActor>();
+            EnemyHitFeedback.Attach(Actor, _renderer);
             if (AnimationSet != null)
                 foreach (EnemySpriteSequence sequence in AnimationSet.Sequences) _sequences[sequence.Action] = sequence;
         }
