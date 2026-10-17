@@ -157,7 +157,7 @@ namespace RuleGame.Gameplay.Enemy
                 if (player != null) { Target = player.transform; _automaticTarget = true; }
             }
             if (Combat != null) return;
-            foreach (var combat in FindObjectsByType<CombatSystem>(FindObjectsSortMode.None))
+            foreach (var combat in FindObjectsByType<CombatSystem>())
             {
                 if (combat.gameObject.scene != gameObject.scene) continue;
                 Combat = combat;

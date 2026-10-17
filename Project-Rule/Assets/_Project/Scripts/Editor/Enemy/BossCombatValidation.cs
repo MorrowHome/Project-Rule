@@ -723,14 +723,14 @@ namespace RuleGame.Editor.Enemy
         }
         private static EnemyBeam ClockBeamFor(EnemyActor actor, int hand)
         {
-            foreach (EnemyBeam beam in UnityEngine.Object.FindObjectsByType<EnemyBeam>(FindObjectsSortMode.None))
+            foreach (EnemyBeam beam in UnityEngine.Object.FindObjectsByType<EnemyBeam>())
                 if (beam.Source == actor && beam.ClockHand == hand && beam.gameObject.activeSelf) return beam;
             return null;
         }
         private static int ClockBeamCount(EnemyActor actor)
         {
             int count = 0;
-            foreach (EnemyBeam beam in UnityEngine.Object.FindObjectsByType<EnemyBeam>(FindObjectsSortMode.None))
+            foreach (EnemyBeam beam in UnityEngine.Object.FindObjectsByType<EnemyBeam>())
                 if (beam.Source == actor && beam.FollowsClockHand && beam.gameObject.activeSelf) count++;
             return count;
         }
@@ -740,7 +740,7 @@ namespace RuleGame.Editor.Enemy
             for (int frame = 0; frame < frames; frame++)
             {
                 actor.ClockBeams.Tick(Time.fixedDeltaTime);
-                foreach (EnemyBeam beam in UnityEngine.Object.FindObjectsByType<EnemyBeam>(FindObjectsSortMode.None))
+                foreach (EnemyBeam beam in UnityEngine.Object.FindObjectsByType<EnemyBeam>())
                     if (beam.Source == actor) beam.SendMessage("FixedUpdate");
             }
         }

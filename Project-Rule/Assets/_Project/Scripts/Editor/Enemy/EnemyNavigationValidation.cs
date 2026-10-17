@@ -201,7 +201,7 @@ namespace RuleGame.Editor.Enemy
                 }
                 Check(health.Health == hp - _actor.Definition.Damage, "弹体忽略自己的受击箱并命中敌对受击箱");
                 hp = health.Health; _actor.Beam(0f, .3f, 0f);
-                foreach (var beam in UnityEngine.Object.FindObjectsByType<EnemyBeam>(FindObjectsSortMode.None))
+                foreach (var beam in UnityEngine.Object.FindObjectsByType<EnemyBeam>())
                 {
                     beam.SendMessage("FixedUpdate"); beam.gameObject.SetActive(false);
                 }

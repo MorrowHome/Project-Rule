@@ -126,7 +126,7 @@ namespace RuleGame.Editor.Level
                 report.Append("  · 已建 Grid(0.5) / Logic / Art\n");
             }
 
-            var cameras = Object.FindObjectsByType<Camera>(FindObjectsSortMode.None);
+            var cameras = Object.FindObjectsByType<Camera>();
             report.Append("  · 场景里的相机 ").Append(cameras.Length).Append(" 台");
             if (cameras.Length == 1) report.Append("（LevelRuntime 里那台）");
             report.Append("\n");

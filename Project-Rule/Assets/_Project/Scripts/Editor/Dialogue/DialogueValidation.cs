@@ -108,13 +108,13 @@ namespace RuleGame.Editor.Dialogue
         private static void Begin()
         {
             Application.runInBackground = true;
-            _host = UnityEngine.Object.FindFirstObjectByType<DialogueHost>();
+            _host = UnityEngine.Object.FindAnyObjectByType<DialogueHost>();
             _view = _host.GetComponent<DialogueToolkitPresenter>();
             _rules = RuleSystem.Instance;
             _host.PlayingChanged += playing => { if (playing) _started++; else _finished++; };
             _surface = new RenderTexture(1280, 720, 24);
             _surface.Create();
-            UnityEngine.Object.FindFirstObjectByType<Camera>().targetTexture = _surface;
+            UnityEngine.Object.FindAnyObjectByType<Camera>().targetTexture = _surface;
             _host.GetComponent<UIDocument>().panelSettings.targetTexture = _surface;
             _cases = new Queue<Case>();
             _cases.Enqueue(new Case("observer", "fallback", missingWorld: true));
@@ -249,7 +249,7 @@ namespace RuleGame.Editor.Dialogue
                         Require(_started == _finished, "重新启用没有重复订阅");
                         Vector2 initialGravity = new Vector2(0f, -9.81f);
                         _rules.Request(AttributeId.Gravity, RelationId.Revert, RuleSource.LevelScript);
-                        UnityEngine.Object.DestroyImmediate(UnityEngine.Object.FindFirstObjectByType<RuleGame.Development.Dialogue.DialogueLabControls>().gameObject);
+                        UnityEngine.Object.DestroyImmediate(UnityEngine.Object.FindAnyObjectByType<RuleGame.Development.Dialogue.DialogueLabControls>().gameObject);
                         Require(Physics2D.gravity == initialGravity, "试播工具销毁恢复全局重力");
                         Finish(!_runtimeError, "20 个实际 Yarn 选句案例及作者校验、UI 推进/关闭/禁用、NPC 距离/冷却通过。");
                         break;

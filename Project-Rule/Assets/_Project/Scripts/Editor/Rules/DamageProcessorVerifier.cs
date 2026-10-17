@@ -210,7 +210,7 @@ namespace RuleGame.Editor.Rules
             // ==============================================================
             //  清理
             // ==============================================================
-            foreach (GameObject go in Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None))
+            foreach (GameObject go in Object.FindObjectsByType<GameObject>())
                 if (go.name == "P" || go.name.StartsWith("E")) Object.DestroyImmediate(go);
 
             RuleSystem.Reset();
