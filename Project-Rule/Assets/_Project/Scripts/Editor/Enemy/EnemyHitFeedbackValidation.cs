@@ -236,16 +236,15 @@ namespace RuleGame.Editor.Enemy
             _actor.gameObject.SetActive(false);
             var cameraObject = new GameObject("HitFeedbackCamera");
             var camera = cameraObject.AddComponent<Camera>();
-            camera.orthographic = true; camera.orthographicSize = 3.3f;
-            camera.transform.position = new Vector3(0, 2.1f, -10);
+            camera.orthographic = true;
             camera.backgroundColor = new Color(.035f, .05f, .08f);
             camera.clearFlags = CameraClearFlags.SolidColor;
             EnemyActor[] actors =
             {
-                MakeActor(EnemyKind.BrickBoss, new Vector3(-4.4f, 2)),
-                MakeActor(EnemyKind.PlushSeal, new Vector3(-1.5f, 2)),
-                MakeActor(EnemyKind.BatBoss, new Vector3(1.6f, 2)),
-                MakeActor(EnemyKind.RabbitBoss, new Vector3(4.6f, 2))
+                MakeActor(EnemyKind.BrickBoss, new Vector3(-5.3f, 2)),
+                MakeActor(EnemyKind.PlushSeal, new Vector3(-2.4f, 2)),
+                MakeActor(EnemyKind.BatBoss, new Vector3(1.3f, 2)),
+                MakeActor(EnemyKind.RabbitBoss, new Vector3(5.8f, 2))
             };
             foreach (EnemyActor actor in actors)
             {
@@ -255,6 +254,13 @@ namespace RuleGame.Editor.Enemy
                 var field = actor.GetComponent<FieldMinionView>();
                 if (field != null) field.SendMessage("LateUpdate");
             }
+            // 预览镜头按真实精灵外形取景，避免宽幅角色/翅膀被固定缩放裁掉。
+            var framing = new Bounds(actors[0].transform.position, Vector3.zero);
+            foreach (EnemyActor actor in actors)
+                foreach (SpriteRenderer renderer in actor.GetComponentsInChildren<SpriteRenderer>())
+                    if (renderer.enabled) framing.Encapsulate(renderer.bounds);
+            camera.transform.position = new Vector3(framing.center.x, framing.center.y, -10);
+            camera.orthographicSize = Mathf.Max(framing.extents.y + .5f, (framing.extents.x + .5f) / (1440f / 800f));
             var target = new RenderTexture(1440, 800, 24);
             var image = new Texture2D(1440, 800, TextureFormat.RGB24, false);
             RenderTexture previous = RenderTexture.active;
@@ -264,23 +270,39 @@ namespace RuleGame.Editor.Enemy
             File.WriteAllBytes(Path.Combine(Folder, "Before.png"), image.EncodeToPNG());
             for (int i = 0; i < actors.Length; i++)
                 actors[i].EmitHitFeedback(10, _attacker, i == 2, i == 3);
-            float[] times = { 0f, .18f, .4f, .7f, 1f };
-            foreach (float t in times)
+            float[] times = { 0f, .03f, .06f, .08f, .10f, .12f, .15f, .18f, .21f,
+                .22f, .24f, .27f, .30f, .33f, .36f, .39f, .42f };
+            int initialWhitePixels = 0;
+            foreach (float seconds in times)
             {
-                foreach (EnemyActor actor in actors)
+                for (int actorIndex = 0; actorIndex < actors.Length; actorIndex++)
+                {
+                    EnemyActor actor = actors[actorIndex];
+                    var feedback = actor.GetComponent<EnemyHitFeedback>();
                     foreach (SpriteRenderer renderer in actor.GetComponentsInChildren<SpriteRenderer>())
                         if (renderer.name == "HitFlash" || renderer.name == "HitImpact")
                         {
+                            float duration = renderer.name == "HitFlash"
+                                ? feedback.FlashDuration * (actorIndex >= 2 ? 1.3f : 1f)
+                                : feedback.ImpactDuration * (actorIndex == 3 ? 1.25f : 1f);
                             var properties = new MaterialPropertyBlock(); renderer.GetPropertyBlock(properties);
-                            properties.SetFloat("_Progress", t); renderer.SetPropertyBlock(properties);
+                            properties.SetFloat("_Progress", seconds / duration); renderer.SetPropertyBlock(properties);
                         }
+                }
                 camera.Render(); image.ReadPixels(new Rect(0, 0, 1440, 800), 0, 0); image.Apply();
-                File.WriteAllBytes(Path.Combine(Folder, "Hit_" + Mathf.RoundToInt(t * 100).ToString("D3") + ".png"), image.EncodeToPNG());
+                File.WriteAllBytes(Path.Combine(Folder, "Hit_" + Mathf.RoundToInt(seconds * 1000).ToString("D3") + "ms.png"), image.EncodeToPNG());
                 Color[] pixels = image.GetPixels();
                 int changed = pixels.Where((c, i) => Mathf.Abs(c.r - baseline[i].r) + Mathf.Abs(c.g - baseline[i].g)
                     + Mathf.Abs(c.b - baseline[i].b) > .04f).Count();
-                if (t == 0) Check(changed > 500, "真实 URP 像素确认闪白和冲击可见");
-                if (t == 1) Check(changed == 0, "效果结束像素完全回到原画，无矩形或材质残留");
+                int whitePixels = pixels.Count(c => c.r > .85f && c.g > .85f && c.b > .85f);
+                if (seconds == 0)
+                {
+                    Check(changed > 500, "真实 URP 像素确认闪白和冲击可见");
+                    initialWhitePixels = whitePixels;
+                }
+                if (Mathf.Approximately(seconds, .15f))
+                    Check(whitePixels > initialWhitePixels * .8f, "受伤 0.15 秒后仍明确保持白色，不提前淡成轮廓");
+                if (seconds > .4f) Check(changed == 0, "效果结束像素完全回到原画，无矩形或材质残留");
             }
             Check(!ShaderUtil.ShaderHasError(Resources.Load<Material>("EnemyHitFeedback/Flash").shader), "实际渲染后 shader 无编译错误");
             camera.targetTexture = null; RenderTexture.active = previous; target.Release();

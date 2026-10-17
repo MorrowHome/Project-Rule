@@ -2,6 +2,8 @@
 
 <!-- unity-onboarding:generated:start -->
 
+2026-10-17 受伤反馈调优与 PR 预览：普通闪白总时长改为 0.30 秒，保持白色约 0.165 秒后淡出；破韧/致命延长倍率保留。完整副本定向验证 65 项通过，含实际 0.15 秒仍保持白色的 URP 像素断言。`Doc/特效预览/EnemyHitFeedback.gif` 与 `EnemyHitFeedback_Comparison.png` 为固定姿态的真实渲染媒体；`Tools/EnemyAssets/create_hit_preview.py` 从验证截图重新导出，未修改游戏摄像机。用户确认仅核对 p2-p3-merge 基线即可，已 fetch 并确认最新 `2fe1dc1` 是当前功能分支的祖先；不继续扩大摄像机修改范围。
+
 2026-10-17 敌人受伤视觉接入（基线 `a79c487`，分支 `feat/enemy-hit-feedback`）：现有 EnemySpriteAnimator / FieldMinionView 自动登记 EnemyHitFeedback，15 种真实 Prefab 均已验证；原材质和动画不替换，独立覆盖层提供暖白剪影/轮廓余光，四个有界槽提供定向火花和半环，区分普通/破韧/致命及青色弱点。反馈只在实际扣血后发出，携带实际伤害与结果；暂停冻结，回溯/停用清除。Resources/EnemyHitFeedback 两份材质保留 Player shader 引用，无场景/Prefab 重写。先修复基线已有的 PlayerMask 删除残留引用及 AttackArea 旧签名，恢复完整工程编译；旧小怪回归夹具改按 Time.fixedDeltaTime 推进，避免 50 Hz 假设与工程 60 Hz 不一致。原工程 Unity 6000.6.4f1 编译通过；完整副本 `/tmp/rule-enemy-hit-20261017` 的受伤反馈 Play Mode/URP 像素验证 64 项、破韧回归 53 项均通过。日志 `/tmp/rule-enemy-hit-{baseline,final-compile,validation,minion-regression}.log`，截图/结果在副本 `Logs/EnemyHitFeedback/`；仅见既有 Unity Search 索引异常，无新增运行时/Shader 错误。未跑 Player 构建或整关操作验收；保留字体与项目设置的同期用户修改。接入和调参见 `Doc/敌人系统接入.md` 的统一受伤视觉反馈小节。
 
 2026-10-17 小怪受击补查：旧 MinionBrain 的召唤物改为累计破韧；新增中文参数 MinionHurtDuration（默认 0.25 秒上限），所有小怪恢复后再计算完整 HurtCooldown。普通伤害仅在本次进入 Hurt 时给小怪完整击退，防止轻击绕过保护持续推退；质量降低和挂账零伤害纯击退保留，Boss 约束不变。FieldMinionBrain 去掉重复受击 Cue/冷却覆盖。弹簧怪先完成已起跳的运动，再在落地后判断丢失目标。Unity 6000.6.4f1 隔离 Play Mode 的 MinionResilienceValidation.RunBatch：旧逻辑 7 组失败，修改后 53 项通过、0 失败；含实际物理、暂停、快照与中文 Inspector 编译。夹具提高实例血量以观测完整保护期，未改资产数值。隔离工程位于 %TEMP%/rule-minion-resilience-20261017，日志 %TEMP%/rule-minion-resilience-{before,after}.log；未跑正式地图难度、全 Boss 或 Player 构建。保留同期字体和 ProjectSettings 的用户修改。

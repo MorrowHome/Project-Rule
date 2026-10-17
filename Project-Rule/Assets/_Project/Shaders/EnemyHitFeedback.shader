@@ -69,7 +69,8 @@ Shader "RuleGame/Enemy/HitFeedback"
                         min(SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv + float2(0, d.y)).a,
                             SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv - float2(0, d.y)).a));
                     float edge = saturate((alpha - adjacent) * 3);
-                    float white = 1 - smoothstep(.15, .6, t);
+                    // 先明确保持白色，再淡出；旧曲线的纯白阶段只有约一帧，实战难以辨认。
+                    float white = 1 - smoothstep(.55, .9, t);
                     float opacity = max(white * .94, edge * (1 - t) * .85);
                     return half4(lerp(_Accent.rgb, half3(1, .98, .88), white), alpha * opacity * input.color.a);
                 }

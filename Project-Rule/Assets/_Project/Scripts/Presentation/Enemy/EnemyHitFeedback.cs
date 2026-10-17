@@ -15,7 +15,7 @@ namespace RuleGame.Presentation.Enemy
     public sealed class EnemyHitFeedback : MonoBehaviour
     {
         [Header("敌人受伤反馈")]
-        [Range(.06f, .3f)] public float FlashDuration = .14f;
+        [Range(.1f, .6f)] public float FlashDuration = .30f;
         [Range(.15f, .6f)] public float ImpactDuration = .32f;
         [Range(.3f, 2f)] public float ImpactScale = 1f;
         public Color HitColor = new Color(1f, .58f, .18f);
