@@ -1,4 +1,5 @@
 using UnityEngine;
+using RuleGame.Gameplay.Combat;
 using RuleGame.Infrastructure;
 using RuleGame.Infrastructure.Snapshot;
 
@@ -12,6 +13,7 @@ namespace RuleGame.Gameplay.Enemy
         public bool Opened { get; private set; }
         public float Health { get; private set; }
         private float _maximum;
+        private Hurtbox _hurtbox;
         public Faction Faction => Faction.Enemy;
         public bool DiscardWhenMissing => false;
         public void Open(float health) { _maximum = Health = health; Broken = false; Opened = true; SetVisible(true); }
@@ -20,6 +22,11 @@ namespace RuleGame.Gameplay.Enemy
         {
             GetComponent<Collider2D>().enabled = visible;
             GetComponent<SpriteRenderer>().enabled = visible;
+
+            // ⚠️ 命中判定看的是**受击箱**，所以它必须跟着开合 ——
+            //    只关自己的身体碰撞体的话，收起来的弱点照样挨打。
+            if (_hurtbox == null) _hurtbox = GetComponentInChildren<Hurtbox>(true);
+            if (_hurtbox != null) _hurtbox.SetHittable(visible);
         }
         private void Start() { if (!Opened) Close(); }
         public void ApplyDamage(in DamageInfo damage)

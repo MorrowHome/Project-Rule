@@ -67,6 +67,13 @@ Tools/BaiduSync/bin/
 # 注意：这不代表 ProjectSettings/ 整体不进仓库，只是这两个是纯派生物。
 Project-Rule/ProjectSettings/Packages/dev.yarnspinner/*-generated.ysls.json
 
+# ---------- 编辑器截图 ----------
+# Unity 截图工具的默认输出目录，开发过程中的临时产物，不进仓库。
+# 目录的 .meta 一并忽略：内容都不提交时，单独提交一个 meta 只是噪音
+#（这是「所有 *.meta 都要提交」的唯一例外，因为对应的资源本身不进仓库）。
+Project-Rule/Assets/Screenshots/
+Project-Rule/Assets/Screenshots.meta
+
 # ==============================================================================
 #  以下内容【必须提交】，不要加进忽略列表：
 #    Assets/          全部游戏资源与代码

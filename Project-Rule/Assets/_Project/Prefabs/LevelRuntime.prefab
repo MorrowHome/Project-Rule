@@ -70,11 +70,12 @@ Transform:
   m_GameObject: {fileID: 701508034279411341}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.64, y: -1.48, z: 0}
+  m_LocalPosition: {x: -4.05, y: 5.54, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4019026149680306858}
+  - {fileID: 8162460488230385154}
   m_Father: {fileID: 4502221175975341964}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!50 &7945970534102819449
@@ -135,6 +136,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Player.PlayerController
   _inputActions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   _moveSpeedMax: 6
+  _attackMoveSpeedMax: 4
   _groundAccel: 200
   _jumpSpeed: 14.6884
   _maxAirJumps: 1
@@ -167,19 +169,21 @@ MonoBehaviour:
   _groundProbeDistance: 0.08
   _surfaceAnchorDistance: 0.05
   _surfaceSlideAngle: 90
+  _windLayer:
+    serializedVersion: 2
+    m_Bits: 2048
   _knockbackDecay: 30
+  _pushStrength: 60
+  _pushProbeDistance: 0.15
   _status: {fileID: 5714247369272765345}
   _combat: {fileID: 1882199678892831726}
   _attackDamage: 10
   _attackKnockback: 6
   _attackBoxSize: {x: 1.2, y: 1}
   _attackOffset: 0.8
-  _attackMask:
-    serializedVersion: 2
-    m_Bits: 512
-  _attackWindup: 0.3
-  _attackActive: 0.12
-  _attackRecover: 0.1
+  _attackWindup: 0.17
+  _attackActive: 0.28
+  _attackRecover: 0.05
   _maxCombo: 2
   _heavyWindup: 0.32
   _heavyActive: 0.14
@@ -340,7 +344,7 @@ Transform:
   m_GameObject: {fileID: 863040203698951685}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.64, y: -1.48, z: -10}
+  m_LocalPosition: {x: -4.05, y: 6.24, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -363,7 +367,7 @@ MonoBehaviour:
     m_Value: 10
   OutputChannel: 1
   StandbyUpdate: 2
-  m_StreamingVersion: 0
+  m_StreamingVersion: 20241001
   m_LegacyPriority: 0
   Target:
     TrackingTarget: {fileID: 1877025142836952509}
@@ -565,7 +569,7 @@ Transform:
   m_GameObject: {fileID: 3893316903970576085}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: 1.15, y: -2.8799996, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -602,9 +606,9 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
-  far clip plane: 1000
-  field of view: 34
+  near clip plane: 0.1
+  far clip plane: 5000
+  field of view: 40
   orthographic: 1
   orthographic size: 4
   m_Depth: -1
@@ -799,6 +803,89 @@ MonoBehaviour:
   _worldCamera: {fileID: 705297260991742413}
   _selectionScale: 0.1
   _playerOffset: {x: 70, y: 0}
+--- !u!1 &6617420305150054304
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8162460488230385154}
+  - component: {fileID: 3740206636764396493}
+  - component: {fileID: 7273972463941713872}
+  m_Layer: 10
+  m_Name: Hurtbox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8162460488230385154
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6617420305150054304}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1877025142836952509}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!70 &3740206636764396493
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6617420305150054304}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: -0.03821665, y: 0.1082499}
+  m_Size: {x: 0.5736693, y: 0.8908183}
+  m_Direction: 0
+--- !u!114 &7273972463941713872
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6617420305150054304}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a69f0223fead4dc4db1819d26c428d4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Combat.Hurtbox
+  _owner: {fileID: 2895808581285521288}
 --- !u!1 &8918909928772190229
 GameObject:
   m_ObjectHideFlags: 0

@@ -50,7 +50,7 @@ namespace RuleGame.Gameplay.Player
             _wallSliding = solved.WallSliding;
         }
 
-        /// <summary>⑧⑨⑩ 击退衰减 → 位移 → 撞墙撞顶清分量。</summary>
+        /// <summary>⑧⑨⑩ 击退衰减 → 承载 → 位移 → 撞墙撞顶清分量。</summary>
         public void Move(MotionTuning tuning, ContactSensor.State contact, float dt)
         {
             // ⑧ 击退：外部速度独立衰减
@@ -58,6 +58,18 @@ namespace RuleGame.Gameplay.Player
                                                     tuning.KnockbackDecay * dt);
 
             Vector2 slideVelocity = _velocity + _externalVelocity;
+
+            // ⑧′ 承载：脚下是会动的支撑面（滑板车 / 升降台）时，把它这一步要走的位移并进来。
+            //
+            //    ⚠️ **只加进喂给 Slide 的这一份，绝不写回 `_velocity`。** 两个原因：
+            //       ① 平台速度不是玩家自己的速度。写回去的话，从平台上跳下来会带着
+            //          平台的水平动量继续滑 —— 而设计要求是「跳离平台就恢复自己的速度」；
+            //       ② ⑩ 会按 `remainingVelocity` 清零 `_velocity` 的分量。承载速度留在
+            //          `slideVelocity` 里时，被平台顶着撞墙会同时把平台那份清掉，正好是对的；
+            //          写进 `_velocity` 就把玩家自己的速度也一起赔进去了。
+            //
+            //    放在 ⑨′ 之前，是为了让「平台把你顶进墙 / 顶到天花板」也走同一套预夹。
+            slideVelocity += contact.CarrierVelocity;
 
             // ⑨′ 顶墙 / 顶天花板预夹：已知哪个方向贴着墙或天花板，就把「顶进去」的那一份先去掉。
             //

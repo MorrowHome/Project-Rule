@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using RuleGame.Gameplay.Combat;
 using RuleGame.Gameplay.Common;
 using RuleGame.Infrastructure;
 using RuleGame.Infrastructure.Snapshot;
@@ -7,9 +8,12 @@ using RuleGame.Infrastructure.Time;
 
 namespace RuleGame.Gameplay.Enemy
 {
-    /// <summary>可复用的方块、冲击波、毛团弹。碰撞只组织命中，仍走 CombatSystem。</summary>
+    /// <summary>可复用的方块、冲击波、毛团弹。命中只看受击箱与地形，伤害仍走 CombatSystem。</summary>
     public sealed class EnemyProjectile : MonoBehaviour, ISnapshotParticipant
     {
+        /// <summary>地形层（Ground）。撞到它 = 弹体消散。</summary>
+        private const int TerrainLayer = 8;
+
         private static readonly Stack<EnemyProjectile> Pool = new Stack<EnemyProjectile>();
         private EnemyActor _source;
         private Rigidbody2D _body;
@@ -74,22 +78,35 @@ namespace RuleGame.Gameplay.Enemy
             _age += dt;
             if (_age > 7f) { gameObject.SetActive(false); return; }
             _velocity += Physics2D.gravity * _gravity * dt;
-            var filter = new ContactFilter2D { useTriggers = false };
-            filter.SetLayerMask(_source.PlayerMask | (1 << 8));
+
+            // 命中只看**受击箱**，另外撞地形（层 8）就消散。
+            // ⚠️ 发射点在射手身上，扫到的第一个很可能是射手**自己的**受击箱 ——
+            //    那一类命中要「穿过去继续飞」，不能当场消散（CanHit 会挡下它）。
+            var filter = new ContactFilter2D { useTriggers = true };
+            filter.SetLayerMask(Hurtbox.Mask | (1 << TerrainLayer));
             int count = Physics2D.CircleCast(_body.position, _radius, _velocity.normalized, filter, _hits, _velocity.magnitude * dt);
-            if (count > 0)
+
+            // 命中结果按距离排序，所以「最近的先判」——自己的箱子被跳过后会接着判下一个。
+            for (int i = 0; i < count; i++)
             {
-                _source.EmitFeedback(EnemyFeedbackKind.ProjectileImpact, _hits[0].point, -_velocity.normalized, this);
-                for (int i = 0; i < count; i++)
+                IDamageable receiver = Hurtbox.ResolveOwner(_hits[i].collider);
+
+                if (receiver != null)
                 {
-                    IDamageable receiver = _hits[i].collider.GetComponentInParent<IDamageable>();
-                    IFactionMember faction = _hits[i].collider.GetComponentInParent<IFactionMember>();
-                    if (receiver != null && faction?.Faction == Faction.Player)
-                        _source.Combat?.ApplyDamage(_source, receiver, _source.Definition.Damage, 4f);
+                    if (!CombatSystem.CanHit(_source, receiver)) continue;   // 自己 / 同阵营的受击箱：直接穿过去
+
+                    _source.EmitFeedback(EnemyFeedbackKind.ProjectileImpact, _hits[i].point, -_velocity.normalized, this);
+                    _source.Combat?.ApplyDamage(_source, receiver, _source.Definition.Damage, 4f);
+                    gameObject.SetActive(false);
+                    return;
                 }
+
+                // 不是受击箱 → 地形：就地消散。
+                _source.EmitFeedback(EnemyFeedbackKind.ProjectileImpact, _hits[i].point, -_velocity.normalized, this);
                 gameObject.SetActive(false);
                 return;
             }
+
             _body.MovePosition(_body.position + _velocity * dt);
         }
         private struct Data { public EnemyActor Source; public Vector2 Velocity; public float Age, Gravity, Radius; }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using RuleGame.Gameplay.Combat;
 using RuleGame.Gameplay.Common;
 using RuleGame.Infrastructure;
 using RuleGame.Infrastructure.Snapshot;
@@ -68,15 +69,14 @@ namespace RuleGame.Gameplay.Enemy
             if (_age < _warning || _hit) return;
             Vector2 origin = Origin;
             float length = Length(origin);
-            var filter = new ContactFilter2D { useTriggers = false };
-            filter.SetLayerMask(_source.PlayerMask);
+            var filter = new ContactFilter2D { useTriggers = true };
+            filter.SetLayerMask(Hurtbox.Mask);
             int count = Physics2D.OverlapBox(origin + _direction * length * 0.5f, new Vector2(length, _width),
                 Mathf.Atan2(_direction.y, _direction.x) * Mathf.Rad2Deg, filter, _hits);
             for (int i = 0; i < count; i++)
             {
-                IDamageable receiver = _hits[i].GetComponentInParent<IDamageable>();
-                IFactionMember faction = _hits[i].GetComponentInParent<IFactionMember>();
-                if (receiver == null || faction?.Faction != Faction.Player) continue;
+                // 光束从本体扫出去，起点常常盖住 Boss **自己**的受击箱 —— CanHit 会把它挡掉。
+                if (!CombatSystem.TryResolveTarget(_hits[i], _source, out IDamageable receiver)) continue;
                 _source.Combat?.ApplyDamage(_source, receiver, _source.Definition.Damage, 4f);
                 _hit = true;
                 break;

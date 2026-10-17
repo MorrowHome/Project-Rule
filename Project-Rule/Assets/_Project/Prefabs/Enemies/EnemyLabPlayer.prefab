@@ -37,6 +37,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8656919740347800304}
+  - {fileID: 698022349672724225}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!50 &6386226450706917030
@@ -97,6 +98,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Player.PlayerController
   _inputActions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   _moveSpeedMax: 8
+  _attackMoveSpeedMax: 4
   _groundAccel: 260
   _jumpSpeed: 16.5
   _maxAirJumps: 1
@@ -115,9 +117,11 @@ MonoBehaviour:
   _dashExitSpeedScale: 0.35
   _maxDashes: 1
   _dashCooldown: 0.25
-  _dashBuffer: 0.12
+  _wallClimbEnabled: 1
   _wallProbeDistance: 0.08
+  _wallClimbProbeRadius: 0.06
   _wallSlideSpeed: 6
+  _wallSlideImpactDecel: 60
   _wallJumpPushSpeed: 9
   _wallClimbPushSpeed: 4
   _wallJumpUpSpeed: 15
@@ -134,13 +138,18 @@ MonoBehaviour:
   _attackKnockback: 6
   _attackBoxSize: {x: 1.2, y: 1}
   _attackOffset: 0.8
-  _attackMask:
-    serializedVersion: 2
-    m_Bits: 512
   _attackWindup: 0.08
   _attackActive: 0.14
   _attackRecover: 0.18
   _maxCombo: 2
+  _heavyWindup: 0.32
+  _heavyActive: 0.14
+  _heavyRecover: 0.36
+  _heavyCooldown: 1.2
+  _heavyDamage: 24
+  _heavyKnockback: 12
+  _heavyBoxSize: {x: 1.4, y: 1.2}
+  _heavyBoxOffset: 0.9
   _energyPerHit: 4
 --- !u!114 &3539437654964439885
 MonoBehaviour:
@@ -181,6 +190,10 @@ MonoBehaviour:
   _testDamage: 10
   _testKnockback: 6
   _attackFrom: {fileID: 0}
+  _velocityLogInterval: 0.1
+  _detectFrozenMotion: 1
+  _frozenSpeedThreshold: 1
+  _frozenLogInterval: 0.5
 --- !u!70 &8042909878757348295
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -234,6 +247,89 @@ MonoBehaviour:
   _animator: {fileID: 0}
   _renderer: {fileID: 0}
   _status: {fileID: 0}
+--- !u!1 &4957342680674123188
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 698022349672724225}
+  - component: {fileID: 5857351785231999722}
+  - component: {fileID: 3811566997911367903}
+  m_Layer: 10
+  m_Name: Hurtbox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &698022349672724225
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4957342680674123188}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 278280146790032483}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!70 &5857351785231999722
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4957342680674123188}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: -0.10028106, y: 0.06467193}
+  m_Size: {x: 0.53471434, y: 0.8254514}
+  m_Direction: 0
+--- !u!114 &3811566997911367903
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4957342680674123188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a69f0223fead4dc4db1819d26c428d4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Combat.Hurtbox
+  _owner: {fileID: 3539437654964439885}
 --- !u!1 &5235115106767619359
 GameObject:
   m_ObjectHideFlags: 0
@@ -324,7 +420,7 @@ SpriteRenderer:
   m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
 --- !u!95 &1533260898366475307
