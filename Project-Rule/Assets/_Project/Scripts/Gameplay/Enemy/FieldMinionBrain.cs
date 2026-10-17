@@ -108,12 +108,9 @@ namespace RuleGame.Gameplay.Enemy
         protected override void EnterAction(string name)
         {
             base.EnterAction(name);
-            if (name == "Hurt")
-                NextHurt = Age + Actor.Duration("Hurt", .25f) + Mathf.Max(0f, Config.HurtCooldown);
             if (name == "Down") { Actor.Motor.Stop(); Actor.Cue("Dead", Actor.Duration("Dead", .6f)); }
             else if (name == "Rebirth") Actor.Cue("Rebirth", Actor.Duration("Rebirth", .8f));
-            else if (name == "Hurt") Actor.Cue("Hurt", Actor.Duration("Hurt", .25f));
-            else EnterBehavior(name);
+            else if (name != "Hurt") EnterBehavior(name);
         }
         protected virtual void EnterBehavior(string name) { }
         protected override void TickAction(string name)
@@ -144,7 +141,7 @@ namespace RuleGame.Gameplay.Enemy
             if (Age - _lastHit > Config.StaggerResetDelay) _staggerDamage = 0f;
             _lastHit = Age;
             _staggerDamage += damage;
-            if (_staggerDamage < Config.MinionStaggerThreshold) return;
+            if (_staggerDamage < Mathf.Max(1f, Config.MinionStaggerThreshold)) return;
             _staggerDamage = 0f;
             OnDisabled();
             Go("Hurt");

@@ -127,11 +127,12 @@ namespace RuleGame.Gameplay.Enemy
                 Actor.Motor.Stop();
                 return;
             }
-            float duration = name == "Hurt" && IsBoss
-                ? Mathf.Min(Actor.Duration(name), Mathf.Max(0.05f, Config.BossHurtDuration)) : Actor.Duration(name);
+            float duration = name == "Hurt"
+                ? Mathf.Min(Actor.Duration(name), Mathf.Max(0.05f, IsBoss ? Config.BossHurtDuration : Config.MinionHurtDuration))
+                : Actor.Duration(name);
             Actor.Cue(name, duration, name == "Idle" || name == "Walk" || name == "Fly");
             // 从受击恢复后开始完整冷却，长受击动画不能吃掉保护窗口。
-            if (name == "Hurt") NextHurt = Age + (IsBoss ? duration : 0f) + Mathf.Max(0f, Config.HurtCooldown);
+            if (name == "Hurt") NextHurt = Age + duration + Mathf.Max(0f, Config.HurtCooldown);
         }
         protected void Go(string action)
         {
@@ -228,13 +229,11 @@ namespace RuleGame.Gameplay.Enemy
         {
             if (damage <= 0f || Actor.Status.Health <= 0f || Root.ActiveStateName != "Alive"
                 || StateName == "Hurt" || Age < NextHurt) return;
-            if (IsBoss)
-            {
-                if (Age - _lastStaggerHit > Mathf.Max(0.1f, Config.StaggerResetDelay)) _staggerDamage = 0f;
-                _lastStaggerHit = Age;
-                _staggerDamage += damage;
-                if (_staggerDamage < Mathf.Max(1f, Config.StaggerDamageThreshold)) return;
-            }
+            if (Age - _lastStaggerHit > Mathf.Max(0.1f, Config.StaggerResetDelay)) _staggerDamage = 0f;
+            _lastStaggerHit = Age;
+            _staggerDamage += damage;
+            float threshold = IsBoss ? Config.StaggerDamageThreshold : Config.MinionStaggerThreshold;
+            if (_staggerDamage < Mathf.Max(1f, threshold)) return;
             _staggerDamage = 0f;
             Go("Hurt");
         }

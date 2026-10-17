@@ -2,6 +2,8 @@
 
 <!-- unity-onboarding:generated:start -->
 
+2026-10-17 小怪受击补查：旧 MinionBrain 的召唤物改为累计破韧；新增中文参数 MinionHurtDuration（默认 0.25 秒上限），所有小怪恢复后再计算完整 HurtCooldown。普通伤害仅在本次进入 Hurt 时给小怪完整击退，防止轻击绕过保护持续推退；质量降低和挂账零伤害纯击退保留，Boss 约束不变。FieldMinionBrain 去掉重复受击 Cue/冷却覆盖。弹簧怪先完成已起跳的运动，再在落地后判断丢失目标。Unity 6000.6.4f1 隔离 Play Mode 的 MinionResilienceValidation.RunBatch：旧逻辑 7 组失败，修改后 53 项通过、0 失败；含实际物理、暂停、快照与中文 Inspector 编译。夹具提高实例血量以观测完整保护期，未改资产数值。隔离工程位于 %TEMP%/rule-minion-resilience-20261017，日志 %TEMP%/rule-minion-resilience-{before,after}.log；未跑正式地图难度、全 Boss 或 Player 构建。保留同期字体和 ProjectSettings 的用户修改。
+
 分析日期：2026-10-15；基线 `9af8f80`（最新角色动画），关闭白盒无敌已提交为 `f927297`。当前工作分支 `feat/better-boss`（fork → 原仓库 `p2-p3-merge` 的 PR #10），已衔接之前的 Boss 距离/破韧与身体阻挡，并新增蝙蝠高机动空战。Unity 工程在仓库下的 `Project-Rule/`，不是仓库根目录。
 
 ## 已确认环境

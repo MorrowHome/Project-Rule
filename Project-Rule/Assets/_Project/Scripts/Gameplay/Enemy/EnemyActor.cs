@@ -140,6 +140,7 @@ namespace RuleGame.Gameplay.Enemy
             if (Defeated || Brain == null) return;
             if (damage.Amount < 0f) { Status.ApplyHealthDelta(-damage.Amount); return; }
             if (Brain.DamageLocked || _invulnerability > 0f) return;
+            bool wasHurt = Brain.StateName == "Hurt";
             if (damage.Amount > 0f)
             {
                 float next = Brain.ClampHealth(Status.Health - damage.Amount);
@@ -149,9 +150,10 @@ namespace RuleGame.Gameplay.Enemy
                 EmitFeedback(EnemyFeedbackKind.Hit, transform.position, -TowardAttacker(damage.Attacker));
                 Brain.OnHit(appliedDamage);
             }
-            // 普通 Boss 保持稳定；规则使其变轻后可被推开，实际位移仍按刚体质量结算。
-            // 挂账产生的 0 伤害也保留击退，不绕过统一伤害处理。
-            if (!Definition.IsBoss || Motor.MassReduced)
+            // 小怪仅在本次破韧时完整击退，避免轻击绕过硬直保护持续推退或叠加冲量。
+            // 质量削弱与挂账的纯击退仍遵守规则，Boss 原有质量约束不变。
+            bool staggered = !wasHurt && Brain.StateName == "Hurt";
+            if (Motor.MassReduced || (!Definition.IsBoss && (staggered || damage.Amount == 0f)))
                 Motor.AddImpulse(TowardAttacker(damage.Attacker) * -damage.Knockback);
         }
         private Vector2 TowardAttacker(object attacker)

@@ -124,7 +124,7 @@ namespace RuleGame.Gameplay.Enemy
         [Min(0.5f)] public float RangedRange = 9f;
         [Range(0.1f, 1f)] public float RetreatSpeedMultiplier = 0.8f;
         [Header("受击硬直")]
-        [Tooltip("Boss 短时间累计受到这么多实际伤害才进入受击状态。小怪仍每次命中受击。")]
+        [Tooltip("Boss 短时间累计受到这么多实际伤害才进入受击状态；小怪使用独立阈值。")]
         [Min(1f)] public float StaggerDamageThreshold = 30f;
         [Tooltip("连续这么久没有有效命中，清空累计硬直伤害。冷却期间不累计。")]
         [Min(0.1f)] public float StaggerResetDelay = 1.5f;
@@ -181,6 +181,8 @@ namespace RuleGame.Gameplay.Enemy
         [Min(0f)] public float MinionTargetMemory = 1.5f;
         [Tooltip("在受击累计重置时间内承受此伤害才硬直；仍会正常扣血和闪白。")]
         [Min(1f)] public float MinionStaggerThreshold = 12f;
+        [Tooltip("小怪普通硬直时长上限，包含 Boss 召唤物；恢复后再计算完整的硬直冷却。")]
+        [Min(.05f)] public float MinionHurtDuration = .25f;
         [Min(.5f)] public float MinionPreferredRange = 4f;
         [Tooltip("近战前摇可转向的比例，超过后锁定方向，留下绕背躲避的机会。")]
         [Range(0f, .5f)] public float MinionAimLockFraction = .25f;

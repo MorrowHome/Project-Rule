@@ -126,6 +126,7 @@ namespace RuleGame.Editor.Enemy
             { nameof(EnemyDefinition.MinionLeashRange), "离出生点最远追击距离" },
             { nameof(EnemyDefinition.MinionTargetMemory), "失去视线后搜索时间（秒）" },
             { nameof(EnemyDefinition.MinionStaggerThreshold), "小怪累计伤害硬直阈值" },
+            { nameof(EnemyDefinition.MinionHurtDuration), "小怪普通硬直时长上限（秒）" },
             { nameof(EnemyDefinition.MinionPreferredRange), "远程小怪理想交战距离" },
             { nameof(EnemyDefinition.MinionAimLockFraction), "近战前摇转向截止比例" },
             { nameof(EnemyDefinition.MinionReassembles), "散架后可重组" },

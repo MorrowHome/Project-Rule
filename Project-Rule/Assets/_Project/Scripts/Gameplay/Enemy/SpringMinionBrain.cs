@@ -22,7 +22,6 @@ namespace RuleGame.Gameplay.Enemy
                 return;
             }
             if (name == "Ignore" && Elapsed >= Config.MinionIgnoreDuration) { Go("Patrol"); return; }
-            if (!CanPursue) { Actor.Motor.Intent = Vector2.zero; return; }
             // 空中保持本次起跳方向，不在玩家换边时突然折返。
             Actor.Motor.Intent = Vector2.right * Heading;
             if (!Actor.Motor.Grounded || Vector2.Dot(Actor.Motor.Velocity, Actor.Motor.Up) > .1f)
@@ -35,6 +34,7 @@ namespace RuleGame.Gameplay.Enemy
                 _wasAirborne = false;
                 _hopAt = Age + Config.MinionHopInterval;
             }
+            if (!CanPursue) { Actor.Motor.Intent = Vector2.zero; return; }
             if (name == "Patrol" && SeesTarget && TargetInMeleeRange && Age >= ReadyAt) { Go("Attack"); return; }
             Actor.Motor.Intent = Vector2.zero;
             if (Age >= _hopAt)
