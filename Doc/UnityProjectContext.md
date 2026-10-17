@@ -2,6 +2,13 @@
 
 <!-- unity-onboarding:generated:start -->
 
+2026-10-17 在新分支 feat/minion-pathfinding 接入 EnemyPlatformNavigation：真实 Collider2D 站立点采样、有界 A*、身体扫掠验证的跳跃与安全落差，Motor 仍是位移权威。地面追击与返回出生点使用路线，飞鸟水平巡飞不改。普通默认索敌6米、出生点二维追击半径8米、失去视线后搜索最后位置1.5秒；脱战返回，旧积木/蝙蝠召唤物也遵守范围。中文配置包含开关、1.6米跳高、2.5米落差、0.5米采样和0.65秒重算；暂停/受击/快照接入。每次搜索最多192节点/2400查询，缓存不参与快照，半空运动参加快照。修复继承的 a79c487 合并版本中的敌人端旧战斗接口，攻击统一 Hurtbox，PlayerMask仅保留身体移动用途。Unity6000.6.4f1隔离PlayMode：平台导航16项、索敌脱战9项、受击箱兼容5项通过，合计30项0失败。新增 Test_Minion_Pathfinding 白盒和独立默认范围配置，由EditorAPI生成，日志见 %TEMP%/rule-minion-{navigation,ranges}.log 与 rule-enemy-hurtbox-compat.log。未执行原工程手动白盒、正式地图难度、敌群性能或完整Player构建；移动/单向平台的专用通行和飞行避障未实现。保留同期字体与ProjectSettings修改。
+2026-10-17 受伤反馈调优与 PR 预览：普通闪白总时长改为 0.30 秒，保持白色约 0.165 秒后淡出；破韧/致命延长倍率保留。完整副本定向验证 65 项通过，含实际 0.15 秒仍保持白色的 URP 像素断言。`Doc/特效预览/EnemyHitFeedback.gif` 与 `EnemyHitFeedback_Comparison.png` 为固定姿态的真实渲染媒体；`Tools/EnemyAssets/create_hit_preview.py` 从验证截图重新导出，未修改游戏摄像机。用户确认仅核对 p2-p3-merge 基线即可，已 fetch 并确认最新 `2fe1dc1` 是当前功能分支的祖先；不继续扩大摄像机修改范围。
+
+2026-10-17 敌人受伤视觉接入（基线 `a79c487`，分支 `feat/enemy-hit-feedback`）：现有 EnemySpriteAnimator / FieldMinionView 自动登记 EnemyHitFeedback，15 种真实 Prefab 均已验证；原材质和动画不替换，独立覆盖层提供暖白剪影/轮廓余光，四个有界槽提供定向火花和半环，区分普通/破韧/致命及青色弱点。反馈只在实际扣血后发出，携带实际伤害与结果；暂停冻结，回溯/停用清除。Resources/EnemyHitFeedback 两份材质保留 Player shader 引用，无场景/Prefab 重写。先修复基线已有的 PlayerMask 删除残留引用及 AttackArea 旧签名，恢复完整工程编译；旧小怪回归夹具改按 Time.fixedDeltaTime 推进，避免 50 Hz 假设与工程 60 Hz 不一致。原工程 Unity 6000.6.4f1 编译通过；完整副本 `/tmp/rule-enemy-hit-20261017` 的受伤反馈 Play Mode/URP 像素验证 64 项、破韧回归 53 项均通过。日志 `/tmp/rule-enemy-hit-{baseline,final-compile,validation,minion-regression}.log`，截图/结果在副本 `Logs/EnemyHitFeedback/`；仅见既有 Unity Search 索引异常，无新增运行时/Shader 错误。未跑 Player 构建或整关操作验收；保留字体与项目设置的同期用户修改。接入和调参见 `Doc/敌人系统接入.md` 的统一受伤视觉反馈小节。
+
+2026-10-17 小怪受击补查：旧 MinionBrain 的召唤物改为累计破韧；新增中文参数 MinionHurtDuration（默认 0.25 秒上限），所有小怪恢复后再计算完整 HurtCooldown。普通伤害仅在本次进入 Hurt 时给小怪完整击退，防止轻击绕过保护持续推退；质量降低和挂账零伤害纯击退保留，Boss 约束不变。FieldMinionBrain 去掉重复受击 Cue/冷却覆盖。弹簧怪先完成已起跳的运动，再在落地后判断丢失目标。Unity 6000.6.4f1 隔离 Play Mode 的 MinionResilienceValidation.RunBatch：旧逻辑 7 组失败，修改后 53 项通过、0 失败；含实际物理、暂停、快照与中文 Inspector 编译。夹具提高实例血量以观测完整保护期，未改资产数值。隔离工程位于 %TEMP%/rule-minion-resilience-20261017，日志 %TEMP%/rule-minion-resilience-{before,after}.log；未跑正式地图难度、全 Boss 或 Player 构建。保留同期字体和 ProjectSettings 的用户修改。
+
 分析日期：2026-10-15；基线 `9af8f80`（最新角色动画），关闭白盒无敌已提交为 `f927297`。当前工作分支 `feat/better-boss`（fork → 原仓库 `p2-p3-merge` 的 PR #10），已衔接之前的 Boss 距离/破韧与身体阻挡，并新增蝙蝠高机动空战。Unity 工程在仓库下的 `Project-Rule/`，不是仓库根目录。
 
 ## 已确认环境
@@ -92,8 +99,18 @@ manifest 已有 Coplay Unity MCP，仓库 `.mcp.json` 指向 `localhost:8080/mcp
 
 2026-10-16 用户澄清“不是倒立散射，是不倒立时也往脚底丢”。本轮只改站立 Throw/HideThrow 的初速度求解：旧普通弹 y 速度为 -2.42，旧近处/远处高抛实际仅升高 0.06/0.11 米；改为按目标与出手点之上的弧顶求解，普通弹默认上抛 1 米、高抛 1.6 米后落向锁定的主角位置。新增中文 Inspector 参数 RabbitThrowArcHeight（站立投掷上抛高度），倒立散射不使用该参数且未改动。世界失重时沿用直线运动，正常重力/增强重力均按实际加速度计算上抛。RabbitProjectileValidation 原有 10 项加入初速度向上、实际升高和到达目标检查后，旧实现 5 项失败，修复后 10 项通过；实测普通弹升高 0.96 米、高抛 1.56 米并到达目标，三倍重力为 1.52 米。RunRabbitTacticsBatch 的 23 项通过，锁定用例改验低弧向上而非旧低重力平射。日志 /tmp/rule-rabbit-standing-arc-before.log、/tmp/rule-rabbit-standing-arc-after.log、/tmp/rule-rabbit-standing-arc-tactics.log。未跑其他 Boss 或全量构建。
 
+2026-10-17 按新增动作需求表接入九种关卡小怪：StoneGuard、ExplosiveBlock、BrickSoldier、SpringToy、ClockMouse、ClockBomb、PlushBird、HugBear、PlushSeal。用户确认弹簧怪同样可重组、默认等待7秒。EnemyKind只追加，Definition.IsBoss显式区分四Boss；旧两种召唤物保留MinionBrain。新增FieldMinionBrain共享感知/巡逻/散架/快照，按行为分七种Brain。Actor新增身体/移动/接触开关及去重范围伤害，Motor提供真实跳跃，PlayerController的持有者集合仅限制自主移动、保留挥剑。拥抱通过反击、距离、超时、死亡/停用释放；回溯恢复限制。新增9配置/9白盒预制体/9可玩场景与保留参数的生成菜单，正式美术未交付时用FieldMinionView；旧Boss生成器范围固定原六种避免误建新类型。需求摘要保存在Doc/References/EnemyLogic/FieldMinionRequirements.json。Unity6000.6.4f1隔离PlayMode的FieldMinionValidation46项通过，日志/tmp/rule-field-minions-validation.log；未跑全Boss、正式关卡验收或Player构建。当前分支feat/minion-ai来自feat/brick-city-components，本轮未合并上游或改地图摆放。
+
 ## 证据
 
 `CLAUDE.md`、`Doc/系统模块架构.md`、`Doc/敌人系统接入.md`；工程内 `Packages/manifest.json`、`ProjectSettings/{ProjectVersion.txt,QualitySettings.asset,GraphicsSettings.asset,EditorBuildSettings.asset,ProjectSettings.asset}`；一方 `.asmdef`；`Scripts/Gameplay/Enemy/*.cs`、`Gameplay/Player/EntityStatus.cs`、`PlayerController.cs`、`RuleReleaseService.cs`、`Scripts/Editor/Enemy/EnemyLabBuilder.cs`、`Scripts/Rules/RuleSystemDriver.cs`。
 
 <!-- unity-onboarding:generated:end -->
+
+用户分支命名要求：不使用 codex/ 前缀；新功能分支使用 feat/ 等项目惯用前缀。
+
+2026-10-17 小怪战术复查：守卫新增限距追击/短时视线记忆，飞鸟保持射程，海豹按可达距离/施法可用性选技能并增加滑行前摇；弹簧空中锁向、发条鼠限时钻地。关卡小怪累计破韧阈值（重型20/其他12）与1.2秒硬直保护；近战前摇早期跟随、出手锁向，命中去重，保留不硬直时闪白。参数中文可调。修改前7组针对性用例失败，修改后隔离PlayMode65项通过，日志/tmp/rule-minion-tactics-after.log；未验证正式关卡整体难度。
+
+2026-10-17 小怪预制体放置简化：九种 FieldMinions 已通过 Editor API 补齐身体 Hurtbox、显式受击承受方和出生点相对活动范围。EnemyActor 自动绑定玩家、复用场景 CombatSystem（缺少时创建共享服务），缺失/自动绑定的目标失效时每 0.5 秒重试；旧显式引用和 Boss 世界边界保留。新增 UI Toolkit 简化 Inspector 与 Scene 二维边框手柄，默认宽高 20×20，范围固定于出生点。寻路白盒清除临时受击箱，使用预制体继承的一个受击箱和自动接线。使用文档为 Doc/小怪预制体使用指南.md。隔离工程保持实际核心程序集名称编译，20 项定向检查通过，补充核对九种资产的受击承受方与程序集标识；未进行原工程 Play、面板视觉操作、完整 Player 构建和敌群性能验收。
+
+2026-10-18 小怪寻路交付同步受伤视觉 PR #12（48ca1f6）和最新 p2-p3-merge（5fd88a7），保留两套改动。合并时结合弱点 Hurtbox 开合与扣血反馈，Boss 资产采用最新集成版本。EnemyNavigationValidation.RunCombatBatch 针对合并风险运行 12 项通过，覆盖弹体/光束、弱点受击箱开合和一次扣血一次反馈；未重复运行导航或渲染套件。小怪提交排除自动 stash 中的字体图集和 ProjectSettings，原 stash 保留。

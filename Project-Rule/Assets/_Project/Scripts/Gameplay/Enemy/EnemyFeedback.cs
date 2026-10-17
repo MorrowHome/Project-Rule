@@ -18,8 +18,15 @@ namespace RuleGame.Gameplay.Enemy
         public readonly Vector3 Position;
         public readonly Vector2 Direction;
         public readonly Component Subject;
+        public readonly float Damage;
+        public readonly bool Staggered;
+        public readonly bool Lethal;
 
-        public EnemyFeedback(EnemyFeedbackKind kind, Vector3 position, Vector2 direction, Component subject = null)
-        { Kind = kind; Position = position; Direction = direction; Subject = subject; }
+        public EnemyFeedback(EnemyFeedbackKind kind, Vector3 position, Vector2 direction, Component subject = null,
+            float damage = 0f, bool staggered = false, bool lethal = false)
+        {
+            Kind = kind; Position = position; Direction = direction; Subject = subject;
+            Damage = damage; Staggered = staggered; Lethal = lethal;
+        }
     }
 }

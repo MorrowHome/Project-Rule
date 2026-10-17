@@ -215,6 +215,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 1
     m_ConditionEvent: Dashing
     m_EventTreshold: 0
+  - m_ConditionMode: 2
+    m_ConditionEvent: Reacting
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -8855799052463497521}
   m_Solo: 0
@@ -314,6 +317,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 1
     m_ConditionEvent: Jump
     m_EventTreshold: 0
+  - m_ConditionMode: 2
+    m_ConditionEvent: Reacting
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 466105711247819809}
   m_Solo: 0
@@ -388,6 +394,9 @@ AnimatorStateTransition:
   m_Conditions:
   - m_ConditionMode: 1
     m_ConditionEvent: WallJump
+    m_EventTreshold: 0
+  - m_ConditionMode: 2
+    m_ConditionEvent: Reacting
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -4444979432508383901}
@@ -573,6 +582,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 1
     m_ConditionEvent: AirJump
     m_EventTreshold: 0
+  - m_ConditionMode: 2
+    m_ConditionEvent: Reacting
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 1493740292932436294}
   m_Solo: 0
@@ -746,6 +758,9 @@ AnimatorStateTransition:
   m_Conditions:
   - m_ConditionMode: 1
     m_ConditionEvent: Attack
+    m_EventTreshold: 0
+  - m_ConditionMode: 2
+    m_ConditionEvent: Reacting
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -1473734640764744888}
@@ -1457,6 +1472,9 @@ AnimatorStateTransition:
   - m_ConditionMode: 1
     m_ConditionEvent: HeavyAttack
     m_EventTreshold: 0
+  - m_ConditionMode: 2
+    m_ConditionEvent: Reacting
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -6882139382337690536}
   m_Solo: 0
@@ -1685,6 +1703,9 @@ AnimatorStateTransition:
   m_Conditions:
   - m_ConditionMode: 1
     m_ConditionEvent: Land
+    m_EventTreshold: 0
+  - m_ConditionMode: 2
+    m_ConditionEvent: Reacting
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 2302194857896750630}

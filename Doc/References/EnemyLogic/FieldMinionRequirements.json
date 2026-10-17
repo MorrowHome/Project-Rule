@@ -1,0 +1,79 @@
+{
+  "workbook": "角色动作需求表（增加小怪行为数据）.xlsb.xlsx",
+  "sheet": "小怪行为数据详细",
+  "spring_rebirth": "用户确认与士兵一样默认等待7秒，可调",
+  "enemies": [
+    {
+      "name": "石头人小怪",
+      "source_row": 3,
+      "damage": "5",
+      "health": "17",
+      "first_cooldown": "3s",
+      "behavior_graph": "stateDiagram-v2\n    [*] --> Patrol\n\n    state \"Patrol 自行左右移动\" as Patrol\n    state \"Hammer 停下攻击一次\" as Hammer\n    state \"Ignore 无视玩家移动3秒\" as Ignore\n    state \"Dead 死亡爆炸\" as Dead\n\n    Patrol --> Hammer : 玩家进入范围\n    Hammer --> Ignore : 动画结束\n    Ignore --> Patrol : 3秒计时到 / 继续检测玩家\n\n    Patrol --> Dead : HP≤0\n    Hammer --> Dead : HP≤0\n    Ignore --> Dead : HP≤0\n    Dead --> [*]"
+    },
+    {
+      "name": "自爆方块小怪",
+      "source_row": 16,
+      "damage": "20",
+      "health": "1",
+      "first_cooldown": "—",
+      "behavior_graph": "stateDiagram-v2\n    [*] --> Idle\n    Idle --> Explode : 被撞到/受到攻击\n    Explode --> [*] : 爆炸结束"
+    },
+    {
+      "name": "积木士兵",
+      "source_row": 18,
+      "damage": "10",
+      "health": "7",
+      "first_cooldown": "3s",
+      "behavior_graph": "stateDiagram-v2\n    [*] --> Patrol\n\n    state \"Patrol 左右巡逻\" as Patrol\n    state \"Attack 砍击\" as Attack\n    state \"Ignore 无视移动\" as Ignore\n    state \"Dead 散架暂时死亡\" as Dead\n    state \"Rebirth 重新组装回来\" as Rebirth\n\n    Patrol --> Attack : 玩家进入范围\n    Attack --> Ignore : 动画结束\n    Ignore --> Patrol : 3秒计时到 / 重新检测玩家\n\n    Patrol --> Dead : HP≤0\n    Attack --> Dead : HP≤0\n    Ignore --> Dead : HP≤0\n    Dead --> Rebirth : 散架动画结束\n    Rebirth --> Patrol : 重组动画结束"
+    },
+    {
+      "name": "弹簧小怪",
+      "source_row": 30,
+      "damage": "8",
+      "health": "20",
+      "first_cooldown": "0.5s",
+      "behavior_graph": "stateDiagram-v2\n    [*] --> Patrol\n\n    state \"Patrol 向玩家跳跃（检测攻击）\" as Patrol\n    state \"Attack 弯腰（范围1.5）\" as Attack\n    state \"Ignore 向玩家跳跃（不检测攻击）\" as Ignore\n    state \"Dead 散架暂时死亡\" as Dead\n    state \"Rebirth 重新组装回来\" as Rebirth\n\n    Patrol --> Attack : 落地且玩家在1.5内\n    Patrol --> Patrol : 落地未进1.5范围 / 等0.5s继续跳\n\n    Attack --> Ignore : 动画结束\n    Ignore --> Patrol : 3秒计时到\n\n    Patrol --> Dead : HP≤0\n    Attack --> Dead : HP≤0\n    Ignore --> Dead : HP≤0\n    Dead --> Rebirth : 散架动画结束\n    Rebirth --> Patrol : 重组动画结束"
+    },
+    {
+      "name": "发条鼠",
+      "source_row": 35,
+      "damage": "8",
+      "health": "20",
+      "first_cooldown": null,
+      "behavior_graph": "stateDiagram-v2\n    [*] --> Idle\n\n    state \"Idle 呆在地下（冷却）\" as Idle\n    state \"Pop 钻出来\" as Pop\n    state \"Walk 地上平移\" as Walk\n    state \"Hide 钻进去\" as Hide\n    state \"Dead 死亡\" as Dead\n\n    Idle --> Pop : 玩家进入3格范围 且 冷却结束\n    \n    Pop --> Walk : 动画结束\n    Pop --> Dead : Hp < 0\n\n    Walk --> Walk : 向左右移动 / 最多8格 / 碰到墙扭头\n    Walk --> Hide : 第二次经过钻出点\n    Walk --> Dead : Hp < 0\n\n    Hide --> Idle : 动画结束 / 冷却3秒\n    Hide --> Dead : Hp < 0\n\n    Dead --> [*]"
+    },
+    {
+      "name": "发条炸弹",
+      "source_row": 48,
+      "damage": "20",
+      "health": "1",
+      "first_cooldown": "—",
+      "behavior_graph": "stateDiagram-v2\n    [*] --> Idle\n\n    state \"Idle 小范围踱步\" as Idle\n    state \"Dash 冲向玩家\" as Dash\n    state \"Explode 自爆\" as Explode\n\n    Idle --> Dash : 看见玩家\n    Dash --> Explode : 碰到玩家 / 到达自爆条件\n    Explode --> [*] : 爆炸结束，销毁"
+    },
+    {
+      "name": "毛绒玩具鸟",
+      "source_row": 61,
+      "damage": "13",
+      "health": "35",
+      "first_cooldown": "1.8s",
+      "behavior_graph": "stateDiagram-v2\n    [*] --> Fly\n\n    state \"Fly 同一水平来回飞\" as Fly\n    state \"Attack 丢法术球\" as Attack\n    state \"Dead 死亡\" as Dead\n\n    Fly --> Attack : 玩家进入攻击范围 且 CD好\n    Attack --> Fly : 动画结束\n\n    Fly --> Dead : HP≤0\n    Attack --> Dead : HP≤0\n    Dead --> [*]"
+    },
+    {
+      "name": "抱抱熊",
+      "source_row": 75,
+      "damage": "20",
+      "health": "50",
+      "first_cooldown": "5s",
+      "behavior_graph": "stateDiagram-v2\n    [*] --> Idle\n\n    state \"Idle 原地坐\" as Idle\n    state \"Stand 站起来\" as Stand\n    state \"Chase 缓慢追逐\" as Chase\n    state \"Hug 抱住玩家持续扣血\" as Hug\n    state \"Sit 回初始位置坐下\" as Sit\n    state \"Dead 死亡（保持拥抱消散）\" as Dead\n\n    Idle --> Stand : 看见玩家\n    Stand --> Chase : 站起来结束\n\n    Chase --> Hug : 碰到玩家\n    Chase --> Sit : 玩家离开索敌范围\n\n    Hug --> Chase : 玩家挣脱 / 持续时间结束\n    Hug --> Dead : HP≤0（保持拥抱动作消散）\n\n    Sit --> Idle : 回到初始位置并坐下\n\n    Idle --> Dead : HP≤0\n    Stand --> Dead : HP≤0\n    Chase --> Dead : HP≤0\n    Sit --> Dead : HP≤0"
+    },
+    {
+      "name": "毛绒海豹",
+      "source_row": 95,
+      "damage": "20",
+      "health": "50",
+      "first_cooldown": "5s",
+      "behavior_graph": "stateDiagram-v2\n    [*] --> Wander\n\n    state \"Wander 随机移动\" as Wander\n    state \"Slide 滑行（快速冲向玩家）\" as Slide\n    state \"Howl 嚎叫\" as Howl\n    state \"BellySlap 拍肚子（召唤冰块）\" as BellySlap\n    state \"Dead 死亡（冰洞）\" as Dead\n\n    Wander --> Slide : 技能计时到 / 轮到滑行\n    Wander --> Howl : 技能计时到 / 轮到嚎叫\n    Wander --> BellySlap : 技能计时到 / 轮到拍肚子\n\n    Slide --> Wander : 动画结束 / 撞到玩家\n    Howl --> Wander : 动画结束\n    BellySlap --> Wander : 动画结束 / 冰块已生成\n\n    Wander --> Dead : HP≤0\n    Slide --> Dead : HP≤0\n    Howl --> Dead : HP≤0\n    BellySlap --> Dead : HP≤0\n    Dead --> [*]"
+    }
+  ]
+}

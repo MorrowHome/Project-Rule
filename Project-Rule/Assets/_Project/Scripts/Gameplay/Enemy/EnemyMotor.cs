@@ -14,6 +14,8 @@ namespace RuleGame.Gameplay.Enemy
         public LayerMask BodyBlockMask = 1 << 9;
         public Vector2 Intent { get; set; }
         public float SpeedMultiplier { get; set; } = 1f;
+        // 仅对已验证落脚点的导航步开放；Actor 每个物理步先清除，攻击/巡逻不会继承。
+        public bool AllowLedgeTraversal { get; set; }
         public bool Grounded { get; private set; }
         public Vector2 Up { get; private set; } = Vector2.up;
         public Vector2 Velocity { get; private set; }
@@ -82,7 +84,7 @@ namespace RuleGame.Gameplay.Enemy
                 if (Grounded && Vector2.Dot(velocity, Up) < 0f) velocity -= Up * Vector2.Dot(velocity, Up);
                 velocity.y = Mathf.Clamp(velocity.y, -28f, 28f);
                 // 白盒可直接追击；正式地图缺少支撑面时停止，不盲走下悬崖。
-                if (Grounded && Mathf.Abs(direction) > 0.01f)
+                if (Grounded && !AllowLedgeTraversal && Vector2.Dot(velocity, Up) <= .01f && Mathf.Abs(direction) > 0.01f)
                 {
                     Vector2 probe = _body.position - Up * (config.BodySize.y * 0.5f - 0.1f)
                         + Vector2.right * Mathf.Sign(direction) * (config.BodySize.x * 0.5f + 0.15f);
@@ -133,7 +135,13 @@ namespace RuleGame.Gameplay.Enemy
             return !Physics2D.Raycast(probe, -Up, .45f, SolidMask);
         }
         public void AddImpulse(Vector2 impulse) => _impulse += impulse / Mathf.Max(0.1f, _body.mass);
-        public void Stop() { Intent = Vector2.zero; Velocity = _impulse = GravityDrift = Vector2.zero; SpeedMultiplier = 1f; }
+        public void Jump(float height)
+        {
+            if (!Grounded) return;
+            float speed = Mathf.Sqrt(2f * Mathf.Max(.01f, Physics2D.gravity.magnitude * _actor.Definition.GravityScale) * height);
+            Velocity += Up * (speed - Vector2.Dot(Velocity, Up));
+        }
+        public void Stop() { Intent = Vector2.zero; Velocity = _impulse = GravityDrift = Vector2.zero; SpeedMultiplier = 1f; AllowLedgeTraversal = false; }
         public Vector2 CaptureImpulse() => _impulse;
         public void Restore(Vector2 velocity, Vector2 impulse, Vector2 gravityDrift = default)
         {

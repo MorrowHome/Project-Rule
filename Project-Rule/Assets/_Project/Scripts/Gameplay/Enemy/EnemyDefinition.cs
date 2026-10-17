@@ -4,7 +4,9 @@ using RuleGame.Infrastructure.Rules;
 
 namespace RuleGame.Gameplay.Enemy
 {
-    public enum EnemyKind { BrickMinion, BrickBoss, ClockBoss, RabbitBoss, BatBoss, BatMinion }
+    // 新类型只追加，保留现有资产的枚举值。
+    public enum EnemyKind { BrickMinion, BrickBoss, ClockBoss, RabbitBoss, BatBoss, BatMinion,
+        StoneGuard, ExplosiveBlock, BrickSoldier, SpringToy, ClockMouse, ClockBomb, PlushBird, HugBear, PlushSeal }
 
     [Serializable]
     public struct EnemyActionTiming
@@ -19,6 +21,8 @@ namespace RuleGame.Gameplay.Enemy
     {
         public EnemyKind Kind;
         public string DisplayName;
+        public bool IsBoss => Kind == EnemyKind.BrickBoss || Kind == EnemyKind.ClockBoss
+            || Kind == EnemyKind.RabbitBoss || Kind == EnemyKind.BatBoss;
         public Vector2 BodySize = new Vector2(1.8f, 3f);
         public float Health = 100f;
         public float Damage = 10f;
@@ -120,7 +124,7 @@ namespace RuleGame.Gameplay.Enemy
         [Min(0.5f)] public float RangedRange = 9f;
         [Range(0.1f, 1f)] public float RetreatSpeedMultiplier = 0.8f;
         [Header("受击硬直")]
-        [Tooltip("Boss 短时间累计受到这么多实际伤害才进入受击状态。小怪仍每次命中受击。")]
+        [Tooltip("Boss 短时间累计受到这么多实际伤害才进入受击状态；小怪使用独立阈值。")]
         [Min(1f)] public float StaggerDamageThreshold = 30f;
         [Tooltip("连续这么久没有有效命中，清空累计硬直伤害。冷却期间不累计。")]
         [Min(0.1f)] public float StaggerResetDelay = 1.5f;
@@ -168,6 +172,49 @@ namespace RuleGame.Gameplay.Enemy
         [Min(1f)] public float ClockSecondRotationPeriod = 6f;
         public float ClockCoreWindow = 3f;
         public float ClockCoreHealth = 15f;
+        [Header("关卡小怪：感知与巡逻")]
+        [Min(.5f)] public float MinionSenseRange = 6f;
+        [Min(.2f)] public float MinionPatrolDistance = 3f;
+        [Min(.1f)] public float MinionIgnoreDuration = 3f;
+        [Tooltip("以出生点为圆心的追击半径；圈外目标不索敌、不起手攻击，脱战后返回。")]
+        [Min(1f)] public float MinionLeashRange = 8f;
+        [Tooltip("失去视线后只搜索最后看到的位置这么久，超时返回；不会持续追踪墙后的实时位置。")]
+        [Min(0f)] public float MinionTargetMemory = 1.5f;
+        [Tooltip("在受击累计重置时间内承受此伤害才硬直；仍会正常扣血和闪白。")]
+        [Min(1f)] public float MinionStaggerThreshold = 12f;
+        [Tooltip("小怪普通硬直时长上限，包含 Boss 召唤物；恢复后再计算完整的硬直冷却。")]
+        [Min(.05f)] public float MinionHurtDuration = .25f;
+        [Min(.5f)] public float MinionPreferredRange = 4f;
+        [Tooltip("近战前摇可转向的比例，超过后锁定方向，留下绕背躲避的机会。")]
+        [Range(0f, .5f)] public float MinionAimLockFraction = .25f;
+        [Header("关卡小怪：平台寻路")]
+        public bool MinionNavigationEnabled = true;
+        [Tooltip("普通地面小怪可跳越的高度；0 禁止主动跳跃，弹簧怪沿用自己的跳高。")]
+        [Min(0f)] public float MinionJumpHeight = 1.6f;
+        [Tooltip("主动下落允许的最大高度差；没有可达落脚点时保留悬崖保护。")]
+        [Min(0f)] public float MinionMaxDrop = 2.5f;
+        [Tooltip("平台采样间距；窄于此间距的平台可能不参与路线。每次最多采样 192 个落脚点。")]
+        [Range(.3f, 1f)] public float MinionNavigationSpacing = .5f;
+        [Tooltip("路线重算间隔，使用游戏物理时钟；运动中的跳跃不逐帧改选路线。")]
+        [Min(.2f)] public float MinionRepathInterval = .65f;
+        [Header("关卡小怪：重组与自爆")]
+        public bool MinionReassembles;
+        [Min(.1f)] public float MinionRespawnDelay = 7f;
+        [Min(.1f)] public float MinionFuseDuration = 1f;
+        [Min(.2f)] public float MinionExplosionRadius = 2.5f;
+        [Header("关卡小怪：跳跃与钻地")]
+        [Min(.1f)] public float MinionHopInterval = .5f;
+        [Min(.2f)] public float MinionHopHeight = 2f;
+        [Min(.2f)] public float MinionHighHopHeight = 3.2f;
+        [Min(.5f)] public float MinionMouseRange = 8f;
+        [Min(.1f)] public float MinionMouseCooldown = 3f;
+        [Header("关卡小怪：拥抱与技能")]
+        [Min(.1f)] public float MinionHugDuration = 3f;
+        [Min(.1f)] public float MinionHugTickInterval = 1f;
+        [Min(.1f)] public float MinionSkillInterval = 5f;
+        [Min(.2f)] public float MinionSlideDuration = 1.2f;
+        [Min(1f)] public float MinionDashMultiplier = 3f;
+        [Min(1f)] public float MinionProjectileSpeed = 7f;
         public EnemyActionTiming[] Timings = Array.Empty<EnemyActionTiming>();
 
         public float Duration(string action, float fallback = 0.8f)

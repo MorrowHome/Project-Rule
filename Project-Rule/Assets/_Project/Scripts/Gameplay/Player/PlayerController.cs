@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using RuleGame.Core.Rules;
@@ -45,6 +46,14 @@ namespace RuleGame.Gameplay.Player
     [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
     public class PlayerController : MonoBehaviour, IKnockbackReceiver, IRuleSelectionInputGate, IMomentumSource
     {
+        private readonly HashSet<object> _movementHolders = new HashSet<object>();
+        public bool MovementHeld => _movementHolders.Count > 0;
+        /// <summary>拥抱只限制自主移动，保留挥剑反击；多只敌人各自释放自己的限制。</summary>
+        public void SetMovementHeld(object owner, bool held)
+        {
+            if (held) _movementHolders.Add(owner);
+            else _movementHolders.Remove(owner);
+        }
         // ==================================================================
         //  序列化字段
         // ==================================================================
@@ -386,6 +395,9 @@ namespace RuleGame.Gameplay.Player
         /// </summary>
         public event Action OnHeavyAttacked;
 
+        /// <summary>实际判定开窗；表现层直接使用同一次攻击的世界范围，空挥也会通知。</summary>
+        public event Action<PlayerAttackCue> OnAttackStruck;
+
         // ==================================================================
         //  生命周期
         // ==================================================================
@@ -486,11 +498,12 @@ namespace RuleGame.Gameplay.Player
 
             // ① 接触：Sense 内部先解出「上」方向（探测得先知道哪边是下），再扫地面与左右墙。
             PlayerInput.State   input   = _input.Sample();
-
             // 时间恒定：窗口内的定点回溯。窗口没开时 TryRewind() 返回 false，是空操作。
             // 放在物理帧：回溯会直接写回所有实体的刚体位置，与物理步进同一节拍更安全。
             if (input.RewindPressed) TryRewindTime();
 
+            // 关卡流程锁移动时只清移动意图，跳跃松手与攻击仍然透传。
+            if (MovementHeld) input = new PlayerInput.State(Vector2.zero, false, input.JumpReleased, false, input.AttackPressed);
             ContactSensor.State contact = _contacts.Sense(tuning);
             if (contact.JustLanded) OnLanded?.Invoke();
 
@@ -518,7 +531,7 @@ namespace RuleGame.Gameplay.Player
                 dt);
             if (heavy.Swing)  OnHeavyAttacked?.Invoke();
             if (heavy.Strike)
-                PerformAttackHit(_heavyDamage, _heavyKnockback, _heavyBoxSize, _heavyBoxOffset);
+                PerformAttackHit(_heavyDamage, _heavyKnockback, _heavyBoxSize, _heavyBoxOffset, true);
 
             // ③″ 攻击连段：起手 → 生效 → 收招。判定本身留在本类（要用 CombatSystem 与位置）。
             AttackSolver.Decision attack = _attack.Advance(tuning, lightPressed, dt);
@@ -725,12 +738,14 @@ namespace RuleGame.Gameplay.Player
         /// <para>放在速度解算**之前**调用，所以读到的朝向是上一帧末的 ——
         /// 与重构前一致（原来 ③′ 也在 ④ 之前）。</para>
         /// </remarks>
-        private void PerformAttackHit(float damage, float knockback, Vector2 boxSize, float boxOffset)
+        private void PerformAttackHit(float damage, float knockback, Vector2 boxSize, float boxOffset, bool heavy = false)
         {
-            if (_combat == null) return;
-
             // 发起方只组织「打哪儿、打多大」，最终伤害由伤害处理模块按当前规则算。
             Vector2 center = (Vector2)transform.position + new Vector2(_mover.Facing * boxOffset, 0f);
+            OnAttackStruck?.Invoke(new PlayerAttackCue(center, boxSize, _mover.Facing,
+                heavy, heavy ? -1 : AttackComboIndex));
+
+            if (_combat == null) return;
 
             int hits = _combat.PerformAttack(this, center, boxSize, damage, knockback);
 

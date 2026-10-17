@@ -8,12 +8,9 @@ using RuleGame.Infrastructure.Time;
 
 namespace RuleGame.Gameplay.Enemy
 {
-    /// <summary>可复用的方块、冲击波、毛团弹。命中只看受击箱与地形，伤害仍走 CombatSystem。</summary>
+    /// <summary>可复用的方块、冲击波、毛团弹。碰撞只组织命中，仍走 CombatSystem。</summary>
     public sealed class EnemyProjectile : MonoBehaviour, ISnapshotParticipant
     {
-        /// <summary>地形层（Ground）。撞到它 = 弹体消散。</summary>
-        private const int TerrainLayer = 8;
-
         private static readonly Stack<EnemyProjectile> Pool = new Stack<EnemyProjectile>();
         private static readonly Dictionary<EnemyActor, int> ActiveBySource = new Dictionary<EnemyActor, int>();
         private EnemyActor _countedSource;
@@ -107,36 +104,36 @@ namespace RuleGame.Gameplay.Enemy
             _age += dt;
             if (_age > Mathf.Max(1f, _source.Definition.ProjectileLifetime)) { gameObject.SetActive(false); return; }
             _velocity += Physics2D.gravity * _gravity * dt;
-
-            // 命中只看**受击箱**；障碍物用 #10 引入的「身体实心层」判定。
-            // ⚠️ 发射点在射手身上，扫到的第一个很可能是射手**自己的**受击箱 ——
-            //    那一类命中要「穿过去继续飞」，不能当场消散（CanHit 会挡下它）。
-            int solidMask = _source.Motor.SolidMask;
             var filter = new ContactFilter2D { useTriggers = true };
+            int solidMask = _source.Motor.SolidMask;
             filter.SetLayerMask(Hurtbox.Mask | solidMask);
             int count = Physics2D.CircleCast(_body.position, _radius, _velocity.normalized, filter, _hits, _velocity.magnitude * dt);
-
-            // 命中结果按距离排序，所以「最近的先判」——自己的箱子被跳过后会接着判下一个。
+            int valid = 0;
             for (int i = 0; i < count; i++)
             {
-                IDamageable receiver = Hurtbox.ResolveOwner(_hits[i].collider);
-
-                if (receiver != null)
+                bool solid = (solidMask & (1 << _hits[i].collider.gameObject.layer)) != 0;
+                if (solid || CombatSystem.TryResolveTarget(_hits[i].collider, _source, out _)) _hits[valid++] = _hits[i];
+            }
+            count = valid;
+            if (count > 0)
+            {
+                // 普通弹体不穿透：只处理最近的实体，同一角色的多个碰撞体也只发一次伤害。
+                // 接触距离相同时地形优先，避免紧贴墙后的角色被穿墙结算。
+                int nearest = 0;
+                for (int i = 1; i < count; i++)
                 {
-                    if (!CombatSystem.CanHit(_source, receiver)) continue;   // 自己 / 同阵营的受击箱：直接穿过去
-
-                    _source.EmitFeedback(EnemyFeedbackKind.ProjectileImpact, _hits[i].point, -_velocity.normalized, this);
-                    _source.Combat?.ApplyDamage(_source, receiver, _source.Definition.Damage, 4f);
-                    gameObject.SetActive(false);
-                    return;
+                    bool solid = (solidMask & (1 << _hits[i].collider.gameObject.layer)) != 0;
+                    if (_hits[i].distance < _hits[nearest].distance
+                        || (Mathf.Approximately(_hits[i].distance, _hits[nearest].distance) && solid)) nearest = i;
                 }
-
-                // 不是受击箱 → 障碍物：就地消散。
-                _source.EmitFeedback(EnemyFeedbackKind.ProjectileImpact, _hits[i].point, -_velocity.normalized, this);
+                RaycastHit2D hit = _hits[nearest];
+                _source.EmitFeedback(EnemyFeedbackKind.ProjectileImpact, hit.point, -_velocity.normalized, this);
+                bool blocked = (solidMask & (1 << hit.collider.gameObject.layer)) != 0;
+                if (!blocked && CombatSystem.TryResolveTarget(hit.collider, _source, out IDamageable receiver))
+                    _source.Combat?.ApplyDamage(_source, receiver, _source.Definition.Damage, 4f);
                 gameObject.SetActive(false);
                 return;
             }
-
             _body.MovePosition(_body.position + _velocity * dt);
         }
         private struct Data { public EnemyActor Source; public Vector2 Velocity; public float Age, Gravity, Radius; public int VisualIndex; }
