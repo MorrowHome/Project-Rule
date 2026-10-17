@@ -1,6 +1,7 @@
 using UnityEngine;
 using RuleGame.Gameplay.Combat;
 using RuleGame.Core.Rules;
+using RuleGame.Gameplay.Common;
 
 namespace RuleGame.Gameplay.Enemy
 {
@@ -9,20 +10,26 @@ namespace RuleGame.Gameplay.Enemy
     public sealed class EnemyMotor : MonoBehaviour, IKnockbackReceiver
     {
         public LayerMask SolidMask = 1 << 8;
+        [Tooltip("仅阻挡身体移动，不作为地面或悬崖支撑。默认 Enemy 层，包含 Boss 与召唤小兵。")]
+        public LayerMask BodyBlockMask = 1 << 9;
         public Vector2 Intent { get; set; }
         public float SpeedMultiplier { get; set; } = 1f;
         public bool Grounded { get; private set; }
         public Vector2 Up { get; private set; } = Vector2.up;
         public Vector2 Velocity { get; private set; }
+        public Vector2 GravityDrift { get; private set; }
+        public bool MassReduced => _rulesBody != null && _body.mass < _rulesBody.BaseMass * .99f;
         private Vector2 _impulse;
         private Rigidbody2D _body;
         private EnemyActor _actor;
+        private RuleAffectedBody _rulesBody;
         private readonly RaycastHit2D[] _hits = new RaycastHit2D[8];
 
         private void Awake()
         {
             _body = GetComponent<Rigidbody2D>();
             _actor = GetComponent<EnemyActor>();
+            _rulesBody = GetComponent<RuleAffectedBody>();
             _body.bodyType = RigidbodyType2D.Kinematic;
             _body.gravityScale = 0f;
             _body.constraints = RigidbodyConstraints2D.FreezeRotation;
@@ -34,6 +41,7 @@ namespace RuleGame.Gameplay.Enemy
         {
             if (_actor.Definition == null || dt <= 0f) return;
             EnemyDefinition config = _actor.Definition;
+            bool flying = _actor.IsFlying;
             if (Physics2D.gravity.sqrMagnitude > 0.001f) Up = -Physics2D.gravity.normalized;
             var filter = new ContactFilter2D { useTriggers = false };
             filter.SetLayerMask(SolidMask);
@@ -42,18 +50,34 @@ namespace RuleGame.Gameplay.Enemy
             for (int i = 0; i < count; i++)
                 if (Vector2.Dot(_hits[i].normal, Up) > 0.55f) { Grounded = true; break; }
 
-            Vector2 velocity = Velocity;
+            // 飞行的操纵速度与规则造成的漂移分开，AI 转向不会每帧抹掉反重力效果。
+            Vector2 velocity = Velocity - GravityDrift;
+            float massResponse = Mathf.Clamp((_rulesBody != null ? _rulesBody.BaseMass : _body.mass)
+                / Mathf.Max(.01f, _body.mass), .1f, 4f);
             float direction = Intent.x;
             var attributes = RuleSystem.Instance?.Attributes;
             if (Grounded && attributes != null && attributes.Values.FrictionInverted) direction = -direction;
-            float acceleration = 35f;
+            float acceleration = (flying ? Mathf.Max(35f, config.FlightAcceleration) : 35f) * massResponse;
             if (Grounded && attributes != null)
                 acceleration *= Mathf.Max(0.02f, attributes.Values.FrictionScale);
             velocity.x = Mathf.MoveTowards(velocity.x, direction * config.MoveSpeed * SpeedMultiplier, acceleration * dt);
-            if (config.Flying && !_actor.Defeated)
-                velocity.y = Mathf.MoveTowards(velocity.y, Intent.y * config.MoveSpeed * SpeedMultiplier, 24f * dt);
+            if (flying && !_actor.Defeated)
+            {
+                velocity.y = Mathf.MoveTowards(velocity.y, Intent.y * config.MoveSpeed * SpeedMultiplier,
+                    Mathf.Max(1f, config.FlightAcceleration) * massResponse * dt);
+                // 正常悬浮的升力抵消 GravityRule 约定的 (0,-9.81)。规则改变重力后保留差值：
+                // 增强下坠、削弱/失重上浮、反转向上加速；规则结束后由飞行控制逐渐稳住。
+                Vector2 gravityChange = Physics2D.gravity - new Vector2(0f, -9.81f);
+                GravityDrift = gravityChange.sqrMagnitude > .001f
+                    ? Vector2.ClampMagnitude(GravityDrift + gravityChange * config.GravityScale * dt, 28f)
+                    : Vector2.MoveTowards(GravityDrift, Vector2.zero, Mathf.Max(1f, config.FlightAcceleration) * dt);
+                velocity += GravityDrift;
+            }
             else
             {
+                // 飞行结束（例如死亡）时保留原有动量，改由普通重力接管。
+                velocity += GravityDrift;
+                GravityDrift = Vector2.zero;
                 velocity += Physics2D.gravity * config.GravityScale * dt;
                 if (Grounded && Vector2.Dot(velocity, Up) < 0f) velocity -= Up * Vector2.Dot(velocity, Up);
                 velocity.y = Mathf.Clamp(velocity.y, -28f, 28f);
@@ -66,15 +90,25 @@ namespace RuleGame.Gameplay.Enemy
                 }
             }
             _impulse = Vector2.MoveTowards(_impulse, Vector2.zero, 24f * dt);
-            var slide = _body.Slide(velocity + _impulse, dt, new Rigidbody2D.SlideMovement
+            var movement = new Rigidbody2D.SlideMovement
             {
                 surfaceUp = Up, surfaceSlideAngle = 60f, gravitySlipAngle = 0f,
+                // 只在贴着当前重力方向的支撑面时吸附。默认世界向下的 Anchor 会把反重力实体拉回旧地面。
+                surfaceAnchor = !flying && Grounded && Vector2.Dot(velocity, Up) <= .01f
+                    ? -Up * .05f : Vector2.zero,
                 gravity = Vector2.zero, maxIterations = 6, useLayerMask = true,
-                layerMask = SolidMask, useAttachedTriggers = false, useSimulationMove = true
-            });
+                // 玩家身体只参与位移阻挡，不作为接地或悬崖探测的支撑面。
+                layerMask = SolidMask | _actor.PlayerMask | BodyBlockMask, useAttachedTriggers = false, useSimulationMove = true
+            };
+            var slide = _body.Slide(velocity + _impulse, dt, movement);
             if (slide.slideHit.collider != null)
             {
                 Vector2 normal = slide.slideHit.normal;
+                if (Vector2.Dot(GravityDrift, normal) < 0f)
+                {
+                    GravityDrift -= normal * Vector2.Dot(GravityDrift, normal);
+                    if (Vector2.Dot(velocity, normal) < 0f) velocity -= normal * Vector2.Dot(velocity, normal);
+                }
                 if (Mathf.Abs(normal.x) > 0.9f && velocity.x * normal.x < 0f) velocity.x = 0f;
                 if (Vector2.Dot(normal, Up) < -0.5f && Vector2.Dot(velocity, Up) > 0f)
                     velocity -= Up * Vector2.Dot(velocity, Up);
@@ -82,9 +116,30 @@ namespace RuleGame.Gameplay.Enemy
             Velocity = velocity;
         }
 
+        /// <summary>检查真实身体阻挡；不能把摩擦导致的低速误判成撞到了玩家。</summary>
+        public bool HasHorizontalObstacle(float direction)
+        {
+            float side = Mathf.Sign(direction);
+            var filter = new ContactFilter2D { useTriggers = false };
+            filter.SetLayerMask(SolidMask | BodyBlockMask | _actor.PlayerMask);
+            // Rigidbody.Cast 排除自身；只接受迎面接触，不把脚下地面当成横向墙壁。
+            int count = _body.Cast(Vector2.right * side, filter, _hits, .035f);
+            for (int i = 0; i < count; i++)
+                if (_hits[i].normal.x * side < -.5f) return true;
+            if (!Grounded) return false;
+            EnemyDefinition config = _actor.Definition;
+            Vector2 probe = _body.position - Up * (config.BodySize.y * .5f - .1f)
+                + Vector2.right * side * (config.BodySize.x * .5f + .15f);
+            return !Physics2D.Raycast(probe, -Up, .45f, SolidMask);
+        }
         public void AddImpulse(Vector2 impulse) => _impulse += impulse / Mathf.Max(0.1f, _body.mass);
-        public void Stop() { Intent = Vector2.zero; Velocity = _impulse = Vector2.zero; SpeedMultiplier = 1f; }
+        public void Stop() { Intent = Vector2.zero; Velocity = _impulse = GravityDrift = Vector2.zero; SpeedMultiplier = 1f; }
         public Vector2 CaptureImpulse() => _impulse;
-        public void Restore(Vector2 velocity, Vector2 impulse) { Velocity = velocity; _impulse = impulse; }
+        public void Restore(Vector2 velocity, Vector2 impulse, Vector2 gravityDrift = default)
+        {
+            Velocity = velocity; _impulse = impulse; GravityDrift = gravityDrift;
+            // 全局重力随快照恢复后，立即更新派生朝上方向，避免原画和弱点仍用未来时间线的方向。
+            if (Physics2D.gravity.sqrMagnitude > .001f) Up = -Physics2D.gravity.normalized;
+        }
     }
 }

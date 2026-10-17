@@ -159,6 +159,8 @@ namespace RuleGame.Gameplay.Player
         [Header("碰撞")]
         [Tooltip("阻挡移动、并用于接地判定的层。地形与墙体都放这里。")]
         [SerializeField] private LayerMask _solidLayer;
+        [Tooltip("仅阻挡身体移动的层，不授予接地和蹬墙。默认 Enemy（层 9）。")]
+        [SerializeField] private LayerMask _bodyBlockLayer = 1 << 9;
 
         [Tooltip("接地探测距离（米）。")]
         [SerializeField] private float _groundProbeDistance = 0.08f;
@@ -565,6 +567,8 @@ namespace RuleGame.Gameplay.Player
         /// <remarks>给表现层用（动画判上升/下降、跑步快慢）。玩法逻辑不要读它做判断 ——
         /// 那样会把「速度怎么算」泄漏到外面。</remarks>
         public Vector2 Velocity => _mover != null ? _mover.Velocity : Vector2.zero;
+        /// <summary>移动平台入口。自身速度仍由 MotionMover 管理，平台只贡献本物理帧的承载位移。</summary>
+        public void CarryOnPlatform(Vector2 displacement, Collider2D platform) => _mover?.CarryOnPlatform(displacement, platform);
 
         /// <summary>
         /// 本物理帧的动量（kg·单位/秒），方向 = 运动方向。见 <see cref="IMomentumSource"/>。
@@ -786,6 +790,7 @@ namespace RuleGame.Gameplay.Player
             WallJumpUpSpeed      = _wallJumpUpSpeed,
 
             SolidLayer           = _solidLayer,
+            BodyBlockLayer       = _bodyBlockLayer,
             GroundProbeDistance  = _groundProbeDistance,
             SurfaceAnchorDistance = _surfaceAnchorDistance,
             SurfaceSlideAngle    = _surfaceSlideAngle,

@@ -15,11 +15,14 @@ namespace RuleGame.Gameplay.Enemy
         private const int TerrainLayer = 8;
 
         private static readonly Stack<EnemyProjectile> Pool = new Stack<EnemyProjectile>();
+        private static readonly Dictionary<EnemyActor, int> ActiveBySource = new Dictionary<EnemyActor, int>();
+        private EnemyActor _countedSource;
         private EnemyActor _source;
         private Rigidbody2D _body;
         private SpriteRenderer _renderer;
         private Vector2 _velocity;
         private float _gravity, _radius, _age;
+        private int _visualIndex;
         private bool _inPool;
         private readonly RaycastHit2D[] _hits = new RaycastHit2D[8];
         public bool DiscardWhenMissing => true;
@@ -27,10 +30,15 @@ namespace RuleGame.Gameplay.Enemy
         public Vector2 Velocity => _velocity;
         public float Radius => _radius;
         public float Gravity => _gravity;
+        public float Age => _age;
+        public int VisualIndex => _visualIndex;
+        public static int ActiveCount(EnemyActor source)
+            => !ReferenceEquals(source, null) && ActiveBySource.TryGetValue(source, out int count) ? count : 0;
 
-        public static void Spawn(EnemyActor source, Vector2 direction, float speed, float gravity, float radius)
+        public static void Spawn(EnemyActor source, Vector2 direction, float speed, float gravity, float radius, int visualIndex = -1, Vector2? origin = null)
         {
             if (source.Target == null || source.Defeated) return;
+            if (ActiveCount(source) >= Mathf.Clamp(source.Definition.ProjectileBudget, 16, 384)) return;
             EnemyProjectile shot = null;
             while (Pool.Count > 0 && shot == null)
             {
@@ -49,9 +57,11 @@ namespace RuleGame.Gameplay.Enemy
                 go.AddComponent<RuleAffectedBody>();
             }
             shot._source = source; shot._age = 0f; shot._gravity = gravity; shot._radius = radius;
+            shot._visualIndex = visualIndex >= 0 ? Mathf.Clamp(visualIndex, 0, 2)
+                : Mathf.FloorToInt((source.Brain?.SimulationAge ?? 0f) * 8f) % 3;
             shot._velocity = direction.normalized * speed; shot._inPool = false;
-            shot.transform.position = source.transform.position;
-            if (gravity == 0f && radius >= 0.3f)
+            shot.transform.position = origin.HasValue ? (Vector3)origin.Value : source.transform.position;
+            if (!origin.HasValue && gravity == 0f && radius >= 0.3f)
                 shot.transform.position -= (Vector3)source.Motor.Up * (source.Definition.BodySize.y * 0.5f - radius - 0.05f);
             shot.transform.localScale = Vector3.one * radius * 2f;
             shot.gameObject.SetActive(true);
@@ -63,9 +73,28 @@ namespace RuleGame.Gameplay.Enemy
             source.EmitFeedback(EnemyFeedbackKind.ProjectileSpawn, shot.transform.position, direction, shot);
         }
         private void Awake() { _body = GetComponent<Rigidbody2D>(); _renderer = GetComponent<SpriteRenderer>(); }
-        private void OnEnable() => _inPool = false;
+        private void OnEnable()
+        {
+            _inPool = false;
+            RegisterActive();
+        }
+        private void RegisterActive()
+        {
+            if (ReferenceEquals(_source, null) || !ReferenceEquals(_countedSource, null)) return;
+            _countedSource = _source;
+            ActiveBySource[_source] = ActiveCount(_source) + 1;
+        }
+        private void UnregisterActive()
+        {
+            if (ReferenceEquals(_countedSource, null)) return;
+            int remaining = ActiveCount(_countedSource) - 1;
+            if (remaining <= 0) ActiveBySource.Remove(_countedSource);
+            else ActiveBySource[_countedSource] = remaining;
+            _countedSource = null;
+        }
         private void OnDisable()
         {
+            UnregisterActive();
             if (_inPool) return;
             _inPool = true;
             Pool.Push(this);
@@ -76,14 +105,15 @@ namespace RuleGame.Gameplay.Enemy
             if (_source == null || _source.Defeated) { gameObject.SetActive(false); return; }
             float dt = Time.fixedDeltaTime;
             _age += dt;
-            if (_age > 7f) { gameObject.SetActive(false); return; }
+            if (_age > Mathf.Max(1f, _source.Definition.ProjectileLifetime)) { gameObject.SetActive(false); return; }
             _velocity += Physics2D.gravity * _gravity * dt;
 
-            // 命中只看**受击箱**，另外撞地形（层 8）就消散。
+            // 命中只看**受击箱**；障碍物用 #10 引入的「身体实心层」判定。
             // ⚠️ 发射点在射手身上，扫到的第一个很可能是射手**自己的**受击箱 ——
             //    那一类命中要「穿过去继续飞」，不能当场消散（CanHit 会挡下它）。
+            int solidMask = _source.Motor.SolidMask;
             var filter = new ContactFilter2D { useTriggers = true };
-            filter.SetLayerMask(Hurtbox.Mask | (1 << TerrainLayer));
+            filter.SetLayerMask(Hurtbox.Mask | solidMask);
             int count = Physics2D.CircleCast(_body.position, _radius, _velocity.normalized, filter, _hits, _velocity.magnitude * dt);
 
             // 命中结果按距离排序，所以「最近的先判」——自己的箱子被跳过后会接着判下一个。
@@ -101,7 +131,7 @@ namespace RuleGame.Gameplay.Enemy
                     return;
                 }
 
-                // 不是受击箱 → 地形：就地消散。
+                // 不是受击箱 → 障碍物：就地消散。
                 _source.EmitFeedback(EnemyFeedbackKind.ProjectileImpact, _hits[i].point, -_velocity.normalized, this);
                 gameObject.SetActive(false);
                 return;
@@ -109,12 +139,15 @@ namespace RuleGame.Gameplay.Enemy
 
             _body.MovePosition(_body.position + _velocity * dt);
         }
-        private struct Data { public EnemyActor Source; public Vector2 Velocity; public float Age, Gravity, Radius; }
-        public object CaptureSnapshotState() => new Data { Source = _source, Velocity = _velocity, Age = _age, Gravity = _gravity, Radius = _radius };
+        private struct Data { public EnemyActor Source; public Vector2 Velocity; public float Age, Gravity, Radius; public int VisualIndex; }
+        public object CaptureSnapshotState() => new Data { Source = _source, Velocity = _velocity, Age = _age, Gravity = _gravity, Radius = _radius, VisualIndex = _visualIndex };
         public void RestoreSnapshotState(object state)
         {
             if (!(state is Data data)) return;
+            UnregisterActive();
             _source = data.Source; _velocity = data.Velocity; _age = data.Age; _gravity = data.Gravity; _radius = data.Radius;
+            if (isActiveAndEnabled) RegisterActive();
+            _visualIndex = data.VisualIndex;
             transform.localScale = Vector3.one * _radius * 2f;
             if (_source != null) _renderer.sprite = _source.ProjectileSprite;
         }

@@ -1,0 +1,20 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="BrickCityLab.uss" />
+    <ui:VisualElement class="city-screen" picking-mode="Ignore">
+        <ui:VisualElement class="city-vitals" picking-mode="Ignore">
+            <ui:Label name="life" class="city-life" />
+            <ui:Label name="energy" />
+            <ui:Label name="rules" class="city-rules" />
+        </ui:VisualElement>
+        <ui:VisualElement name="cityGuide" class="city-guide" picking-mode="Ignore">
+            <ui:Label name="cityArea" class="city-area" />
+            <ui:Label name="cityInstruction" class="city-instruction" />
+            <ui:Label name="cityRewards" class="city-rewards" />
+        </ui:VisualElement>
+        <ui:VisualElement name="cityBottom" class="city-bottom" picking-mode="Ignore">
+            <ui:Label name="cityPrompt" class="city-prompt" />
+            <ui:Label text="按住 Shift 打开轮盘 · 悬停选属性与关系 · 左键施放 · 松开取消" />
+            <ui:Label text="F5 重置场景  ·  F6 留影 / F7 回溯  ·  F8 休息点  ·  F9 耗能  ·  R 重置规则" class="city-shortcuts" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

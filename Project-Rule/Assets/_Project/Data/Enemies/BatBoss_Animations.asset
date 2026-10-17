@@ -227,3 +227,11 @@ MonoBehaviour:
     - {fileID: 21300000, guid: e017059d83f8c2944b31188dd5cb08e0, type: 3}
     FrameRate: 8
     FacesRight: 1
+  - Action: DashWindup
+    Frames:
+    - {fileID: 21300000, guid: 602ae168e2b66ee47afeed479ea37bc4, type: 3}
+    - {fileID: 21300000, guid: e80e13ab4dcfe2b48b7b6dfe5fc9d643, type: 3}
+    - {fileID: 21300000, guid: 48ee5451f716d80478625453d20c9e0a, type: 3}
+    - {fileID: 21300000, guid: 3bea19015dbb542409aebf3a7571d735, type: 3}
+    FrameRate: 8
+    FacesRight: 1

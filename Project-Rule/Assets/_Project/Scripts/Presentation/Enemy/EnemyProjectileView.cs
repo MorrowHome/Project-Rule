@@ -13,11 +13,12 @@ namespace RuleGame.Presentation.Enemy
         private TrailRenderer _trail;
         private EnemyVfxProfile _profile;
         private EnemyActor _source;
-        private float _age;
+        private EnemySpriteSequence ProjectileAnimation => _profile != null && _profile.ProjectileAnimations.Length > 0
+            ? _profile.ProjectileAnimations[_shot.VisualIndex % _profile.ProjectileAnimations.Length] : null;
         private void Awake() => _shot = GetComponent<EnemyProjectile>();
         public void Configure(EnemyVfxProfile profile)
         {
-            _profile = profile; _age = 0f;
+            _profile = profile;
             if (_shot == null) _shot = GetComponent<EnemyProjectile>();
             if (_body == null)
             {
@@ -29,10 +30,13 @@ namespace RuleGame.Presentation.Enemy
             if (_source != null) _source.Restored -= OnRestore;
             _source = _shot.Source;
             if (_source != null) _source.Restored += OnRestore;
-            _body.sprite = profile.ProjectileSprite;
+            // Shot 是带透明收尾的一次性发射闪光；飞行弹体必须保持独立弹芯，不能循环该序列。
+            EnemySpriteSequence animation = ProjectileAnimation;
+            _body.sprite = animation != null && animation.Frames.Length > 0 ? animation.Frames[0] : profile.ProjectileSprite;
             _body.enabled = true;
-            _body.sharedMaterial = profile.Material;
-            _body.color = profile.Accent;
+            _body.sharedMaterial = animation != null && profile.ProjectileMaterial != null
+                ? profile.ProjectileMaterial : profile.Material;
+            _body.color = animation != null ? Color.white : profile.Accent;
             if (_trail == null)
             {
                 _trail = gameObject.AddComponent<TrailRenderer>();
@@ -44,9 +48,9 @@ namespace RuleGame.Presentation.Enemy
             _trail.sharedMaterial = profile.BeamMaterial;
             _trail.time = .18f; _trail.startWidth = .28f; _trail.endWidth = 0f;
             _trail.startColor = profile.Secondary; _trail.endColor = new Color(profile.Accent.r, profile.Accent.g, profile.Accent.b, 0f);
-            _trail.Clear(); _trail.emitting = true;
+            _trail.Clear(); _trail.emitting = !profile.PhysicalProjectiles;
         }
-        private void OnRestore() { _age = 0f; if (_trail != null) _trail.Clear(); }
+        private void OnRestore() { if (_trail != null) _trail.Clear(); }
         private void OnDisable()
         {
             if (_source != null) _source.Restored -= OnRestore;
@@ -78,19 +82,23 @@ namespace RuleGame.Presentation.Enemy
                 }
             }
             if (_profile == null) return;
+            EnemySpriteSequence animation = ProjectileAnimation;
+            if (animation != null && animation.Frames.Length > 0)
+            {
+                int frame = Mathf.FloorToInt(_shot.Age * animation.FrameRate) % animation.Frames.Length;
+                _body.sprite = animation.Frames[frame];
+            }
             // 已发射弹体继续独立飞行，不跟随发射者的单体暂停。
             bool paused = TimeManager.Instance?.IsPaused == true;
-            _trail.emitting = !paused;
+            _trail.emitting = !paused && !_profile.PhysicalProjectiles;
             // TrailRenderer 的历史点用引擎时间清退，实体暂停时延长寿命以保留现有轨迹。
             _trail.time = paused ? 1000f : .18f;
             if (paused) return;
-            _age += Time.deltaTime;
             bool ground = _shot.Gravity == 0f && _shot.Radius >= .3f;
-            _body.transform.localRotation = Quaternion.Euler(0f, 0f, ground ? 0f :
+            _body.transform.localRotation = Quaternion.Euler(0f, 0f, ground || _profile.PhysicalProjectiles ? 0f :
                 Mathf.Atan2(_shot.Velocity.y, _shot.Velocity.x) * Mathf.Rad2Deg);
-            _body.transform.localScale = ground ? new Vector3(1.7f, .8f, 1f) : Vector3.one * 1.7f;
-            if (_profile.Shot != null && !ground)
-                _body.sprite = _profile.Shot.Frame(_age % _profile.Shot.Duration);
+            _body.transform.localScale = animation != null ? Vector3.one
+                : ground ? new Vector3(1.7f, .8f, 1f) : Vector3.one * 1.7f;
         }
     }
 }

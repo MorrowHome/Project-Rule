@@ -11,6 +11,7 @@ namespace RuleGame.Presentation.Enemy
         public Vector2[] ClockFaceCenters = Array.Empty<Vector2>();
         public float FrameRate = 8f;
         public bool FacesRight = true;
+        public bool NativeFrameRate;
         public float Duration => Frames.Length / Mathf.Max(1f, FrameRate);
     }
     [CreateAssetMenu(menuName = "RuleGame/Enemy/Animation Set")]

@@ -2,7 +2,11 @@ using UnityEngine;
 
 namespace RuleGame.Gameplay.Enemy
 {
-    public enum EnemyFeedbackKind { Strike, ProjectileSpawn, ProjectileImpact, BeamSpawn, Hit, RuleCast, Summon }
+    public enum EnemyFeedbackKind
+    {
+        Strike, ProjectileSpawn, ProjectileImpact, BeamSpawn, Hit, RuleCast, Summon,
+        BarrageWarning, AreaStrike
+    }
 
     /// <summary>
     /// 战斗已发生的表现通知。只携带位置和事件源，不携带特效资源，也不反过来驱动伤害。
