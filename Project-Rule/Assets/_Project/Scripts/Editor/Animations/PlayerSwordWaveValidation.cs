@@ -63,7 +63,8 @@ namespace RuleGame.Editor.Animations
                 _keyboard = InputSystem.AddDevice<Keyboard>(); _keyboard.MakeCurrent();
                 TimeManager.Initialize(); WorldRegistry.Initialize();
                 RuleSystem.Initialize(ScriptableObject.CreateInstance<RuleCatalog>());
-                SnapshotSystem.Initialize(RuleSystem.Instance, WorldRegistry.Instance);
+                SnapshotRoster.Initialize();
+                SnapshotSystem.Initialize(RuleSystem.Instance, SnapshotRoster.Instance);
                 var combat = new GameObject("Combat").AddComponent<CombatSystem>();
                 var floor = new GameObject("Floor") { layer = 8 };
                 floor.transform.position = new Vector3(0, -.5f);
