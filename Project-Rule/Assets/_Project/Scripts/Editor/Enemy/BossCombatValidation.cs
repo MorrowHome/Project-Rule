@@ -836,9 +836,11 @@ namespace RuleGame.Editor.Enemy
         }
         private static SnapshotSystem SnapshotsFor(EnemyActor actor)
         {
-            var registry = new WorldRegistry();
-            registry.Register(new SnapshotBody(actor));
-            return new SnapshotSystem(RuleSystem.Instance, registry);
+            // 快照系统重构后收的是「快照名册」而不是活动实体注册表：两者服务不同消费者，
+            // 名册的成员资格 = 生命周期（禁用中也留在册）。
+            var roster = new SnapshotRoster();
+            roster.Register(new SnapshotBody(actor));
+            return new SnapshotSystem(RuleSystem.Instance, roster);
         }
         private static void AddSnapshotCameraCases()
         {
