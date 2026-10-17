@@ -34,8 +34,11 @@ namespace RuleGame.Gameplay.Enemy
         public void ApplyDamage(in DamageInfo damage)
         {
             if (!Opened || Broken) return;
+            float previous = Health;
             Health = Mathf.Clamp(Health - damage.Amount, 0f, _maximum);
             Broken = Health <= 0f;
+            if (Health < previous)
+                Owner?.EmitHitFeedback(previous - Health, damage.Attacker, Broken, false, this);
         }
         private struct Data { public bool Open, Broken; public float Health, Maximum; }
         public object CaptureSnapshotState() => new Data { Open = Opened, Broken = Broken, Health = Health, Maximum = _maximum };

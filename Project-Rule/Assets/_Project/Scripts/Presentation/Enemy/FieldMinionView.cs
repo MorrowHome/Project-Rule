@@ -10,14 +10,10 @@ namespace RuleGame.Presentation.Enemy
         public SpriteRenderer Body;
         private Color _color;
         private Vector3 _scale;
-        private float _hitUntil;
-        private void Awake() { _color = Body.color; _scale = Body.transform.localScale; }
-        private void OnEnable() { Actor.Feedback += OnFeedback; Actor.Restored += ResetHit; }
-        private void OnDisable() { Actor.Feedback -= OnFeedback; Actor.Restored -= ResetHit; }
-        private void ResetHit() => _hitUntil = 0f;
-        private void OnFeedback(EnemyFeedback feedback)
+        private void Awake()
         {
-            if (feedback.Kind == EnemyFeedbackKind.Hit) _hitUntil = (Actor.Brain?.SimulationAge ?? 0f) + .12f;
+            _color = Body.color; _scale = Body.transform.localScale;
+            EnemyHitFeedback.Attach(Actor, Body);
         }
         private void LateUpdate()
         {
@@ -29,10 +25,8 @@ namespace RuleGame.Presentation.Enemy
             if (state == "Armed") color = Color.Lerp(_color, Color.red, .5f + .5f * Mathf.Sin(Actor.Brain.ActionElapsed * 26f));
             else if (state == "Slide" || state == "Howl") color = Color.Lerp(_color, Color.yellow, .6f);
             else if (state == "Attack" || state == "Explode" || state == "Hug" || state == "BellySlap") color = Color.Lerp(_color, Color.white, .5f);
-            else if (state == "Hurt") color = Color.white;
             else if (state == "Down" || Actor.Defeated) color.a = .25f;
             else if (state == "Rebirth") color.a = Mathf.Clamp01(Actor.Brain.ActionElapsed / Actor.AnimationDuration);
-            if (Actor.Brain.SimulationAge < _hitUntil && color.a > .5f) color = Color.white;
             Body.color = color;
             Body.transform.localScale = new Vector3(_scale.x * Actor.Facing, _scale.y, _scale.z);
         }

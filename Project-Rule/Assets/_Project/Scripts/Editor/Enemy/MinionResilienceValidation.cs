@@ -150,9 +150,9 @@ namespace RuleGame.Editor.Enemy
             _actor.ApplyDamage(new DamageInfo { Amount = damage, Knockback = knockback, Attacker = _target });
         private static void Step(float dt)
         {
-            for (int i = 0; i < Mathf.CeilToInt(dt / .02f); i++) PhysicalStep();
+            for (int i = 0; i < Mathf.CeilToInt(dt / Time.fixedDeltaTime); i++) PhysicalStep();
         }
-        private static void PhysicalStep() { _actor.SendMessage("FixedUpdate"); Physics2D.Simulate(.02f); }
+        private static void PhysicalStep() { _actor.SendMessage("FixedUpdate"); Physics2D.Simulate(Time.fixedDeltaTime); }
         private static void Check(bool condition, string message)
         {
             if (!condition) throw new InvalidOperationException(message);
