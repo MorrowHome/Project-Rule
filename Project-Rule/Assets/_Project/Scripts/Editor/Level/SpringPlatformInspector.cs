@@ -49,8 +49,7 @@ namespace RuleGame.Editor.Level
             EditorGUILayout.LabelField("行程", $"{platform.Travel:0.###} 单位");
 
             SerializedProperty k = serializedObject.FindProperty("_springConstant");
-            SerializedProperty launch = serializedObject.FindProperty("_launchSpeed");
-            SerializedProperty hold = serializedObject.FindProperty("_holdSeconds");
+            SerializedProperty fullMass = serializedObject.FindProperty("_fullCompressionMass");
             serializedObject.Update();
             if (k != null && k.floatValue > 0f)
             {
@@ -59,21 +58,33 @@ namespace RuleGame.Editor.Level
                 EditorGUILayout.LabelField("压到底耗时", $"≈ {settle:0.##} 秒（无阻尼近似）");
             }
 
+            if (fullMass != null)
+            {
+                EditorGUILayout.LabelField("压到底需要", $"{fullMass.floatValue:0.##} kg");
+            }
+
             if (platform.Travel <= 0f)
             {
                 EditorGUILayout.HelpBox("行程为 0：自然长度和压缩长度一样，这根弹簧不会动。", MessageType.Warning);
             }
-            else if (launch != null && launch.floatValue > 0f)
-            {
-                EditorGUILayout.HelpBox(
-                    $"弹跳板：踩上去压到底后停 {hold?.floatValue:0.##} 秒，" +
-                    $"按 {launch.floatValue:0.#} 的速度把人弹飞。", MessageType.Info);
-            }
             else
             {
                 EditorGUILayout.HelpBox(
-                    $"只沉不弹：压到底后停 {hold?.floatValue:0.##} 秒自己浮回自然长度，" +
-                    "不给速度。把停顿调得很大就是「压住不动」的承重台。", MessageType.Info);
+                    $"压上来的东西停在「重力 = 弹簧力」的位置，载重拿掉才回弹。\n" +
+                    $"载重达到 {fullMass?.floatValue:0.##} kg 时压到底，更轻的停在半路 —— " +
+                    "所以质量规则会直接改变弹簧被压多深。", MessageType.Info);
+            }
+
+            if (Application.isPlaying)
+            {
+                EditorGUILayout.Space();
+                EditorGUILayout.LabelField("运行状态", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField("阶段", platform.PhaseName);
+                EditorGUILayout.LabelField("载重", $"{platform.LoadMass:0.###} kg");
+                EditorGUILayout.LabelField("压缩量", $"{platform.Compression:0.###}");
+
+                // 让这些数字在 play 中实时刷新（OnInspectorGUI 本身不会每帧自动重绘）。
+                Repaint();
             }
         }
 

@@ -27,6 +27,12 @@ namespace RuleGame.Gameplay.Player
         /// <summary>地面水平加速度。到全速的时间 ≈ 最大速度 / 本值。</summary>
         public float GroundAccel;
 
+        /// <summary>
+        /// 低摩擦地面（冰面）上的水平加速度。实际加速按脚下抓地系数在它与
+        /// <see cref="GroundAccel"/> 之间插值：普通地面用前者，完全打滑用本值。
+        /// </summary>
+        public float LowFrictionGroundAccel;
+
         /// <summary>空中水平加速度：能左右改向，但不瞬移。0 = 空中完全锁死横向速度。</summary>
         public float AirAccel;
 

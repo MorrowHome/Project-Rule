@@ -76,6 +76,11 @@ namespace RuleGame.Gameplay.Player
         [Tooltip("地面水平加速度。到全速的时间 ≈ 最大速度 / 本值（200 → 约 0.04 秒，近乎瞬时）。")]
         [SerializeField] private float _groundAccel = 200f;
 
+        [Tooltip("**低摩擦地面（冰面）**上的水平加速度。实际加速按脚下抓地系数在「本值」与 `_groundAccel` 之间插值：" +
+                 "普通地面（摩擦 1）用 `_groundAccel`，完全打滑（摩擦 0）用本值，中间线性过渡。" +
+                 "减速永远比这更慢 —— 冰面上是「起得慢、停得更慢」。")]
+        [SerializeField] private float _lowFrictionGroundAccel = 40f;
+
         [Tooltip("起跳速度。跳跃高度 = 本值² / (2 × 有效上升重力)。")]
         [SerializeField] private float _jumpSpeed    = 13.6f;
 
@@ -565,6 +570,8 @@ namespace RuleGame.Gameplay.Player
             // ①′ 风场：另一路环境输入。报的是力，除以质量后才进解算（见 WindSensor）。
             Vector2 windAccel = _wind.Sense(tuning);
             float   windDrag  = _wind.Drag;
+            float   windVerticalDamping = _wind.VerticalDamping;
+            bool    windInField = _wind.InField;
 
             // ③ 冲刺：计时 / 次数 / 冷却 / 方向。Dashing 是后面几步的总开关。
             DashSolver.Decision dash = _dash.Advance(tuning, input, contact, _mover.Facing, dt);
@@ -609,8 +616,8 @@ namespace RuleGame.Gameplay.Player
 
             // ④④′⑤⑤′⑥⑦⑧ 速度解算：纯计算。速度从参数进、从返回值出。
             var frame = new MotionFrame(tuning, input, contact, jump, dash,
-                                        Physics2D.gravity, windAccel, windDrag, _mover.Facing,
-                                        FrictionScale, FrictionInverted);
+                                        Physics2D.gravity, windAccel, windDrag, windVerticalDamping,
+                                        windInField, _mover.Facing, FrictionScale, FrictionInverted);
 
             _mover.Apply(VelocitySolver.Solve(_mover.Velocity, frame, dt));   // 唯一一次写速度
 
@@ -746,6 +753,15 @@ namespace RuleGame.Gameplay.Player
 
         /// <summary>本物理帧的空气阻力系数（风场给的，每秒速度衰减率）。</summary>
         public float WindDrag => _wind != null ? _wind.Drag : 0f;
+
+        /// <summary>本物理帧的竖直阻尼系数（风场给的，每秒速度衰减率）。只作用于竖直方向。</summary>
+        public float WindVerticalDamping => _wind != null ? _wind.VerticalDamping : 0f;
+
+        /// <summary>本物理帧是否在生效中的风场里（风场内的重力统一为上升重力）。</summary>
+        public bool InWindField => _wind != null && _wind.InField;
+
+        /// <summary>本实体的重力倍率（供风场 Gizmo 预览平衡高度用）。</summary>
+        public float GravityScale => _gravityScale;
 
         /// <summary>总跳数上限 = 第一段 + 空中段。</summary>
         public int MaxJumps => JumpSolver.MaxJumps(_maxAirJumps);
@@ -1018,6 +1034,7 @@ namespace RuleGame.Gameplay.Player
             // 已经在高速（冲刺 / 被击退）时不会瞬间被掐到 4，而是按加速度收敛过去。
             MoveSpeedMax         = IsAttacking ? _attackMoveSpeedMax : _moveSpeedMax,
             GroundAccel          = _groundAccel,
+            LowFrictionGroundAccel = _lowFrictionGroundAccel,
             AirAccel             = _airAccel,
             AirDrag              = _airDrag,
             FrictionDecel        = _frictionDecel,

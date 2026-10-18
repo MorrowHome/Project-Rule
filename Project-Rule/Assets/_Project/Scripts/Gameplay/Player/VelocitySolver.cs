@@ -104,17 +104,25 @@ namespace RuleGame.Gameplay.Player
 
         /// <summary>
         /// ④ 重力这一帧贡献的变化量。冲刺期间<b>不积分</b>（竖直速度原样保留，既不归零也不加速）。
+        /// **在风场里统一用上升重力**（不吃下落重力加成）。
         /// </summary>
-        /// <remarks>沿「上」轴的分量取 <c>Dot(gravity, up)</c>。因为 <c>up = -gravity.normalized</c>，
+        /// <remarks>
+        /// <para>沿「上」轴的分量取 <c>Dot(gravity, up)</c>。因为 <c>up = -gravity.normalized</c>，
         /// 重力与「上」轴恒平行、垂直分量恒为 0，所以这个投影是无损的 —— 与原实现
-        /// 「整个 gravity 向量加到 velocity 上」逐位等价。</remarks>
+        /// 「整个 gravity 向量加到 velocity 上」逐位等价。</para>
+        /// <para>⚠️ <b>为什么风场里要统一重力</b>：「上升 ×1、下落 ×2」是**方向依赖**的力 ——
+        /// 它不是保守力，每上下一个来回都会净做正功 <c>(g_落 − g_升) × 行程</c>。
+        /// 于是风里会出现两个平衡点（上升 / 下落各一个），中间是一个**不稳定的浮空带**：
+        /// 玩家在两个平衡点之间**自激振荡**，阻尼再大也只能把振幅压小、消不掉。
+        /// 统一成上升重力后力场变保守，只有一个平衡点，阻尼能把振荡真正收掉。</para>
+        /// </remarks>
         private static float GravityDelta(MotionTuning t, Vector2 gravity, Vector2 up,
-                                          float alongUp, float dt, bool dashing)
+                                          float alongUp, float dt, bool dashing, bool inWindField)
         {
             if (dashing) return 0f;
 
-            // 落得比升得快，滞空更紧凑
-            float scale = alongUp < 0f ? t.FallGravityMultiplier : 1f;
+            // 落得比升得快，滞空更紧凑。风场里不分上升 / 下落 —— 见上面的说明。
+            float scale = inWindField ? 1f : (alongUp < 0f ? t.FallGravityMultiplier : 1f);
             return Vector2.Dot(gravity, up) * t.GravityScale * scale * dt;
         }
 
@@ -164,19 +172,24 @@ namespace RuleGame.Gameplay.Player
                 return Mathf.MoveTowards(alongUp, -t.WallSlideSpeed, t.WallSlideImpactDecel * dt) - alongUp;
 
             // 否则重力照常积分，再压终端速度（终端速度要读重力之后的值）。
-            float delta = GravityDelta(t, frame.Gravity, frame.Contact.Up, alongUp, dt, dashing)
+            float delta = GravityDelta(t, frame.Gravity, frame.Contact.Up, alongUp, dt, dashing,
+                                       frame.WindInField)
                         + WindVerticalDelta(frame, alongUp, dt, dashing);
             return delta + TerminalFallDelta(t, alongUp + delta);
         }
 
         /// <summary>
-        /// ④′ 风的竖直分量这一帧贡献的变化量（沿「上」轴投影）：**加速度 + 空气阻力**。
+        /// ④′ 风的竖直分量这一帧贡献的变化量（沿「上」轴投影）：**加速度 + 空气阻力 + 竖直阻尼**。
         /// **与重力同待遇**：冲刺期间不积分 —— 冲刺是一条平直横线，竖直方向不接受任何外力。
         /// </summary>
         /// <remarks>
         /// <para>阻力项把速度朝 0 收：「停留位置」靠的就是它 —— 只有力的平衡而没有任何耗散时，
         /// 从低处进来的物体会带着一路攒下的动能冲过平衡点（实测出场速度 18 m/s，永远停不住）。</para>
-        /// <para>衰减量取 <c>Clamp01(drag × dt)</c> 而不是裸乘：阻力被调得极大时也只是
+        /// <para><b>竖直阻尼（<see cref="MotionFrame.WindVerticalDamping"/>）与空气阻力叠加</b>，
+        /// 只在这条竖直链里读：它就是「y 方向速度逐渐减少」的旋钮。只有各向同性阻力时竖直方向欠阻尼
+        /// （阻尼比 ≈ 0.26），人会绕着平衡高度上下弹好几次；加一项竖直阻尼把这笔动能收掉。
+        /// 横向链（⑤′）**不读它** —— 那是空气阻力的事。</para>
+        /// <para>衰减量取 <c>Clamp01(系数 × dt)</c> 而不是裸乘：系数被调得极大时也只是
         /// 「这一帧速度归零」，不会过冲成反向。</para>
         /// <para>贴墙下滑时本函数**根本不会被调用到**：竖直轴归墙独占的那个分支在上面提前
         /// <c>return</c> 了。这就是「重力在哪不生效，风就在哪不生效」的全部实现 ——
@@ -190,8 +203,9 @@ namespace RuleGame.Gameplay.Player
 
             float delta = Vector2.Dot(frame.WindAccel, frame.Contact.Up) * dt;
 
-            // 空气阻力：朝 0 收敛（与速度反向）。
-            delta -= alongUp * Mathf.Clamp01(frame.WindDrag * dt);
+            // 阻尼：朝 0 收敛（与速度反向）。空气阻力 + 竖直阻尼，两者叠加。
+            float damping = frame.WindDrag + frame.WindVerticalDamping;
+            delta -= alongUp * Mathf.Clamp01(damping * dt);
             return delta;
         }
 
@@ -296,21 +310,19 @@ namespace RuleGame.Gameplay.Player
                         return Mathf.MoveTowards(lateral, 0f, turnBrake * dt);
                     }
 
-                    return Mathf.MoveTowards(lateral, direction * t.MoveSpeedMax, t.GroundAccel * dt);
+                    // 加速也吃脚下的材质：冰面上起步打滑（明显更慢），普通地面照旧。
+                    // 与减速共用同一个抓地系数，所以「摩擦 × 加强」能把冰面拉回普通地面，
+                    // 「摩擦 × 减弱」也会让普通地面的起步变迟缓。
+                    float accel = Mathf.Lerp(t.LowFrictionGroundAccel, t.GroundAccel,
+                                             Mathf.Clamp01(ResolveGrip(frame.Contact, frictionScale)));
+
+                    return Mathf.MoveTowards(lateral, direction * t.MoveSpeedMax, accel * dt);
                 }
 
                 // 减速度 = 基准 × 抓地力（地形摩擦 × 摩擦规则缩放）。
                 // 两者相乘：地形可以做成冰面，规则也能把整个世界变成冰面。
                 // ⚠️ 反转**不翻这里的符号** —— 减速力反向会变成"越滑越快"，直接失控。
-                float grip = frame.Contact.GroundFriction * frictionScale;
-
-                // 「摩擦加强」要把**完全打滑**的地面拉回普通地面：冰面 ×加强 → 抓地 1（= 普通地面）。
-                // 纯乘法做不到（0 × 3 还是 0），所以加强时按「离完全打滑还差多少」补一份。
-                // 「减弱」刻意不补：冰面 ×减弱 仍然是冰面，符合"减弱拿冰面没办法"的直觉。
-                if (frictionScale > 1f)
-                {
-                    grip += 1f - Mathf.Min(frame.Contact.GroundFriction, 1f);
-                }
+                float grip = ResolveGrip(frame.Contact, frictionScale);
 
                 return Mathf.MoveTowards(lateral, 0f, t.FrictionDecel * grip * dt);
             }
@@ -327,6 +339,26 @@ namespace RuleGame.Gameplay.Player
         // ==================================================================
         //  辅助
         // ==================================================================
+
+        /// <summary>
+        /// 脚下的有效抓地系数：地形摩擦 × 摩擦规则缩放。加速与减速共用同一个值。
+        /// </summary>
+        /// <remarks>
+        /// <para>「摩擦加强」要把**完全打滑**的地面拉回普通地面：冰面 ×加强 → 抓地 1（= 普通地面）。
+        /// 纯乘法做不到（0 × 3 还是 0），所以加强时按「离完全打滑还差多少」补一份。
+        /// 「减弱」刻意不补：冰面 ×减弱 仍然是冰面，符合"减弱拿冰面没办法"的直觉。</para>
+        /// </remarks>
+        private static float ResolveGrip(ContactSensor.State contact, float frictionScale)
+        {
+            float grip = contact.GroundFriction * frictionScale;
+
+            if (frictionScale > 1f)
+            {
+                grip += 1f - Mathf.Min(contact.GroundFriction, 1f);
+            }
+
+            return grip;
+        }
 
         /// <summary>把速度沿 <paramref name="axis"/> 的分量设为 <paramref name="value"/>，其余分量不动。</summary>
         private static Vector2 SetAlong(Vector2 velocity, Vector2 axis, float value)

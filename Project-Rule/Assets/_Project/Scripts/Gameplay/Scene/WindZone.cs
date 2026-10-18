@@ -8,12 +8,18 @@ namespace RuleGame.Gameplay.Scene
     /// </summary>
     /// <remarks>
     /// <para><b>区域与力</b>：区域就是自己身上的 <see cref="Collider2D"/>（用 trigger，不挡人）；
-    /// 力在世界 y 轴上从<b>底部值</b>线性插值到<b>顶部值</b>。</para>
+    /// 力沿底部风力的方向、大小随高度按<b>梯度</b>线性递减（<see cref="_forceGradient"/>，N/m）。</para>
     ///
-    /// <para><b>为什么要有「顶部值」这个字段</b>：恒定力**做不出「停留位置」**。玩家要么一路加速
+    /// <para><b>为什么力要随高度衰减</b>：恒定力**做不出「停留位置」**。玩家要么一路加速
     /// 飞出风场，要么减速后掉回来 —— 只有阈值，没有平衡点。让力随高度衰减，玩家才会停在
     /// <c>F(y) = m × g</c> 那个高度上，而「质量 / 重力」改变的就是这个高度 —— 也就是这条玩法的主轴。
-    /// 两个值填一样即退化成恒定力。</para>
+    /// 梯度填 0 即退化成恒定力（没有平衡点）。</para>
+    ///
+    /// <para><b>梯度决定「不同重力档之间分多开」</b>：平衡高度
+    /// <c>y(g) = (F₀ − m·g) ÷ 梯度</c>，相邻两档的间距
+    /// <c>Δy = m·Δg ÷ 梯度</c> —— 与梯度成反比。想让人在不同重力下分得更开，就调小梯度
+    /// （或加长风场）；想挤在一起就调大。Gizmo 上会按场景里玩家的质量与重力倍率画出
+    /// ×削弱 / 正常 / ×增强 三条平衡线（<see cref="_showEquilibriumLines"/> 控制开关）。</para>
     ///
     /// <para><b>为什么还要有阻力</b>：只有「力的平衡」还不够 —— 从低处进来的玩家带着一路攒下的动能，
     /// 会直接冲过平衡点。实测：无阻力时出场速度 18 m/s，飞到场顶再掉回来、周而复始，永远不停。
@@ -40,17 +46,29 @@ namespace RuleGame.Gameplay.Scene
         // ==================================================================
 
         [Header("风（牛顿，世界坐标）")]
-        [Tooltip("区域**底部**的风力。正值 = 朝该轴正方向吹（(0, 150) = 向上吹）。")]
+        [Tooltip("区域**底部**的风力。正值 = 朝该轴正方向吹（(0, 150) = 向上吹）。力沿这个方向，大小随高度递减。")]
         [SerializeField] private Vector2 _forceAtBottom = new Vector2(0f, 150f);
 
-        [Tooltip("区域**顶部**的风力。与底部相同 = 恒定力；顶部更小 = 越往上越弱 —— " +
-                 "玩家会浮在「风力 = 自身重力」的高度，改质量 / 重力就能改这个高度。")]
-        [SerializeField] private Vector2 _forceAtTop = new Vector2(0f, 0f);
+        [Tooltip("力的梯度：每上升 1 米，风力减少多少牛顿（N/m）。0 = 恒定力。\n" +
+                 "它决定「不同重力档在风里的落点间距」：间距 Δy = m·Δg ÷ 梯度（与梯度成反比）——\n" +
+                 "想让人在不同重力下分得更开，就调小它；想挤在一起，就调大它。\n" +
+                 "⚠️ 平衡点要在场内：底力必须大于 m·g（正常重力）。")]
+        [SerializeField] private float _forceGradient = 15f;
 
-        [Header("空气阻力")]
-        [Tooltip("场内空气阻力（每秒速度衰减率）。0 = 无阻力 —— 实测那样玩家会被一路加速弹出场顶" +
-                 "（出场速度 18+），永远停不下来；给个 2 左右就会收敛到「风力 = 重力」的高度。")]
+        [Header("预览")]
+        [Tooltip("在 Scene 视图画出「各重力档的平衡高度线」（×削弱 / 正常 / ×增强），\n" +
+                 "按场景里的玩家的质量与重力倍率计算。纯编辑器辅助，不参与运行时判定。")]
+        [SerializeField] private bool _showEquilibriumLines = true;
+
+        [Header("阻尼")]
+        [Tooltip("空气阻力（每秒速度衰减率），水平与竖直**都收**。0 = 无阻力 —— " +
+                 "实测那样玩家会被一路加速弹出场顶（出场速度 18+），永远停不下来；给个 2 左右就会收敛到「风力 = 重力」的高度。")]
         [SerializeField, Min(0f)] private float _drag = 2f;
+
+        [Tooltip("竖直阻尼（每秒速度衰减率）。**只收竖直方向**（沿当前重力轴）的速度，横向不动；与空气阻力叠加。\n" +
+                 "默认 8 ≈ 临界阻尼（150N / 10m / 质量 1 时临界值约 7.7）：被吹起来后一路上升、不上下弹。\n" +
+                 "想更「黏」就调大，想更有弹性就调小。")]
+        [SerializeField, Min(0f)] private float _verticalDamping = 8f;
 
         // ==================================================================
         //  运行时
@@ -68,15 +86,22 @@ namespace RuleGame.Gameplay.Scene
             if (!Contains(point)) return Vector2.zero;
 
             Bounds b = _area.bounds;
-            float t = b.size.y > 0.0001f
-                ? Mathf.InverseLerp(b.min.y, b.max.y, point.y)
-                : 0f;
+            float rise = Mathf.Max(point.y - b.min.y, 0f);   // 离区域底部的距离（米）
+            return ForceAtBottomMagnitude(rise);
+        }
 
-            return Vector2.Lerp(_forceAtBottom, _forceAtTop, t);
+        /// <summary>离底部 <paramref name="rise"/> 米处的风力：沿底部方向、大小按梯度递减，最低到 0。</summary>
+        private Vector2 ForceAtBottomMagnitude(float rise)
+        {
+            float magnitude = Mathf.Max(_forceAtBottom.magnitude - _forceGradient * rise, 0f);
+            return _forceAtBottom.normalized * magnitude;
         }
 
         /// <inheritdoc />
         public float DragAt(Vector2 point) => Contains(point) ? _drag : 0f;
+
+        /// <inheritdoc />
+        public float VerticalDampingAt(Vector2 point) => Contains(point) ? _verticalDamping : 0f;
 
         /// <summary>点是否落在场内（真实形状）。组件关掉 = 整个风场停用。</summary>
         private bool Contains(Vector2 point)
@@ -92,11 +117,11 @@ namespace RuleGame.Gameplay.Scene
         //  编辑器
         // ==================================================================
 
-        /// <summary>只给编辑器工具用：按实际区域尺寸摆好之后直接改两个风力。</summary>
-        public void SetForce(Vector2 bottom, Vector2 top)
+        /// <summary>只给编辑器工具用：按实际区域尺寸摆好之后直接改底力与梯度。</summary>
+        public void SetForce(Vector2 bottom, float gradient)
         {
             _forceAtBottom = bottom;
-            _forceAtTop    = top;
+            _forceGradient = gradient;
         }
 
         private void OnDrawGizmos()
@@ -112,8 +137,56 @@ namespace RuleGame.Gameplay.Scene
 
             // 风：底部与顶部各画一排箭头，长度按力大小、方向即风向。
             DrawForceRow(new Vector2(b.min.x, b.min.y), b.size.x, _forceAtBottom);
-            DrawForceRow(new Vector2(b.min.x, b.max.y), b.size.x, _forceAtTop);
+            DrawForceRow(new Vector2(b.min.x, b.max.y), b.size.x, ForceAtBottomMagnitude(b.size.y));
+
+            // 各重力档的平衡高度线（预览开关）。
+            if (_showEquilibriumLines) DrawEquilibriumLines(b);
         }
+
+        /// <summary>画出「各重力档的平衡高度线」—— 风力 = 该档重力的高度。</summary>
+        /// <remarks>
+        /// <para>纯编辑器预览：用**场景里玩家实体**的质量与重力倍率算；场景里没有玩家就按 m = 1、倍率 = 1。</para>
+        /// <para>只对**竖直向上的风**有意义：水平风不会在竖直方向形成平衡点；恒定力（梯度 0）也没有平衡点。</para>
+        /// </remarks>
+        private void DrawEquilibriumLines(Bounds b)
+        {
+            if (Mathf.Abs(_forceAtBottom.x) > 0.001f || _forceAtBottom.y <= 0f) return;
+            if (Mathf.Abs(_forceGradient) < 0.0001f) return;
+
+#if UNITY_EDITOR
+            float mass = 1f;
+            float gravityScale = 1f;
+
+            var player = UnityEngine.Object.FindAnyObjectByType<RuleGame.Gameplay.Player.PlayerController>();
+            if (player != null)
+            {
+                var body = player.GetComponent<Rigidbody2D>();
+                if (body != null) mass = body.mass;
+                gravityScale = player.GravityScale;
+            }
+
+            DrawTierLine(b, "×削弱", 0.3f, new Color(0.55f, 0.75f, 1f, 0.95f), mass, gravityScale);
+            DrawTierLine(b, "正常",   1f,   new Color(0.55f, 1f, 0.6f, 0.95f), mass, gravityScale);
+            DrawTierLine(b, "×增强", 2f,   new Color(1f, 0.62f, 0.35f, 0.95f), mass, gravityScale);
+#endif
+        }
+
+#if UNITY_EDITOR
+        /// <summary>某一个重力档的平衡高度线。档位倍率与 <c>GravityRule</c> 的取值保持一致。</summary>
+        private void DrawTierLine(Bounds b, string label, float gravityTier, Color color,
+                                  float mass, float gravityScale)
+        {
+            float force = mass * 9.81f * gravityTier * gravityScale;   // 平衡所需的力（牛顿）
+            float rise = (_forceAtBottom.magnitude - force) / _forceGradient;
+            if (rise < 0f || rise > b.size.y) return;
+
+            float y = b.min.y + rise;
+            Gizmos.color = color;
+            Gizmos.DrawLine(new Vector3(b.min.x, y, 0f), new Vector3(b.max.x, y, 0f));
+            UnityEditor.Handles.Label(new Vector3(b.min.x, y + 0.12f, 0f),
+                                      label + "  y=" + y.ToString("0.00"));
+        }
+#endif
 
         /// <summary>沿一条横线画若干箭头示意风力（10 牛顿 ≈ 1 个单位长度）。</summary>
         private static void DrawForceRow(Vector2 left, float width, Vector2 force)
