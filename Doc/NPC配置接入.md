@@ -1,30 +1,16 @@
 # NPC 配置接入
 
-## 手动调整与测试入口
+## 配置与测试
 
-以下路径从仓库根目录开始；Unity 工程是其中的 `Project-Rule/` 文件夹。在 Unity 的 Project 窗口中对应查看 `Assets/_Project/`。
+Unity 工程为 `Project-Rule/`，以下路径均从 `Assets/_Project/` 开始。
 
-| 要调整什么 | 位置 | 手动调整方式 |
-| --- | --- | --- |
-| 角色共享配置 | `Project-Rule/Assets/_Project/Data/Npcs/*_Definition.asset` | 在 Project 窗口选中对应资产，通过 Inspector 调整 `Interaction Radius`（交互半径）、`Repeat Delay`（重复交互间隔）、`Patrol Radius`（居民踱步范围）、`Walk Speed` / `Walk Force`（移速/驱动力）、`Idle Duration` / `Action Duration`（待机/动作窗口），以及待机和交谈精灵、商品列表。共享配置会影响所有引用它的角色。 |
-| 场景里的条件、事件和绑定 | 场景中 NPC 根物体的 `NpcActor` 组件 | 在 Inspector 绑定共享 Host、能力达标/按钮/齿轮/通行证/商品买齐的条件组件，以及交易、资格、Boss、攻击、放行事件。守卫的 `Proximity Actor` 指向玩家，`Passage Blocker` 可绑定要移除的空气墙。场景实例上的修改只作为该实例的覆盖。 |
-| 台词正文 | `Project-Rule/Assets/_Project/Data/Npcs/ConfiguredNpcs.yarn` | 修改对应角色/状态节点中的正文，保留唯一的节点名和 `#line` ID；保存后由 Unity 的 Yarn 导入器编译。 |
-| NPC 预制体 | `Project-Rule/Assets/_Project/Prefabs/Npcs/` | 拖入场景即可摆放。包含 `Merchant`、`Mayor`、`ResidentA/B/C/D`、`GearKeeper`、`Guard`、`MysteryMerchant` 九个角色，以及共享对话窗口 `NpcDialogueSystem.prefab`。 |
-| 测试场景 | `Project-Rule/Assets/_Project/Scenes/Test_NpcConfiguration.unity` | 双击打开后直接按 Play，已接好主角、NPC、跟随镜头、对话窗口和 Game 内控件。 |
+- **调参数**：`Data/Npcs/*_Definition.asset`，选中后在 Inspector 调整交互距离、冷却、居民移动、精灵和商品列表。
+- **接条件/事件**：场景中 NPC 根物体的 `NpcActor` 组件。
+- **改台词**：`Data/Npcs/ConfiguredNpcs.yarn`，保留节点名和 `#line` ID。
+- **预制体**：`Prefabs/Npcs/`，包含九个 NPC 和共享窗口 `NpcDialogueSystem.prefab`。
+- **测试场景**：`Scenes/Test_NpcConfiguration.unity`，打开后按 Play。
 
-测试操作：`A / D` 移动，空格跳跃；走近 NPC 按 `E` 交谈/继续，按 `Esc` 结束。商人展示商品后，按 `E / Esc` 或点击关闭按钮进入道别。
-
-**Game 画面右上角「切换测试条件」中的五项都是可以直接点击打勾、取消勾选的复选框，不需要操作 Inspector。**
-
-| 右上角复选框 | 测试用途 |
-| --- | --- |
-| 能力达标 | 切换镇长的能力不足/足够台词。 |
-| 按钮通电 | 齿轮人的按钮任务条件。 |
-| 齿轮解卡 | 齿轮人的齿轮任务条件；和「按钮通电」组合测试未完成、仅完成一项、全部完成。 |
-| 持有通行证 | 切换守卫的入侵者/允许通行分支。更改后可离开范围再走近，重新触发。 |
-| 小镇商品买齐 | 切换神秘商人的拒绝/展示商品分支。 |
-
-齿轮人第一次交互会先交代任务，完整读完后再次交互才按按钮/齿轮条件分支。右上角的勾选只用于当前 Play 会话，退出 Play 不保存为正式任务进度。商品面板目前是交互展示，不结算购买；原表未给出的价格保留 `-1`，不要据此扣款。
+`A/D` 移动，空格跳跃，靠近后 `E` 交谈/继续，`Esc` 结束。**右上角复选框可以直接打勾或取消，切换任务条件；退出 Play 不保存。** 齿轮人需先读完首次任务说明，再测试条件分支。商品面板仅展示，不结算购买。
 
 本次来源为 `Src/角色动作需求表（增加NPC需求和行为数据）.xlsb.xlsx` 的「NPC需求表」「NPC行为逻辑」，以及 `Src/NPC（18，5pm完成/`。逐格来源和文件哈希保存在 `Doc/References/Npcs/NpcRequirements.json`。原表与原图不修改。
 
