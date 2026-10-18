@@ -67,6 +67,16 @@ namespace RuleGame.UI.Launch
         private void EnterMenu()
         {
             _status = _player.GetComponent<EntityStatus>();
+
+            // ⚠️ Boot 重建 LevelRuntime 时，菜单会被重新启用一次 —— 那一刻
+            // TimeManager / 玩家状态可能还不存在（规则系统由常驻宿主创建）。
+            // 没有世界就没有可暂停的东西，直接跳过，别让 NRE 打断菜单初始化。
+            if (TimeManager.Instance == null || _status == null)
+            {
+                _ownsPause = false;
+                return;
+            }
+
             _pausedBeforeMenu = TimeManager.Instance.IsPaused;
             _statusPausedBeforeMenu = _status.IsPaused;
             TimeManager.Instance.SetPaused(true);
