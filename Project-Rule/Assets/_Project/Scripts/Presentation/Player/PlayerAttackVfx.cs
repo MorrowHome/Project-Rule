@@ -55,7 +55,17 @@ namespace RuleGame.Presentation.Player
             _material = Resources.Load<Material>("PlayerSwordWave_Mat");
             if (_material == null)
                 Debug.LogError("[PlayerAttackVfx] 缺少 Resources/PlayerSwordWave_Mat。", this);
-            _lightPulse = new SwordLightPulse(transform, _heroRenderer);
+
+            // ⚠️ 补光的构造会 new 一个 Light2D；URP 配置不对时它会抛异常，
+            //    那样 _lightPulse 就是 null，LateUpdate 每帧 NRE。这里兜住并说清楚原因。
+            try
+            {
+                _lightPulse = new SwordLightPulse(transform, _heroRenderer);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[PlayerAttackVfx] 剑光补光初始化失败，本次运行关闭补光：{e.GetType().Name}: {e.Message}", this);
+            }
         }
 
         private void OnEnable()
@@ -121,7 +131,7 @@ namespace RuleGame.Presentation.Player
             slot.GlowProperties.SetFloat(ProgressId, 0f);
             slot.Glow.SetPropertyBlock(slot.GlowProperties);
             slot.Glow.enabled = _glowStrength > 0f;
-            _lightPulse.Pulse(cue.Center, Mathf.Max(1.25f, Mathf.Max(cue.Size.x, cue.Size.y) * _lightRadiusScale),
+            _lightPulse?.Pulse(cue.Center, Mathf.Max(1.25f, Mathf.Max(cue.Size.x, cue.Size.y) * _lightRadiusScale),
                 _lightIntensity * (cue.Heavy ? 1.35f : 1f), slot.Duration);
         }
 
@@ -167,10 +177,10 @@ namespace RuleGame.Presentation.Player
             if ((_status != null && _status.IsPaused) || TimeManager.Instance?.IsPaused == true)
             {
                 // 单体暂停时其他实体仍可能移动/停用；反光跟随接收者，灯光寿命保持冻结。
-                _lightPulse.Advance(0f);
+                _lightPulse?.Advance(0f);
                 return;
             }
-            _lightPulse.Advance(Time.deltaTime);
+            _lightPulse?.Advance(Time.deltaTime);
             foreach (Slot slot in _slots)
             {
                 if (slot == null || !slot.Renderer.enabled) continue;

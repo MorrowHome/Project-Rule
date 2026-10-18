@@ -12,10 +12,14 @@ namespace RuleGame.Gameplay.Scene
     /// ③ 收玩家推过来的**力**（<see cref="IPushable"/>）。</para>
     ///
     /// <para><b>“推得动 / 推不动”由摩擦决定，本组件不设任何门槛</b>：玩家推的是 60 N，
-    /// 石头要动就得先克服静摩擦 <c>μ·m·g</c>。30 kg、μ = 0.5 时是 147 N &gt; 60 N ——
-    /// **纹丝不动**；「摩擦 × 削弱」（μ = 0.15）把它压到 44 N &lt; 60 N —— **推得动**；
-    /// 「摩擦 × 失效」（μ = 0）一推就滑。也就是说：**这块石头是被摩擦规则解锁的**，
-    /// 代码里没有任何“推重物”的特判（与铁箱 <c>PushableBody</c> 同一条路线）。</para>
+    /// 石头要动就得先克服静摩擦 <c>μ·m·g</c>。30 kg 时 —— 正常（μ 0.4）118 N &gt; 60 N
+    /// **纹丝不动**；「摩擦 × 削弱」（μ 0.15）44 N &lt; 60 N **推得动**；「失效」（μ 0）一推就滑。
+    /// 也就是说：**这块石头是被摩擦规则解锁的**，代码里没有任何“推重物”的特判
+    /// （与铁箱 <c>PushableBody</c> 同一条路线）。</para>
+    ///
+    /// <para>⚠️ <b>材质必须是 <c>Minimum</c> 组合</b>（<c>Data/Physics/StoneMaterial2D</c>）：
+    /// 用木箱那块（<c>Mean</c>）的话，跟地面（默认 0.4）一平均，0.15 会变 0.275 → 81 N，
+    /// 削弱了照样推不动。这一点踩过坑。</para>
     ///
     /// <para><b>⚠️ 没有碎、没有剑、没有锁</b> —— 那些是 <c>GravityBoulder</c>（巨石断剑机关）的事。
     /// 想要会碎的巨石用菜单 ⑫；只想要一块吃重力、能撞开关的石头用 ⑬（菜单
@@ -38,6 +42,9 @@ namespace RuleGame.Gameplay.Scene
         [Header("接触式开关")]
         [Tooltip("碰到 CityButton / 摇杆时按下去。取消勾选 = 它只是一块石头，不碰开关。")]
         [SerializeField] private bool _pressSwitches = true;
+
+        [Tooltip("排查「推不动」时打开：每次推力都打一条日志（质量 / 摩擦 / 推力 / 静摩擦门槛）。")]
+        [SerializeField] private bool _logPushes;
 
         private Rigidbody2D _body;
 
@@ -69,9 +76,27 @@ namespace RuleGame.Gameplay.Scene
         {
             if (_body == null) return;
 
+            if (_logPushes && Time.time - _lastPushLog > 0.5f)
+            {
+                _lastPushLog = Time.time;
+
+                float mu = 0f;
+                var collider = GetComponent<Collider2D>();
+                if (collider != null && collider.sharedMaterial != null) mu = collider.sharedMaterial.friction;
+
+                // 注意：真正生效的是**两个接触面组合后**的摩擦 —— 这里只报石头自己那份。
+                float threshold = mu * _body.mass * Mathf.Abs(Physics2D.gravity.magnitude);
+                Debug.Log($"[StoneBody] {name}：推力 {force.magnitude:0.#} N，" +
+                          $"质量 {_body.mass:0.#} kg，本材质摩擦 {mu:0.###}，" +
+                          $"静摩擦门槛 {threshold:0.#} N → " +
+                          (force.magnitude > threshold ? "应该推得动" : "推不动（摩擦力吃掉了）"), this);
+            }
+
             _body.WakeUp();
             _body.AddForce(force, ForceMode2D.Force);
         }
+
+        private float _lastPushLog = -10f;
 
         // ==================================================================
         //  生命周期

@@ -103,6 +103,7 @@ GameObject:
   - component: {fileID: 3118296643492221018}
   - component: {fileID: 7346610948077691422}
   - component: {fileID: 3433707638514685961}
+  - component: {fileID: 2658041348014039509}
   m_Layer: 0
   m_Name: PaperPlaneKnife
   m_TagString: Untagged
@@ -167,9 +168,32 @@ MonoBehaviour:
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Player.ThrownKnife
   _lifetime: 6
   _gravityScale: 1
+  _windLayer:
+    serializedVersion: 2
+    m_Bits: 2048
   _radius: 0.12
   _hitMask:
     serializedVersion: 2
     m_Bits: 4294967295
+  _solidMask:
+    serializedVersion: 2
+    m_Bits: 256
   _pressSwitches: 1
+  _shatter: 1
+  _scrapCount: 7
   _visual: {fileID: 2632418000972679281}
+--- !u!114 &2658041348014039509
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8318636552169338334}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7085f702f0e4752bd2383e7a2978b8b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Common.RuleAffectedBody
+  _applyFriction: 0
+  _applyMass: 1
+  _frictionSource: {fileID: 0}

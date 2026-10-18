@@ -35,6 +35,10 @@ namespace RuleGame.Gameplay.Combat
         [Tooltip("伤害减免比例：0 = 全额承受，0.5 = 只吃一半，1 = 完全免疫。")]
         [SerializeField, Range(0f, 1f)] private float _resistance;
 
+        [Tooltip("**平防**：伤害先四舍五入、再减这个值（策划 5.2 公式里的 FlatDefense）。默认 0 ——" +
+                 "不改就是老行为；给了值就是固定点数减免，与上面的百分比减免叠乘。")]
+        [SerializeField, Min(0f)] private float _flatDefense;
+
         [Tooltip("受伤后的无敌秒数。0 = 没有无敌帧，同一帧内每次命中都结算。")]
         [SerializeField] private float _invincibleSeconds = 0.5f;
 
@@ -133,8 +137,15 @@ namespace RuleGame.Gameplay.Combat
 
             if (IsInvincible) return;
 
-            float amount = damage.Amount * (1f - _resistance);
-            if (amount <= 0f) return;               // 完全免疫：不扣血、不进无敌、也不被击退
+            // 策划 5.2：D_最终 = Clamp(RoundHalfUp(D_raw) - FlatDefense, 0, 目标当前生命)。
+            // 全局伤害倍率与因果已经在 DamageProcessor 里乘完，这里只做「承受方自己的那两下」：
+            // 四舍五入 → 减平防 → 再吃百分比抗性 → 夹到当前生命（不打出负血）。
+            float rounded     = Mathf.Floor(damage.Amount + 0.5f);   // HalfUp —— Mathf.Round 是银行家舍入
+            float afterDefense = rounded - _flatDefense;
+            if (afterDefense <= 0f) return;                          // 被防御吃光：与「完全免疫」同一条路
+
+            float amount = Mathf.Min(afterDefense * (1f - _resistance), _status.Health);
+            if (amount <= 0f) return;                                // 完全免疫：不扣血、不进无敌、也不被击退
 
             _status.ApplyHealthDelta(-amount);
             if (_invincibleSeconds > 0f) _invincibleUntil = Time.time + _invincibleSeconds;
