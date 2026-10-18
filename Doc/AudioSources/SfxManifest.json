@@ -5,7 +5,8 @@
     "https://kenney.nl/assets/impact-sounds",
     "https://kenney.nl/assets/interface-sounds",
     "https://kenney.nl/assets/rpg-audio",
-    "https://opengameart.org/node/86018"
+    "https://opengameart.org/node/86018",
+    "https://kenney.nl/assets/sci-fi-sounds"
   ],
   "files": [
     {
@@ -254,6 +255,15 @@
       "license": "CC0-1.0",
       "original_path": "creature_hurt_02.ogg",
       "sha256": "a4ea983e62ace874754c51d78239bd8b6532227119bd511c38fa827b2ccbca70"
+    },
+    {
+      "file": "Project-Rule/Assets/_Project/Audio/SFX/Kenney/SciFi/explosionCrunch_000.ogg",
+      "pack": "sci-fi-sounds",
+      "author": "Kenney",
+      "license": "CC0-1.0",
+      "source_page": "https://kenney.nl/assets/sci-fi-sounds",
+      "original_path": "Audio/explosionCrunch_000.ogg",
+      "sha256": "4b597d658d0ae101f0a030fbeea5fc3a4292ab85f017470a8254a8e7959cbd69"
     }
   ],
   "authors": [

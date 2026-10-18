@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.Audio.MusicProfile
   _intro: {fileID: 0}
   _loop: {fileID: 8300000, guid: 733605c20c1b74d9a8155cd94788af37, type: 3}
-  _volume: 0.65
+  _volume: 0.25
   _crossfadeSeconds: 1.5

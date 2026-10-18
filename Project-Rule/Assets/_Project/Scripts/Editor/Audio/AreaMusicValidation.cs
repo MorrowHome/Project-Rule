@@ -164,6 +164,8 @@ namespace RuleGame.Editor.Audio
                     case 4:
                         Check(!Source(_bricks.Intro).isPlaying && Source(_bricks.Loop).timeSamples > 0,
                             "真实积木前奏结束后循环已接上");
+                        Check(Mathf.Abs(Source(_bricks.Loop).volume - _bricks.Volume) < .001f,
+                            "积木循环实际声源使用配置音量 " + _bricks.Volume.ToString("0.00"));
                         Source(_bricks.Loop).timeSamples = _bricks.Loop.samples - _bricks.Loop.frequency / 4;
                         _due = Now + 0.7d;
                         break;
@@ -183,6 +185,8 @@ namespace RuleGame.Editor.Audio
                     case 7:
                         Check(!_director.IsTransitioning && Source(_clock.Loop).timeSamples > 0
                             && !Source(_clock.Intro).isPlaying, "真实发条前奏接循环且旧积木声源已释放");
+                        Check(Mathf.Abs(Source(_clock.Loop).volume - _clock.Volume) < .001f,
+                            "发条循环实际声源使用配置音量 " + _clock.Volume.ToString("0.00"));
                         Check(!_director.GetComponentsInChildren<AudioSource>().Any(s => s.clip == _bricks.Loop), "淡化完成无残留旧曲声源");
                         _focus.position = new Vector3(40f, 0f, 0f);
                         _due = Now + 2.5d;
@@ -190,6 +194,8 @@ namespace RuleGame.Editor.Audio
                     case 8:
                         Check(_director.CurrentProfile == _fluffy && Source(_fluffy.Loop).timeSamples > 0,
                             "进入毛绒区直接播放真实整曲循环");
+                        Check(Mathf.Abs(Source(_fluffy.Loop).volume - _fluffy.Volume) < .001f,
+                            "毛绒循环实际声源使用配置音量 " + _fluffy.Volume.ToString("0.00"));
                         Source(_fluffy.Loop).timeSamples = _fluffy.Loop.samples - _fluffy.Loop.frequency / 4;
                         _due = Now + 0.7d;
                         break;

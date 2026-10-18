@@ -210,9 +210,14 @@ namespace RuleGame.Editor.Audio
                             "巨石真实碎裂并停用后，破碎声由常驻池承接");
                         _boulder.Shatter(); Check(Count(SfxCue.BreakStone) == 1, "重复碎裂调用不重复播声");
                         _audio.ClearWorld();
-                        _bomb.SetOn(true); _due = Now + .3d; break;
+                        int explosionsBeforeFuse = Count(SfxCue.Explosion);
+                        _bomb.SetOn(true);
+                        Check(Count(SfxCue.Explosion) == explosionsBeforeFuse, "点燃引信时不提前播放爆炸声");
+                        _due = Now + .3d; break;
                     case 8:
                         Check(Count(SfxCue.Explosion) == 1, "引信炸弹实际消耗并关闭形状后播放爆裂声");
+                        Check(_root.GetComponentsInChildren<AudioSource>().Any(source => source.isPlaying && _audio.Bank.Find(SfxCue.Explosion).Clips.Contains(source.clip)),
+                            "实际爆炸使用当前配置的爆炸素材播放");
                         _bomb.SetOn(true); _due = Now + .2d; break;
                     case 9:
                         Check(Count(SfxCue.Explosion) == 1, "已消耗炸弹重复点火不重复发声");
