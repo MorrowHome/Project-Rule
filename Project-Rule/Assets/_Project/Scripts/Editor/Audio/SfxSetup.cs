@@ -42,11 +42,11 @@ namespace RuleGame.Editor.Audio
                 SetEntry(entries, SfxCue.Jump, 0.48f, 1.08f, 1.18f, "Rpg/cloth1", "Rpg/cloth2");
                 SetEntry(entries, SfxCue.AirJump, 0.46f, 1.18f, 1.28f, "Rpg/cloth1", "Rpg/cloth2");
                 SetEntry(entries, SfxCue.WallJump, 0.52f, 1.04f, 1.14f, "Rpg/cloth2", "Rpg/cloth3");
-                SetEntry(entries, SfxCue.Land, 0.5f, 0.96f, 1.04f, "Impact/footstep_wood_000", "Impact/footstep_wood_001");
+                SetEntry(entries, SfxCue.Land, 0.33f, 0.96f, 1.04f, "Assets/_Project/Audio/SFX/PlayerFeedback/PlayerLand.wav");
                 SetEntry(entries, SfxCue.Dash, 0.6f, 0.85f, 0.94f, "Rpg/cloth3");
                 SetEntry(entries, SfxCue.SwordLight, 0.55f, 0.96f, 1.04f, WorldSfxSetup.LightA, WorldSfxSetup.LightB);
                 SetEntry(entries, SfxCue.SwordHeavy, 0.65f, 0.88f, 0.96f, WorldSfxSetup.HeavyA, WorldSfxSetup.HeavyB);
-                SetEntry(entries, SfxCue.Hurt, 0.62f, 1f, 1.06f, "Assets/_Project/Audio/SFX/Rpg80/creature_hurt_01.ogg", "Assets/_Project/Audio/SFX/Rpg80/creature_hurt_02.ogg");
+                SetEntry(entries, SfxCue.Hurt, 0.60f, 0.96f, 1.04f, "Assets/_Project/Audio/SFX/PlayerFeedback/PlayerHurt.wav");
                 SetEntry(entries, SfxCue.WheelOpen, 0.45f, 1f, 1f, "Interface/open_001");
                 SetEntry(entries, SfxCue.WheelPreview, 0.26f, 1f, 1f, "Interface/select_001");
                 SetEntry(entries, SfxCue.WheelConfirm, 0.55f, 1f, 1f, "Interface/confirmation_001");

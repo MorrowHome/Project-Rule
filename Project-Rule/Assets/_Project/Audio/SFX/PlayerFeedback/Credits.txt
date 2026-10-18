@@ -1,0 +1,5 @@
+Player feedback prepared from Kenney Impact Sounds (CC0 1.0)
+https://kenney.nl/assets/impact-sounds
+PlayerHurt: impactPunch_heavy_003, 0.20s; PlayerLand: footstep_carpet_000, 0.145s.
+High/low pass, short fade, mono PCM16 44100Hz; original files, processing and hashes in Doc/AudioSources/PlayerFeedbackManifest.json.
+No voice samples.

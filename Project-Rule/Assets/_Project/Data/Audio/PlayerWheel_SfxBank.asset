@@ -42,9 +42,8 @@ MonoBehaviour:
     Priority: 96
   - Cue: 3
     Clips:
-    - {fileID: 8300000, guid: 61483fc6999004b2ebc77b3f9f4232e4, type: 3}
-    - {fileID: 8300000, guid: 955a474475a574159ad79e5125c869e2, type: 3}
-    Volume: 0.5
+    - {fileID: 8300000, guid: 74b8001b6d7e04b2ebab202e10af7e9c, type: 3}
+    Volume: 0.33
     Pitch: {x: 0.96, y: 1.04}
     MinInterval: 0.06
     MaxVoices: 2
@@ -77,10 +76,9 @@ MonoBehaviour:
     Priority: 64
   - Cue: 7
     Clips:
-    - {fileID: 8300000, guid: 30787889515a848fe8cc632863166e1b, type: 3}
-    - {fileID: 8300000, guid: a34442575314d4081a50c7cf6a04c171, type: 3}
-    Volume: 0.62
-    Pitch: {x: 1, y: 1.06}
+    - {fileID: 8300000, guid: 20b941c90ab7645ecafec6b4159c7924, type: 3}
+    Volume: 0.6
+    Pitch: {x: 0.96, y: 1.04}
     MinInterval: 0.06
     MaxVoices: 2
     Priority: 16
