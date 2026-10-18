@@ -202,6 +202,8 @@ namespace RuleGame.Editor.UI
                             "实际扣血后生命条显示一半");
                         Check(Mathf.Abs(FillRatio("energyClip") - .25f) < .01f,
                             "实际耗能后能量条显示四分之一");
+                        Check(_hudUI.Query<VisualElement>(className: "vital-division").ToList().Count == 18,
+                            "原图生命条和能量条各显示九条分隔线");
                         Capture("Gameplay_HalfHealth.png");
                         _status.ApplyData(_saved);
                         break;

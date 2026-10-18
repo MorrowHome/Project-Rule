@@ -120,3 +120,5 @@ manifest 已有 Coplay Unity MCP，仓库 `.mcp.json` 指向 `localhost:8080/mcp
 2026-10-17 小怪预制体放置简化：九种 FieldMinions 已通过 Editor API 补齐身体 Hurtbox、显式受击承受方和出生点相对活动范围。EnemyActor 自动绑定玩家、复用场景 CombatSystem（缺少时创建共享服务），缺失/自动绑定的目标失效时每 0.5 秒重试；旧显式引用和 Boss 世界边界保留。新增 UI Toolkit 简化 Inspector 与 Scene 二维边框手柄，默认宽高 20×20，范围固定于出生点。寻路白盒清除临时受击箱，使用预制体继承的一个受击箱和自动接线。使用文档为 Doc/小怪预制体使用指南.md。隔离工程保持实际核心程序集名称编译，20 项定向检查通过，补充核对九种资产的受击承受方与程序集标识；未进行原工程 Play、面板视觉操作、完整 Player 构建和敌群性能验收。
 
 2026-10-18 小怪寻路交付同步受伤视觉 PR #12（48ca1f6）和最新 p2-p3-merge（5fd88a7），保留两套改动。合并时结合弱点 Hurtbox 开合与扣血反馈，Boss 资产采用最新集成版本。EnemyNavigationValidation.RunCombatBatch 针对合并风险运行 12 项通过，覆盖弹体/光束、弱点受击箱开合和一次扣血一次反馈；未重复运行导航或渲染套件。小怪提交排除自动 stash 中的字体图集和 ProjectSettings，原 stash 保留。
+
+2026-10-18 生命/能量条按用户澄清改为在原图上加间隔线。PlayerVitals.uxml/.uss 保留原图、边框、渐变与放大尺寸，仅在填充区域叠加九条细线；扣血、耗能与快照仍走原来的裁切。Boot与四个Boss测试场景共用此资源。Unity6000.6.4f1隔离PlayMode验证26项通过，覆盖两条各九根分隔线、扣血/耗能、恢复、归零与原有菜单/启动流程，日志/tmp/rule-vitals-dividers.log，截图/报告为Doc/UI预览/DividedVitals.png、DividedValidation.json。此前制作的独立格子备选版按用户要求仅保存到stash（b895dd97dddd8528cf71d77a76d4d61e56c183d8，名称 ui: 保留独立格子血条备选版），其中含组件、双样式Presenter、PlayerVitalsCells.uxml/.uss和34项历史验证报告/截图；不纳入本次提交。未执行Player构建或完整Boss战斗回归。
