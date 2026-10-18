@@ -2,6 +2,10 @@
 
 <!-- unity-onboarding:generated:start -->
 
+2026-10-18 UI 资源接入（工作基线 `2223080`）：原件来自 Downloads 的 `ui，10.18，12am`。`Tools/UI/import_ui.py` 保留像素作固定裁切，生成英文命名贴图与来源哈希记录 `Doc/References/UI/LaunchUI_20261018.json`；PSD 和参考 JPG 不进入运行时。通用九宫格的内部拼接边缘裁掉 2px，避免原样板的半透明边缘形成暗线；外边框保留。UI Toolkit 的 `UI/Launch` 包含开始菜单、通用弹窗和红色生命/紫色能量条。`Boot` 场景的菜单显式引用 GameRoot 与玩家；`LevelRuntime.prefab` 新增事件驱动的 PlayerVitals，扣血、耗能和 EntityStatus.ApplyData 恢复自动同步。菜单保留原画 16:9 比例并同比缩放点击区域，支持窄屏与超宽屏。开始前通过 TimeManager + EntityStatus 暂停、持有玩家输入令牌；GameRoot 的 WorldStreamer 等 StartStreaming 才启用。BootFlowStarter 保留自动启动默认值，只在 Boot 实例关闭自动启动。存档仍未实现，读取按钮显示说明；关于只列游戏简介，总音量控制 AudioListener.volume（本次会话有效），退出需确认。接入工具入口 `Tools/规则游戏/UI/接入开始菜单与生命能量条`，可重跑；未修改 Build Settings、输入资产或规则轮盘。
+
+同轮按用户要求修复原 Boot 出生点出界：`(64.37, -28.07)` 移至附近实际连续地面上的 `(54.288216, 6.025629)`，仅移动 Boot 的 PlayerSpawn；两份地图场景未修改。通过已有 WorldPartitionBuilder 按当前 Renderer 世界边界刷新 PartitionCatalog 的中心/尺寸，保留分区 ID、路径、半径和迟滞。原始配置曾实际复现地图卸载及持续下坠；最终 `LaunchUIValidation.RunBatch` 在保存后的真实 Boot 场景运行，**25 项通过，0 Error/Exception，未使用临时出生点**，确认两个分区在场、玩家落地存活、菜单暂停/输入隔离、弹窗/音量/退出确认、UI 导航提交与 Esc、1920×1080 / 1280×1024 / 2560×1080 比例，以及实际扣血/耗能、快照恢复、HUD 反复启用、零生命/能量。Unity 6000.6.4f1 编译通过；旧 PlayerSpawnPointTool 的弃用警告仍在。黑线修复已检查 Unity 实际渲染。结果与预览在 `Doc/UI预览/`，正式验收结果为 `Validation.json`。未执行 Player 构建、实体鼠标/键盘窗口输入或手柄设备验收；UI 确认使用 NavigationSubmitEvent，Esc 使用 Input System 合成键盘。`RunFixtureBatch` 仅保留作隔离 UI 排错，最终验收没有调用它。
+
 2026-10-17 在新分支 feat/minion-pathfinding 接入 EnemyPlatformNavigation：真实 Collider2D 站立点采样、有界 A*、身体扫掠验证的跳跃与安全落差，Motor 仍是位移权威。地面追击与返回出生点使用路线，飞鸟水平巡飞不改。普通默认索敌6米、出生点二维追击半径8米、失去视线后搜索最后位置1.5秒；脱战返回，旧积木/蝙蝠召唤物也遵守范围。中文配置包含开关、1.6米跳高、2.5米落差、0.5米采样和0.65秒重算；暂停/受击/快照接入。每次搜索最多192节点/2400查询，缓存不参与快照，半空运动参加快照。修复继承的 a79c487 合并版本中的敌人端旧战斗接口，攻击统一 Hurtbox，PlayerMask仅保留身体移动用途。Unity6000.6.4f1隔离PlayMode：平台导航16项、索敌脱战9项、受击箱兼容5项通过，合计30项0失败。新增 Test_Minion_Pathfinding 白盒和独立默认范围配置，由EditorAPI生成，日志见 %TEMP%/rule-minion-{navigation,ranges}.log 与 rule-enemy-hurtbox-compat.log。未执行原工程手动白盒、正式地图难度、敌群性能或完整Player构建；移动/单向平台的专用通行和飞行避障未实现。保留同期字体与ProjectSettings修改。
 2026-10-17 受伤反馈调优与 PR 预览：普通闪白总时长改为 0.30 秒，保持白色约 0.165 秒后淡出；破韧/致命延长倍率保留。完整副本定向验证 65 项通过，含实际 0.15 秒仍保持白色的 URP 像素断言。`Doc/特效预览/EnemyHitFeedback.gif` 与 `EnemyHitFeedback_Comparison.png` 为固定姿态的真实渲染媒体；`Tools/EnemyAssets/create_hit_preview.py` 从验证截图重新导出，未修改游戏摄像机。用户确认仅核对 p2-p3-merge 基线即可，已 fetch 并确认最新 `2fe1dc1` 是当前功能分支的祖先；不继续扩大摄像机修改范围。
 
@@ -37,7 +41,7 @@ Dialogue 在 Gameplay、UI、Editor、Development 下另有专用程序集。保
 
 ## 启动与敌人链路
 
-Build Settings 当前只启用 `Assets/_Project/Scenes/SampleScene.unity`。敌人六个独立白盒位于 `Scenes/EnemyLabs`，未加入构建。`RuleSystemDriver` 创建共享规则、时间等服务；完整产品关卡启动链未在本次任务验证。
+2026-10-18 已核对 Build Settings 启用 `Assets/_Project/Scenes/Boot.unity`、`Start/Level_Start_01.unity` 与 `Start/Level_Center.unity`。Boot 的开始菜单调用 `GameRoot.StartStreaming` 放行分区加载；GameRoot 持有 LevelRuntime、玩家、摄像机和规则系统。敌人独立白盒位于 `Scenes/EnemyLabs`，未加入构建。`RuleSystemDriver` 创建共享规则等服务，复用 GameRoot 已创建的时间管理器。
 
 玩家已拆为 PlayerController 编排与 PlayerInput、MotionTuning、ContactSensor、MotionMover 等职能类；身体阻挡必须通过 MotionTuning.BodyBlockLayer 传给 MotionMover，不能只向 PlayerController 加字段。
 

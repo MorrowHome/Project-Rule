@@ -1,0 +1,18 @@
+.vitals-root { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.player-vitals {
+    position: absolute; right: 28px; top: 22px;
+    width: 420px;
+    -unity-font-definition: url("project://database/Assets/_Project/UI/Fonts/P4ChineseFont.asset");
+    color: #fff8eb;
+}
+.vital-track { position: relative; width: 420px; height: 44.84px; }
+.energy-track { width: 196.8px; height: 19.2px; align-self: flex-end; margin-right: 18px; }
+.vital-image, .vital-clip { position: absolute; left: 0; top: 0; height: 100%; }
+.vital-clip { width: 100%; overflow: hidden; }
+.vital-image { width: 420px; background-size: 100% 100%; }
+.energy-track .vital-image { width: 196.8px; }
+.health-empty { background-image: url("project://database/Assets/_Project/UI/Art/Launch/HealthEmpty.png"); }
+.health-full { background-image: url("project://database/Assets/_Project/UI/Art/Launch/HealthFull.png"); }
+.energy-empty { background-image: url("project://database/Assets/_Project/UI/Art/Launch/EnergyEmpty.png"); }
+.energy-full { background-image: url("project://database/Assets/_Project/UI/Art/Launch/EnergyFull.png"); }
+.vital-label { margin: 2px 16px 0 0; font-size: 16px; -unity-text-align: middle-right; -unity-text-outline-width: 1px; -unity-text-outline-color: #172135; }
