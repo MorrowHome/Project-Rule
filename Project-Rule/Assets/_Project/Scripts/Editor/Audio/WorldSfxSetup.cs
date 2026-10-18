@@ -16,7 +16,7 @@ namespace RuleGame.Editor.Audio
         public const string HeavyA = SoundFolder + "Swishes/SwordHeavy_A.wav";
         public const string HeavyB = SoundFolder + "Swishes/SwordHeavy_B.wav";
 
-        [MenuItem("Tools/规则游戏/音频/⑥ 更换挥剑声并接入敌人与机关")]
+        [MenuItem("Tools/规则游戏/音频/⑥ 接入敌人与机关音效（保留已有配置）")]
         public static void Install()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("请先退出 Play Mode。");
@@ -36,8 +36,8 @@ namespace RuleGame.Editor.Audio
             if (bank == null) throw new InvalidOperationException("请先运行音频菜单④。");
             var serialized = new SerializedObject(bank);
             var entries = serialized.FindProperty("_entries");
-            Set(entries, SfxCue.SwordLight, .55f, 64, .96f, 1.04f, true, LightA, LightB);
-            Set(entries, SfxCue.SwordHeavy, .65f, 64, .88f, .96f, true, HeavyA, HeavyB);
+            Set(entries, SfxCue.SwordLight, .55f, 64, .96f, 1.04f, false, LightA, LightB);
+            Set(entries, SfxCue.SwordHeavy, .65f, 64, .88f, .96f, false, HeavyA, HeavyB);
             Set(entries, SfxCue.EnemyMelee, .42f, 160, .9f, 1.05f, false, LightA, LightB);
             Set(entries, SfxCue.EnemyShot, .4f, 160, .95f, 1.05f, false, SoundFolder + "Kenney/Interface/click_001.ogg");
             Set(entries, SfxCue.EnemyBeam, .42f, 144, .94f, 1.04f, false, SoundFolder + "Rpg80/spell_01.ogg");

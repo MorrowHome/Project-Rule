@@ -1,0 +1,68 @@
+.audio-workbench {
+    padding: 10px;
+}
+.workbench-heading {
+    font-size: 20px;
+    -unity-font-style: bold;
+    margin-bottom: 8px;
+}
+.workbench-toolbar {
+    flex-direction: row;
+    margin-bottom: 6px;
+    flex-shrink: 0;
+}
+.workbench-toolbar > Button {
+    min-height: 26px;
+    margin-right: 5px;
+}
+.workbench-body {
+    flex-direction: row;
+    flex-grow: 1;
+    min-height: 200px;
+}
+.workbench-list {
+    width: 245px;
+    min-width: 180px;
+    margin-right: 12px;
+    border-right-width: 1px;
+    border-right-color: #636363;
+    padding-right: 8px;
+}
+.workbench-list Button {
+    min-height: 27px;
+    -unity-text-align: middle-left;
+    margin-bottom: 3px;
+}
+.workbench-selected {
+    background-color: #315675;
+    color: #ffffff;
+}
+.workbench-detail {
+    flex-grow: 1;
+    min-width: 300px;
+}
+.workbench-title {
+    font-size: 17px;
+    -unity-font-style: bold;
+    margin-bottom: 8px;
+}
+.workbench-note {
+    white-space: normal;
+    margin-top: 5px;
+    margin-bottom: 8px;
+}
+.workbench-variant {
+    margin-top: 8px;
+    padding: 7px;
+    border-width: 1px;
+    border-color: #636363;
+}
+.workbench-status {
+    white-space: normal;
+    margin-top: 8px;
+    min-height: 30px;
+    flex-shrink: 0;
+}
+.workbench-grow {
+    flex-grow: 1;
+}

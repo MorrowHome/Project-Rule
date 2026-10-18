@@ -64,9 +64,12 @@ namespace RuleGame.Editor.Audio
                 AssetDatabase.CreateAsset(profile, path);
             }
             var serialized = new SerializedObject(profile);
-            serialized.FindProperty("_intro").objectReferenceValue = AssetDatabase.LoadAssetAtPath<AudioClip>(introPath);
-            serialized.FindProperty("_loop").objectReferenceValue = AssetDatabase.LoadAssetAtPath<AudioClip>(loopPath);
-            // 重跑接线保留人工调整过的音量和淡化时长。
+            if (created)
+            {
+                serialized.FindProperty("_intro").objectReferenceValue = AssetDatabase.LoadAssetAtPath<AudioClip>(introPath);
+                serialized.FindProperty("_loop").objectReferenceValue = AssetDatabase.LoadAssetAtPath<AudioClip>(loopPath);
+            }
+            // 重跑接线保留人工选择的素材、音量和淡化时长。
             serialized.ApplyModifiedPropertiesWithoutUndo();
             if (!profile.IsPlayable) throw new InvalidOperationException("缺少循环音乐：" + loopPath);
             EditorUtility.SetDirty(profile);
