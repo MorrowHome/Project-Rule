@@ -25,6 +25,18 @@ namespace RuleGame.Core.Rules
         private bool _ownsTimeManager;
 
         /// <summary>
+        /// 当前持有全局单例的那一份驱动。
+        /// </summary>
+        /// <remarks>
+        /// ⚠️ 为什么需要它：<see cref="OnDestroy"/> 会把 <c>RuleSystem</c> / 注册表 / 快照全部清空（为了下次进
+        /// Play 或切场景重新初始化）。但如果场景里同时存在两份驱动（例如 Boot 里那份还在，关卡又实例化了一份），
+        /// 先销毁的那份会把**正在使用**的单例一起清掉 —— 表现就是「规则系统没初始化、所有伤害打不出来」，
+        /// 而 Console 里只有 <c>[RuleAffectedBody] RuleSystem 尚未初始化</c> 这种二手线索。
+        /// 只有持有者自己销毁时才允许 Reset。
+        /// </remarks>
+        private static RuleSystemDriver _owner;
+
+        /// <summary>
         /// 设置暂停状态。转发给 <see cref="TimeManager"/>。
         /// </summary>
         /// <remarks>
@@ -56,6 +68,7 @@ namespace RuleGame.Core.Rules
                 return;
             }
             RuleSystem.Initialize(_catalog);
+            if (RuleSystem.Instance != null) _owner = this;
 
             // 快照系统依赖规则系统与名册，最后初始化。
             // RuleSystem 初始化失败（没配目录）时跳过，避免半可用的快照系统。
@@ -87,6 +100,10 @@ namespace RuleGame.Core.Rules
 
         private void OnDestroy()
         {
+            // 不是当前持有者：说明还有另一份驱动在用它，不能把别人的单例清掉。
+            if (_owner != this) return;
+            _owner = null;
+
             // 让下次进 Play / 切场景重新初始化。
             // 规则 / 注册表 / 快照是「世界」的一部分，随关卡重建 —— 这正是「世界回设计初态」。
             RuleSystem.Reset();

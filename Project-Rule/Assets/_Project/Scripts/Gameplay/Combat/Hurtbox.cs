@@ -37,7 +37,7 @@ namespace RuleGame.Gameplay.Combat
 
         private Collider2D  _area;
         private IDamageable _resolved;
-        private bool        _resolveAttempted;
+        private bool        _warnedResolve;
 
         // ==================================================================
         //  静态：层与掩码
@@ -133,25 +133,39 @@ namespace RuleGame.Gameplay.Combat
 
         private void Resolve()
         {
-            if (_resolveAttempted) return;
-            _resolveAttempted = true;
+            // ⚠️ 只有**解析成功**才缓存。以前用「尝试过就不再试」的标记，一旦
+            // Awake 时父物体还没激活（GetComponentInParent 默认跳过未激活对象），
+            // 就会把 null 永久缓存下来 —— 表现是「所有攻击都打空」，且不报错。
+            if (_resolved != null) return;
 
             _area = GetComponent<Collider2D>();
             if (_area == null)
-                Debug.LogError("[Hurtbox] 同物体上没有 Collider2D —— 这个受击箱永远不会被查到。", this);
+            {
+                Warn("[Hurtbox] 同物体上没有 Collider2D —— 这个受击箱永远不会被查到。");
+                return;
+            }
 
             if (_owner != null)
             {
                 _resolved = _owner as IDamageable;
                 if (_resolved == null)
-                    Debug.LogError($"[Hurtbox] 指定的 _owner（{_owner.GetType().Name}）没有实现 IDamageable。", this);
+                    Warn($"[Hurtbox] 指定的 _owner（{_owner.GetType().Name}）没有实现 IDamageable。");
                 return;
             }
 
-            _resolved = GetComponentInParent<IDamageable>();
+            // includeInactive：Prefab 实例化 / 层级启用顺序不确定，未激活的父物体也要找。
+            _resolved = GetComponentInParent<IDamageable>(true);
             if (_resolved == null)
-                Debug.LogError("[Hurtbox] 找不到承受方（IDamageable）：把它挂到承受方之下，" +
-                               "或在 _owner 上显式指定跨层级的承受方。", this);
+                Warn("[Hurtbox] 找不到承受方（IDamageable）：把它挂到承受方之下，" +
+                     "或在 _owner 上显式指定跨层级的承受方。");
+        }
+
+        /// <summary>同一个受击箱只报一次，避免每帧刷屏。</summary>
+        private void Warn(string message)
+        {
+            if (_warnedResolve) return;
+            _warnedResolve = true;
+            Debug.LogError(message, this);
         }
 
         private void EnsureTrigger()

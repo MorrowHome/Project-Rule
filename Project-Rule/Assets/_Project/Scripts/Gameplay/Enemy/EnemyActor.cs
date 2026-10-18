@@ -277,7 +277,12 @@ namespace RuleGame.Gameplay.Enemy
             if (Combat != null) return;
             foreach (var combat in FindObjectsByType<CombatSystem>())
             {
-                if (combat.gameObject.scene != gameObject.scene) continue;
+                // 常驻场景（DontDestroyOnLoad）里的 CombatSystem 才是全局唯一出口；
+                // 分区场景里的敌人必须复用它 —— 以前只认同场景，结果每个分区都各自
+                // 造一个空的 EnemyCombatService（没有规则链，伤害走不动，事件也没人听）。
+                bool sameScene = combat.gameObject.scene == gameObject.scene;
+                bool persistent = combat.gameObject.scene.name == "DontDestroyOnLoad";
+                if (!sameScene && !persistent) continue;
                 Combat = combat;
                 return;
             }
