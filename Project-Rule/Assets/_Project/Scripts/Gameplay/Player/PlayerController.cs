@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using RuleGame.Core.Rules;
 using RuleGame.Gameplay.Combat;
 using RuleGame.Gameplay.Common;
 using RuleGame.Infrastructure.Interaction;
+using RuleGame.Infrastructure.Rules;
 
 namespace RuleGame.Gameplay.Player
 {
@@ -44,6 +46,14 @@ namespace RuleGame.Gameplay.Player
     [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
     public class PlayerController : MonoBehaviour, IKnockbackReceiver, IRuleSelectionInputGate, IMomentumSource
     {
+        private readonly HashSet<object> _movementHolders = new HashSet<object>();
+        public bool MovementHeld => _movementHolders.Count > 0;
+        /// <summary>拥抱只限制自主移动，保留挥剑反击；多只敌人各自释放自己的限制。</summary>
+        public void SetMovementHeld(object owner, bool held)
+        {
+            if (held) _movementHolders.Add(owner);
+            else _movementHolders.Remove(owner);
+        }
         // ==================================================================
         //  序列化字段
         // ==================================================================
@@ -159,6 +169,8 @@ namespace RuleGame.Gameplay.Player
         [Header("碰撞")]
         [Tooltip("阻挡移动、并用于接地判定的层。地形与墙体都放这里。")]
         [SerializeField] private LayerMask _solidLayer;
+        [Tooltip("仅阻挡身体移动的层，不授予接地和蹬墙。默认 Enemy（层 9）。")]
+        [SerializeField] private LayerMask _bodyBlockLayer = 1 << 9;
 
         [Tooltip("接地探测距离（米）。")]
         [SerializeField] private float _groundProbeDistance = 0.08f;
@@ -219,6 +231,34 @@ namespace RuleGame.Gameplay.Player
         [SerializeField] private float     _attackKnockback = 6f;
         [SerializeField] private Vector2   _attackBoxSize   = new Vector2(1.2f, 1f);
         [SerializeField] private float     _attackOffset    = 0.8f;
+
+        // ------------------------------------------------------------------
+        //  投掷（2026-10-18 原型：纸飞机飞刀）
+        // ------------------------------------------------------------------
+
+        [Header("投掷")]
+        [Tooltip("飞刀预制体（Prefabs/PaperPlaneKnife）。留空 = 这个实体不会投掷。")]
+        [SerializeField] private ThrownKnife _knifePrefab;
+
+        [Tooltip("出手点相对身体中心的水平距离（米）。给少了会从身体里长出来。")]
+        [SerializeField] private float _knifeOffset = 0.55f;
+
+        [Tooltip("出手点的高度偏移（米）。0 = 身体中心。")]
+        [SerializeField] private float _knifeHeight = 0.15f;
+
+        [Tooltip("飞刀初速度（米/秒）。与重力合起来决定射程与弧线。")]
+        [SerializeField] private float _knifeSpeed = 16f;
+
+        [Tooltip("飞刀的**基础伤害**（会过 DamageProcessor 的伤害 / 因果规则，别在这里先换算）。")]
+        [SerializeField] private float _knifeDamage = 4f;
+
+        [Tooltip("飞刀的击退数值。")]
+        [SerializeField] private float _knifeKnockback = 4f;
+
+        [Tooltip("两次投掷之间的最小间隔（秒）。")]
+        [SerializeField] private float _knifeCooldown = 0.35f;
+
+        private float _knifeCooldownLeft;
 
         // ------------------------------------------------------------------
         //  攻击节奏：起手 / 生效 / 收招三段
@@ -321,6 +361,14 @@ namespace RuleGame.Gameplay.Player
         [Tooltip("每命中一个目标恢复的能量（策划案 §四：攻击小怪回能）。未命中不给。")]
         [SerializeField] private float _energyPerHit = 4f;
 
+        [Header("落点 / 重生")]
+        [Tooltip("生命归零后自动回到最近一次记录的落点（PlayerSpawnPoint）。" +
+                 "关掉 = 死亡不复活，交给关卡脚本处理。")]
+        [SerializeField] private bool _respawnOnDeath = true;
+
+        [Tooltip("倒下到复活之间的停顿（秒）。给「Die」动画留出时间。")]
+        [SerializeField, Min(0f)] private float _respawnDelay = 1.2f;
+
         // ==================================================================
         //  自身
         // ==================================================================
@@ -328,9 +376,23 @@ namespace RuleGame.Gameplay.Player
         /// <summary>本实体的刚体。质量住在它的 <c>mass</c> 上 —— 质量规则改的就是它（见 <see cref="Momentum"/>）。</summary>
         private Rigidbody2D _body;
 
+        /// <summary>死亡标记的持有者；复活要清它。同物体上没有就不清（只回血）。</summary>
+        private EntityDamageable _damageable;
+
+        // ---------------- 落点（内存，不落盘 —— 约束 C5） ----------------
+
+        /// <summary>离复活还差多少秒。由 <see cref="SetRespawn"/> / <see cref="Respawn"/> 重置。</summary>
+        private float   _respawnCountdown;
+
+        /// <summary>当前落点的世界坐标。</summary>
+        private Vector2 _respawnPosition;
+
         // ==================================================================
         //  职能类
         // ==================================================================
+
+        /// <summary>跳穿平台的「按下」闩锁：用掉一次要等松开才复位。见 <see cref="TryConsumeDropPress"/>。</summary>
+        private bool _dropArmed = true;
 
         private PlayerInput   _input;
         private ContactSensor _contacts;
@@ -383,6 +445,9 @@ namespace RuleGame.Gameplay.Player
         /// </summary>
         public event Action OnHeavyAttacked;
 
+        /// <summary>实际判定开窗；表现层直接使用同一次攻击的世界范围，空挥也会通知。</summary>
+        public event Action<PlayerAttackCue> OnAttackStruck;
+
         // ==================================================================
         //  生命周期
         // ==================================================================
@@ -392,6 +457,7 @@ namespace RuleGame.Gameplay.Player
             if (_status == null) _status = GetComponent<EntityStatus>();
 
             _body = GetComponent<Rigidbody2D>();
+            _damageable = GetComponent<EntityDamageable>();
             var bodyCollider = GetComponent<Collider2D>();
 
             _input    = new PlayerInput(_inputActions);
@@ -422,6 +488,22 @@ namespace RuleGame.Gameplay.Player
         {
             // 暂停 / 已阵亡 / 被 UI 接管 / 门禁刚释放的恢复帧 —— 四种都不读键，并清空粘滞标记。
             _input.Tick(IsPaused || IsDead || _input.IsSuppressed);
+
+            // 倒计时与「落点」有关，与输入无关，所以放在门禁之外。
+            TickRespawn();
+        }
+
+        /// <summary>
+        /// 时间恒定（定点回溯）的控制入口。
+        /// </summary>
+        /// <remarks>
+        /// <para>回溯键**独占一个键**（架构 D16）：键盘 Q / 手柄 LB，见 <c>PlayerInput.Tick</c>。
+        /// 窗口由时间恒定的规则类持有，没开窗口时这里什么都不做。</para>
+        /// <para>取用方式是接口查询而不是直接引用时间规则类 —— 玩家侧不认识规则系统内部。</para>
+        /// </remarks>
+        private static void TryRewindTime()
+        {
+            if (RuleSystem.Instance is ITimeRewindControl control) control.TryRewind();
         }
 
         // ==================================================================
@@ -470,6 +552,13 @@ namespace RuleGame.Gameplay.Player
 
             // ① 接触：Sense 内部先解出「上」方向（探测得先知道哪边是下），再扫地面与左右墙。
             PlayerInput.State   input   = _input.Sample();
+            // 时间恒定：窗口内的定点回溯。窗口没开时 TryRewind() 返回 false，是空操作。
+            // 放在物理帧：回溯会直接写回所有实体的刚体位置，与物理步进同一节拍更安全。
+            if (input.RewindPressed) TryRewindTime();
+
+            // 关卡流程锁移动时只清移动意图，跳跃松手与攻击仍然透传。
+            if (MovementHeld) input = new PlayerInput.State(Vector2.zero, false, input.JumpReleased, false,
+                                                           input.AttackPressed, throwPressed: input.ThrowPressed);
             ContactSensor.State contact = _contacts.Sense(tuning);
             if (contact.JustLanded) OnLanded?.Invoke();
 
@@ -497,13 +586,17 @@ namespace RuleGame.Gameplay.Player
                 dt);
             if (heavy.Swing)  OnHeavyAttacked?.Invoke();
             if (heavy.Strike)
-                PerformAttackHit(_heavyDamage, _heavyKnockback, _heavyBoxSize, _heavyBoxOffset);
+                PerformAttackHit(_heavyDamage, _heavyKnockback, _heavyBoxSize, _heavyBoxOffset, true);
 
             // ③″ 攻击连段：起手 → 生效 → 收招。判定本身留在本类（要用 CombatSystem 与位置）。
             AttackSolver.Decision attack = _attack.Advance(tuning, lightPressed, dt);
             if (attack.Swing)  OnAttacked?.Invoke();
             if (attack.Strike)
                 PerformAttackHit(_attackDamage, _attackKnockback, _attackBoxSize, _attackOffset);
+
+            // ③‴ 投掷（飞刀原型）：冷却按物理帧推进，飞行与命中归 ThrownKnife 自己。
+            _knifeCooldownLeft = Mathf.Max(0f, _knifeCooldownLeft - dt);
+            if (input.ThrowPressed) ThrowKnife();
 
             // ②⑦⑧ 跳跃：跳数与土狼时间一直推进；冲刺期间只推进计数、不消费输入。
             JumpSolver.Decision jump = _jump.Solve(tuning, input, contact, dash.Dashing, dt);
@@ -565,6 +658,8 @@ namespace RuleGame.Gameplay.Player
         /// <remarks>给表现层用（动画判上升/下降、跑步快慢）。玩法逻辑不要读它做判断 ——
         /// 那样会把「速度怎么算」泄漏到外面。</remarks>
         public Vector2 Velocity => _mover != null ? _mover.Velocity : Vector2.zero;
+        /// <summary>移动平台入口。自身速度仍由 MotionMover 管理，平台只贡献本物理帧的承载位移。</summary>
+        public void CarryOnPlatform(Vector2 displacement, Collider2D platform) => _mover?.CarryOnPlatform(displacement, platform);
 
         /// <summary>
         /// 本物理帧的动量（kg·单位/秒），方向 = 运动方向。见 <see cref="IMomentumSource"/>。
@@ -588,6 +683,39 @@ namespace RuleGame.Gameplay.Player
 
         /// <summary>本帧读到的**原始**移动输入（未经摩擦反转换算）。供调试浮层显示。</summary>
         public Vector2 MoveInput => _input != null ? _input.Move : Vector2.zero;
+
+        /// <summary>
+        /// 「朝重力方向按住」的一次性意图：**每按一次只能用一次**，松开才复位。
+        /// </summary>
+        /// <remarks>
+        /// <para>跳穿平台用它判断玩家是不是**刚按下** S / ↓。不能用「按住」的保持值 ——
+        /// 否则从上层平台掉下来、落在中层平台上的那一帧方向键还按着，中层会立刻放行，
+        /// 表现就是「穿过一层、停在第三层」。而且这个闩锁存在**玩家身上**，
+        /// 不依赖平台脚本的执行顺序（每块平台各自记「上一帧有没有按」在落地那一帧会误判）。</para>
+        ///
+        /// <para>方向按**重力**算（正常重力 = 下）。手动旋转的单向平台也认这个键：
+        /// 想让它从相反方向钻，请改平台自身的实心面，而不是换按键。</para>
+        /// </remarks>
+        public bool DropPressHeld => Vector2.Dot(MoveInput, DownDirection) > 0.5f;
+
+        /// <summary>「下」= 重力方向（零重力时按世界下方算）。</summary>
+        public static Vector2 DownDirection => Physics2D.gravity.sqrMagnitude > 0.0001f
+            ? Physics2D.gravity.normalized
+            : Vector2.down;
+
+        public bool TryConsumeDropPress()
+        {
+            if (!DropPressHeld)
+            {
+                _dropArmed = true;      // 松开 → 下次按下重新武装
+                return false;
+            }
+
+            if (!_dropArmed) return false;
+
+            _dropArmed = false;
+            return true;
+        }
 
         /// <summary>
         /// 左侧是否贴着竖墙（**全高**探测；供调试浮层显示）。只用于顶墙分量预夹。
@@ -661,6 +789,23 @@ namespace RuleGame.Gameplay.Player
         /// </remarks>
         private bool IsDead => _status != null && _status.Health <= 0f;
 
+        // ==================================================================
+        //  落点 / 重生（内存，不落盘 —— 约束 C5）
+        // ==================================================================
+
+        /// <summary>是否已经有一个可用的落点（出生或走近过某个 <c>PlayerSpawnPoint</c>）。</summary>
+        public bool HasRespawn { get; private set; }
+
+        /// <summary>
+        /// 当前落点所属点位的 id。
+        /// </summary>
+        /// <remarks>只用于「换了落点才重置倒计时」这条判据；落盘时也只需要它 ——
+        /// 位置永远由场景里的点提供，不进存档。</remarks>
+        public string RespawnId { get; private set; }
+
+        /// <summary>当前落点的世界坐标（只读）；要改请用 <see cref="SetRespawn"/>。</summary>
+        public Vector2 RespawnPosition => _respawnPosition;
+
         /// <summary>
         /// 正在出招：轻击连段（起手 / 生效 / 收招，含两刀之间的 CD）**或**重击。
         /// </summary>
@@ -672,6 +817,91 @@ namespace RuleGame.Gameplay.Player
         private bool IsAttacking
             => (_attack != null && _attack.ComboIndex >= 0)
             || (_heavy  != null && _heavy.IsBusy);
+
+        // ==================================================================
+        //  落点 / 重生
+        // ==================================================================
+
+        /// <summary>
+        /// 记录一个落点。由 <c>PlayerSpawnPoint</c> 在玩家走进激活半径时调用。
+        /// </summary>
+        /// <remarks>
+        /// <para>同一个点、同一个位置被反复调用是常态（玩家在点边上走来走去），
+        /// 所以**只有真正换了落点**才重置复活倒计时 —— 否则站在点上刷会一直把倒计时拉满。</para>
+        /// <para>位置存在玩家自己的内存里：约束 C5 禁止序列化 Transform / 物理状态。</para>
+        /// </remarks>
+        public void SetRespawn(string id, Vector2 position)
+        {
+            bool changed = !HasRespawn
+                        || RespawnId != id
+                        || (position - _respawnPosition).sqrMagnitude > 0.0001f;
+
+            HasRespawn       = true;
+            RespawnId        = id;
+            _respawnPosition = position;
+
+            if (changed) _respawnCountdown = _respawnDelay;
+        }
+
+        /// <summary>
+        /// 瞬移到指定位置：清速度 → 写刚体位姿 → 同步物理变换 → 对齐 transform。
+        /// </summary>
+        /// <remarks>
+        /// <para>⚠️ 速度必须清：不清的话 <see cref="MotionMover"/> 里的旧速度会在落地第一帧把人再推走。</para>
+        /// <para>⚠️ 必须 <c>Physics2D.SyncTransforms()</c>：本工程的 <c>autoSyncTransforms</c> 是关的，
+        /// 不同步的话这一帧的探测与 Slide 仍在旧位置上算 —— 实测会卡在墙里或穿过地板。</para>
+        /// </remarks>
+        public void TeleportTo(Vector2 position)
+        {
+            _mover?.Halt();
+
+            if (_body != null)
+            {
+                _body.position = position;
+                _body.linearVelocity = Vector2.zero;
+                Physics2D.SyncTransforms();
+            }
+
+            transform.position = new Vector3(position.x, position.y, transform.position.z);
+        }
+
+        /// <summary>
+        /// 回到最近一次记录的落点并复活。<b>返回 false = 还没有落点</b>（只打一条警告）。
+        /// </summary>
+        public bool Respawn()
+        {
+            if (!HasRespawn)
+            {
+                Debug.LogWarning("[PlayerController] 还没有任何落点，无法复活。先让玩家走到一个 PlayerSpawnPoint。", this);
+                return false;
+            }
+
+            TeleportTo(_respawnPosition);
+            _respawnCountdown = _respawnDelay;
+
+            // 有 EntityDamageable 就交给它（清死亡标记 + 回满血 + 给无敌）；没有就只补血。
+            if (_damageable != null) _damageable.Revive();
+            else if (_status != null && _status.Health <= 0f) _status.ApplyHealthDelta(_status.HealthMax);
+
+            return true;
+        }
+
+        /// <summary>死亡后的复活倒计时。暂停期间不推进（与其它冷却同一条规则）。</summary>
+        private void TickRespawn()
+        {
+            if (!_respawnOnDeath || !HasRespawn || !IsDead) return;
+
+            if (IsPaused)
+            {
+                _respawnCountdown = _respawnDelay;   // 暂停不是「继续跑倒计时」
+                return;
+            }
+
+            _respawnCountdown -= Time.deltaTime;
+            if (_respawnCountdown > 0f) return;
+
+            Respawn();
+        }
 
         // ==================================================================
         //  输入门禁
@@ -702,18 +932,47 @@ namespace RuleGame.Gameplay.Player
         /// <para>放在速度解算**之前**调用，所以读到的朝向是上一帧末的 ——
         /// 与重构前一致（原来 ③′ 也在 ④ 之前）。</para>
         /// </remarks>
-        private void PerformAttackHit(float damage, float knockback, Vector2 boxSize, float boxOffset)
+        private void PerformAttackHit(float damage, float knockback, Vector2 boxSize, float boxOffset, bool heavy = false)
         {
-            if (_combat == null) return;
-
             // 发起方只组织「打哪儿、打多大」，最终伤害由伤害处理模块按当前规则算。
             Vector2 center = (Vector2)transform.position + new Vector2(_mover.Facing * boxOffset, 0f);
+            OnAttackStruck?.Invoke(new PlayerAttackCue(center, boxSize, _mover.Facing,
+                heavy, heavy ? -1 : AttackComboIndex));
+
+            if (_combat == null) return;
 
             int hits = _combat.PerformAttack(this, center, boxSize, damage, knockback);
 
             // 能量恢复来源之一：命中即回，未命中不给（策划案 §四）。
             if (hits > 0 && _status != null)
                 _status.RestoreEnergy(_energyPerHit * hits);
+        }
+
+        // ==================================================================
+        //  投掷
+        // ==================================================================
+
+        /// <summary>
+        /// 投出一把飞刀（白盒外观是纸飞机）。
+        /// </summary>
+        /// <remarks>
+        /// <para><b>本类只决定三件事</b>：从哪出手、朝哪飞、多快。飞行（积分重力 / 扫掠命中 /
+        /// 撞到就消失 / 按接触式开关）全在 <see cref="ThrownKnife"/> 里 ——
+        /// 想换成石头、回旋镖或敌人投的同一把刀，只要换预制体与 owner，这里不用改。</para>
+        /// <para>方向取 <see cref="_mover.Facing"/>（**换算后**的朝向），与推动同一条理由：
+        /// 「摩擦 × 反转」生效时按右是往左走，刀也得朝人实际去的方向飞。</para>
+        /// <para>冷却没到 / 没配预制体时**静默吞掉**这一次按键，不排队 ——
+        /// 与攻击「不合法就丢掉、不回退」的规矩一致。</para>
+        /// </remarks>
+        private void ThrowKnife()
+        {
+            if (_knifePrefab == null || _knifeCooldownLeft > 0f) return;
+
+            _knifeCooldownLeft = _knifeCooldown;
+
+            Vector2 origin = (Vector2)transform.position + new Vector2(_mover.Facing * _knifeOffset, _knifeHeight);
+            ThrownKnife knife = Instantiate(_knifePrefab, origin, Quaternion.identity);
+            knife.Launch(this, _combat, new Vector2(_mover.Facing, 0f), _knifeSpeed, _knifeDamage, _knifeKnockback);
         }
 
         /// <summary>攻击判定体 + 贴墙探针：调参时直接看得到范围与朝向。</summary>
@@ -786,6 +1045,7 @@ namespace RuleGame.Gameplay.Player
             WallJumpUpSpeed      = _wallJumpUpSpeed,
 
             SolidLayer           = _solidLayer,
+            BodyBlockLayer       = _bodyBlockLayer,
             GroundProbeDistance  = _groundProbeDistance,
             SurfaceAnchorDistance = _surfaceAnchorDistance,
             SurfaceSlideAngle    = _surfaceSlideAngle,

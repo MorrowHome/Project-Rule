@@ -15,11 +15,11 @@ using UnityEngine.UIElements;
 
 namespace RuleGame.Editor.RuleWheel
 {
-    /// <summary>复制队友的测试场景，只在副本接入外观与 UI；原场景和 P3 控制参数保持原样。</summary>
+    /// <summary>在正式测试场景接入轮盘，保留 P3 的角色、动画、调试面板与控制参数。</summary>
     public static class RuleWheelLabBuilder
     {
         public const string ScenePath = "Assets/_Project/Scenes/Test_RuleWheel.unity";
-        private const string SourceScene = "Assets/_Project/Scenes/Test_RuleSystem.unity";
+        public const string SourceScene = "Assets/_Project/Scenes/Test_RuleSystem.unity";
         private const string UIPath = "Assets/_Project/UI/RuleWheel/";
 
         [MenuItem("RuleGame/Rule Wheel/Open Test Scene")]
@@ -27,8 +27,31 @@ namespace RuleGame.Editor.RuleWheel
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) return;
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-            Build();
-            EditorSceneManager.OpenScene(ScenePath);
+            RuleOrbSetup.Install();
+            EditorSceneManager.OpenScene(SourceScene);
+        }
+
+        public static void InstallIntoSourceScene()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                throw new InvalidOperationException("请先退出 Play Mode。");
+            Scene scene = SceneManager.GetSceneByPath(SourceScene);
+            bool openedHere = !scene.IsValid() || !scene.isLoaded;
+            if (!openedHere && scene.isDirty)
+                throw new InvalidOperationException("Test_RuleSystem 有未保存改动，请先保存后再接入轮盘。");
+            if (openedHere) scene = EditorSceneManager.OpenScene(SourceScene, OpenSceneMode.Additive);
+            Scene previous = SceneManager.GetActiveScene();
+            SceneManager.SetActiveScene(scene);
+            try
+            {
+                Wire(scene, false);
+                EditorSceneManager.SaveScene(scene);
+            }
+            finally
+            {
+                if (previous.IsValid() && previous.isLoaded) SceneManager.SetActiveScene(previous);
+                if (openedHere) EditorSceneManager.CloseScene(scene, true);
+            }
         }
 
         [MenuItem("RuleGame/Rule Wheel/Create Test Scene")]
@@ -42,29 +65,27 @@ namespace RuleGame.Editor.RuleWheel
             SceneManager.SetActiveScene(scene);
             try
             {
-                PlayerController player = Find<PlayerController>(scene);
-                RuleSystemDriver rules = Find<RuleSystemDriver>(scene);
-                Camera camera = Find<Camera>(scene);
-                if (player == null || rules == null || camera == null)
-                    throw new InvalidOperationException("测试场景缺少玩家、规则系统或摄像机。");
-                // 保留队友的刚体、碰撞体、层、输入动作与手感，只替换显示用的 Sprite。
-                Sprite square = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/Sprites/P4WhiteboxSquare.png");
-                SpriteRenderer body = player.GetComponent<SpriteRenderer>();
-                body.sprite = square;
-                body.color = new Color(0.13f, 0.13f, 0.12f);
-                body.sortingOrder = 5;
-                foreach (float x in new[] { -0.2f, 0.2f })
-                {
-                    var eye = new GameObject("White eye", typeof(SpriteRenderer));
-                    eye.transform.SetParent(player.transform, false);
-                    eye.transform.localPosition = new Vector3(x, 0.23f, 0f);
-                    eye.transform.localScale = new Vector3(0.15f, 0.13f, 1f);
-                    var ink = eye.GetComponent<SpriteRenderer>();
-                    ink.sprite = square;
-                    ink.sharedMaterial = body.sharedMaterial;
-                    ink.color = new Color(0.95f, 0.945f, 0.92f);
-                    ink.sortingOrder = 6;
-                }
+                Wire(scene, true);
+                EditorSceneManager.SaveScene(scene, ScenePath);
+            }
+            finally
+            {
+                EditorSceneManager.CloseScene(scene, true);
+                if (previous.IsValid() && previous.isLoaded) SceneManager.SetActiveScene(previous);
+            }
+        }
+
+        private static void Wire(Scene scene, bool labHUD)
+        {
+            PlayerController player = Find<PlayerController>(scene);
+            RuleSystemDriver rules = Find<RuleSystemDriver>(scene);
+            Camera camera = Find<Camera>(scene);
+            if (player == null || rules == null || camera == null)
+                throw new InvalidOperationException("测试场景缺少玩家、规则系统或摄像机。");
+            // 正式测试场景保留原调试工具；兼容副本才使用独立试播 HUD。
+            // 不换 Sprite，不生成方块眼睛，也不改 Animator 或玩家控制字段。
+            if (labHUD)
+            {
                 foreach (GameObject root in scene.GetRootGameObjects())
                 {
                     // 副本由新 UI 显示状态，关闭旧调试面板，避免两套规则入口并存。
@@ -74,38 +95,43 @@ namespace RuleGame.Editor.RuleWheel
                         if (body2D.GetComponent<Collider2D>() != null && body2D.GetComponent<RuleAffectedBody>() == null)
                             body2D.gameObject.AddComponent<RuleAffectedBody>();
                 }
-                RuleWheelLabUnlocks unlocks = player.gameObject.AddComponent<RuleWheelLabUnlocks>();
-                RuleSelectionCamera focus = camera.gameObject.AddComponent<RuleSelectionCamera>();
-                Set(focus, "_target", player.transform);
-                Set(focus, "_normalFollow", camera.GetComponent<P3FollowCamera>());
-                PanelSettings panel = AssetDatabase.LoadAssetAtPath<PanelSettings>(UIPath + "RuleWheelPanelSettings.asset");
-                if (panel == null)
-                {
-                    panel = ScriptableObject.CreateInstance<PanelSettings>();
-                    panel.scaleMode = PanelScaleMode.ScaleWithScreenSize;
-                    panel.referenceResolution = new Vector2Int(1280, 720);
-                    panel.match = 0.5f;
-                    AssetDatabase.CreateAsset(panel, UIPath + "RuleWheelPanelSettings.asset");
-                }
+            }
+            RuleWheelLabUnlocks unlocks = player.GetComponent<RuleWheelLabUnlocks>();
+            if (unlocks == null) unlocks = Undo.AddComponent<RuleWheelLabUnlocks>(player.gameObject);
+            RuleSelectionCamera focus = camera.GetComponent<RuleSelectionCamera>();
+            if (focus == null) focus = Undo.AddComponent<RuleSelectionCamera>(camera.gameObject);
+            Set(focus, "_target", player.transform);
+            Set(focus, "_normalFollow", camera.GetComponent<P3FollowCamera>());
+            PanelSettings panel = AssetDatabase.LoadAssetAtPath<PanelSettings>(UIPath + "RuleWheelPanelSettings.asset");
+            if (panel == null)
+            {
+                panel = ScriptableObject.CreateInstance<PanelSettings>();
+                panel.scaleMode = PanelScaleMode.ScaleWithScreenSize;
+                panel.referenceResolution = new Vector2Int(1280, 720);
+                panel.match = 0.5f;
+                AssetDatabase.CreateAsset(panel, UIPath + "RuleWheelPanelSettings.asset");
+            }
+            RuleWheelPresenter wheel = Find<RuleWheelPresenter>(scene);
+            if (wheel == null)
+            {
                 UIDocument wheelDocument = Document("Rule Wheel", panel, "RuleWheel.uxml", 100);
-                RuleWheelPresenter wheel = wheelDocument.gameObject.AddComponent<RuleWheelPresenter>();
-                Set(wheel, "_player", player);
-                Set(wheel, "_catalog", new SerializedObject(rules).FindProperty("_catalog").objectReferenceValue);
-                Set(wheel, "_unlocks", unlocks);
-                Set(wheel, "_cameraFocus", focus);
-                Set(wheel, "_worldCamera", camera);
+                SceneManager.MoveGameObjectToScene(wheelDocument.gameObject, scene);
+                wheel = Undo.AddComponent<RuleWheelPresenter>(wheelDocument.gameObject);
+            }
+            Set(wheel, "_player", player);
+            Set(wheel, "_catalog", new SerializedObject(rules).FindProperty("_catalog").objectReferenceValue);
+            Set(wheel, "_unlocks", unlocks);
+            Set(wheel, "_cameraFocus", focus);
+            Set(wheel, "_worldCamera", camera);
+            if (labHUD && Find<RuleWheelLabHUD>(scene) == null)
+            {
                 UIDocument labDocument = Document("Lab HUD", panel, "RuleWheelLab.uxml", 0);
+                SceneManager.MoveGameObjectToScene(labDocument.gameObject, scene);
                 RuleWheelLabHUD hud = labDocument.gameObject.AddComponent<RuleWheelLabHUD>();
                 Set(hud, "_status", player.GetComponent<EntityStatus>());
                 Set(hud, "_wheel", wheel);
-                EditorSceneManager.SaveScene(scene, ScenePath);
-                AssetDatabase.SaveAssetIfDirty(panel);
             }
-            finally
-            {
-                EditorSceneManager.CloseScene(scene, true);
-                if (previous.IsValid() && previous.isLoaded) SceneManager.SetActiveScene(previous);
-            }
+            AssetDatabase.SaveAssetIfDirty(panel);
         }
         private static T Find<T>(Scene scene) where T : Component
         {
@@ -119,6 +145,7 @@ namespace RuleGame.Editor.RuleWheel
         private static UIDocument Document(string name, PanelSettings panel, string layout, int order)
         {
             var document = new GameObject(name).AddComponent<UIDocument>();
+            Undo.RegisterCreatedObjectUndo(document.gameObject, "接入规则轮盘");
             document.panelSettings = panel;
             document.sortingOrder = order;
             document.visualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(UIPath + layout);

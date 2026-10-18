@@ -35,7 +35,28 @@ namespace RuleGame.Infrastructure.Time
         public static void Initialize()
         {
             _instance = new TimeManager();
+            ResetEngineState();
+        }
 
+        /// <summary>
+        /// 保证单例存在，但<b>不</b>重置引擎时间状态。
+        /// </summary>
+        /// <remarks>
+        /// <para>常驻宿主（GameRoot）先创建实例后，随关卡重建的 <c>RuleSystemDriver</c> 走这条路径 ——
+        /// 重复调用不会把暂停状态与倍率冲掉。</para>
+        /// <para>实例不存在时等价于 <see cref="Initialize"/>（创建并重置引擎）。</para>
+        /// </remarks>
+        /// <returns>本次调用是否真的创建了实例（即「由调用方拥有」）。</returns>
+        public static bool EnsureInitialized()
+        {
+            if (_instance != null) return false;
+            Initialize();
+            return true;
+        }
+
+        /// <summary>把引擎时间恢复到干净状态。切场景 / 开新一局时用。</summary>
+        private static void ResetEngineState()
+        {
             // 注意：本命名空间（RuleGame.Infrastructure.Time）会遮蔽 UnityEngine.Time，
             // 必须全限定。
             UnityEngine.Time.timeScale = 1f;

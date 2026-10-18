@@ -16,11 +16,8 @@ namespace RuleGame.Infrastructure.Snapshot
         /// <summary>采集时刻（<c>Time.time</c>）。仅用于调试展示，不参与恢复。</summary>
         public float CapturedAt;
 
-        /// <summary>动态实体的状态（位置 / 速度 / 旋转 / 动画 / 实体状态）。</summary>
+        /// <summary>动态实体的状态（位置 / 速度 / 旋转 / 激活状态 / 动画 / 实体状态 / 模块状态）。</summary>
         public List<EntityState> Entities = new List<EntityState>();
-
-        /// <summary>对象的激活状态。恢复的前提是对象被「禁用」而非销毁（架构 D15）。</summary>
-        public List<ObjectActiveState> ObjectStates = new List<ObjectActiveState>();
 
         /// <summary>规则维护表的 6 个属性槽位（含剩余时间 —— 恢复时连它一起回退）。</summary>
         public ActiveRule?[] RuleSlots;

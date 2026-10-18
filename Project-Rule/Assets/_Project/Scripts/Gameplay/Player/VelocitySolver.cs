@@ -299,11 +299,20 @@ namespace RuleGame.Gameplay.Player
                     return Mathf.MoveTowards(lateral, direction * t.MoveSpeedMax, t.GroundAccel * dt);
                 }
 
-                // 减速度 = 基准 × 脚下地面材质的摩擦 × 摩擦规则缩放。
+                // 减速度 = 基准 × 抓地力（地形摩擦 × 摩擦规则缩放）。
                 // 两者相乘：地形可以做成冰面，规则也能把整个世界变成冰面。
                 // ⚠️ 反转**不翻这里的符号** —— 减速力反向会变成"越滑越快"，直接失控。
-                float friction = frame.Contact.GroundFriction * frictionScale;
-                return Mathf.MoveTowards(lateral, 0f, t.FrictionDecel * friction * dt);
+                float grip = frame.Contact.GroundFriction * frictionScale;
+
+                // 「摩擦加强」要把**完全打滑**的地面拉回普通地面：冰面 ×加强 → 抓地 1（= 普通地面）。
+                // 纯乘法做不到（0 × 3 还是 0），所以加强时按「离完全打滑还差多少」补一份。
+                // 「减弱」刻意不补：冰面 ×减弱 仍然是冰面，符合"减弱拿冰面没办法"的直觉。
+                if (frictionScale > 1f)
+                {
+                    grip += 1f - Mathf.Min(frame.Contact.GroundFriction, 1f);
+                }
+
+                return Mathf.MoveTowards(lateral, 0f, t.FrictionDecel * grip * dt);
             }
 
             if (Mathf.Abs(move.x) > 0.01f)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using RuleGame.Infrastructure.Common;
 using RuleGame.Infrastructure.Rules;
 
 namespace RuleGame.Core.Rules
@@ -222,6 +223,40 @@ namespace RuleGame.Core.Rules
             // 先写状态，再广播（与 Request 同一条纪律）
             for (int i = 0; i < ended.Count; i++) OnRuleExpired?.Invoke(ended[i]);
             OnRulesChanged?.Invoke();
+        }
+
+        // ==================================================================
+        //  快照恢复后重建规则效果
+        // ==================================================================
+
+        /// <inheritdoc />
+        /// <remarks>
+        /// <para>快照恢复直接覆盖槽位与属性值，**不发任何规则事件** —— 所以这里必须把
+        /// 「写在引擎上的效果」和「实体身上的值」重新落一遍，否则回溯后会出现
+        /// 「规则表回去了、重力 / 质量 / 摩擦没回去」。</para>
+        /// <para>本方法**不触发规则生命周期事件**，也不广播 <see cref="OnRulesChanged"/>，
+        /// 因此可以安全地在 <c>ISnapshotSystem.Restore</c> 广播 <c>OnRestored</c> 之前调用。</para>
+        /// </remarks>
+        public void ReapplyActiveEffects()
+        {
+            // ① 规则类：按当前槽位静默重施。
+            //    重力 → Physics2D.gravity；时间 → 对齐时间管理器与定点；其余 → AttributeValues。
+            //    ⚠️ 行为型规则覆写了 Reapply（TimeRule 不会在这里再回溯 / 再 Pin）。
+            foreach (var pair in _rules)
+            {
+                pair.Value.Reapply(_table.GetSlot(pair.Key));
+            }
+
+            // ② 实体：活动注册表里能自施加的重读一次属性值。
+            //    质量 / 摩擦没有引擎全局载体，值回去了还要落到刚体与材质上。
+            IWorldRegistry registry = WorldRegistry.Instance;
+            if (registry == null) return;
+
+            IReadOnlyList<IRuleAffected> all = registry.All;
+            for (int i = 0; i < all.Count; i++)
+            {
+                if (all[i] is IRuleApplier applier) applier.ApplyRuleValues();
+            }
         }
 
         // ==================================================================

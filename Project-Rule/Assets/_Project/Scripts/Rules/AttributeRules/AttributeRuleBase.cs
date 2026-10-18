@@ -68,6 +68,21 @@ namespace RuleGame.Core.Rules
         public virtual void Tick(float deltaTime) { }
 
         /// <summary>
+        /// 按规则表当前状态<b>静默重施</b>效果。快照恢复后由 <c>RuleSystem.ReapplyActiveEffects()</c> 调用。
+        /// </summary>
+        /// <remarks>
+        /// <para>默认实现：槽位存在 → <see cref="Request"/> 一次（幂等写值）；槽位为空 → <see cref="Clear"/>。</para>
+        /// <para>⚠️ <b>行为型规则必须覆写</b>：时间规则的「反转」会执行一次回溯、
+        /// 「恒定」会 Pin 一张新快照 —— 直接 <c>Request</c> 会造成副作用。见 <c>TimeRule.Reapply</c>。</para>
+        /// <para>本方法**不触发任何事件**（事件由 <c>RuleSystem</c> 在 <c>Request</c> 路径上广播）。</para>
+        /// </remarks>
+        public virtual void Reapply(ActiveRule? slot)
+        {
+            if (slot.HasValue) Request(slot.Value.Relation);
+            else Clear();
+        }
+
+        /// <summary>
         /// 规则到期 / 被覆盖 / 重开关卡时调用。
         /// </summary>
         /// <remarks>⚠️ 必须把世界恢复原样。这是最容易漏的一步。</remarks>

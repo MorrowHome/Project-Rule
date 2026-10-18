@@ -14,8 +14,17 @@ namespace RuleGame.Gameplay.Enemy
         public float Health { get; private set; }
         private float _maximum;
         private Hurtbox _hurtbox;
+        private Vector3 _normalOffset;
         public Faction Faction => Faction.Enemy;
         public bool DiscardWhenMissing => false;
+        private void Awake() => _normalOffset = transform.localPosition;
+        private void LateUpdate()
+        {
+            if (Owner == null || Owner.Motor == null) return;
+            // 身体翻到天花板时，发条也应露在可攻击的一侧，不能继续藏在身体上方的墙内。
+            transform.localPosition = Owner.Motor.Up.y < 0f
+                ? new Vector3(_normalOffset.x, -_normalOffset.y, _normalOffset.z) : _normalOffset;
+        }
         public void Open(float health) { _maximum = Health = health; Broken = false; Opened = true; SetVisible(true); }
         public void Close() { Opened = false; SetVisible(false); }
         private void SetVisible(bool visible)
@@ -32,8 +41,11 @@ namespace RuleGame.Gameplay.Enemy
         public void ApplyDamage(in DamageInfo damage)
         {
             if (!Opened || Broken) return;
+            float previous = Health;
             Health = Mathf.Clamp(Health - damage.Amount, 0f, _maximum);
             Broken = Health <= 0f;
+            if (Health < previous)
+                Owner?.EmitHitFeedback(previous - Health, damage.Attacker, Broken, false, this);
         }
         private struct Data { public bool Open, Broken; public float Health, Maximum; }
         public object CaptureSnapshotState() => new Data { Open = Opened, Broken = Broken, Health = Health, Maximum = _maximum };

@@ -16,6 +16,7 @@ namespace RuleGame.Editor.Enemy
     {
         public string actor, action;
         public bool facesRight;
+        public bool nativeFrameRate;
         public string[] frames;
     }
     [Serializable] public sealed class EnemyArtManifest
@@ -35,13 +36,29 @@ namespace RuleGame.Editor.Enemy
             if (text == null) throw new InvalidOperationException("请先运行 Tools/EnemyAssets/import_resources.py。");
             return JsonUtility.FromJson<EnemyArtManifest>(text.text);
         }
-        public static void Import()
+        public static void Import() => ImportActor(null);
+        public static void ImportActor(string actor)
         {
             EnemyArtManifest manifest = Load();
+            EnemyArtFrame[] frames = Array.FindAll(manifest.frames,
+                frame => actor == null || frame.path.Contains("/" + actor + "/"));
+            ImportFrames(frames);
+        }
+        public static void ImportSequences(params string[] actions)
+        {
+            EnemyArtManifest manifest = Load();
+            var paths = new System.Collections.Generic.HashSet<string>();
+            foreach (EnemyArtSequence sequence in manifest.sequences)
+                if (Array.IndexOf(actions, sequence.action) >= 0)
+                    foreach (string path in sequence.frames) paths.Add(path);
+            ImportFrames(Array.FindAll(manifest.frames, frame => paths.Contains(frame.path)));
+        }
+        private static void ImportFrames(EnemyArtFrame[] frames)
+        {
             AssetDatabase.StartAssetEditing();
             try
             {
-                foreach (EnemyArtFrame frame in manifest.frames)
+                foreach (EnemyArtFrame frame in frames)
                 {
                     var importer = (TextureImporter)AssetImporter.GetAtPath(frame.path);
                     if (importer.textureType == TextureImporterType.Sprite && importer.maxTextureSize == 512
@@ -65,7 +82,7 @@ namespace RuleGame.Editor.Enemy
             AssetDatabase.StartAssetEditing();
             try
             {
-                foreach (EnemyArtFrame frame in manifest.frames)
+                foreach (EnemyArtFrame frame in frames)
                 {
                     var importer = (TextureImporter)AssetImporter.GetAtPath(frame.path);
                     var provider = factories.GetSpriteEditorDataProviderFromObject(importer);
@@ -91,7 +108,7 @@ namespace RuleGame.Editor.Enemy
                 }
             }
             finally { AssetDatabase.StopAssetEditing(); }
-            Debug.Log($"[EnemyArt] 已导入 {manifest.frames.Length} 张帧，原图与源文件保持完整。");
+            Debug.Log($"[EnemyArt] 已导入 {frames.Length} 张帧，原图与源文件保持完整。");
         }
     }
 }

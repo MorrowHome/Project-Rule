@@ -1,0 +1,258 @@
+1  积木Boss：
+
+ - 行为：
+stateDiagram-v2
+    [*] --> Idle
+
+    state "Idle/Decide 决策" as Idle
+    state "Walk 行走" as Walk
+    state "HammerPlayer 锤击-锤玩家" as HammerPlayer
+    state "HammerGround 锤击-锤地面" as HammerGround
+    state "Throw 投掷" as Throw
+    state "Hurt 受伤" as Hurt
+
+    Idle --> HammerPlayer : 近距离 且 CD好
+    Idle --> HammerGround : 中距离 且 CD好
+    Idle --> Throw : 远距离 且 CD好
+    Idle --> Walk : 需接近
+    Idle --> Hurt : 受到伤害
+
+    Hurt --> Idle : 动画结束
+
+    Walk --> HammerPlayer : 进入近战距离
+    Walk --> HammerGround : 进入中距离
+    Walk --> Throw : 远距离且投掷CD好
+    Walk --> Idle : 无需接近
+
+    HammerPlayer --> Idle : 动画结束
+    HammerGround --> Idle : 动画结束
+    Throw --> Idle : 动画结束
+
+ - 全局：
+stateDiagram-v2
+    [*] --> AnyState
+
+    state "任意状态" as AnyState
+    state "Split 分裂" as Split
+    state "Angry 生气" as Angry
+    state "Dead 死亡" as Dead
+
+    AnyState --> Split : HP≤3/4（第一次）
+    AnyState --> Angry : HP<1/2（第二次，打断所有动作）
+    Angry --> Split : 生气动画结束
+    AnyState --> Split : HP≤1/4（第三次）
+
+    AnyState --> Dead : HP≤0
+    Dead --> [*]
+
+
+1.1  积木Boss分裂小怪：
+
+ - 行为：
+stateDiagram-v2
+    [*] --> Walk
+
+    state "Walk 行走" as Walk
+    state "Dead 死亡" as Dead
+
+    Walk --> Walk : 始终追击玩家 / 碰到玩家造成碰撞伤害
+    Walk --> Dead : HP≤0
+    Dead --> [*]
+
+————————————————————————————————————
+
+2  发条Boss
+
+ - 行为：
+stateDiagram-v2
+    [*] --> Idle
+
+    state "Idle/Decide 决策" as Idle
+    state "Walk 行走" as Walk
+    state "Laser 激光发射" as Laser
+    state "JumpShake 跳动响铃" as JumpShake
+    state "Charge 跑动冲刺" as Charge
+
+    Idle --> Walk : 距离远
+    Idle --> Laser : 针位触发
+
+    Walk --> Laser : 行走中按针位触发
+    Walk --> Idle : 进入攻击距离
+
+    Laser --> Idle : 动画结束
+
+    Idle --> JumpShake : 整点触发
+    Walk --> JumpShake : 整点触发
+    JumpShake --> Charge : 动画结束
+    Charge --> Idle : 持续3秒
+
+ - 全局：
+stateDiagram-v2
+    [*] --> Phase1
+
+    state "一阶段 1~2/3 仅秒针" as Phase1
+    state "二阶段 2/3~1/3 秒针+分针" as Phase2
+    state "Stun 眩晕 弹出发条 锁血" as Stun
+    state "三阶段 0~1/3 秒针+分针+时针" as Phase3
+    state "Rewind 时间回溯" as Rewind
+    state "Dead 死亡" as Dead
+
+    Phase1 --> Phase2 : HP≤2/3
+    Phase2 --> Stun : HP≤1/3 / 弹出发条 / 锁血
+
+    Stun --> Phase3 : 3s内击破发条
+    Stun --> Rewind : 3s内未击破发条
+
+    Rewind --> Phase2 : 血量回溯到3/5 / 仍为二阶段 / 反复判定
+
+    Phase3 --> Dead : HP≤0
+    Dead --> [*]
+
+2.1  秒针
+ - 行为：
+stateDiagram-v2
+    [*] --> Idle
+
+    state "Idle 未激活" as Idle
+    state "Running 发射中" as Running
+    state "Dead 停止" as Dead
+
+    Idle --> Running : 进入一阶段
+    Running --> Running : 每2秒发射细激光
+    Running --> Dead : Boss死亡
+    Dead --> [*]
+
+2.2  分针：
+ - 行为：
+stateDiagram-v2
+    [*] --> Idle
+
+    state "Idle 未激活" as Idle
+    state "Running 发射中" as Running
+    state "Dead 停止" as Dead
+
+    Idle --> Running : 进入二阶段
+    Running --> Running : 每3秒发射中激光
+    Running --> Dead : Boss死亡
+    Dead --> [*]
+
+2.3  时针：
+ - 行为：
+stateDiagram-v2
+    [*] --> Idle
+
+    state "Idle 未激活" as Idle
+    state "Running 发射中" as Running
+    state "Dead 停止" as Dead
+
+    Idle --> Running : 进入三阶段
+    Running --> Running : 每4秒发射粗激光
+    Running --> Dead : Boss死亡
+    Dead --> [*]
+
+————————————————————————————————————
+
+3  毛绒兔子：
+
+ - 行为：
+stateDiagram-v2
+    [*] --> Pop
+
+    state "Pop 钻出来" as Pop
+    state "Throw 头在外丢东西" as Throw
+    state "Hide 钻进去" as Hide
+    state "HideThrow 躲着丢东西" as HideThrow
+    state "Flip 翻过来" as Flip
+    state "FlipThrow 倒着倾倒东西" as FlipThrow
+
+    Pop --> Throw : 动画结束
+    Throw --> Throw : 每次0.5s 循环
+    Throw --> Hide : 20s计时到
+    Hide --> HideThrow : 动画结束
+    HideThrow --> HideThrow : 循环
+    HideThrow --> Pop : 20s计时到
+
+    Pop --> Flip : HP≤50
+    Throw --> Flip : HP≤50
+    Hide --> Flip : HP≤50
+    HideThrow --> Flip : HP≤50
+
+    Flip --> FlipThrow : 动画结束
+    FlipThrow --> FlipThrow : 循环
+
+ - 全局：
+stateDiagram-v2
+    [*] --> AnyState
+
+    state "任意状态" as AnyState
+    state "Magic 释放规则" as Magic
+    state "Dead 死亡（谢幕）" as Dead
+
+    AnyState --> Magic : 蓝量>50 且 每5s判定 50%概率
+    Magic --> AnyState : 动画结束
+
+    AnyState --> Dead : HP<20 / 锁血
+    Dead --> [*]
+
+————————————————————————————————————
+
+4  魔王：
+
+ - 行为：
+stateDiagram-v2
+    [*] --> Active
+
+    state "Active 可行动状态" as Active {
+        [*] --> Idle
+        state "Idle 地面决策" as Idle
+        state "Fly 空中飞行" as Fly
+        Idle --> Fly : 距离远 / 需要移动
+        Fly --> Idle : 进入攻击距离 / 决策
+    }
+
+    state "Slash 劈砍" as Slash
+    state "Shake 甩毛" as Shake
+    state "Roar 大叫" as Roar
+    state "WingSpread 大展翅膀" as WingSpread
+    state "Point 前指" as Point
+    state "Dash 冲刺" as Dash
+    state "Hurt 受击" as Hurt
+
+    Active --> Slash : 近身
+    Active --> Shake : 主动甩毛
+    Active --> Roar : 二阶段起 召唤
+    Active --> WingSpread : 二阶段起 满蓝规则
+    Active --> Point : 二阶段起 有召唤物且3秒后
+    Active --> Dash : 三阶段 全屏冲刺
+    Active --> Hurt : 受到玩家攻击 且 CD好
+
+    Slash --> Active : 动画结束
+    Shake --> Active : 动画结束
+    Roar --> Active : 动画结束
+    WingSpread --> Active : 动画结束
+    Point --> Active : 动画结束
+    Dash --> Active : 动画结束
+
+    Hurt --> Shake : 受击动画结束（被动甩毛）
+    Shake --> Active : 甩毛结束
+
+ - 全局：
+stateDiagram-v2
+    [*] --> Phase1
+
+    state "一阶段 100%~2/3" as Phase1
+    state "Weak 虚弱（阶段切换强制）" as Weak
+    state "二阶段 2/3~1/3" as Phase2
+    state "三阶段 1/3~0" as Phase3
+    state "Dead 坠落死亡" as Dead
+
+    Phase1 --> Weak : HP≤2/3
+    Weak --> Phase2 : 虚弱结束
+
+    Phase2 --> Weak : HP≤1/3
+    Weak --> Phase3 : 虚弱结束
+
+    Phase3 --> Dead : HP≤0
+    Dead --> [*]
+
+————————————————————————————————————

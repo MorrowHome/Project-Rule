@@ -19,6 +19,9 @@ namespace RuleGame.Gameplay.Player
     public sealed class MotionMover
     {
         private readonly Rigidbody2D _body;
+        private readonly Collider2D _bodyCollider;
+        private Vector2 _platformDisplacement;
+        private Collider2D _platform;
 
         private Vector2 _velocity;          // 自己维护的速度：重力 / 输入 / 跳跃
         private Vector2 _externalVelocity;  // 击退等外部冲量，独立衰减，不掺进重力与摩擦
@@ -28,6 +31,7 @@ namespace RuleGame.Gameplay.Player
         public MotionMover(Rigidbody2D body)
         {
             _body = body;
+            _bodyCollider = body.GetComponent<Collider2D>();
             ConfigureBody();
         }
 
@@ -58,6 +62,9 @@ namespace RuleGame.Gameplay.Player
                                                     tuning.KnockbackDecay * dt);
 
             Vector2 slideVelocity = _velocity + _externalVelocity;
+            bool carrying = contact.Grounded && Vector2.Dot(_velocity, contact.Up) <= .01f
+                && _platform != null && _platformDisplacement.sqrMagnitude > .000001f;
+            if (carrying) slideVelocity += _platformDisplacement / Mathf.Max(.0001f, dt);
 
             // ⑧′ 承载：脚下是会动的支撑面（滑板车 / 升降台）时，把它这一步要走的位移并进来。
             //
@@ -107,13 +114,20 @@ namespace RuleGame.Gameplay.Player
                 if (riseSpeed > 0f) _velocity -= contact.Up * riseSpeed;
             }
 
-            var result = _body.Slide(slideVelocity, dt, BuildSlideMovement(tuning, contact));
-
-            // ⑩ 撞墙 / 撞顶：Slide 把用不掉的速度还回来，清掉对应分量，避免贴着墙持续挤压
-            //    ⚠️ 这条判据只在「Slide 真的动了」时才可信 —— 它取消整笔位移时也返回 0，
-            //       那种情况由 ⑨′ 提前挡掉。
-            if (Mathf.Abs(result.remainingVelocity.x) > 0.001f) _velocity.x = 0f;
-            if (Mathf.Abs(result.remainingVelocity.y) > 0.001f) _velocity.y = 0f;
+            bool ignored = carrying && _bodyCollider != null && !Physics2D.GetIgnoreCollision(_bodyCollider, _platform);
+            if (ignored) Physics2D.IgnoreCollision(_bodyCollider, _platform, true);
+            try
+            {
+                // 承载位移和自主移动只提交一次 Slide。下降时临时忽略支撑面，其他墙和天花板仍阻挡。
+                var result = _body.Slide(slideVelocity, dt, BuildSlideMovement(tuning, contact));
+                if (Mathf.Abs(result.remainingVelocity.x) > 0.001f) _velocity.x = 0f;
+                if (Mathf.Abs(result.remainingVelocity.y) > 0.001f) _velocity.y = 0f;
+            }
+            finally
+            {
+                if (ignored) Physics2D.IgnoreCollision(_bodyCollider, _platform, false);
+                _platformDisplacement = Vector2.zero; _platform = null;
+            }
         }
 
         /// <summary>
@@ -122,6 +136,11 @@ namespace RuleGame.Gameplay.Player
         /// <remarks><b>不能</b>直接写 <c>Rigidbody2D.linearVelocity</c>：本类每个物理帧都会整体
         /// 覆盖速度，那样写进去的冲量活不过一帧。</remarks>
         public void AddImpulse(Vector2 impulse) => _externalVelocity += impulse;
+        /// <summary>由支撑平台在本帧玩家移动前提交。起跳时自动丢弃，不写入玩家自主速度。</summary>
+        public void CarryOnPlatform(Vector2 displacement, Collider2D platform)
+        {
+            _platformDisplacement = displacement; _platform = platform;
+        }
 
         /// <summary>
         /// 暂停：速度清零。
@@ -131,6 +150,7 @@ namespace RuleGame.Gameplay.Player
         {
             _velocity         = Vector2.zero;
             _externalVelocity = Vector2.zero;
+            _platformDisplacement = Vector2.zero; _platform = null;
         }
 
         /// <summary>Kinematic + 自己解算。gravityScale 置 0：重力在 <see cref="VelocitySolver"/> 里自己积分。</summary>
@@ -164,7 +184,7 @@ namespace RuleGame.Gameplay.Player
                 maxIterations     = 4,                   // 拐角要几次叠代才滑得干净
                 surfaceAnchor     = anchored ? -contact.Up * tuning.SurfaceAnchorDistance : Vector2.zero,
                 useLayerMask      = true,
-                layerMask         = tuning.SolidLayer,
+                layerMask         = tuning.SolidLayer | tuning.BodyBlockLayer,
                 useAttachedTriggers = false,
                 useSimulationMove = true,                // 交给模拟步生效：暂停（不 Simulate）时自然静止
             };

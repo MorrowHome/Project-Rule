@@ -16,6 +16,10 @@ namespace RuleGame.Core.Rules
     /// 所以快照一恢复，时间管理器上的倍率 / 开关就成了「表上已经没有对应规则、
     /// 但它还留着」的残留。每帧重对齐让这类残留自己消失，不需要为它发明新事件。</para>
     ///
+    /// <para><b>拍照节奏归本类，快照存储归快照系统</b>（2026-10-14 定）：
+    /// 环形缓冲的滚动间隔与「何时 Pin 定点」是规则策略，留在 <c>Tick</c> / <c>OnConstant</c>；
+    /// 拍下来的 <c>Snapshot</c> 由 <c>ISnapshotSystem</c> 持有，本类只拿句柄。</para>
+    ///
     /// <para><b>依赖为什么是懒取的</b>：<c>TimeManager</c> / <c>SnapshotSystem</c> 都是
     /// 基础设施单例，而且 <c>SnapshotSystem</c> 的构造需要 <c>RuleSystem</c> ——
     /// 在 <c>RuleSystem</c> 构造期注入它会成环。<c>IRuleTable</c> 没有单例，走构造注入。</para>
@@ -44,11 +48,15 @@ namespace RuleGame.Core.Rules
         /// <summary>「时间管理器还没起来」只警告一次，别刷屏。</summary>
         private static bool _warnedNoTimeManager;
 
-        /// <summary>恒定开着的那张**定点快照**。null = 窗口没开。</summary>
-        private Snapshot _fixedPoint;
+        /// <summary>恒定开着的那张**定点快照的句柄**。0 = 窗口没开。</summary>
+        /// <remarks>快照本身存在 <c>ISnapshotSystem</c> 的定点槽里，本类不再持有 <c>Snapshot</c>。</remarks>
+        private int _fixedPointHandle;
 
         /// <summary>环形缓冲的采集计时。</summary>
         private float _bufferTimer;
+
+        /// <summary>是否已经垫过第一张缓冲快照。</summary>
+        private bool _primed;
 
         public TimeRule(IAttributeManager attributes, IRuleTable table) : base(attributes)
         {
@@ -66,8 +74,10 @@ namespace RuleGame.Core.Rules
 
         /// <summary>反转：时间倒流 —— 回溯到环形缓冲里的**倒数第二张**。</summary>
         /// <remarks>
-        /// <para>缓冲不足两张（规则生效后还没滚够一个间隔）返回 false，
-        /// <c>RuleSystem</c> 会记 <c>NoResource</c>，<c>RuleReleaseService</c> 据此**不扣能量**。</para>
+        /// <para><b>回溯目标有兜底</b>：优先取倒数第二张（保证至少回到 5 秒前）；
+        /// 缓冲不足两张时退到**最旧的一张** —— 开局第一帧垫的那张，所以开局就有得退。
+        /// 只有缓冲**完全为空**时才返回 false，<c>RuleSystem</c> 记 <c>NoResource</c>，
+        /// <c>RuleReleaseService</c> 据此**不扣能量**。</para>
         /// <para>⚠️ 回溯会连规则表一起回退，所以回溯到的那一时刻如果还没有反转规则，
         /// 这条规则会**当场被抹掉**（下一帧的 <see cref="Tick"/> 对表时收摊）。
         /// 而能量不退（<c>RestoreMode.KeepEnergy</c>）—— 付能量、拿回溯、技能结束，
@@ -78,7 +88,9 @@ namespace RuleGame.Core.Rules
             ISnapshotSystem snapshots = Snapshots;
             if (snapshots == null) return false;
 
-            if (!snapshots.TryPeekSecondLast(out Snapshot snap)) return false;
+            // 优先倒数第二张；不足两张时兜底到最旧的一张（开局垫的那张）。
+            if (!snapshots.TryPeekSecondLast(out Snapshot snap)
+                && !snapshots.TryPeekOldest(out snap)) return false;
 
             snapshots.Restore(snap, RestoreMode.KeepEnergy);
             snapshots.DiscardNewerThan(snap.Seq);      // 回退后未来作废
@@ -91,7 +103,7 @@ namespace RuleGame.Core.Rules
 
         /// <summary>恒定：开一个定点回溯窗口。</summary>
         /// <remarks>
-        /// <para>拍一张定点快照，窗口内玩家可按键**无限次**回溯到它，不耗能；
+        /// <para>拍一张定点快照（<c>Pin</c>），窗口内玩家可按键**无限次**回溯到它，不耗能；
         /// 窗口随规则时长自然结束。控制入口见 <c>ITimeRewindControl</c>。</para>
         /// <para>⚠️ 矩阵里写的「时停 + 编排」是旧版描述，**已作废** ——
         /// 恒定不碰 <c>Time.timeScale</c>，整个游戏除了 UI 暂停没有任何地方设它为 0。</para>
@@ -101,8 +113,8 @@ namespace RuleGame.Core.Rules
             ISnapshotSystem snapshots = Snapshots;
             if (snapshots == null) return false;
 
-            _fixedPoint = snapshots.Capture();
-            if (_fixedPoint == null) return false;
+            _fixedPointHandle = snapshots.Pin();
+            if (_fixedPointHandle == 0) return false;
 
             AlignTimeManagerWithTable();    // Constant 分支不碰时间管理器，这里只是保持单一入口
             return true;
@@ -115,7 +127,7 @@ namespace RuleGame.Core.Rules
         protected override bool OnWeaken() => AlignAndSucceed();
 
         /// <summary>
-        /// 到期 / 被覆盖 / 重开关卡时把时间管理器恢复原样。
+        /// 到期 / 被覆盖 / 重开关卡时把时间管理器恢复原样，并解除定点。
         /// </summary>
         /// <remarks>
         /// ⚠️ <c>RuleSystem</c> 在**覆盖前**调本方法，那时规则表里还是**旧关系**，
@@ -125,7 +137,7 @@ namespace RuleGame.Core.Rules
         {
             TimeManagerRef?.RemoveScale(TimeSource.Rule);
             TimeManagerRef?.SetTimeMechanicsEnabled(true);
-            _fixedPoint = null;
+            UnpinFixedPoint();
         }
 
         // ==================================================================
@@ -142,7 +154,17 @@ namespace RuleGame.Core.Rules
         }
 
         /// <summary>
-        /// 把时间管理器对齐到规则表当前状态。
+        /// 快照恢复后的静默重施。
+        /// </summary>
+        /// <remarks>
+        /// ⚠️ **不能走基类的默认实现**：默认会对当前关系调 <c>Request</c>，
+        /// 而「反转」的 <c>OnRevert</c> 会再执行一次回溯、「恒定」的 <c>OnConstant</c> 会再 Pin 一张。
+        /// 恢复后只需要把时间管理器对齐到恢复出来的表，并保证定点句柄与表一致。
+        /// </remarks>
+        public override void Reapply(ActiveRule? slot) => AlignTimeManagerWithTable();
+
+        /// <summary>
+        /// 把时间管理器对齐到规则表当前状态；并让定点句柄与「恒定是否生效」一致。
         /// </summary>
         /// <remarks>
         /// <para>快照恢复会直接覆盖槽位而不调 <see cref="Clear"/>，规则类没法靠事件知道；
@@ -152,51 +174,53 @@ namespace RuleGame.Core.Rules
         /// </remarks>
         private void AlignTimeManagerWithTable()
         {
-            ITimeManager time = TimeManagerRef;
-            if (time == null) return;       // 测试或没挂 Driver 时静默跳过
-
             ActiveRule? slot = _table.GetSlot(AttributeId.Time);
+            ITimeManager time = TimeManagerRef;
 
-            if (!slot.HasValue)
+            if (time != null)
             {
-                time.RemoveScale(TimeSource.Rule);
-                time.SetTimeMechanicsEnabled(true);
-                _fixedPoint = null;
-                return;
-            }
-
-            switch (slot.Value.Relation)
-            {
-                case RelationId.Enhance:
-                    time.PushScale(TimeSource.Rule, EnhancedScale);
-                    time.SetTimeMechanicsEnabled(true);
-                    break;
-
-                case RelationId.Weaken:
-                    time.PushScale(TimeSource.Rule, WeakenedScale);
-                    time.SetTimeMechanicsEnabled(true);
-                    break;
-
-                case RelationId.Nullify:
-                    time.RemoveScale(TimeSource.Rule);      // 失效不碰 TimeScale
-                    time.SetTimeMechanicsEnabled(false);
-                    break;
-
-                default:                                    // Revert / Constant
+                if (!slot.HasValue)
+                {
                     time.RemoveScale(TimeSource.Rule);
                     time.SetTimeMechanicsEnabled(true);
-                    break;
+                }
+                else
+                {
+                    switch (slot.Value.Relation)
+                    {
+                        case RelationId.Enhance:
+                            time.PushScale(TimeSource.Rule, EnhancedScale);
+                            time.SetTimeMechanicsEnabled(true);
+                            break;
+
+                        case RelationId.Weaken:
+                            time.PushScale(TimeSource.Rule, WeakenedScale);
+                            time.SetTimeMechanicsEnabled(true);
+                            break;
+
+                        case RelationId.Nullify:
+                            time.RemoveScale(TimeSource.Rule);      // 失效不碰 TimeScale
+                            time.SetTimeMechanicsEnabled(false);
+                            break;
+
+                        default:                                    // Revert / Constant
+                            time.RemoveScale(TimeSource.Rule);
+                            time.SetTimeMechanicsEnabled(true);
+                            break;
+                    }
+                }
             }
 
-            if (slot.Value.Relation == RelationId.Constant)
+            // 定点与时间管理器无关，单独对齐：
+            // 恒定生效中且没有定点 → 补 Pin 一张（恢复把「恒定生效中」的表带回来时走这里）；
+            // 其余情况 → 解除定点。定点槽不参与快照内容，所以不会被环形缓冲回溯冲掉。
+            if (slot.HasValue && slot.Value.Relation == RelationId.Constant)
             {
-                // 快照恢复可能把「恒定生效中」这张表带回来，但定点快照不在快照里
-                // （Snapshot 不装它）。此刻世界刚被写回，现在拍一张正好就是那一刻 —— 补上。
-                if (_fixedPoint == null) _fixedPoint = Snapshots?.Capture();
+                if (_fixedPointHandle == 0) _fixedPointHandle = Snapshots?.Pin() ?? 0;
             }
             else
             {
-                _fixedPoint = null;
+                UnpinFixedPoint();
             }
         }
 
@@ -207,10 +231,21 @@ namespace RuleGame.Core.Rules
         /// <para>反转要回溯到「5-10 秒前」，所以缓冲必须在规则生效**之前**就在滚 ——
         /// 这就是采集放 <see cref="Tick"/> 而不是 <c>OnRevert</c> 的原因。</para>
         /// <para>⚠️ 代价：每 <see cref="BufferInterval"/> 秒一次 <c>Capture()</c>，
-        /// 每次为注册表里每个实体建一条记录。实体数量上百或间隔调小时要改成增量采集。</para>
+        /// 每次为名册里每个实体建一条记录。实体数量上百或间隔调小时要改成增量采集。</para>
         /// </remarks>
         private void RollSnapshotBuffer(float deltaTime)
         {
+            // 第一帧先垫一张：不垫的话「倒数第二张」要等两个采集间隔（10 秒）才存在，
+            // 反转在开局前 10 秒内永远是 NoResource —— 测试时看起来就是「没反应」。
+            // 垫一张后，5 秒就够反转用了。
+            if (!_primed)
+            {
+                _primed = true;
+                _bufferTimer = 0f;
+                Snapshots?.CaptureToBuffer();
+                return;
+            }
+
             _bufferTimer += deltaTime;
             if (_bufferTimer < BufferInterval) return;
 
@@ -223,18 +258,17 @@ namespace RuleGame.Core.Rules
         // ==================================================================
 
         /// <inheritdoc />
-        public bool IsWindowOpen => _fixedPoint != null;
+        public bool IsWindowOpen => _fixedPointHandle != 0;
 
         /// <inheritdoc />
         public bool TryRewind()
         {
-            if (_fixedPoint == null) return false;
+            if (_fixedPointHandle == 0) return false;
 
             ISnapshotSystem snapshots = Snapshots;
             if (snapshots == null) return false;
 
-            snapshots.Restore(_fixedPoint, RestoreMode.KeepEnergy);
-            return true;
+            return snapshots.TryRestorePinned(_fixedPointHandle, RestoreMode.KeepEnergy);
         }
 
         // ==================================================================
@@ -249,6 +283,14 @@ namespace RuleGame.Core.Rules
         {
             AlignTimeManagerWithTable();
             return true;
+        }
+
+        /// <summary>解除定点；没有定点时是空操作。</summary>
+        private void UnpinFixedPoint()
+        {
+            if (_fixedPointHandle == 0) return;
+            Snapshots?.Unpin(_fixedPointHandle);
+            _fixedPointHandle = 0;
         }
     }
 }

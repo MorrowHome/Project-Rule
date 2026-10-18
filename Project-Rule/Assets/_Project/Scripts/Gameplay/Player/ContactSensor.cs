@@ -91,8 +91,9 @@ namespace RuleGame.Gameplay.Player
 
             // 中段探针：只认「身体中段那一小块」旁边的墙（贴墙能力的判据）。
             Bounds b = _bodyCollider.bounds;
-            _climbLeft  = ProbeClimb(new Vector2(b.min.x,  b.center.y), tuning.WallClimbProbeRadius, tuning);
-            _climbRight = ProbeClimb(new Vector2(b.max.x,  b.center.y), tuning.WallClimbProbeRadius, tuning);
+            float climbRadius = ClimbProbeRadius(tuning);
+            _climbLeft  = ProbeClimb(new Vector2(b.min.x,  b.center.y), climbRadius, tuning);
+            _climbRight = ProbeClimb(new Vector2(b.max.x,  b.center.y), climbRadius, tuning);
 
             return new State
             {
@@ -135,6 +136,25 @@ namespace RuleGame.Gameplay.Player
         }
 
         /// <summary>
+        /// 实际使用的中段探针半径：**必须比「顶墙预夹距离」更大一截**。
+        /// </summary>
+        /// <remarks>
+        /// <para>⚠️ 这不是留余量，是**必须**。⑨′ 的顶墙预夹（<c>MotionMover</c>）在离墙
+        /// <c>WallProbeDistance</c>（默认 0.08 米）以内就把横向速度清零，所以玩家**永远停在离墙
+        /// 0 ~ 0.08 米**的地方，根本摸不到墙。探针半径比它小（原默认 0.06）时，停在这条带里的人
+        /// <c>WallLeft</c> 为真、<c>ClimbLeft</c> 为假 —— 既不贴墙下滑也不蹬墙跳，而预夹又每帧清速
+        /// 让他靠不过去，**形成死锁**。</para>
+        ///
+        /// <para>实测证据（2026-10-18，瓦片关卡贴左墙连续按跳）：
+        /// <c>gapL=0.081 wallL=True climbL=False</c>，x 坐标 30 秒纹丝不动。</para>
+        ///
+        /// <para>取 <c>WallProbeDistance + 0.03</c>：预夹距离已含接触偏移，实测差 0.001~0.01，
+        /// 3 厘米足够覆盖。注意这**不改变**「只认中段」这条语义（矮台 / 台阶仍然不算墙）。</para>
+        /// </remarks>
+        private static float ClimbProbeRadius(MotionTuning tuning)
+            => Mathf.Max(tuning.WallClimbProbeRadius, tuning.WallProbeDistance + 0.03f);
+
+        /// <summary>
         /// 中段圆探针：在指定点做一个圆重叠查询，看旁边有没有可爬的竖墙。
         /// </summary>
         /// <remarks>
@@ -153,6 +173,27 @@ namespace RuleGame.Gameplay.Player
             filter.SetLayerMask(tuning.SolidLayer);
 
             return Physics2D.OverlapCircle(point, radius, filter, _climbHits) > 0;
+        }
+
+        /// <summary>
+        /// 查脚下**那一格瓦片**自己声明的摩擦系数（<see cref="RuleGame.Gameplay.Scene.SurfaceTile"/>）。
+        /// </summary>
+        /// <remarks>
+        /// <para>命中的碰撞体是 Tilemap 时，把它换算成格子去取瓦片；不是 Tilemap（普通碰撞体）就返回
+        /// <c>NaN</c> 表示「这块地不表态」，交给碰撞体的材质决定。</para>
+        /// <para>⚠️ 探测点取在**接触点往里一点**：命中点正好压在格子的上边界上，
+        /// 直接用 <c>WorldToCell</c> 会掉进上面那一格（空的），读到 null。</para>
+        /// </remarks>
+        private static float ReadTileFriction(RaycastHit2D hit)
+        {
+            if (!(hit.collider is UnityEngine.Tilemaps.TilemapCollider2D tilemapCollider)) return float.NaN;
+
+            var map = tilemapCollider.GetComponent<UnityEngine.Tilemaps.Tilemap>();
+            if (map == null) return float.NaN;
+
+            Vector2 probe = hit.point - hit.normal * 0.05f;
+            var tile = map.GetTile(map.WorldToCell(probe));
+            return tile is RuleGame.Gameplay.Scene.SurfaceTile surface ? surface.Friction : float.NaN;
         }
 
         /// <summary>沿当前「上」方向的反向做一次碰撞体扫描，看脚下有没有支撑面。</summary>
@@ -178,14 +219,18 @@ namespace RuleGame.Gameplay.Player
                 // 只有法线朝着「上」的接触才算支撑面；墙面法线是水平的，会被排除。
                 if (Vector2.Dot(_groundHits[i].normal, _up) <= 0.5f) continue;
 
-                // 地形用 PhysicsMaterial2D 表达材质：冰面给个小的 friction 即可。
+                // 地形用 PhysicsMaterial2D 表达材质。但一整张 Tilemap 只有一个碰撞体，
+                // 没法逐格设摩擦 —— 所以瓦片自己也可以声明（SurfaceTile，冰面那种）。
                 var material = _groundHits[i].collider.sharedMaterial;
                 if (material != null) _groundFriction = material.friction;
 
+                float surface = ReadTileFriction(_groundHits[i]);
+                if (!float.IsNaN(surface)) _groundFriction = surface;
+
                 // 会动的支撑面（滑板车 / 升降台）把速度带上，由 MotionMover 并进位移。
                 // 走接口而不是具体类型：玩家不需要认识任何场景组件。
-                var surface = _groundHits[i].collider.GetComponentInParent<IMovingSurface>();
-                if (surface != null) _carrierVelocity = surface.Velocity;
+                var carrier = _groundHits[i].collider.GetComponentInParent<IMovingSurface>();
+                if (carrier != null) _carrierVelocity = carrier.Velocity;
 
                 // 会弹的面（弹簧平台）报的是**要推我出去的速度**，由 VelocitySolver 落到竖直轴上。
                 // 两个接口各管一半：那个管位置跟随，这个管速度。

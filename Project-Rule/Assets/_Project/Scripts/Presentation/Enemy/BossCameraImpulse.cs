@@ -10,7 +10,6 @@ namespace RuleGame.Presentation.Enemy
     {
         private static event System.Action<float, float> Requested;
         private Camera _camera;
-        private Matrix4x4 _view;
         private float _strength, _duration, _age;
         private bool _applied;
         public static void Pulse(float strength, float duration) => Requested?.Invoke(strength, duration);
@@ -41,12 +40,17 @@ namespace RuleGame.Presentation.Enemy
         private void BeforeRender(ScriptableRenderContext context, Camera camera)
         {
             if (camera != _camera || _strength <= 0f || TimeManager.Instance?.IsPaused == true) return;
-            _view = camera.worldToCameraMatrix;
+            Matrix4x4 view = camera.worldToCameraMatrix;
             float fade = 1f - Mathf.Clamp01(_age / _duration);
             Vector3 offset = new Vector3(Mathf.Sin(_age * 173f), Mathf.Cos(_age * 139f) * .6f, 0f) * (_strength * fade * fade);
-            camera.worldToCameraMatrix = Matrix4x4.Translate(offset) * _view; _applied = true;
+            camera.worldToCameraMatrix = Matrix4x4.Translate(offset) * view; _applied = true;
         }
         private void AfterRender(ScriptableRenderContext context, Camera camera) { if (camera == _camera) Restore(); }
-        private void Restore() { if (_applied && _camera != null) _camera.worldToCameraMatrix = _view; _applied = false; }
+        private void Restore()
+        {
+            // 写回旧矩阵仍处于手动模式，Transform 后续移动不会更新画面；必须归还自动视图计算。
+            if (_applied && _camera != null) _camera.ResetWorldToCameraMatrix();
+            _applied = false;
+        }
     }
 }

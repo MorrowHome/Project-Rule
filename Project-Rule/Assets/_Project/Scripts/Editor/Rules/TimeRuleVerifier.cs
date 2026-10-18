@@ -25,12 +25,13 @@ namespace RuleGame.Editor.Rules
             RuleDef[] defs = RuleVerifyHarness.MakeDefs(AttributeId.Time, 10f);
 
             WorldRegistry.Initialize();
+            SnapshotRoster.Initialize();                    // 快照采集读名册（成员资格=生命周期）
             TimeManager.Initialize();                       // 时间规则依赖它
             RuleSystem.Initialize(new RuleVerifyHarness.TestCatalog(defs));
             RuleSystem sys = RuleSystem.Instance;
             if (sys == null) return "✗ RuleSystem 初始化失败";
 
-            SnapshotSystem.Initialize(sys, WorldRegistry.Instance);   // 恒定 / 反转依赖它
+            SnapshotSystem.Initialize(sys, SnapshotRoster.Instance);   // 恒定 / 反转依赖它
             TimeManager tm = TimeManager.Instance;
 
             var tsc = sys as ITimeRewindControl;
@@ -105,7 +106,7 @@ namespace RuleGame.Editor.Rules
 
             SnapshotSystem.Instance.ClearBuffer();
             RuleRequestResult rr0 = sys.Request(AttributeId.Time, RelationId.Revert, RuleSource.Player);
-            h.Check("缓冲不足两张 → 失败且状态是 NoResource（RuleReleaseService 据此不扣能量）",
+            h.Check("缓冲为空 → 失败且状态是 NoResource（RuleReleaseService 据此不扣能量）",
                     !rr0.Succeeded && rr0.Status == RuleRequestStatus.NoResource, rr0.Status.ToString());
             h.Check("失败回滚后恒定槽位还在（不是被清空）",
                     sys.Table.IsActive(AttributeId.Time, RelationId.Constant), SlotText(sys));
@@ -115,6 +116,12 @@ namespace RuleGame.Editor.Rules
 
             RuleRequestResult rr = sys.Request(AttributeId.Time, RelationId.Revert, RuleSource.Player);
             h.Check("缓冲够了 → 反转成功", rr.Succeeded, rr.Status.ToString());
+
+            // 兜底：只有一张时也要能退 —— 回到最旧（也是唯一）的那张，开局垫的那张
+            SnapshotSystem.Instance.ClearBuffer();
+            SnapshotSystem.Instance.CaptureToBuffer();
+            RuleRequestResult rrFallback = sys.Request(AttributeId.Time, RelationId.Revert, RuleSource.Player);
+            h.Check("只有一张快照 → 兜底成功（回到最旧的一张）", rrFallback.Succeeded, rrFallback.Status.ToString());
 
             // ==============================================================
             //  ⑤ ClearAll 收尾
@@ -136,6 +143,7 @@ namespace RuleGame.Editor.Rules
             tm.RemoveScale(TimeSource.Rule);
             tm.SetTimeMechanicsEnabled(true);
             SnapshotSystem.Reset();
+            SnapshotRoster.Reset();
             TimeManager.Reset();
             RuleSystem.Reset();
             WorldRegistry.Reset();

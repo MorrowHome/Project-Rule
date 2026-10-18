@@ -129,6 +129,7 @@ namespace RuleGame.Gameplay.Player
 
         /// <summary>阻挡移动、并用于接地判定的层。地形与墙体都放这里。</summary>
         public LayerMask SolidLayer;
+        public LayerMask BodyBlockLayer;
 
         /// <summary>接地探测距离（米）。</summary>
         public float GroundProbeDistance;

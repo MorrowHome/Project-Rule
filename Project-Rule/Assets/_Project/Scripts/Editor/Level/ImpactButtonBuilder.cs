@@ -54,26 +54,56 @@ namespace RuleGame.Editor.Level
         [MenuItem("Tools/规则游戏/地图组件/⑨ 巨大按钮（动量触发机关）", false, 58)]
         public static void CreateButton()
         {
+            Vector3 at = SceneViewPivot();
+
+            var root = new GameObject(RootName);
+            root.transform.position = at;
+            Undo.RegisterCreatedObjectUndo(root, "创建巨大按钮");
+
+            if (Build(root, OneWayGate.PassDirection.ToDown) == null)
+            {
+                Undo.DestroyObjectImmediate(root);   // 装不起来就别留一个空物体在场景里
+                return;
+            }
+
+            Selection.activeGameObject = root;
+            EditorGUIUtility.PingObject(root);
+
+            Debug.Log($"[地图组件] 已创建 {RootName}（{SolidLayerName} 层）：{Size.x} × {Size.y} 单位，" +
+                      "**以物体原点为中心**（上下各 " + (Size.y * 0.5f) + "）。\n" +
+                      "· 触发阈值在 Inspector 的「触发」栏（默认 20 ≈ 冲刺撞得动、走路撞不动）\n" +
+                      "· 按压方向默认「朝下」（被从上方砸）；装墙上横着撞就改这一栏\n" +
+                      "· 按下之后触发什么还没定：把接收方拖进「按下时」即可");
+        }
+
+        /// <summary>
+        /// 在一个**现成的**物体上装一个巨大按钮，返回按钮组件；装不起来（白盒方块 / 层缺失）返回 <c>null</c>。
+        /// </summary>
+        /// <remarks>
+        /// <para>抽出来是给别的**复合机关**复用的：巨石断剑机关天花板上的那个按钮就是它
+        /// （见 <c>BoulderSwordBuilder</c>）。菜单入口只负责建根物体与选中，装配全在这里，
+        /// 免得两处白盒写歪。</para>
+        /// <para>调用方负责摆位置、负责给根物体登记 <c>Undo</c>；子物件由本方法登记。</para>
+        /// </remarks>
+        public static ImpactButton Build(GameObject root, OneWayGate.PassDirection press)
+        {
+            if (root == null) return null;
+
             Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(SpritePath);
             if (sprite == null)
             {
                 Debug.LogError("[地图组件] 找不到白盒方块：" + SpritePath);
-                return;
+                return null;
             }
 
             int layer = LayerMask.NameToLayer(SolidLayerName);
             if (layer < 0)
             {
                 Debug.LogError("[地图组件] 工程里没有 " + SolidLayerName + " 层，按钮放下去谁也撞不到它。");
-                return;
+                return null;
             }
 
-            Vector3 at = SceneViewPivot();
-
-            var root = new GameObject(RootName);
-            root.transform.position = at;
             root.layer = layer;
-            Undo.RegisterCreatedObjectUndo(root, "创建巨大按钮");
 
             // 碰撞箱挂在根上：根 scale 保持 1，box.size 写的就是世界尺寸。
             var box = root.AddComponent<BoxCollider2D>();
@@ -89,16 +119,10 @@ namespace RuleGame.Editor.Level
 
             // 帽与标签的引用在这里写进组件（SetWhitebox 会顺手记下帽的弹起位置）。
             button.SetWhitebox(cap, label);
+            button.SetPress(press);
             EditorUtility.SetDirty(button);
 
-            Selection.activeGameObject = root;
-            EditorGUIUtility.PingObject(root);
-
-            Debug.Log($"[地图组件] 已创建 {RootName}（{SolidLayerName} 层）：{Size.x} × {Size.y} 单位，" +
-                      "**以物体原点为中心**（上下各 " + (Size.y * 0.5f) + "）。\n" +
-                      "· 触发阈值在 Inspector 的「触发」栏（默认 20 ≈ 冲刺撞得动、走路撞不动）\n" +
-                      "· 按压方向默认「朝下」（被从上方砸）；装墙上横着撞就改这一栏\n" +
-                      "· 按下之后触发什么还没定：把接收方拖进「按下时」即可");
+            return button;
         }
 
         /// <summary>一块白盒方块。方块精灵是 1×1 单位，缩放多少就是世界尺寸多少。</summary>

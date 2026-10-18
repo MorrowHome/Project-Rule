@@ -19,6 +19,12 @@ namespace RuleGame.Core.Rules
         [SerializeField] private RuleCatalog _catalog;
 
         /// <summary>
+        /// 时间管理器是否由本组件创建。
+        /// </summary>
+        /// <remarks>常驻宿主（GameRoot）先建时本组件只是复用，销毁时就不能连带把全局实例清掉。</remarks>
+        private bool _ownsTimeManager;
+
+        /// <summary>
         /// 设置暂停状态。转发给 <see cref="TimeManager"/>。
         /// </summary>
         /// <remarks>
@@ -36,8 +42,13 @@ namespace RuleGame.Core.Rules
             // 对象注册表先起来：实体在 OnEnable 里会来找它。
             WorldRegistry.Initialize();
 
+            // 快照名册是**另一个集合**：成员资格 = 生命周期，与是否启用无关。
+            // 活动实体进 WorldRegistry，快照采集读 SnapshotRoster（含禁用中的对象）。
+            SnapshotRoster.Initialize();
+
             // 时间管理器在规则系统之前：下面 Update 的规则时钟要读它的 delta。
-            TimeManager.Initialize();
+            // 常驻宿主（GameRoot）已经建过就复用 —— 关卡重建不能冲掉暂停状态与倍率。
+            _ownsTimeManager = TimeManager.EnsureInitialized();
 
             if (_catalog == null)
             {
@@ -46,10 +57,22 @@ namespace RuleGame.Core.Rules
             }
             RuleSystem.Initialize(_catalog);
 
-            // 快照系统依赖规则系统与注册表，最后初始化。
+            // 快照系统依赖规则系统与名册，最后初始化。
             // RuleSystem 初始化失败（没配目录）时跳过，避免半可用的快照系统。
             if (RuleSystem.Instance != null)
-                SnapshotSystem.Initialize(RuleSystem.Instance, WorldRegistry.Instance);
+            {
+                SnapshotSystem.Initialize(RuleSystem.Instance, SnapshotRoster.Instance);
+
+                // 扫描整个场景补上「初始就禁用」的预置对象 —— 它们不会走 Awake / OnEnable。
+                // 本脚本执行顺序 -100，早于所有实体 Awake；活动对象随后还会自己登记一次（名册去重）。
+                int count = SnapshotScope.Rebuild();
+                if (count == 0)
+                {
+                    Debug.LogWarning(
+                        "[RuleSystemDriver] 快照名册为空：场景里没有任何实现 IRuleAffected 的实体。" +
+                        "时间恒定 / 反转将无法恢复任何对象。", this);
+                }
+            }
         }
 
         private void Update()
@@ -64,11 +87,16 @@ namespace RuleGame.Core.Rules
 
         private void OnDestroy()
         {
-            // 让下次进 Play / 切场景重新初始化
+            // 让下次进 Play / 切场景重新初始化。
+            // 规则 / 注册表 / 快照是「世界」的一部分，随关卡重建 —— 这正是「世界回设计初态」。
             RuleSystem.Reset();
             WorldRegistry.Reset();
-            TimeManager.Reset();
+            SnapshotRoster.Reset();
             SnapshotSystem.Reset();
+
+            // 时间管理器是全局权威：只有本组件创建的那一份才由本组件销毁。
+            // 常驻宿主（GameRoot）持有的实例活到游戏结束，不在这里 Reset。
+            if (_ownsTimeManager) TimeManager.Reset();
         }
     }
 }

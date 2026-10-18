@@ -1,0 +1,379 @@
+fileFormatVersion: 2
+guid: 832ba515b8b66414b82636abb7c735f4
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -5519007319762022367
+    second: RabbitBoss_Pop_27_0
+  - first:
+      213: -4031381466188452102
+    second: RabbitBoss_Pop_27_1
+  - first:
+      213: 6873347181180784500
+    second: RabbitBoss_Pop_27_2
+  - first:
+      213: -8820413344501499824
+    second: RabbitBoss_Pop_27_3
+  - first:
+      213: -3698140064343943610
+    second: RabbitBoss_Pop_27_4
+  - first:
+      213: 7561838922408925779
+    second: RabbitBoss_Pop_27_5
+  - first:
+      213: 250110143124134347
+    second: RabbitBoss_Pop_27_6
+  - first:
+      213: -7858280961730166608
+    second: RabbitBoss_Pop_27_7
+  - first:
+      213: -2304106820830591986
+    second: RabbitBoss_Pop_27_8
+  - first:
+      213: -4818851063674939328
+    second: RabbitBoss_Pop_27_9
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 9
+  spritePivot: {x: 0.5, y: 0.17222223}
+  spritePixelsToUnits: 142.66667
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 512
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: RabbitBoss_Pop_27_0
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 554
+        width: 162
+        height: 154
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 120ddc8651c8863b0800000000000000
+      internalID: -5519007319762022367
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RabbitBoss_Pop_27_1
+      rect:
+        serializedVersion: 2
+        x: 460
+        y: 666
+        width: 53
+        height: 44
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: afe6eb96ae7ad08c0800000000000000
+      internalID: -4031381466188452102
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RabbitBoss_Pop_27_2
+      rect:
+        serializedVersion: 2
+        x: 713
+        y: 678
+        width: 58
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 47f863048d8036f50800000000000000
+      internalID: 6873347181180784500
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RabbitBoss_Pop_27_3
+      rect:
+        serializedVersion: 2
+        x: 888
+        y: 571
+        width: 198
+        height: 113
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0587fd4bbc8979580800000000000000
+      internalID: -8820413344501499824
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RabbitBoss_Pop_27_4
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 119
+        width: 315
+        height: 445
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 646932f74319dacc0800000000000000
+      internalID: -3698140064343943610
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RabbitBoss_Pop_27_5
+      rect:
+        serializedVersion: 2
+        x: 424
+        y: 53
+        width: 434
+        height: 497
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 35a18e28f6c01f860800000000000000
+      internalID: 7561838922408925779
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RabbitBoss_Pop_27_6
+      rect:
+        serializedVersion: 2
+        x: 950
+        y: 432
+        width: 270
+        height: 233
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bc9d2ab99d1987300800000000000000
+      internalID: 250110143124134347
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RabbitBoss_Pop_27_7
+      rect:
+        serializedVersion: 2
+        x: 889
+        y: 138
+        width: 391
+        height: 272
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0b0cbdaa917c1f290800000000000000
+      internalID: -7858280961730166608
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RabbitBoss_Pop_27_8
+      rect:
+        serializedVersion: 2
+        x: 925
+        y: 369
+        width: 42
+        height: 61
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e0486dbdd0b2600e0800000000000000
+      internalID: -2304106820830591986
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RabbitBoss_Pop_27_9
+      rect:
+        serializedVersion: 2
+        x: 1038
+        y: 45
+        width: 54
+        height: 50
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData:
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 048542c2d70002db0800000000000000
+      internalID: -4818851063674939328
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    outline: []
+    customData:
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 1537655665
+    vertices: []
+    indices:
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      RabbitBoss_Pop_27_0: -5519007319762022367
+      RabbitBoss_Pop_27_1: -4031381466188452102
+      RabbitBoss_Pop_27_2: 6873347181180784500
+      RabbitBoss_Pop_27_3: -8820413344501499824
+      RabbitBoss_Pop_27_4: -3698140064343943610
+      RabbitBoss_Pop_27_5: 7561838922408925779
+      RabbitBoss_Pop_27_6: 250110143124134347
+      RabbitBoss_Pop_27_7: -7858280961730166608
+      RabbitBoss_Pop_27_8: -2304106820830591986
+      RabbitBoss_Pop_27_9: -4818851063674939328
+  mipmapLimitGroupName:
+  pSDRemoveMatte: 0
+  userData:
+  assetBundleName:
+  assetBundleVariant:

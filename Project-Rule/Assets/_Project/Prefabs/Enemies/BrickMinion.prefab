@@ -251,6 +251,9 @@ MonoBehaviour:
   SolidMask:
     serializedVersion: 2
     m_Bits: 256
+  BodyBlockMask:
+    serializedVersion: 2
+    m_Bits: 512
 --- !u!114 &7642146676902645977
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -274,6 +277,7 @@ MonoBehaviour:
   BeamOrigin: {fileID: 0}
   RuntimeSpawned: 0
   ArenaX: {x: -12, y: 12}
+  ArenaY: {x: 0, y: 10}
 --- !u!114 &2717975826507833713
 MonoBehaviour:
   m_ObjectHideFlags: 0

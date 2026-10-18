@@ -25,13 +25,15 @@ namespace RuleGame.Gameplay.Scene
     /// 与 <c>SpringPlatform</c> 的承重探测同一个做法。</para>
     ///
     /// <para><b>动量怎么取</b>：Dynamic 刚体（铁箱）直接 <c>mass × linearVelocity</c>；
-    /// Kinematic 实体（玩家）问 <see cref="IMomentumSource"/> —— 它们的
-    /// <c>linearVelocity</c> 是死的，只有自己知道自己在动多快。</para>
+    /// Kinematic 实体（玩家 / 敌人）问 <see cref="IMomentumSource"/> —— 它们的
+    /// <c>linearVelocity</c> 是死的（位移走 <c>Rigidbody2D.Slide</c>，模拟之后仍是 (0,0)），
+    /// 只有自己知道自己在动多快。</para>
     ///
     /// <para><b>阈值怎么定</b>（当前默认质量下，单位 kg·单位/秒）：
     /// <list type="bullet">
     /// <item>玩家走路 1 × 8 = 8　·　冲刺 1 × 26 = 26　·　从高处落下 1 × 30 = 30</item>
     /// <item>铁箱推着走 8 × 3 ≈ 24　·　掉下来砸 8 × 30 = 240</item>
+    /// <item>小怪走路 5 × 1.6 = 8（撞不动）　·　被击退 / 从高处掉下来才够</item>
     /// </list>
     /// 默认 20 ≈「走路撞不动、冲刺刚好撞得动、重物砸下来必中」。</para>
     ///
@@ -47,8 +49,8 @@ namespace RuleGame.Gameplay.Scene
     [RequireComponent(typeof(BoxCollider2D))]
     public sealed class ImpactButton : MonoBehaviour
     {
-        /// <summary>默认探测层：Default（玩家）+ Ground（铁箱等动态物）。</summary>
-        private const int DefaultTriggerLayers = 1 | (1 << 8);
+        /// <summary>默认探测层：Default（玩家）+ Ground（铁箱等动态物）+ Enemy（敌人）。</summary>
+        private const int DefaultTriggerLayers = 1 | (1 << 8) | (1 << 9);
 
         // ==================================================================
         //  配置
@@ -65,7 +67,8 @@ namespace RuleGame.Gameplay.Scene
                  "默认 20 ≈「走路撞不动、冲刺刚好撞得动、重物砸下来必中」。")]
         [SerializeField, Min(0f)] private float _momentumThreshold = 20f;
 
-        [Tooltip("谁按得动它。默认勾了 Default（玩家）+ Ground（铁箱等动态物）。\n" +
+        [Tooltip("谁按得动它。默认勾了 Default（玩家）+ Ground（铁箱等动态物）+ Enemy（敌人）。\n" +
+                 "⚠️ 实体在哪个层就要勾哪个层 —— 漏了它就在探测范围外，撞上去什么都不会发生。\n" +
                  "静态地形没有动量，勾了也不会触发。")]
         [SerializeField] private LayerMask _triggerLayer = DefaultTriggerLayers;
 

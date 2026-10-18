@@ -16,23 +16,89 @@ MonoBehaviour:
   DisplayName: "\u53D1\u6761 Boss"
   BodySize: {x: 2, y: 3}
   Health: 150
-  Damage: 10
+  Damage: 22
+  ContactDamage: 1
+  ContactInterval: 0.4
+  ContactPadding: 0.05
   Energy: 100
-  EnergyRegen: 2
+  EnergyRegen: 14
   RuleAttribute: 1
-  RuleRelation: 4
-  MoveSpeed: 2.5
-  AttackRange: 3.5
-  AttackCooldown: 1.8
-  HurtCooldown: 2
+  RuleRelation: 3
+  MoveSpeed: 3.4
+  AttackRange: 5.5
+  AttackCooldown: 0.7
+  BossRestDuration: 0.4
+  ClockBeamVolleysBeforeRest: 2
+  BrickAdvanceDuration: 0.9
+  BrickAdvanceSpeedMultiplier: 2.2
+  BrickAdvanceCooldown: 4
+  BrickComboLimit: 2
+  ClockChargeDuration: 3
+  ClockChargeSpeedMultiplier: 4.2
+  ClockChargeCooldown: 3.2
+  ClockBeamWarning: 0.45
+  ClockBeamDuration: 0.55
+  ClockBeamMaxSweepAngle: 90
+  ClockBeamSpread: 14
+  RabbitBurrowDuration: 1
+  RabbitBurrowSpeedMultiplier: 2.8
+  RabbitBurrowCooldown: 5
+  RabbitEscapeDistance: 2.8
+  RabbitBurstCount: 2
+  RabbitBurstInterval: 0.35
+  RabbitRepositionDuration: 2
+  RabbitAimLockLead: 0.35
+  RabbitAirHeight: 2.4
+  RabbitAirMoveDuration: 1.8
+  RabbitAirSpeedMultiplier: 1.6
+  RabbitFanAngle: 18
+  PreferredDistance: 4
+  SpacingTolerance: 0.6
+  RangedRange: 9
+  RetreatSpeedMultiplier: 0.8
+  StaggerDamageThreshold: 45
+  StaggerResetDelay: 1.5
+  HurtCooldown: 5
+  BossHurtDuration: 0.18
   GravityScale: 1
   Flying: 0
+  FlightAcceleration: 24
+  BatOrbitDistance: 4.5
+  BatHoverHeight: 3
+  BatDashCooldown: 4
+  BatDashWindup: 0.5
+  BatDashDuration: 0.65
+  BatEvadeCooldown: 2.5
+  BatEvadeDuration: 0.65
+  BatRecoverDuration: 0.45
+  BatApproachDistance: 2.5
+  BatApproachHeight: 0.8
+  BatApproachDuration: 2.4
+  BatApproachSpeedMultiplier: 1.15
+  BatRestHeightRatio: 0.8
+  BatRestPatrolDistance: 2.5
+  BatRestSpeedMultiplier: 0.85
   ImpactFraction: 0.6
   RabbitCycle: 20
   RabbitThrowInterval: 2
-  ClockHourInterval: 12
-  ClockCoreWindow: 3
+  ClockHourInterval: 0.9
+  ClockMinuteInterval: 0.6
+  ClockSecondInterval: 0.3
+  ClockHourRotationPeriod: 5
+  ClockMinuteRotationPeriod: 3
+  ClockSecondRotationPeriod: 1
+  ClockCoreWindow: 1.15
   ClockCoreHealth: 15
+  ClockBurstWarning: 0.45
+  ClockBeamWidth: 0.32
+  ClockBeamWidthStep: 0.13
+  ClockBurstInterval: 1.6
+  ClockBurstSpeed: 8.5
+  ProjectileLifetime: 7
+  ClockBurstCount: 24
+  ClockExtraBarrageEnabled: 0
+  ProjectileBudget: 192
+  ClockTimeRuleInterval: 2.2
   Timings:
   - Action: Walk
     Duration: 0.625
