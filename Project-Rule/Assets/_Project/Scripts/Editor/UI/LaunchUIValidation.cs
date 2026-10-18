@@ -198,15 +198,15 @@ namespace RuleGame.Editor.UI
                         _status.TryConsumeEnergy(_status.EnergyMax * .75f);
                         break;
                     case 10:
-                        Check(Mathf.Abs(_hudUI.Q("healthClip").resolvedStyle.width / 420f - .5f) < .01f,
+                        Check(Mathf.Abs(FillRatio("healthClip") - .5f) < .01f,
                             "实际扣血后生命条显示一半");
-                        Check(Mathf.Abs(_hudUI.Q("energyClip").resolvedStyle.width / 196.8f - .25f) < .01f,
+                        Check(Mathf.Abs(FillRatio("energyClip") - .25f) < .01f,
                             "实际耗能后能量条显示四分之一");
                         Capture("Gameplay_HalfHealth.png");
                         _status.ApplyData(_saved);
                         break;
                     case 11:
-                        Check(Mathf.Abs(_hudUI.Q("healthClip").resolvedStyle.width - 420f) < 1f,
+                        Check(Mathf.Abs(FillRatio("healthClip") - 1f) < .01f,
                             "快照恢复后生命条同步回满");
                         _hud.enabled = false;
                         _status.ApplyHealthDelta(-_status.HealthMax * .25f);
@@ -214,7 +214,7 @@ namespace RuleGame.Editor.UI
                         _hudUI = _hud.GetComponent<UIDocument>().rootVisualElement;
                         break;
                     case 12:
-                        Check(Mathf.Abs(_hudUI.Q("healthClip").resolvedStyle.width / 420f - .75f) < .01f,
+                        Check(Mathf.Abs(FillRatio("healthClip") - .75f) < .01f,
                             "HUD 反复启用后读取最新生命值");
                         _status.ApplyData(_saved);
                         _status.ApplyHealthDelta(-_status.HealthMax);
@@ -237,6 +237,12 @@ namespace RuleGame.Editor.UI
         }
 
         private static bool ModalOpen() => !_menuUI.Q("modalShade").ClassListContains("hidden");
+
+        private static float FillRatio(string name)
+        {
+            VisualElement clip = _hudUI.Q(name);
+            return clip.resolvedStyle.width / clip.parent.contentRect.width;
+        }
 
         private static void Submit(string name)
         {

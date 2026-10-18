@@ -15,6 +15,70 @@ namespace RuleGame.Editor.UI
         public const string LayoutPath = "Assets/_Project/UI/Launch/";
         public const string BootPath = "Assets/_Project/Scenes/Boot.unity";
         private const string RuntimePath = "Assets/_Project/Prefabs/LevelRuntime.prefab";
+        private static readonly string[] BossLabs = { "BrickBoss", "ClockBoss", "RabbitBoss", "BatBoss" };
+
+        [MenuItem("Tools/规则游戏/UI/接入 Boss 测试场景生命能量条")]
+        public static void InstallBossLabs()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                throw new InvalidOperationException("请先退出 Play Mode。");
+            // 在写入任何场景前检查全部目标，避免覆盖编辑器中尚未保存的调整。
+            foreach (string boss in BossLabs)
+            {
+                var scene = SceneManager.GetSceneByPath(BossLabPath(boss));
+                if (scene.IsValid() && scene.isLoaded && scene.isDirty)
+                    throw new InvalidOperationException(boss + " 场景有未保存修改，请先保存。");
+            }
+            var previous = SceneManager.GetActiveScene();
+            try
+            {
+                foreach (string boss in BossLabs)
+                {
+                    string path = BossLabPath(boss);
+                    var scene = SceneManager.GetSceneByPath(path);
+                    bool openedHere = !scene.IsValid() || !scene.isLoaded;
+                    if (openedHere) scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Additive);
+                    try
+                    {
+                        PlayerController player = Find<PlayerController>(scene);
+                        if (player == null) throw new InvalidOperationException(boss + " 场景缺少玩家。");
+                        EnsurePlayerVitals(scene, player.GetComponent<EntityStatus>());
+                        EditorSceneManager.SaveScene(scene);
+                        Debug.Log("[BossVitals] 已接入并验证玩家引用：" + path);
+                    }
+                    finally { if (openedHere) EditorSceneManager.CloseScene(scene, true); }
+                }
+            }
+            finally
+            {
+                if (previous.IsValid() && previous.isLoaded) SceneManager.SetActiveScene(previous);
+            }
+        }
+
+        /// <summary>供白盒生成、接线修复和玩家替换复用，始终绑定当前场景的玩家。</summary>
+        public static void EnsurePlayerVitals(UnityEngine.SceneManagement.Scene scene, EntityStatus status)
+        {
+            if (status == null || status.gameObject.scene != scene)
+                throw new InvalidOperationException("生命/能量条必须绑定同场景的玩家状态。");
+            PanelSettings panel = AssetDatabase.LoadAssetAtPath<PanelSettings>(LayoutPath + "VitalsPanelSettings.asset");
+            VisualTreeAsset layout = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(LayoutPath + "PlayerVitals.uxml");
+            if (panel == null || layout == null) throw new InvalidOperationException("请先接入生命/能量条公共资源。");
+            PlayerVitalsPresenter presenter = Find<PlayerVitalsPresenter>(scene);
+            if (presenter == null)
+            {
+                var host = new GameObject("Player Vitals");
+                SceneManager.MoveGameObjectToScene(host, scene);
+                Document(host, panel, "PlayerVitals.uxml");
+                presenter = host.AddComponent<PlayerVitalsPresenter>();
+            }
+            else Document(presenter.gameObject, panel, "PlayerVitals.uxml");
+            Set(presenter, "_status", status);
+            var reference = new SerializedObject(presenter);
+            if (reference.FindProperty("_status").objectReferenceValue != status)
+                throw new InvalidOperationException("生命/能量条玩家状态引用写入失败：" + scene.path);
+        }
+
+        private static string BossLabPath(string boss) => "Assets/_Project/Scenes/EnemyLabs/Test_Enemy_" + boss + ".unity";
 
         [MenuItem("Tools/规则游戏/UI/接入开始菜单与生命能量条")]
         public static void Install()
