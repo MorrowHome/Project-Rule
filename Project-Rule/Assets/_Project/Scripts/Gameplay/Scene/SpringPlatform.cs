@@ -5,33 +5,36 @@ using RuleGame.Infrastructure.Time;
 namespace RuleGame.Gameplay.Scene
 {
     /// <summary>
-    /// 弹簧平台：**底端锚定、顶端站人**的竖直弹簧 —— 有人站上来会被压下去，释放时把站在上面的实体弹飞。
+    /// 弹簧平台：**底端锚定、顶端站人**的竖直弹簧 —— 被压到「重力 = 弹簧力」的平衡位置后**停在那里**，
+    /// 载重拿走才回弹到自然长度。
     /// </summary>
     /// <remarks>
     /// <para><b>它是什么</b>：一个简谐振子。压缩量 <c>c</c> 是唯一的自由度（0 = 自然长度，
     /// 1 = 压到底），弹簧力 <c>k × (目标 − c)</c> 与阻尼力 <c>−阻尼 × c′</c> 一起决定它怎么走。
-    /// 所以「压下去」和「弹回来」都不是插值，是**真的在积分**：会加速、会冲过头（阻尼调得小的时候）。</para>
+    /// 所以「压下去」和「弹回来」都不是插值，是**真的在积分**：会加速、会冲过头（阻尼调得小的时候），
+    /// 最后停在目标压缩量上。</para>
     ///
-    /// <para><b>四个阶段</b>：
+    /// <para><b>目标压缩量由载重决定</b>：<c>载重 ÷ _fullCompressionMass</c>（夹在 0 ~ 1）。
+    /// 压上去就不再动 —— 这不是「踩一下弹一次」的弹跳板，是**静力学平衡**：
+    /// 压缩到弹簧力顶得住上面的重量为止。东西越重压得越深，压到底（载重 ≥ 阈值）就停在压缩长度；
+    /// 载重拿掉，弹簧才回弹。</para>
+    ///
+    /// <para><b>三个阶段</b>：
     /// <list type="bullet">
     /// <item><b>Idle</b> —— 空载，停在自然长度；</item>
-    /// <item><b>Compressing</b> —— 有人压着，往压缩长度走；</item>
-    /// <item><b>Loaded</b> —— 压到底，倒计时 <see cref="_holdSeconds"/>；</item>
-    /// <item><b>Releasing</b> —— 回弹。这一阶段本组件会给出 <see cref="LaunchVelocity"/>，
-    /// 站在上面的实体被弹飞（<see cref="_launchSpeed"/> 为 0 时不给速度，人只是被浮回原位）。</item>
-    /// </list>
-    /// 中途走人（人在 Compressing 里跳走）会直接进 Releasing —— 弹性势能总得放掉。
-    /// ⚠️ 压载只认「上表面从无到有」的**边沿**：否则释放完人还站着，会立刻又被压下去，弹簧就永远在上下循环。</para>
+    /// <item><b>Compressing</b> —— 有载重，往平衡位置走，**然后停在那里**；</item>
+    /// <item><b>Releasing</b> —— 载重消失，回弹到自然长度。</item>
+    /// </list></para>
     ///
-    /// <para><b>「弹飞」是怎么发生的</b>：平台自己推不动任何人（玩家是 Kinematic 刚体，
-    /// 引擎的力对它无效）。它是**报出一个速度**（<see cref="ISpringSurface"/>），
-    /// 由实体每物理帧自己查一次、写进自己的速度里。所以「谁被弹」= 「谁正踩在上面」，
-    /// 平台不需要认识玩家。带人（压下去时一起落）走的是另一条路
-    /// （<see cref="IMovingSurface"/>，位置跟随）—— 两个接口管两件事，都在本类上。</para>
+    /// <para><b>不带弹射</b>：早先的版本会在压到底后停一下、再把人弹飞，与静力学平衡是冲突的 ——
+    /// 「载重消失」的那一刻东西已经离开了，没有可弹的对象。要弹跳板请另做一个组件
+    /// （<see cref="ISpringSurface"/> 接口与玩家侧的 ⑥′ 还留着，实现它就能弹人）。</para>
     ///
     /// <para><b>承重靠包围盒判定，不靠接触回调</b>：与 <c>Tube</c> / <c>OneWayGate</c> 同一约定 ——
     /// 玩家是 Kinematic 刚体且 <c>useAttachedTriggers = false</c>，接触 / 触发回调不可靠。
-    /// 这里每物理帧在平台上表面扫一个扁盒子（<see cref="_riderProbe"/> 那么高），看承重层里有没有东西。</para>
+    /// 这里每物理帧在平台上表面扫一个扁盒子（<see cref="_riderProbe"/> 那么高），把框里
+    /// **带刚体的东西的质量加起来** —— 玩家、铁箱、石头都算，静态地形没有刚体，压不动它。
+    /// 质量规则改的就是 <c>Rigidbody2D.mass</c>，所以会自动生效。</para>
     ///
     /// <para><b>方向恒为世界竖直</b>：弹簧只做上下伸缩，锚点的 <c>x</c> 就是平台的 <c>x</c>。
     /// 不要旋转根物体 —— 位姿由代码按锚点解算，旋转只会被下一帧覆盖掉。</para>
@@ -52,7 +55,7 @@ namespace RuleGame.Gameplay.Scene
     [DefaultExecutionOrder(-50)]
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
-    public sealed class SpringPlatform : MonoBehaviour, IMovingSurface, ISpringSurface
+    public sealed class SpringPlatform : MonoBehaviour, IMovingSurface
     {
         /// <summary>弹簧当前处在哪一段。</summary>
         private enum Phase
@@ -63,11 +66,8 @@ namespace RuleGame.Gameplay.Scene
             /// <summary>有人压着，正在往压缩长度走。</summary>
             Compressing = 1,
 
-            /// <summary>压到底。有发射速度时在倒计时，倒完自动弹。</summary>
-            Loaded = 2,
-
-            /// <summary>回弹中 —— 这一阶段接触者会被弹飞。</summary>
-            Releasing = 3,
+            /// <summary>载重消失，正在回弹到自然长度。</summary>
+            Releasing = 2,
         }
 
         /// <summary>每隔多少「弧度」拆一个积分子步：<c>ω·h</c> 超过它就把这一步拆开。</summary>
@@ -103,23 +103,15 @@ namespace RuleGame.Gameplay.Scene
                  "临界阻尼 ≈ 2√k：k=90 时约 19。取一半左右读起来最有弹性，取临界值则是平滑下落。")]
         [SerializeField, Min(0f)] private float _damping = 12f;
 
-        [Header("弹射")]
-        [Tooltip("压到底之后，给站在上面的实体的**向上速度**（单位/秒）。\n" +
-                 "大于 0 = 弹跳板，把人弹飞；0 = 只沉不弹 —— 压到底停 _holdSeconds 秒后自己浮回来，\n" +
-                 "读起来是一块软垫（人还站着的话，浮回来就停在自然长度，不会反复上下动）。")]
-        [SerializeField, Min(0f)] private float _launchSpeed = 18f;
-
-        [Tooltip("压到底之后停多久再释放（秒）。0 = 一到底就弹。\n" +
-                 "调得很大（比如 99）就是「压住不动」的承重台 —— 只有人走开才回弹。")]
-        [SerializeField, Min(0f)] private float _holdSeconds = 0.12f;
-
         [Header("承重")]
-        [Tooltip("**谁压得动它**。默认只勾了 Default 层 —— 玩家在这一层（敌人在 Enemy 层，要一起勾上）。\n" +
-                 "一个都不勾 = 这个弹簧不会被压动。")]
-        [SerializeField] private LayerMask _riderLayer = 1;   // 位 0 = Default 层
+        [Tooltip("**压到底需要多少质量**（kg）。载重 = 站在平台上的所有刚体的质量之和。\n" +
+                 "默认 1 = 玩家（1 kg）刚好压到底，跟以前一样。\n" +
+                 "调到 8 = 玩家压不动，得压一个标准铁箱（8 kg）才到底 —— 做成「只有重物才触发」的机关。\n" +
+                 "⚠️ 质量规则会自动改这里的效果：铁箱「×削弱」2.4 kg 只能压到 30%（到不了底，不弹）。")]
+        [SerializeField, Min(0.01f)] private float _fullCompressionMass = 1f;
 
         [Tooltip("承重探测条的高度（世界单位）：在平台上表面往上扫这么高的一条扁盒子。\n" +
-                 "太矮会漏掉刚踩上来的一瞬，太高会把从上方掠过的人一起算进来。")]
+                 "太矮会漏掉刚踩上来的一瞬，太高会把从上方掠过的东西一起算进来。")]
         [SerializeField, Min(0.05f)] private float _riderProbe = 0.35f;
 
         [Header("摩擦")]
@@ -142,21 +134,19 @@ namespace RuleGame.Gameplay.Scene
 
         private Rigidbody2D _body;
         private Collider2D  _plankCollider;
-        private readonly Collider2D[] _riderHits = new Collider2D[4];
+        private readonly RaycastHit2D[] _riderHits  = new RaycastHit2D[8];
+        private readonly Rigidbody2D[]  _loadBodies = new Rigidbody2D[8];
 
         private Phase _phase = Phase.Idle;
+
+        /// <summary>本物理帧的载重（kg）：平台上方所有刚体的质量之和。</summary>
+        private float _loadMass;
 
         /// <summary>压缩量：0 = 自然长度，1 = 压到底。唯一的自由度。</summary>
         private float _compression;
 
         /// <summary>压缩量的变化率（每秒）。弹簧系统的另一半状态。</summary>
         private float _compressionSpeed;
-
-        /// <summary>压到底之后还剩多少秒释放。</summary>
-        private float _holdRemaining;
-
-        /// <summary>上一物理帧上表面有没有负载。压载只认「无 → 有」的边沿。</summary>
-        private bool _wasLoaded;
 
         /// <summary>本实例**独占**的物理材质 —— 平台表面的摩擦就写在它上面。</summary>
         /// <remarks>⚠️ 不能直接改 <c>Collider2D.sharedMaterial</c>：那是共享的，
@@ -171,14 +161,20 @@ namespace RuleGame.Gameplay.Scene
         /// 承载方加进自己的速度后，走出的距离与平台**逐帧相等**，不会累积漂移。</remarks>
         public Vector2 Velocity { get; private set; }
 
-        /// <summary>本物理帧要弹给接触者的速度，见 <see cref="ISpringSurface"/>。不在释放阶段时为 <see cref="Vector2.zero"/>。</summary>
-        public Vector2 LaunchVelocity { get; private set; }
-
         /// <summary>当前长度（锚点到平台中心的竖直距离）。</summary>
         public float CurrentLength => Mathf.LerpUnclamped(_restLength, _compressedLength, _compression);
 
         /// <summary>压缩量 0 ~ 1（表现层要抖屏幕 / 播音效可以读它）。</summary>
         public float Compression => _compression;
+
+        /// <summary>本物理帧压在上面的总质量（kg）。没有任何刚体压着就是 0。</summary>
+        public float LoadMass => _loadMass;
+
+        /// <summary>当前阶段名（调试 / Inspector 显示用）。</summary>
+        public string PhaseName => _phase.ToString();
+
+        /// <summary>压到底需要多少质量（kg）。载重达到它，压缩目标才是 1。</summary>
+        public float FullCompressionMass => _fullCompressionMass;
 
         /// <summary>现在是不是在回弹（这一阶段接触者会被弹飞）。</summary>
         public bool IsReleasing => _phase == Phase.Releasing;
@@ -243,7 +239,6 @@ namespace RuleGame.Gameplay.Scene
             if (TimeManager.Instance?.IsPaused == true)
             {
                 Velocity = Vector2.zero;
-                LaunchVelocity = Vector2.zero;
                 return;
             }
 
@@ -252,7 +247,8 @@ namespace RuleGame.Gameplay.Scene
             float dt = UnityEngine.Time.fixedDeltaTime;
             if (dt <= 0f) return;
 
-            Step(dt, ProbeRider());
+            _loadMass = ProbeLoadMass();
+            Step(dt, _loadMass);
             ApplyPosition(dt);
             UpdateSpringVisual();
         }
@@ -262,59 +258,46 @@ namespace RuleGame.Gameplay.Scene
         // ==================================================================
 
         /// <summary>推进状态机，再按当前阶段的目标积分压缩量。</summary>
-        private void Step(float dt, bool loaded)
+        private void Step(float dt, float loadMass)
         {
-            AdvancePhase(dt, loaded);
+            bool loaded = loadMass > 0f;
 
-            // 目标：往压缩走（0）还是往自然长度走（1）。
-            // Releasing 期间目标恒为 0 —— 哪怕人还踩着，也要先把弹性势能放掉，
-            // 不然「压到底 → 弹」这条路径会被人一直踩着卡在 Loaded。
-            bool compressing = _phase == Phase.Compressing || _phase == Phase.Loaded;
-            Integrate(dt, compressing ? 1f : 0f);
+            // 目标压缩量由**载重**决定：压到底需要 _fullCompressionMass 的质量。
+            // 这就是「重力 = 弹簧力」的平衡位置 —— 压上去之后停在这里，**不会自己弹回原长**。
+            // 质量规则会直接改变它：它写的就是 Rigidbody2D.mass。
+            float target = loaded
+                         ? Mathf.Clamp01(loadMass / Mathf.Max(_fullCompressionMass, 0.01f))
+                         : 0f;
+
+            AdvancePhase(loaded);
+
+            // Releasing 期间目标恒为 0（回弹）；其余时刻一路跟着平衡位置走。
+            Integrate(dt, _phase == Phase.Compressing ? target : 0f);
         }
 
-        private void AdvancePhase(float dt, bool loaded)
+        private void AdvancePhase(bool loaded)
         {
             switch (_phase)
             {
                 case Phase.Idle:
-                    // ⚠️ 只认「从无到有」的**边沿**。用持续判定的话，释放完人还站在上面，
-                    //    弹簧会立刻又被压下去 —— 于是它永远在「压下去 → 弹回来 → 压下去」之间循环。
-                    if (loaded && !_wasLoaded) _phase = Phase.Compressing;
+                    if (loaded) _phase = Phase.Compressing;
                     break;
 
                 case Phase.Compressing:
-                    if (!loaded)
-                    {
-                        // 人中途走了（跳走 / 走出去了）：弹性势能总得放掉。
-                        _phase = Phase.Releasing;
-                        break;
-                    }
-                    // ⚠️ 判定只看压缩量，**不要**再带「速度朝里」的条件：撞到硬限位时速度被清零，
-                    //    但阻尼不足时它可能在限位附近来回，带速度条件会让状态机卡在 Compressing 里反复。
-                    if (_compression >= 1f)
-                    {
-                        _phase = Phase.Loaded;
-                        _holdRemaining = Mathf.Max(0f, _holdSeconds);
-                    }
-                    break;
-
-                case Phase.Loaded:
-                    if (!loaded)
-                    {
-                        _phase = Phase.Releasing;
-                        break;
-                    }
-                    _holdRemaining -= dt;
-                    if (_holdRemaining <= 0f) _phase = Phase.Releasing;
+                    // 只要还有载重就停在平衡位置 —— **没有自动释放**。
+                    if (!loaded) _phase = Phase.Releasing;
                     break;
 
                 case Phase.Releasing:
+                    // 回弹途中又有东西压上来 → 重新压。
+                    if (loaded)
+                    {
+                        _phase = Phase.Compressing;
+                        break;
+                    }
                     if (_compression <= 0f && _compressionSpeed <= 0f) _phase = Phase.Idle;
                     break;
             }
-
-            _wasLoaded = loaded;
         }
 
         /// <summary>
@@ -361,44 +344,79 @@ namespace RuleGame.Gameplay.Scene
 
             Velocity = (target - previous) / dt;
             _body.MovePosition(target);
-
-            // ⚠️ 发射速度在这里定，不在 Step 里：它只跟阶段有关，且**必须**与位移同一帧报出去，
-            //    否则承载方读到的是上一帧的发射状态。
-            LaunchVelocity = _phase == Phase.Releasing && _launchSpeed > 0f
-                           ? Vector2.up * _launchSpeed
-                           : Vector2.zero;
         }
 
         // ==================================================================
         //  承重探测
         // ==================================================================
 
-        /// <summary>平台上表面有没有东西压着。</summary>
+        /// <summary>平台上方压着多少质量（kg）。没东西压着就是 0。</summary>
         /// <remarks>
-        /// <para>用**包围盒重叠**而不是接触 / 触发回调：玩家是 Kinematic 刚体且
+        /// <para><b>判据是「有没有刚体」，不是层。</b>能压动弹簧的是**质量**，而质量住在
+        /// <c>Rigidbody2D.mass</c> 上：静态地形没有刚体 —— 压不动它；
+        /// 玩家（Kinematic）、铁箱 / 石头（Dynamic）都有刚体，一律按质量算。</para>
+        /// <para>⚠️ <b>不能按层筛</b>：铁箱和地形都在 <c>Ground</c> 层，按层放行会把地形也算成载重；
+        /// 而只勾 <c>Default</c> 又会漏掉铁箱。</para>
+        /// <para>⚠️ <b>必须用「平台形状向上扫」，不能头顶罩一个扁盒子。</b>
+        /// 盒子的 x 范围比平台宽一圈，弹簧被压到底时盒子会降到旁边站着的敌人 / 铁箱的高度，
+        /// 框边缘扫到一点点就算载重 —— 于是人走了、载重还在，弹簧**永远压着不回弹**（实测踩过：
+        /// 敌人在平台外 0.9 单位处就中招）。形状扫掠只认**真的压在平台正上方**的东西。</para>
+        /// <para>同一个物体的多个碰撞体（身体 + 受击箱等）只按刚体算一次，不重复累加。</para>
+        /// <para>质量规则写的就是 <c>Rigidbody2D.mass</c>，所以「铁箱 × 削弱」会直接变成压不动的轻箱子，
+        /// 不需要本组件做任何特判。</para>
+        /// <para>用**形状扫掠**而不是接触 / 触发回调：玩家是 Kinematic 刚体且
         /// <c>useAttachedTriggers = false</c>，回调不可靠（与 <c>Tube</c> / <c>OneWayGate</c> 同一约定）。</para>
-        /// <para>⚠️ <c>Collider2D.bounds</c> 是缓存值，物理步解算前读到的是**上一步**的包围盒
-        /// —— 差一个物理步，对「脚下有没有人」没有影响。</para>
-        /// <para>宽度取 0.9 倍：站在边缘上的人只搭了一点边也算压着，但**完全在平台外**的人不算。</para>
         /// </remarks>
-        private bool ProbeRider()
+        private float ProbeLoadMass()
         {
-            if (_riderLayer.value == 0 || _plankCollider == null) return false;
+            if (_plankCollider == null) return 0f;
 
-            Bounds b = _plankCollider.bounds;
-            var center = new Vector2(b.center.x, b.max.y + _riderProbe * 0.5f);
-            var size   = new Vector2(Mathf.Max(b.size.x * 0.9f, 0.1f), _riderProbe);
+            // 不按层筛：能压动它的只有带刚体的东西，地形天然被排除。
+            var filter = new ContactFilter2D { useTriggers = false, useLayerMask = false };
 
-            var filter = new ContactFilter2D { useTriggers = false };
-            filter.SetLayerMask(_riderLayer);
+            // 从平台形状向上扫：距离内与平台正上方有重叠的碰撞体才会命中。
+            // ⚠️ ignoreSiblingColliders 默认 true —— 同一刚体上的其他碰撞体自动排除。
+            int count = _plankCollider.Cast(Vector2.up, filter, _riderHits, _riderProbe);
 
-            int count = Physics2D.OverlapBox(center, size, 0f, filter, _riderHits);
+            float plankTop = _plankCollider.bounds.max.y;
+            int bodyCount = 0;
+            float mass = 0f;
+
             for (int i = 0; i < count; i++)
             {
-                // 万一有人把平台自己的层也勾进了承重层，别自己压自己。
-                if (_riderHits[i] == null) continue;
-                if (_riderHits[i].transform.IsChildOf(transform)) continue;
-                return true;
+                Collider2D hit = _riderHits[i].collider;
+                if (hit == null) continue;
+                if (hit.transform.IsChildOf(transform)) continue;      // 别把自己算进去
+
+                // 只认「站上来」的东西：底部不能明显低于平台顶面。
+                // ⚠️ 这条不能省 —— 站在平台**旁边**的敌人，碰撞体可能伸进平台的水平范围，
+                //    向上扫会命中它（distance 0）。不看底部的话，弹簧会一直以为有人压着、
+                //    永远不回弹（实测：平台外 0.9 单位的 Dummy，压到底时正好被扫到）。
+                if (hit.bounds.min.y < plankTop - _riderProbe * 0.5f) continue;
+
+                Rigidbody2D body = hit.attachedRigidbody;
+                if (body == null) continue;                             // 静态地形：没有质量，压不动
+
+                // 同一个刚体的碰撞体一律不算 —— 比 IsChildOf 更强的排除：
+                // 碰撞体挂在别的物体上、但共用本平台的刚体时，前者挡不住。
+                if (body == _body) continue;
+
+                if (Contains(bodyCount, body)) continue;                // 别的物体的多个碰撞体只算一次
+                if (bodyCount >= _loadBodies.Length) break;
+
+                _loadBodies[bodyCount++] = body;
+                mass += Mathf.Max(0f, body.mass);
+            }
+
+            return mass;
+        }
+
+        /// <summary>这个刚体是否已经在前 <paramref name="count"/> 个里了（线性查找，最多 8 个）。</summary>
+        private bool Contains(int count, Rigidbody2D body)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                if (_loadBodies[i] == body) return true;
             }
             return false;
         }
@@ -413,10 +431,11 @@ namespace RuleGame.Gameplay.Scene
             _phase            = Phase.Idle;
             _compression      = 0f;
             _compressionSpeed = 0f;
-            _holdRemaining    = 0f;
 
-            Velocity       = Vector2.zero;
-            LaunchVelocity = Vector2.zero;
+            // 载重也要清：重开时若东西正好压在平台上，留着上一局的旧值会让第一帧按它算目标。
+            _loadMass = 0f;
+
+            Velocity = Vector2.zero;
 
             if (_body != null)
             {
@@ -530,10 +549,10 @@ namespace RuleGame.Gameplay.Scene
         }
 
         /// <summary>白盒标签上该写什么。生成工具和本类共用它，免得两处写歪。</summary>
-        public static string LabelText(float springConstant, float launchSpeed)
+        public static string LabelText(float springConstant, float fullCompressionMass)
         {
-            string core = "弹簧 k" + springConstant.ToString("0.#");
-            return launchSpeed > 0f ? core + " · 弹" + launchSpeed.ToString("0.#") : core + " · 承重";
+            return "弹簧 k" + springConstant.ToString("0.#")
+                 + " · " + fullCompressionMass.ToString("0.#") + "kg";
         }
 
         private void OnValidate()
@@ -555,7 +574,7 @@ namespace RuleGame.Gameplay.Scene
         {
             if (_label == null) return;
 
-            string wanted = LabelText(_springConstant, _launchSpeed);
+            string wanted = LabelText(_springConstant, _fullCompressionMass);
             if (_label.text != wanted) _label.text = wanted;
         }
 
@@ -586,7 +605,8 @@ namespace RuleGame.Gameplay.Scene
 
             Bounds b = plank.bounds;
             var center = new Vector3(b.center.x, b.max.y + _riderProbe * 0.5f, 0f);
-            var size   = new Vector3(Mathf.Max(b.size.x * 0.9f, 0.1f), _riderProbe, 0f);
+            // 和实际探测一致：平台**本身**的宽度，不是外扩一圈的盒子。
+            var size   = new Vector3(b.size.x, _riderProbe, 0f);
             Gizmos.color = new Color(0.35f, 0.85f, 1f, 0.5f);
             Gizmos.DrawWireCube(center, size);
         }

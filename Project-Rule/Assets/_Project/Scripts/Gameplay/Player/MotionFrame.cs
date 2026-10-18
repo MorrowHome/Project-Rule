@@ -49,6 +49,18 @@ namespace RuleGame.Gameplay.Player
         /// 与 <see cref="WindAccel"/> 同命运 —— 冲刺时两者都不生效。</remarks>
         public readonly float WindDrag;
 
+        /// <summary>
+        /// 本物理帧的竖直阻尼系数（风场给的速度衰减率，每秒）。没风时为 0。
+        /// </summary>
+        /// <remarks>**只作用于竖直轴**（与 <see cref="WindDrag"/> 叠加），横向不读它。
+        /// 用途是把平衡高度附近的上下弹跳收掉 —— 只有各向同性阻力时竖直方向欠阻尼。</remarks>
+        public readonly float WindVerticalDamping;
+
+        /// <summary>本物理帧是否在**生效中**的风场里。在风场里重力不分上升 / 下落。</summary>
+        /// <remarks>见 <see cref="VelocitySolver"/>：风场内统一用上升重力，否则「上升轻、下落重」
+        /// 这个方向依赖（非保守）的重力会持续给竖直振荡泵能量，形成消不掉的极限环。</remarks>
+        public readonly bool WindInField;
+
         /// <summary>摩擦规则缩放（1.0 = 正常）。</summary>
         public readonly float FrictionScale;
 
@@ -57,20 +69,23 @@ namespace RuleGame.Gameplay.Player
 
         public MotionFrame(MotionTuning tuning, PlayerInput.State input, ContactSensor.State contact,
                            JumpSolver.Decision jump, DashSolver.Decision dash, Vector2 gravity,
-                           Vector2 windAccel, float windDrag, float facing,
+                           Vector2 windAccel, float windDrag, float windVerticalDamping,
+                           bool windInField, float facing,
                            float frictionScale, bool frictionInverted)
         {
-            Tuning           = tuning;
-            Input            = input;
-            Contact          = contact;
-            Jump             = jump;
-            Dash             = dash;
-            Gravity          = gravity;
-            WindAccel        = windAccel;
-            WindDrag         = windDrag;
-            Facing           = facing;
-            FrictionScale    = frictionScale;
-            FrictionInverted = frictionInverted;
+            Tuning               = tuning;
+            Input                = input;
+            Contact              = contact;
+            Jump                 = jump;
+            Dash                 = dash;
+            Gravity              = gravity;
+            WindAccel            = windAccel;
+            WindDrag             = windDrag;
+            WindVerticalDamping  = windVerticalDamping;
+            WindInField          = windInField;
+            Facing               = facing;
+            FrictionScale        = frictionScale;
+            FrictionInverted     = frictionInverted;
         }
     }
 }

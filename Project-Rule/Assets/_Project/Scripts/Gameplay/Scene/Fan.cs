@@ -14,8 +14,10 @@ namespace RuleGame.Gameplay.Scene
     /// （报力、由实体自己除以质量），只是摆的姿势不同。</para>
     ///
     /// <para><b>范围与风力都在这一个组件上</b>：<see cref="_length"/> × <see cref="_width"/>
-    /// 是风道尺寸，<see cref="_force"/> → <see cref="_forceAtFar"/> 是出风口到远端的力。
-    /// 两者都画在 Gizmo 里 —— 选中风扇就能看见风吹到哪、每一段多强。</para>
+    /// 是风道尺寸，<see cref="_force"/> 是出风口风力、<see cref="_forceGradient"/> 是每米的衰减量（N/m）。
+    /// 两者都画在 Gizmo 里 —— 选中风扇就能看见风吹到哪、每一段多强；
+    /// 朝上吹时还会画出 ×削弱 / 正常 / ×增强 三条**平衡高度线**（<see cref="_showEquilibriumLines"/> 控制开关）。
+    /// 平衡点离出风口的距离 <c>y(g) = (F₀ − m·g) ÷ 梯度</c>，相邻重力档的间距 <c>Δy = m·Δg ÷ 梯度</c>。</para>
     ///
     /// <para><b>为什么不组合一个 WindZone 子物体</b>：那样范围与风力要么存两份
     /// （风扇一份、风场一份，谁说了算不好办），要么用户得对着两个对象调。
@@ -79,15 +81,26 @@ namespace RuleGame.Gameplay.Scene
                  "质量 1 的人会被托起来，质量规则一改浮空高度当场变化。")]
         [SerializeField, Min(0f)] private float _force = 150f;
 
-        [Tooltip("风道远端的风力大小。比近端小 = 越远越弱 —— " +
-                 "玩家会浮在「风力 = 自身重力」的那一段距离上（与 WindZone 同一条玩法）。\n" +
-                 "与近端相同 = 恒定力（那样只有阈值没有平衡点：人会一路加速冲出去）。")]
-        [SerializeField, Min(0f)] private float _forceAtFar = 0f;
+        [Tooltip("力的梯度：每远离出风口 1 米，风力减少多少牛顿（N/m）。0 = 恒定力。\n" +
+                 "它决定「不同重力档在风道里的落点间距」：间距 Δy = m·Δg ÷ 梯度（与梯度成反比）——\n" +
+                 "想让人在不同重力下分得更开，就调小它；想挤在一起，就调大它。\n" +
+                 "⚠️ 平衡点要在风道内：出风口风力必须大于 m·g（正常重力）。")]
+        [SerializeField] private float _forceGradient = 15f;
 
-        [Header("空气阻力")]
-        [Tooltip("风道内的空气阻力（每秒速度衰减率）。0 = 带着动能冲过平衡点、被弹出风道（实测出场速度 18+）；" +
-                 "2 左右就会收敛到平衡位置。它就是风的「耗散」。")]
+        [Header("预览")]
+        [Tooltip("在 Scene 视图画出「各重力档的平衡高度线」（×削弱 / 正常 / ×增强），\n" +
+                 "按场景里的玩家的质量与重力倍率计算。纯编辑器辅助，不参与运行时判定。")]
+        [SerializeField] private bool _showEquilibriumLines = true;
+
+        [Header("阻尼")]
+        [Tooltip("风道内的空气阻力（每秒速度衰减率），水平与竖直**都收**。0 = 带着动能冲过平衡点、被弹出风道" +
+                 "（实测出场速度 18+）；2 左右就会收敛到平衡位置。它就是风的「耗散」。")]
         [SerializeField, Min(0f)] private float _drag = 2f;
+
+        [Tooltip("竖直阻尼（每秒速度衰减率）。**只收竖直方向**（沿当前重力轴）的速度，横向不动；与空气阻力叠加。\n" +
+                 "默认 8 ≈ 临界阻尼（150N / 10m / 质量 1 时临界值约 7.7）：被吹起来后一路上升、不上下弹。\n" +
+                 "想更「黏」就调大，想更有弹性就调小。")]
+        [SerializeField, Min(0f)] private float _verticalDamping = 8f;
 
         [Header("白盒")]
         [Tooltip("白盒标签。**接正式美术时把这个引用清空** —— 玩法判定不读它。")]
@@ -126,11 +139,14 @@ namespace RuleGame.Gameplay.Scene
         /// <summary>出风口的风力（牛顿）。</summary>
         public float Force => _force;
 
-        /// <summary>风道远端的风力（牛顿）。</summary>
-        public float FarForce => _forceAtFar;
+        /// <summary>力的梯度（N/m）：每远离出风口 1 米，风力减少多少牛顿。</summary>
+        public float ForceGradient => _forceGradient;
 
         /// <summary>风道内的空气阻力（每秒速度衰减率）。</summary>
         public float Drag => _drag;
+
+        /// <summary>竖直阻尼（每秒速度衰减率）。只作用于竖直方向。</summary>
+        public float VerticalDamping => _verticalDamping;
 
         /// <summary>当前风向。</summary>
         public BlowDirection Direction => _direction;
@@ -146,11 +162,18 @@ namespace RuleGame.Gameplay.Scene
         {
             if (!TrySample(point, out float t)) return Vector2.zero;
 
-            return DirectionVector * Mathf.Lerp(_force, _forceAtFar, t);
+            return DirectionVector * MagnitudeAtDistance(t * _length);
         }
+
+        /// <summary>离出风口 <paramref name="distance"/> 米处的风力大小（牛顿）：按梯度递减，最低到 0。</summary>
+        private float MagnitudeAtDistance(float distance)
+            => Mathf.Max(_force - _forceGradient * distance, 0f);
 
         /// <inheritdoc />
         public float DragAt(Vector2 point) => TrySample(point, out float _) ? _drag : 0f;
+
+        /// <inheritdoc />
+        public float VerticalDampingAt(Vector2 point) => TrySample(point, out float _) ? _verticalDamping : 0f;
 
         /// <summary>
         /// 点是否落在风道内；在的话给出「离出风口多远」的归一化位置（0 = 出风口，1 = 远端）。
@@ -267,16 +290,67 @@ namespace RuleGame.Gameplay.Scene
 
             // 三排箭头：近 / 中 / 远，长度按该处的力 —— 一眼看出「越远越弱」。
             DrawArrowRow(origin + dir * (_length * 0.12f), perp, _width, dir,
-                         Mathf.Lerp(_force, _forceAtFar, 0.12f));
+                         MagnitudeAtDistance(_length * 0.12f));
             DrawArrowRow(origin + dir * (_length * 0.5f), perp, _width, dir,
-                         Mathf.Lerp(_force, _forceAtFar, 0.5f));
+                         MagnitudeAtDistance(_length * 0.5f));
             DrawArrowRow(origin + dir * (_length * 0.88f), perp, _width, dir,
-                         Mathf.Lerp(_force, _forceAtFar, 0.88f));
+                         MagnitudeAtDistance(_length * 0.88f));
 
             // 扇体。
             Gizmos.color = new Color(1f, 0.85f, 0.4f, 0.95f);
             Gizmos.DrawWireCube(origin, new Vector3(0.7f, 0.7f, 0f));
+
+            // 各重力档的平衡高度线（预览开关）。
+            if (_showEquilibriumLines) DrawEquilibriumLines(origin, dir, perp);
         }
+
+        /// <summary>画出「各重力档的平衡高度线」—— 风力 = 该档重力时离出风口的距离。</summary>
+        /// <remarks>
+        /// <para>只对**竖直向上**的风道有意义（横向风不会在竖直方向形成平衡点），
+        /// 且梯度必须非 0（恒定力没有平衡点）。</para>
+        /// <para>纯编辑器预览：用场景里玩家实体的质量与重力倍率算；场景里没有玩家就按 m = 1、倍率 = 1。</para>
+        /// </remarks>
+        private void DrawEquilibriumLines(Vector2 origin, Vector2 dir, Vector2 perp)
+        {
+            if (_direction != BlowDirection.Up) return;
+            if (Mathf.Abs(_forceGradient) < 0.0001f) return;
+
+#if UNITY_EDITOR
+            float mass = 1f;
+            float gravityScale = 1f;
+
+            var player = UnityEngine.Object.FindAnyObjectByType<RuleGame.Gameplay.Player.PlayerController>();
+            if (player != null)
+            {
+                var body = player.GetComponent<Rigidbody2D>();
+                if (body != null) mass = body.mass;
+                gravityScale = player.GravityScale;
+            }
+
+            DrawTierLine(origin, dir, perp, "×削弱", 0.3f, new Color(0.55f, 0.75f, 1f, 0.95f), mass, gravityScale);
+            DrawTierLine(origin, dir, perp, "正常",   1f,   new Color(0.55f, 1f, 0.6f, 0.95f), mass, gravityScale);
+            DrawTierLine(origin, dir, perp, "×增强", 2f,   new Color(1f, 0.62f, 0.35f, 0.95f), mass, gravityScale);
+#endif
+        }
+
+#if UNITY_EDITOR
+        /// <summary>某一个重力档的平衡高度线。档位倍率与 <c>GravityRule</c> 的取值保持一致。</summary>
+        private void DrawTierLine(Vector2 origin, Vector2 dir, Vector2 perp, string label,
+                                  float gravityTier, Color color, float mass, float gravityScale)
+        {
+            float force = mass * 9.81f * gravityTier * gravityScale;   // 平衡所需的力（牛顿）
+            float distance = (_force - force) / _forceGradient;
+            if (distance < 0f || distance > _length) return;
+
+            Vector2 center = origin + dir * distance;
+            Vector2 halfW = perp * (_width * 0.5f);
+
+            Gizmos.color = color;
+            Gizmos.DrawLine(center - halfW, center + halfW);
+            UnityEditor.Handles.Label(center - halfW + Vector2.up * 0.12f,
+                                      label + "  y=" + center.y.ToString("0.00"));
+        }
+#endif
 
         /// <summary>沿风道横截面画一排箭头示意风力（100 牛顿 ≈ 1 个单位长度）。</summary>
         private static void DrawArrowRow(Vector2 center, Vector2 perp, float width, Vector2 dir, float force)

@@ -41,6 +41,18 @@ namespace RuleGame.Gameplay.Player
         /// <summary>本物理帧的空气阻力系数（每秒速度衰减率，多个风场取和）。风力以外的那一半。</summary>
         public float Drag { get; private set; }
 
+        /// <summary>本物理帧的竖直阻尼系数（每秒速度衰减率，多个风场取和）。只作用于竖直方向。</summary>
+        public float VerticalDamping { get; private set; }
+
+        /// <summary>本物理帧是否在某个**生效中**的风场里。</summary>
+        /// <remarks>
+        /// <para>判据：力 / 空气阻力 / 竖直阻尼有一项非零。**禁用的风场不算**（<see cref="IWindField"/>
+        /// 的三个方法在组件禁用时都返回 0）—— 「关掉风场 = 不存在」这条约定在这里也成立。</para>
+        /// <para>调用方用它来决定「风场内的重力是否统一为上升重力」（<c>VelocitySolver.GravityDelta</c>）：
+        /// 风场内不再区分上升 / 下落重力，否则方向依赖的重力会持续给振荡泵能量。</para>
+        /// </remarks>
+        public bool InField { get; private set; }
+
         /// <summary>
         /// 跑一次探测，返回风加速度（单位 / 秒²）。**每物理帧一次**，在接触探测之后、
         /// 速度解算之前。
@@ -50,6 +62,8 @@ namespace RuleGame.Gameplay.Player
             Force = Vector2.zero;
             Acceleration = Vector2.zero;
             Drag = 0f;
+            VerticalDamping = 0f;
+            InField = false;
 
             // 没配风场层 = 这个实体不响应风。短路掉物理查询。
             if (tuning.WindLayer.value == 0) return Acceleration;
@@ -66,8 +80,16 @@ namespace RuleGame.Gameplay.Player
                 var field = _hits[i].GetComponentInParent<IWindField>();
                 if (field == null) continue;
 
-                Force += field.ForceAt(point);
-                Drag  += field.DragAt(point);
+                Vector2 force   = field.ForceAt(point);
+                float   drag    = field.DragAt(point);
+                float   damping = field.VerticalDampingAt(point);
+
+                Force           += force;
+                Drag            += drag;
+                VerticalDamping += damping;
+
+                // 三项有一项非零 = 这个风场真的在起作用。禁用的风场三项全 0，不算在场内。
+                if (force.sqrMagnitude > 0f || drag > 0f || damping > 0f) InField = true;
             }
 
             // 力 ÷ 质量。质量下限与 RuleAffectedBody 的 MinMass 一致，防除零。

@@ -79,9 +79,12 @@ namespace RuleGame.Editor.Level
 
             Debug.Log($"[地图组件] 已创建 {RootName}（{WindLayerName} 层，朝{WayText(fan.Direction)}吹）。" +
                       $"风道 {fan.Length:0.#} 长 × {fan.Width:0.#} 宽，" +
-                      $"风力 {fan.Force:0.#}N → 远端 {fan.FarForce:0.#}N，阻力 {fan.Drag:0.#}。\n" +
+                      $"出风口风力 {fan.Force:0.#}N，梯度 {fan.ForceGradient:0.#} N/m，" +
+                      $"阻力 {fan.Drag:0.#}，竖直阻尼 {fan.VerticalDamping:0.#}。\n" +
                       "· 调范围：改「风道长度 / 宽度」—— Scene 里的蓝框与碰撞体实时跟着变\n" +
-                      "· 调风力：改「出风口 / 远端风力」—— 远端更小 = 越远越弱，人浮在「风力 = 自身重力」处\n" +
+                      "· 调间距：改「力的梯度」—— 相邻重力档的落点间距 = m·Δg ÷ 梯度（梯度越小分得越开）\n" +
+                      "· 调阻尼：「空气阻力」水平竖直都收；「竖直阻尼」只收 y 速度 —— 人在风里上下弹就加它\n" +
+                      "· 朝上吹时 Scene 里会画出 ×削弱 / 正常 / ×增强 三条平衡高度线（「预览」里可关）\n" +
                       "⚠️ 风道下方要有地形：风是判定不是墙，被托出风道边缘的人会直接掉下去。");
         }
 
