@@ -131,12 +131,24 @@ namespace RuleGame.Editor.Level
                           "（同一格、高度不变，碰撞与 0 摩擦材质都归冰面层）。");
             }
 
+            // 跳穿平台瓦片要 OneWayField 才能在运行时变成碰撞体：有这种格子就自动补上。
+            EnsureOneWayField(tilemap);
+
             var artRoot = EnsureArtRoot(root);
             ClearChildren(artRoot);
 
             var grid = tilemap.layoutGrid;
             var cell = grid.cellSize;
             var bounds = tilemap.cellBounds;
+
+            // 区域套件：这一格属于哪个王国，就用哪套方块。没配就回退出生点石头。
+            var region = TileRegion.FindFor(tilemap);
+            if (region == null || region.DefaultKit == null)
+            {
+                Debug.LogWarning("[铺装] 这张 Grid 上没配区域套件（TileRegion），全部按出生点石头铺。");
+            }
+            System.Func<Vector3Int, TileRegionKit> kitAt =
+                c => region != null ? region.ResolveKit(grid.CellToWorld(c)) : null;
 
             // 危险瓦片（刺等）不是几何：既不给它铺墙皮，也不能让它参与暴露面判断。
             var hazards = tilemap.GetComponent<HazardField>();
@@ -148,8 +160,13 @@ namespace RuleGame.Editor.Level
             // 表面瓦片（冰面等）：**是**实心几何（要挡住下面的外露面），但自己不铺装 ——
             // 它的贴图就是最终画面，直接搬到美术层。
             var surfaces = new HashSet<Vector3Int>();
+            // 跳穿平台瓦片：也是实心几何（挡住下面），但美术要**染色**后再铺，
+            // 让人一眼看出这一格能穿过去。
+            var oneWay = new HashSet<Vector3Int>();
             var misplaced = new HashSet<string>();
             int misplacedCells = 0;
+            // 名字带 Secret 却没被 SecretWallField 声明的瓦片：单独拎出来报错。
+            var undeclaredSecrets = new HashSet<string>();
 
             for (int x = bounds.xMin; x < bounds.xMax; x++)
                 for (int y = bounds.yMin; y < bounds.yMax; y++)
@@ -165,22 +182,42 @@ namespace RuleGame.Editor.Level
                     // 既没被声明成暗墙、Collider Type 又是 None 的瓦片，基本是**画错层**了
                     // （最常见：刷遮罩时目标层还停在 Logic）。当成几何会凭空造出「墙」，
                     // 把正常墙的外露面挡掉 → 转角整块没有美术。
-                    if (!isSecret && tile is Tile bare && bare.colliderType == Tile.ColliderType.None)
+                    // 跳穿瓦片本来就没有碰撞（碰撞由 OneWayField 逐格生成），不算「画错层」。
+                    bool isOneWay = tile is OneWayTile;
+
+                    if (!isSecret && !isOneWay && tile is Tile bare && bare.colliderType == Tile.ColliderType.None)
                     {
                         misplaced.Add(tile.name);
                         misplacedCells++;
+
+                        // 名字带 Secret 却没人声明 = 暗墙没登记进 SecretWallField。
+                        // 症状很隐蔽：这些格子被当成「画错层」跳过，**一格美术都不铺** ——
+                        // 看起来就是「隐形墙没被铺装」。
+                        if (tile.name.IndexOf("Secret", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            undeclaredSecrets.Add(tile.name);
+                        }
                         continue;
                     }
 
                     solid.Add(p);
                     if (isSecret) secret.Add(p);
                     if (tile is RuleGame.Gameplay.Scene.SurfaceTile) surfaces.Add(p);
+                    if (isOneWay) oneWay.Add(p);
                 }
+
+            if (undeclaredSecrets.Count > 0)
+            {
+                Debug.LogError($"[铺装] {string.Join("、", undeclaredSecrets)} 是暗墙瓦片，" +
+                               "但 Grid/Logic 上的 SecretWallField **没有声明它** —— " +
+                               "这些格子被当成「画错层」跳过，**一格美术都不会铺**（看起来就是隐形墙没被铺装）。\n" +
+                               "修法：菜单 Tools/规则游戏/关卡瓦片/⑤ 一键补登，或手动把它们加进 SecretWallField 的「暗墙瓦片」列表。");
+            }
 
             if (misplacedCells > 0)
                 Debug.LogWarning($"[铺装] 逻辑层里有 {misplacedCells} 格不属于逻辑层的瓦片（{string.Join("、", misplaced)}），" +
-                                 "已按「不是墙」处理。多半是刷遮罩时选错了目标层 —— " +
-                                 "用菜单 Tools/规则游戏/关卡瓦片/② 把它们移到 Mask 层。");
+                                 "已按「不是墙」处理。两种常见原因：① 刷遮罩时选错了目标层（菜单 ② 移到 Mask 层）；" +
+                                 "② 是暗墙瓦片但没登记进 SecretWallField（菜单 ⑤ 补登）。");
 
             if (solid.Count == 0) { Debug.Log("[铺装] 白盒是空的，没有可铺的面。"); return; }
 
@@ -197,7 +234,7 @@ namespace RuleGame.Editor.Level
 
             foreach (var p in solid)
             {
-                if (surfaces.Contains(p)) continue;      // 表面瓦片自带贴图，不铺装
+                if (surfaces.Contains(p) || oneWay.Contains(p)) continue;   // 表面/跳穿瓦片单独处理，不按面铺
                 int x = p.x, y = p.y;
                 bool up = !Has(x, y + 1);
                 bool down = !Has(x, y - 1);
@@ -244,13 +281,13 @@ namespace RuleGame.Editor.Level
             {
                 if (kv.Value.Count == 0) continue;
                 bool vertical = kv.Key == Face.Left || kv.Key == Face.Right;
-                foreach (var run in GroupRuns(kv.Value, vertical, secret))
+                foreach (var run in GroupRuns(kv.Value, vertical, secret, kitAt))
                 {
                     // 暗墙那一段的构件要能被单独销毁：先记下本段新建了哪些子物体。
                     bool secretRun = secret.Contains(run[0]);
                     int firstNew = artRoot.childCount;
 
-                    pieces += DressRun(artRoot, kv.Key, run, grid, cell, kits, solid);
+                    pieces += DressRun(artRoot, kv.Key, run, grid, cell, kits, solid, kitAt(run[0]));
 
                     if (secretRun)
                         for (int i = firstNew; i < artRoot.childCount; i++)
@@ -262,6 +299,9 @@ namespace RuleGame.Editor.Level
 
             // 表面瓦片（冰面等）：把自己的贴图搬到美术层，隐藏白盒之后它还看得见。
             pieces += DressSurfaces(artRoot, surfaces, tilemap, grid, cell);
+
+            // 跳穿平台：用所在区域套件的方块，但**染上瓦片自己的颜色**。
+            pieces += DressOneWay(artRoot, oneWay, tilemap, grid, cell, kits, kitAt);
 
             var logicRenderer = tilemap.GetComponent<TilemapRenderer>();
             if (logicRenderer != null && logicRenderer.enabled)
@@ -384,6 +424,73 @@ namespace RuleGame.Editor.Level
         }
 
         /// <summary>一键清掉逻辑层里的暗墙瓦片（改主意、不想留暗门时用）。</summary>
+        /// <summary>
+        /// 把逻辑层里**用到**的暗墙瓦片补进 <see cref="SecretWallField"/> 的声明列表。
+        /// </summary>
+        /// <remarks>
+        /// 判据是瓦片**名字里带 Secret** —— 只加不删，不会误伤已经登记过的条目。
+        /// 为什么需要它：漏登记的暗墙格会被铺装器当成「画错层」跳过，**一格美术都不铺**，
+        /// 现场看起来就是「隐形墙没被铺装」，很难一眼看出是配置问题。
+        /// </remarks>
+        [MenuItem("Tools/规则游戏/关卡瓦片/⑤ 补登暗墙瓦片（SecretWallField）", false, 44)]
+        public static void RegisterSecretTiles()
+        {
+            if (!TryGetLogicAndMask(out Tilemap logic, out _)) return;
+
+            var field = logic.GetComponent<SecretWallField>();
+            if (field == null)
+            {
+                Debug.LogError("[铺装] Grid/Logic 上没有 SecretWallField，先加上它再补登。");
+                return;
+            }
+
+            var so = new SerializedObject(field);
+            var array = so.FindProperty("_secretTiles");
+
+            var already = new HashSet<TileBase>();
+            for (int i = 0; i < array.arraySize; i++)
+            {
+                var t = array.GetArrayElementAtIndex(i).objectReferenceValue as TileBase;
+                if (t != null) already.Add(t);
+            }
+
+            var used = new HashSet<TileBase>();
+            BoundsInt bounds = logic.cellBounds;
+            for (int x = bounds.xMin; x < bounds.xMax; x++)
+            {
+                for (int y = bounds.yMin; y < bounds.yMax; y++)
+                {
+                    var tile = logic.GetTile(new Vector3Int(x, y, 0));
+                    if (tile == null) continue;
+                    if (tile.name.IndexOf("Secret", System.StringComparison.OrdinalIgnoreCase) < 0) continue;
+                    used.Add(tile);
+                }
+            }
+
+            int added = 0;
+            foreach (var tile in used)
+            {
+                if (already.Contains(tile)) continue;
+
+                array.arraySize++;
+                array.GetArrayElementAtIndex(array.arraySize - 1).objectReferenceValue = tile;
+                added++;
+            }
+
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(field);
+
+            if (added > 0)
+            {
+                Debug.Log($"[铺装] 已把 {added} 个暗墙瓦片补登进 SecretWallField（{string.Join("、", used)}）。" +
+                          "重铺一次就会给这些格子铺上美术。");
+            }
+            else
+            {
+                Debug.Log($"[铺装] 逻辑层用到的暗墙瓦片都已登记过（共 {already.Count} 个），无需补登。");
+            }
+        }
+
         [MenuItem("Tools/规则游戏/关卡瓦片/④ 清掉逻辑层里的暗墙瓦片", false, 43)]
         public static void ClearSecretTiles()
         {
@@ -466,7 +573,8 @@ namespace RuleGame.Editor.Level
         }
 
         private static List<List<Vector3Int>> GroupRuns(List<Vector3Int> cells, bool vertical,
-                                                       HashSet<Vector3Int> secret)
+                                                       HashSet<Vector3Int> secret,
+                                                       System.Func<Vector3Int, TileRegionKit> kitAt)
         {
             var result = new List<List<Vector3Int>>();
             foreach (var line in cells.GroupBy(c => vertical ? c.x : c.y))
@@ -481,8 +589,10 @@ namespace RuleGame.Editor.Level
                     // 暗墙边界必须断开：一段要么全是暗墙、要么全是普通墙。
                     // 否则同一段墙皮会横跨两种格子，揭开时要么留残块、要么在正常墙上开洞。
                     bool sameKind = secret.Contains(sorted[i]) == secret.Contains(sorted[i - 1]);
+                    // 区域边界也必须断开：一段里混两种石材，接头会一半石头一半发条。
+                    bool sameKit = ReferenceEquals(kitAt(sorted[i]), kitAt(sorted[i - 1]));
 
-                    if (now == prev + 1 && sameKind) cur.Add(sorted[i]);
+                    if (now == prev + 1 && sameKind && sameKit) cur.Add(sorted[i]);
                     else { result.Add(cur); cur = new List<Vector3Int> { sorted[i] }; }
                 }
                 result.Add(cur);
@@ -491,12 +601,17 @@ namespace RuleGame.Editor.Level
         }
 
         private static int DressRun(Transform artRoot, Face face, List<Vector3Int> run, GridLayout grid,
-                                    Vector3 cell, Kit kit, HashSet<Vector3Int> solid)
+                                    Vector3 cell, Kit kit, HashSet<Vector3Int> solid, TileRegionKit regionKit)
         {
-            // 新素材是「一格一个方块」：四个朝向都用它 —— 每格一块，不拼接、不缩放，
+            // 新素材是「一格一个方块」：四个朝向都用它 —— 每格一块，
             // 方块自带「粗糙的上边」，靠旋转让粗糙边朝外（地板朝上、天花板朝下、墙朝左右）。
-            if (kit.WallBlocks != null && kit.WallBlocks.Count > 0)
-                return DressBlocks(artRoot, face, run, grid, cell, kit);
+            // 区域套件优先；这一片没配（或套件里没方块）就回退出生点石头。
+            Sprite[] blocks = regionKit != null && regionKit.IsUsable ? regionKit.Blocks : kit.WallBlocks.ToArray();
+            if (blocks.Length > 0)
+            {
+                return DressBlocks(artRoot, face, run, grid, cell, blocks,
+                                   regionKit != null ? regionKit.VariantSeed : 0);
+            }
 
             bool vertical = face == Face.Left || face == Face.Right;
             float span = (vertical ? cell.y : cell.x) * run.Count;
@@ -591,12 +706,12 @@ namespace RuleGame.Editor.Level
         /// 旋转后贴图从锚点向另一侧伸展，所以锚点要放在格子对应的对角。
         /// </remarks>
         private static int DressBlocks(Transform artRoot, Face face, List<Vector3Int> run,
-                                       GridLayout grid, Vector3 cell, Kit kit)
+                                       GridLayout grid, Vector3 cell, Sprite[] blocks, int variantSeed)
         {
             int count = 0;
             foreach (var c in run)
             {
-                var sprite = kit.WallBlocks[VariantIndex(c, kit.WallBlocks.Count)];
+                var sprite = blocks[VariantIndex(c, blocks.Length, variantSeed)];
                 Vector3 origin = grid.CellToWorld(c);
 
                 // 旋转后贴图从锚点伸出的方向不同，锚点放在「对角」才能盖住这一格。
@@ -626,7 +741,13 @@ namespace RuleGame.Editor.Level
                 go.transform.SetParent(artRoot, false);
                 go.transform.position = anchor;
                 go.transform.rotation = Quaternion.Euler(0f, 0f, rotZ);
-                go.transform.localScale = Vector3.one;
+
+                // 按 sprite 实际尺寸归一化到一格：区域素材之间有 1~2 px 差异
+                // （实测 64/65/66 宽都有），硬编码 0.5 会让墙缝逐段错开。
+                Vector3 size = sprite.bounds.size;
+                go.transform.localScale = new Vector3(
+                    cell.x / Mathf.Max(size.x, 0.0001f),
+                    cell.y / Mathf.Max(size.y, 0.0001f), 1f);
 
                 var sr = go.AddComponent<SpriteRenderer>();
                 sr.sprite = sprite;
@@ -635,6 +756,33 @@ namespace RuleGame.Editor.Level
                 count++;
             }
             return count;
+        }
+
+        /// <summary>
+        /// 逻辑层里有跳穿瓦片时，确保挂了 <see cref="OneWayField"/>。
+        /// </summary>
+        /// <remarks>
+        /// 跳穿瓦片的 Collider Type 是 None（碰撞必须逐格生成），所以少了这个组件，
+        /// 画上去的平台在运行时就是**没有碰撞的装饰**。
+        /// </remarks>
+        private static void EnsureOneWayField(Tilemap logic)
+        {
+            BoundsInt bounds = logic.cellBounds;
+            bool any = false;
+            for (int x = bounds.xMin; x < bounds.xMax && !any; x++)
+            {
+                for (int y = bounds.yMin; y < bounds.yMax && !any; y++)
+                {
+                    if (logic.GetTile(new Vector3Int(x, y, 0)) is OneWayTile) any = true;
+                }
+            }
+
+            if (!any) return;
+            if (logic.GetComponent<OneWayField>() != null) return;
+
+            var field = Undo.AddComponent<OneWayField>(logic.gameObject);
+            EditorUtility.SetDirty(field);
+            Debug.Log("[铺装] 逻辑层里有跳穿平台瓦片，已自动补上 OneWayField（运行时逐格生成单向碰撞体）。");
         }
 
         /// <summary>
@@ -729,6 +877,51 @@ namespace RuleGame.Editor.Level
         }
 
         /// <summary>
+        /// 铺跳穿平台：用所在区域套件的方块，但**染上瓦片自己的颜色**。
+        /// </summary>
+        /// <remarks>
+        /// 这样它能和地形一样按格对齐、一样吃区域美术，只是颜色不同 ——
+        /// 玩家一眼就知道「这块能穿过去」，而不用为它单独准备一套素材。
+        /// 改颜色 = 改瓦片资产上的 <c>_tint</c>。
+        /// </remarks>
+        private static int DressOneWay(Transform artRoot, HashSet<Vector3Int> cells, Tilemap tilemap,
+                                       GridLayout grid, Vector3 cell, Kit kit,
+                                       System.Func<Vector3Int, TileRegionKit> kitAt)
+        {
+            if (cells.Count == 0) return 0;
+
+            int count = 0;
+            foreach (var c in cells)
+            {
+                if (!(tilemap.GetTile(c) is OneWayTile tile)) continue;
+
+                // 每一格各自查区域套件：一块跳穿平台可能横跨两个王国。
+                TileRegionKit regionKit = kitAt(c);
+                Sprite[] blocks = regionKit != null && regionKit.IsUsable ? regionKit.Blocks : kit.WallBlocks.ToArray();
+                if (blocks.Length == 0) continue;
+
+                int seed = regionKit != null ? regionKit.VariantSeed : 0;
+                var sprite = blocks[VariantIndex(c, blocks.Length, seed)];
+                var go = new GameObject("OneWay_" + sprite.name);
+                go.transform.SetParent(artRoot, false);
+                go.transform.position = grid.CellToWorld(c);        // 左下角对齐，和普通方块一致
+
+                Vector3 size = sprite.bounds.size;
+                go.transform.localScale = new Vector3(
+                    cell.x / Mathf.Max(size.x, 0.0001f),
+                    cell.y / Mathf.Max(size.y, 0.0001f), 1f);
+
+                var sr = go.AddComponent<SpriteRenderer>();
+                sr.sprite = sprite;
+                sr.color = tile.Tint;                               // ← 染色：一眼看出能跳穿
+                sr.sortingOrder = ArtSortingOrder + 1;              // 压在地形之上，别被盖住
+                Undo.RegisterCreatedObjectUndo(go, "铺装美术");
+                count++;
+            }
+            return count;
+        }
+
+        /// <summary>
         /// 把表面瓦片（冰面等）自己的贴图搬到美术层。
         /// </summary>
         /// <remarks>
@@ -760,9 +953,10 @@ namespace RuleGame.Editor.Level
         }
 
         /// <summary>按格子坐标稳定地挑一个变体（同一格每次重铺都挑到同一块）。</summary>
-        private static int VariantIndex(Vector3Int c, int variants)
+        /// <remarks><paramref name="seed"/> 来自区域套件：让相邻区域即使格子坐标相同也不排出一样的图。</remarks>
+        private static int VariantIndex(Vector3Int c, int variants, int seed)
         {
-            int h = c.x * 73856093 ^ c.y * 19349663;
+            int h = (c.x + seed) * 73856093 ^ (c.y - seed) * 19349663;
             h = (h ^ (h >> 13)) & 0x7fffffff;
             return h % variants;
         }

@@ -105,6 +105,10 @@ namespace RuleGame.Gameplay.Scene
 
             LoadWanted(point);
             UnloadDeparted(point);
+
+            // 开局落人放在这里、不放 LoadRoutine：分区可能是**已经在场被认领**的那条路，
+            // 它根本不经过 LoadRoutine（2026-10-18 修）。没找到落点就下一轮再试，不设标志。
+            if (_applyStartSpawn && !_startSpawnApplied && _loaded.Count > 0) ApplyStartSpawn();
         }
 
         /// <summary>重开：把在场分区全部卸掉，下一轮按当前位置重新加载。</summary>
@@ -135,6 +139,31 @@ namespace RuleGame.Gameplay.Scene
 
                 if (string.IsNullOrEmpty(entry.ScenePath)) continue;
                 if (_loaded.ContainsKey(entry.ScenePath) || _loading.Contains(entry.ScenePath)) continue;
+
+                // ⚠️ 场景**已经在场**（编辑器里开着这个分区、或别的系统加载过）就**不要再 LoadSceneAsync 一次**：
+                // Unity 允许同一个场景被 Additive 加载多份 —— 于是整张关卡（巨石、敌人、音频监听器）
+                // 都会出现**两份**，而且重复那份被卸载时，它的 RuleSystemDriver.OnDestroy 会连带
+                // Reset 掉全局单例（规则系统 / 时间管理器 / 快照系统），把整个游戏搞坏。
+                UnityEngine.SceneManagement.Scene existing =
+                    UnityEngine.SceneManagement.SceneManager.GetSceneByPath(entry.ScenePath);
+                if (existing.IsValid() && existing.isLoaded)
+                {
+                    // 认领：它已经在场（编辑器里开着、或别的系统加载过），直接当成一片已加载的分区。
+                    // ⚠️ 必须认领 —— 否则它是个「隐身分区」：LoadedCount 恒为 0，
+                    // 开局落人因此永远不触发（2026-10-18 修），而且永远不会被卸载。
+                    _loaded[entry.ScenePath] = index;
+
+                    // Refresh 每帧都会跑，同一分区只报一次。
+                    if (_missingWarned.Add(entry.ScenePath + "#already"))
+                    {
+                        Debug.LogWarning(
+                            $"[WorldStreamer] 分区 {entry.PartitionId} 的场景**已经在场**，直接认领而不重复加载：{entry.ScenePath}\n" +
+                            "· 常见原因：你在编辑器里**开着这个分区场景**就按了 Play。\n" +
+                            "· 以前会加载出第二份关卡（两份巨石 / 两个音频监听器），" +
+                            "卸载它还会 Reset 掉规则系统与时间管理器 —— 现在认领它，用你已经开着的那份。", this);
+                    }
+                    continue;
+                }
 
                 // 一次只开一个异步加载：并发 LoadSceneAsync 会让加载时间互相拖长，
                 // 而且没必要 —— 预载半径已经给了缓冲。
@@ -180,23 +209,25 @@ namespace RuleGame.Gameplay.Scene
             _loading.Remove(entry.ScenePath);
             _loaded[entry.ScenePath] = index;
 
-            if (_applyStartSpawn && !_startSpawnApplied) ApplyStartSpawn();
-
             OnPartitionLoaded?.Invoke(entry.PartitionId);
         }
 
-        /// <summary>开局出生点：按编号找到 PlayerSpawnPoint 并把玩家搬过去（只做一次）。</summary>
-        /// <remarks>先找精确匹配，再退到默认点；都没有就什么都不做，等下一片分区加载完再试。</remarks>
+        /// <summary>开局落点：按编号找到 PlayerSpawnPoint，落人并把他记成复活点（只做一次）。</summary>
+        /// <remarks>
+        /// <para>先找精确匹配，再退到默认点；都没有就什么都不做，等下一片分区在场再试。</para>
+        /// <para><b>开局即存档</b>：<c>Arrive()</c> 除了搬人，还会把该点写进玩家的复活点 ——
+        /// 所以「第一处落点」天然就是第一个存档点，不需要额外的初始化步骤。</para>
+        /// </remarks>
         private void ApplyStartSpawn()
         {
             PlayerSpawnPoint[] points = FindObjectsByType<PlayerSpawnPoint>(FindObjectsInactive.Exclude);
-            if (points.Length == 0) return;      // 这一片没有出生点，等下一片
+            if (points.Length == 0) return;      // 这一片没有落点，等下一片
 
             PlayerSpawnPoint chosen = FindSpawn(points, _startEntryId);
             if (chosen == null) chosen = FindSpawn(points, PlayerSpawnPoint.DefaultId);
             if (chosen == null) return;
 
-            chosen.Apply();
+            if (!chosen.Arrive()) return;        // 玩家还没就位：下一轮再试
             _startSpawnApplied = true;
         }
 

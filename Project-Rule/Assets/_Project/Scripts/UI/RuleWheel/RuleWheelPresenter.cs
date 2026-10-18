@@ -43,6 +43,8 @@ namespace RuleGame.UI.RuleWheel
         private float _nextAvailability;
         private readonly bool[] _attributeAvailable = new bool[Attributes.Length];
         private readonly bool[] _relationAvailable = new bool[Relations.Length];
+        private readonly bool[] _attributeActive = new bool[Attributes.Length];
+        private readonly bool[] _relationActive = new bool[Relations.Length];
         private bool _selectionActive, _relationStick, _waitForStickNeutral;
         private bool _facingLeft;
         public event Action SelectionOpened;
@@ -176,7 +178,8 @@ namespace RuleGame.UI.RuleWheel
                 _session.Back(); SetBranchVisible(false); _feedback.text = "尚不可用"; return;
             }
             SetBranchVisible(true);
-            _feedback.text = "悬停关系 · 左键释放";
+            _feedback.text = _session.TryGetActiveRelation(Attributes[index], out _)
+                ? "生效中 · 悬停关系可取消" : "悬停关系 · 左键释放";
             PositionBranch(); RefreshAvailability();
             AttributePreviewed?.Invoke(Attributes[index]);
         }
@@ -186,6 +189,9 @@ namespace RuleGame.UI.RuleWheel
             if (Stage != RuleSelectionStage.Relation) return;
             _relationFan.Select(index);
             if (index < 0 || index >= Relations.Length) { _feedback.text = "悬停关系 · 左键释放"; return; }
+            // 生效中的关系再按一次是取消，取消免费 —— 提示里要写清不扣能量。
+            if (_session.IsActive(_session.Attribute, Relations[index]))
+            { _feedback.text = "左键取消 · 不消耗能量"; return; }
             RuleReleaseStatus reason = _session.GetBlockReason(Relations[index]);
             _feedback.text = reason == RuleReleaseStatus.Success ? "左键释放 · 松开 Shift 取消" : BlockMessage(reason);
         }
@@ -207,12 +213,24 @@ namespace RuleGame.UI.RuleWheel
 
         private void RefreshAvailability()
         {
-            for (int i = 0; i < Attributes.Length; i++) _attributeAvailable[i] = _session.IsAttributeAvailable(Attributes[i]);
+            // 规则可能在选择期间到期或被覆盖，所以可用性与高亮一起按同一节拍刷新。
+            for (int i = 0; i < Attributes.Length; i++)
+            {
+                _attributeAvailable[i] = _session.IsAttributeAvailable(Attributes[i]);
+                _attributeActive[i] = _session.IsAttributeActive(Attributes[i]);
+            }
             _fan.SetAvailable(_attributeAvailable);
+            _fan.SetActiveMarks(_attributeActive);
+            bool relationStage = Stage == RuleSelectionStage.Relation;
             for (int i = 0; i < Relations.Length; i++)
-                _relationAvailable[i] = Stage == RuleSelectionStage.Relation
+            {
+                _relationActive[i] = relationStage && _session.IsActive(_session.Attribute, Relations[i]);
+                // 生效中的关系会返回 Success：二次释放是免费取消，不受冷却 / 能量限制。
+                _relationAvailable[i] = relationStage
                     && _session.GetBlockReason(Relations[i]) == RuleReleaseStatus.Success;
+            }
             _relationFan.SetAvailable(_relationAvailable);
+            _relationFan.SetActiveMarks(_relationActive);
         }
 
         private void RefreshChoices()

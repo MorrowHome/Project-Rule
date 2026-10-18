@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using RuleGame.Gameplay.Combat;
 using RuleGame.Gameplay.Player;
+using RuleGame.Gameplay.Scene;
 using RuleGame.Gameplay.Scene.Components;
 using RuleGame.Infrastructure;
 using RuleGame.Infrastructure.Snapshot;
@@ -173,11 +175,47 @@ namespace RuleGame.Editor.Level
                     Check(!bomb.GetComponent<Collider2D>().enabled, "bomb did not finish");
                     SnapshotSystem.Instance.Restore(fuse); Check(bomb.GetComponent<Collider2D>().enabled, "fuse rewind failed");
                 });
+                Case("track bomb patrols and detonates on contact", () =>
+                {
+                    // 白盒里没有就现造一个：这一项只验组件行为，不依赖场景摆位（重跑生成器后就用场景里那个）。
+                    var bomb = UnityEngine.Object.FindAnyObjectByType<CityTrackBomb>();
+                    if (bomb == null)
+                    {
+                        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(BrickCityBuilder.Folder + "/CityTrackBomb.prefab");
+                        var instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+                        instance.transform.position = new Vector2(31f, .8f);
+                        instance.GetComponent<CityTrackBomb>().Combat = Find<CombatSystem>();
+                        bomb = instance.GetComponent<CityTrackBomb>();
+                    }
+                    var track = bomb.GetComponent<TrackMotor>();
+                    var shape = bomb.GetComponent<Collider2D>();
+                    PutPlayer(new Vector2(-3f, .85f));   // 先让人走开，免得巡逻途中误触
+                    Vector2 start = bomb.transform.position;
+                    for (int i = 0; i < 25; i++) { track.SendMessage("FixedUpdate"); Physics2D.Simulate(Time.fixedDeltaTime); }
+                    Check(Vector2.Distance(bomb.transform.position, start) > .3f, "patrol did not move");
+
+                    var armed = SnapshotSystem.Instance.Capture();
+                    var status = _player.GetComponent<EntityStatus>();
+                    PutPlayer(bomb.transform.position);
+                    float before = status.Health;
+                    bomb.SendMessage("FixedUpdate");
+                    Check(!shape.enabled, "contact did not detonate");
+                    Check(status.Health < before, "explosion did not reach CombatSystem");
+
+                    SnapshotSystem.Instance.Restore(armed);
+                    Check(shape.enabled, "detonation was not rewound");
+                    PutPlayer(new Vector2(-3f, .85f));
+                });
                 Case("checkpoint and permanent reward", () =>
                 {
-                    var point = Find<CityCheckpoint>(); PutPlayer(new Vector2(70f, .8f)); point.Interact(_player);
-                    Vector2 saved = _player.GetComponent<Rigidbody2D>().position; PutPlayer(new Vector2(73f, .8f));
-                    Check(point.TryRespawn() && Vector2.Distance(_player.GetComponent<Rigidbody2D>().position, saved) < .01f, "checkpoint failed");
+                    // 落点 = 存档点：走过去就记录（不再交互），死亡后回这里。
+                    var point = Find<PlayerSpawnPoint>();
+                    var controller = _player.GetComponent<PlayerController>();
+                    Check(point.Arrive() && controller.HasRespawn && controller.RespawnId == point.Id,
+                          "checkpoint was not recorded");
+                    Vector2 saved = _player.GetComponent<Rigidbody2D>().position;
+                    PutPlayer(new Vector2(73f, .8f));
+                    Check(controller.Respawn() && Vector2.Distance(_player.GetComponent<Rigidbody2D>().position, saved) < .01f, "respawn failed");
                     var chest = Find<CityRewardSource>(x => !x.PickupVisual); var before = SnapshotSystem.Instance.Capture();
                     Check(chest.Interact(_player), "demo receiver did not accept reward");
                     int count = _controls.PowerTokens; SnapshotSystem.Instance.Restore(before);

@@ -1,4 +1,5 @@
 using UnityEngine;
+using RuleGame.Core.Rules;
 
 namespace RuleGame.Gameplay.Enemy
 {
@@ -74,6 +75,22 @@ namespace RuleGame.Gameplay.Enemy
                 _pursuing = false; _returning = true; Actor.Navigation?.Repath();
             }
         }
+        /// <summary>「摩擦 × 反转」现在生效 —— 本实体的**意图与位移是反的**。</summary>
+        protected static bool IsInverted => RuleSystem.Instance?.Attributes.Values.FrictionInverted == true;
+
+        /// <summary>
+        /// 反转期间「一直远离玩家」的锁。
+        /// </summary>
+        /// <remarks>
+        /// <para>反转之后「意图朝哪、人就往反方向走」，所以**只有一直保持「冲向玩家」的意图，
+        /// 位移才会一直远离**。任何把意图指向别处的行为（回巢 <c>ReturnHome</c>、
+        /// 攻击后发呆的 <c>Ignore</c> → <c>Patrol</c>、到界折返的 <c>Patrol</c>）都会让它
+        /// **掉头往玩家这边走** —— 玩家看到的就是「一会儿靠近、一会儿远离」。</para>
+        /// <para>所以：只要反转生效且还认得目标，就锁死在追击意图上。攻击（已经贴脸了）不锁，
+        /// 让它正常出手。</para>
+        /// </remarks>
+        protected bool FleeMode => IsInverted && LiveTarget;
+
         protected bool CanPursue => LiveTarget && Age - _lastSeenAt <= Config.MinionTargetMemory
             && Vector2.Distance(_lastSeen, Home) <= Config.MinionLeashRange
             && Vector2.Distance(Actor.transform.position, Home) <= Config.MinionLeashRange;
@@ -107,10 +124,15 @@ namespace RuleGame.Gameplay.Enemy
         }
         protected void Patrol(float distance = -1f)
         {
-            float radius = distance > 0f ? distance : Config.MinionPatrolDistance;
+            // 显式传了距离的（例如 ClockMouse）照旧；没传的走「本实例的巡逻半径」——
+            // 它可以在 Inspector 里逐只调小，且被夹到可移动范围内（见 EnemyActor.ResolvePatrolRange）。
+            float radius = distance > 0f ? distance : Actor.ResolvePatrolRange(Home);
             float x = Actor.transform.position.x;
-            if ((x >= Mathf.Min(Home.x + radius, ClampArenaX(Home.x + radius)) && Heading > 0f)
-                || (x <= Mathf.Max(Home.x - radius, ClampArenaX(Home.x - radius)) && Heading < 0f)
+            // 摩擦反转时实体实际朝意图的**反方向**走，所以边界判断要按世界方向算，
+            // 否则它会在意图方向还没到界时就已经走出去了。
+            float travel = Actor.Motor.WorldDirection(Heading);
+            if ((x >= Mathf.Min(Home.x + radius, ClampArenaX(Home.x + radius)) && travel > 0f)
+                || (x <= Mathf.Max(Home.x - radius, ClampArenaX(Home.x - radius)) && travel < 0f)
                 || Actor.Motor.HasHorizontalObstacle(Heading)) Heading = -Heading;
             Actor.FaceDirection(Vector2.right * Heading);
             Actor.Motor.Intent = Vector2.right * Heading;
@@ -158,6 +180,27 @@ namespace RuleGame.Gameplay.Enemy
                 return;
             }
             if (name == "Hurt") { if (Finished) Go(FirstAction); return; }
+
+            // 摩擦反转：锁死在「冲向目标」的意图上 —— 位移反向，于是它一直远离。
+            // 不锁的话，回巢 / 发呆 / 巡逻都会把意图指向别处，玩家就会看到它一阵靠近一阵远离。
+            if (FleeMode && name != "Attack")
+            {
+                if (name != "Chase") Go("Chase");
+
+                if (Config.MinionNavigationEnabled)
+                {
+                    Actor.Navigation.MoveTo(LastSeenPosition, Home, Age);
+                }
+                else
+                {
+                    float offset = LastSeenPosition.x - Actor.transform.position.x;
+                    Actor.FaceDirection(Vector2.right * offset);
+                    Actor.Motor.Intent = Mathf.Abs(offset) > .12f ? Vector2.right * Mathf.Sign(offset) : Vector2.zero;
+                }
+
+                return;
+            }
+
             TickBehavior(name);
         }
         protected abstract void TickBehavior(string name);

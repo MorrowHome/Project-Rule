@@ -22,6 +22,9 @@
 .wheel-word.selected { color: #efede1; }
 .wheel-word.unavailable { color: #62625c; }
 .wheel-word.unavailable.selected { color: #20201d; }
+/* 生效中的规则：暖金字块上用深棕色字；选中后深色块上用金色字。 */
+.wheel-word.active { color: #5c3b00; }
+.wheel-word.active.selected { color: #f3c76b; }
 .wheel-feedback {
     position: absolute; left: 350px; top: 610px;
     width: 234px; min-height: 30px;

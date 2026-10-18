@@ -14,6 +14,7 @@ using RuleGame.Core.Rules.Debugging;
 using System.Linq;
 using RuleGame.Gameplay.Player;
 using RuleGame.Gameplay.Combat;
+using RuleGame.Gameplay.Scene;
 using RuleGame.Gameplay.Scene.Components;
 using RuleGame.Development.BrickCity;
 
@@ -51,7 +52,7 @@ namespace RuleGame.Editor.Level
             _stone = LoadSprite("Assets/_Project/Art/Sprites/Tiles/Stone/Ground_Stone_Slab_04.png");
             _platform = LoadSprite("Assets/_Project/Art/Sprites/Tiles/Stone/Platform_Stone_Slab_03.png");
             BuildPrefabs(); BuildScene(); AssetDatabase.SaveAssetIfDirty(_bounce);
-            Debug.Log("[BrickCity] 已生成 14 种组件 prefab 与 " + ScenePath);
+            Debug.Log("[BrickCity] 已生成 15 种组件 prefab 与 " + ScenePath);
         }
 
         [MenuItem("Tools/规则游戏/积木城/打开组件白盒")]
@@ -98,8 +99,9 @@ namespace RuleGame.Editor.Level
             bubble.AddComponent<CityBubble>(); Save(bubble);
             var refill = Shape("CityRefill", new Vector2(1f, 1.6f), new Color(.35f, .55f, .85f), trigger: true, layer: 0);
             refill.AddComponent<CityRefill>().Prompt = "补充能量"; Save(refill);
-            var checkpoint = Shape("CityCheckpoint", new Vector2(1.4f, 1.8f), new Color(.4f, .7f, .45f), trigger: true, layer: 0);
-            checkpoint.AddComponent<CityCheckpoint>().Prompt = "记录休息点"; Save(checkpoint);
+            // 落点 = 存档点（2026-10-18 合并）：走近即记录，不需要交互键。
+            var spawn = Shape("PlayerSpawnPoint", new Vector2(1.4f, 1.8f), new Color(.4f, .7f, .45f), trigger: true, layer: 0);
+            spawn.AddComponent<PlayerSpawnPoint>(); Save(spawn);
             var chest = Shape("CityChest", new Vector2(1.3f, .85f), new Color(.8f, .6f, .25f), trigger: true, layer: 0);
             chest.AddComponent<CityRewardSource>().Prompt = "打开宝箱"; Save(chest);
             var reward = Shape("CityReward", Vector2.one * .5f, new Color(.8f, .35f, .3f), true, true, 0);
@@ -109,6 +111,10 @@ namespace RuleGame.Editor.Level
             tm.TargetEnd = true; tm.Speed = 3f; tm.StationWait = 2f; Save(train);
             var bomb = Shape("CityBomb", Vector2.one, new Color(.4f, .4f, .4f), true, true, 0);
             bomb.AddComponent<CityBomb>(); Save(bomb);
+            // 巡逻炸弹：轨道逻辑在 TrackMotor，炸弹自己只管「碰到就炸」。
+            var patrol = Shape("CityTrackBomb", Vector2.one, new Color(.55f, .3f, .45f), true, true, 0);
+            patrol.AddComponent<TrackMotor>().SetPoints(new[] { new Vector2(0f, 2.4f) });
+            patrol.AddComponent<CityTrackBomb>(); Save(patrol);
             var thorns = Shape("CityThorns", new Vector2(3f, .5f), new Color(.7f, .2f, .3f), trigger: true, layer: 0);
             thorns.AddComponent<CityDamageZone>(); thorns.AddComponent<CityMechanism>(); Save(thorns);
         }
@@ -201,6 +207,9 @@ namespace RuleGame.Editor.Level
                 var button = Place<CitySwitch>("CityButton", new Vector2(19f, .4f));
                 UnityEventTools.AddPersistentListener(button.OnChanged, bomb.SetOn);
 
+                // 在荆棘前面上下巡逻：过这一段要卡时机，碰到就炸。
+                var patrol = Place<CityTrackBomb>("CityTrackBomb", new Vector2(31f, .8f)); patrol.Combat = combat;
+
                 var hammer = Place<CityHammer>("CityHammer", new Vector2(28f, 4.6f));
                 hammer.GetComponent<CityDamageZone>().Combat = combat;
                 var thorns = Place<CityDamageZone>("CityThorns", new Vector2(33f, .25f)); thorns.Combat = combat;
@@ -216,7 +225,7 @@ namespace RuleGame.Editor.Level
                 Block("BubbleLanding", new Vector2(60f, 4.5f), new Vector2(3f, .5f));
 
                 Place<CityRefill>("CityRefill", new Vector2(67f, .8f));
-                var point = Place<CityCheckpoint>("CityCheckpoint", new Vector2(71f, .9f)); point.CheckpointId = "brick-city-lab-rest";
+                var point = Place<PlayerSpawnPoint>("PlayerSpawnPoint", new Vector2(71f, .9f)); point.SetId("brick-city-lab-rest");
                 var chest = Place<CityRewardSource>("CityChest", new Vector2(77f, .45f));
                 chest.Receiver = controls; chest.SourceId = "brick-city-lab-chest"; chest.Amount = 3;
                 for (int i = 0; i < 3; i++)

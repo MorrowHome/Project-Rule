@@ -87,7 +87,7 @@
 | **P3** | 玩家 + 战斗（移动、状态含能量、规则释放入口、伤害结算、命中判定） | Gameplay |
 | **P4** | 敌人 + 场景叙事 + UI | Gameplay · UI |
 
-## 当前进度（截至 2026-10-12）
+## 当前进度（截至 2026-10-18）
 
 - ✅ 规则系统核心（`RuleSystem` / `RuleTable` / `AttributeManager`），重力属性端到端跑通
 - ✅ 规则接口层下沉到 `Infrastructure/Shared/Rules/`（v3.0 冻结）
@@ -157,6 +157,73 @@
   改 `_pushStrength` 而不是改箱子的速度，是这套设计能被规则撬动的前提
 - ⚠️ 推动方向取 `_mover.Facing`（**换算后**的朝向）而不是按键方向：
   「摩擦 × 反转」生效时按右是往左走，用按键方向会**推不动人正顶着的那个箱子**
+- ✅ **巨石断剑机关**（`Gameplay/Scene/GravityBoulder.cs` + `BoulderFragment.cs` + `SwordInStone.cs`）——
+  **一个预制体**：`Prefabs/BoulderSwordMechanism.prefab`（菜单 `Tools/规则游戏/地图组件/⑫ 巨石断剑（生成预制体）`），
+  关卡里直接拖。外观是**方形石料**（`Art/Sprites/Stone/StoneSquare.png`，320px 程序生成：倒角 + 描边 + 裂纹），
+  碎块同图 —— **不等美术**。
+  **按钮不打包在里面，要两个**：地上一个 `CityButton`（勾 `PressByPlayerProximity`，玩家踩到 → 解锁）、
+  天花板一个（+6，巨石顶到 → 震裂）；`CitySwitch` 因此新增实现 `IContactSwitch` 与 `PressByPlayerProximity`。
+  ⚠️ **巨石开局是锁死的 Static**（`_startAnchored`）：没解锁之前放多少次「重力 × 反转」都**纹丝不动**、
+  也不会提前震碎 —— 解锁配法与 Gate 一样：**把巨石拖到地上那个 CityButton 的 `FollowMotor` 上**
+  （`CitySwitch.FollowMotor` 因此从 `CityPathMotor` 放宽到 `MonoBehaviour` + `ISwitchTarget` 接口）；没拖就永远不动。
+  玩法：踩解锁按钮 → 重力反转举起 40 kg 巨石 → 穿过天花板 CityButton（按下 + **震裂**）→ 顶在天花板 →
+  重力恢复落回地面**碎开**、撒 8 块碎块并**露出剑** → 「摩擦 × 反转」之后走近拔剑。
+  细节见 `Doc/巨石断剑机关.md`；edit 判据 **34/34**、Play 冒烟 **29/29**（`Scenes/Test_BoulderSword.unity`
+  里的机关就是**预制体实例**）
+- ⚠️ **巨石碎不碎只看「落地」**：接触点必须在巨石中心**下方**（`IsSupportedFromBelow`）+ 速度取
+  自己在物理步进前那一帧的向下速度 —— **不能读 `Collision2D.relativeVelocity`**，它的符号约定一记反，
+  巨石顶到天花板那一刻就会被当成落地、**在半空中就碎**（2026-10-18 修）
+- ✅ **纯重力石头**（`Gameplay/Scene/StoneBody.cs`；菜单 `Tools/规则游戏/地图组件/⑬ 巨石（纯重力石头，撞开关）`）——
+  `Prefabs/StoneBoulder.prefab`：Dynamic 30 kg、吃重力、碰到 `CityButton` 就按下去（`IContactSwitch`）、
+  收玩家推过来的力（`IPushable`）。**没有碎 / 剑 / 锁** —— 那些是 ⑫ 巨石断剑的事。
+  外观与 ⑫ 同一张**方形**石头贴图（`Art/Sprites/Stone/StoneSquare.png`，320px 程序生成：倒角 + 描边 + 裂纹）。
+  ⚠️ **「推不动 → 摩擦一减小就推得动」是物理自己算出来的，代码里没有门槛**：玩家推力 60 N，
+  静摩擦 = μ·m·g。30 kg 时 —— 正常（μ0.5）147 N **推不动**；「摩擦 × 削弱」（μ0.15）44 N **推得动**；
+  「失效」（μ0）一推就滑。`StoneBody.ReceivePush` 只交力（与 `PushableBody` 同一条路），
+  所以「质量 × 削弱」（30 → 9 kg）也会顺带让它推得动 —— 涌现，不是特判。
+- ⚠️ **碎块没有碰撞体、也没有刚体**（`BoulderFragment` 自己积分 + 向下射线找地面）：碎块堆在剑周围，
+  实心的会把玩家**卡住 / 顶起来**（实测过），顺带还会挤进取剑的探测圈。代价是瓦砾不挡路、也不能站。
+  生成碎块前要先关掉石头自己的碰撞体（射线的第一条命中会是自己）。
+- ⚠️ **剑取出来 = 玩家才有攻击能力**（策划 2026-10-18，**接线未做**）：
+  **解锁状态存在玩家自己的属性里**（同「能力 = 实体自己的序列化字段」），不新开系统、不塞 `IRuleUnlocks`；
+  机关只发 `SwordInStone.OnExtracted` / `_onExtracted`，接线点（`PlayerController` 输入那一步）见
+  `Doc/巨石断剑机关.md` §9
+- ✅ **落点 = 出生点 + 存档点（2026-10-18 合并，主程定）**：`PlayerSpawnPoint` 是**唯一**落点组件。
+  开局由 `WorldStreamer` 挑一个点 `Arrive()`（落人 + 记成复活点）；玩家走进 `_activateRadius`
+  （默认 1.2 m，**距离轮询**，不用触发回调 —— 玩家是 Kinematic + Slide）自动刷新复活点；
+  死亡后 `PlayerController` 等 `_respawnDelay`（1.2 s）自己 `Respawn()` → `EntityDamageable.Revive()`
+  （清死亡标记 + 回满血 + 至少 1 秒无敌）。复活位置**存在玩家自己的内存字段**
+  （`RespawnId` / `RespawnPosition`），**不进世界快照** —— 所以跨分区卸载不再失效。
+  旧 `CityCheckpoint`（靠全量内存快照记位置）已删除，白盒里的点换成 `PlayerSpawnPoint`。
+  ⚠️ 组件只广播 `SaveRequested(id)`，**落盘仍未实现**（`RuleGame.Persistence` 只有 asmdef，
+  `ISaveSystem` 不存在）—— 落盘时只需要存 `RespawnId`，位置由场景里的点提供（约束 C5）
+- ⚠️ **`WorldStreamer` 会「认领」已经在场的分区**（编辑器多场景开着按 Play 的情况）：
+  认领进 `_loaded` 之后 `LoadedCount` 才有值、开局落人才会触发 —— 以前这条路径直接跳过，
+  出生点因此**永远不生效**（2026-10-18 修）。开局落人已从 `LoadRoutine` 挪到 `Refresh()`
+- ✅ **回弹块**（`Gameplay/Scene/SpringBackBody.cs`；菜单 `Tools/规则游戏/地图组件/⑭ 回弹块（轨道内受击击退 + 缓慢回正）`）——
+  生成 `Prefabs/SpringBackBody.prefab`：被攻击打得**沿自己的轨道**退开（轻击 ≈0.9 格 / 重击顶到轨道尽头），
+  停一下再**慢慢回正**。**轨道 = 过锚点的一条直线**（两个相对锚点的偏移，默认水平 ±1.5 格），
+  位置被夹在两端之间 —— 打不飞、推不歪；垂直分量被吃掉（竖直轨道靠 `_knockbackLift` 推）。
+  **摩擦规则直接当分母**：回正速度 = `_returnSpeed` ÷ 摩擦倍率（×增强 → 慢到 1/3，×削弱 / ×失效 → 快 3 倍）。
+  选 **Kinematic + 自己积分**，不是 Dynamic + 引擎摩擦：这类块悬在竖井里没有接触面；而且静摩擦 `μmg`
+  随 ×3 涨过回正力时，块会**卡死在偏移位置**。**只吃击退、不掉血**（`IDamageable` 忽略 `Amount`），
+  自带受击箱、能承载（`IMovingSurface`）、无白盒文字标签。**根物体可缩放**（关卡里的 8×2 宽板）——
+  受击箱随缩放变大（所以它**和身体同尺寸**，不按 0.75 缩：宽板上 0.75 的边距会超出玩家攻击距离，出现「只有一侧打得到」），
+  轨道白盒按实际缩放换算。编辑期自检 `规则游戏/验证/回弹块（预制体 + 纯函数）`（32 条）。
+  细节见 `Doc/受击回正块.md`
+- ✅ **纸飞机飞刀**（玩家投掷原型，2026-10-18）—— `Gameplay/Player/ThrownKnife.cs` + `Prefabs/PaperPlaneKnife.prefab`
+  （精灵 `Art/Sprites/Player/PaperPlane_01.png`：320px / PPU 640 = 0.5 m，程序生成，生成脚本 `Tools/Art/gen_paperplane.py`）。
+  按 **F / 手柄 RB** 从胸前投出：冷却 0.35 s、初速 16 m/s、基础伤害 4。**飞行 = Kinematic + 自己扫掠**
+  （`CircleCast`，`useTriggers` 开）：吃 `Physics2D.gravity`（**重力规则自动生效，零特判**），
+  **撞到任何非投掷者的碰撞体就消失**（地面 / 墙 / 场景道具 / 敌人 / 触发区都算），
+  撞到 `IContactSwitch`（按钮 / 摇杆）**顺手按下** —— 与石头 / 铁箱走同一条路；伤害走 `CombatSystem.ApplyDamage`
+  传**基础值**，命中仍只认 `Hurtbox` 层（准入在 `CanHit`）。机头永远朝速度方向。
+  ⚠️ 身上**没有碰撞体**（判定全靠扫掠，所以不挡路、不会被推）、**未接世界快照**（回溯不会清掉在飞的刀）、
+  弹药数还没接（`IEntityStatus.ThrowableCount` 仍是空字段）。
+  ⚠️ **`Launch` 里必须 `_body.position = transform.position`**：工程 `autoSyncTransforms` 关着，
+  只写 Transform 的话刚体停在预制体原点，第一次扫掠会**从世界原点出发**（实测隔着半个关卡撞到按钮）。
+  自检 `规则游戏/验证/纸飞机飞刀（隔离场景 Play 冒烟）` **8/8**（自己开空场景跑、跑完把原场景开回来）。
+  `Scenes/Test_RuleSystem.unity` 已接：玩家 `_knifePrefab` + 地面左侧 `PaperPlaneButton`（x=17，按下变绿）当靶子
 
 ## 已定设计决策（2026-10-12，合并 `mortis-sys/main` 时定）
 

@@ -30,6 +30,7 @@ namespace RuleGame.Gameplay.Player
         private bool    _dashPressed;
         private bool    _attackPressed;
         private bool    _rewindPressed;
+        private bool    _throwPressed;
 
         private int _blockCount;
         private int _resumeFrame;
@@ -88,6 +89,7 @@ namespace RuleGame.Gameplay.Player
                 _dashPressed   = false;
                 _attackPressed = false;
                 _rewindPressed = false;
+                _throwPressed  = false;
                 return;
             }
 
@@ -106,6 +108,12 @@ namespace RuleGame.Gameplay.Player
             //    按住才会触发，不适合「按一下退一步」。
             if (Keyboard.current?.qKey.wasPressedThisFrame == true
                 || Gamepad.current?.leftShoulder.wasPressedThisFrame == true) _rewindPressed = true;
+
+            // 投掷（飞刀原型）：键盘 F / 手柄 RB。
+            // 与冲刺右键同一条做法：**直接读设备**，先不动团队共享的 .inputactions；
+            // 键位定稿后再补成正式的 "Player/Throw" 动作（见 Doc/玩家动作设计.md）。
+            if (Keyboard.current?.fKey.wasPressedThisFrame == true
+                || Gamepad.current?.rightShoulder.wasPressedThisFrame == true) _throwPressed = true;
         }
 
         /// <summary>
@@ -113,13 +121,15 @@ namespace RuleGame.Gameplay.Player
         /// </summary>
         public State Sample()
         {
-            var state = new State(_move, _jumpPressed, _jumpReleased, _dashPressed, _attackPressed, _rewindPressed);
+            var state = new State(_move, _jumpPressed, _jumpReleased, _dashPressed, _attackPressed,
+                                  _rewindPressed, _throwPressed);
 
             _jumpPressed   = false;
             _jumpReleased  = false;
             _dashPressed   = false;
             _attackPressed = false;
             _rewindPressed = false;
+            _throwPressed  = false;
 
             return state;
         }
@@ -164,8 +174,11 @@ namespace RuleGame.Gameplay.Player
             /// <summary>时间恒定的定点回溯键（Q / LB）。窗口没开时是空操作。</summary>
             public readonly bool    RewindPressed;
 
+            /// <summary>投掷键（F / RB）。原型：投一把飞刀。</summary>
+            public readonly bool    ThrowPressed;
+
             public State(Vector2 move, bool jumpPressed, bool jumpReleased, bool dashPressed, bool attackPressed,
-                         bool rewindPressed = false)
+                         bool rewindPressed = false, bool throwPressed = false)
             {
                 Move          = move;
                 JumpPressed   = jumpPressed;
@@ -173,6 +186,7 @@ namespace RuleGame.Gameplay.Player
                 DashPressed   = dashPressed;
                 AttackPressed = attackPressed;
                 RewindPressed = rewindPressed;
+                ThrowPressed  = throwPressed;
             }
         }
     }

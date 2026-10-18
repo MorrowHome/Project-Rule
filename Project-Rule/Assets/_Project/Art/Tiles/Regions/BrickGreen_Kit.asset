@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7445d31db6c0674fbd7feff1af528b9, type: 3}
+  m_Name: BrickGreen_Kit
+  m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Scene.TileRegionKit
+  _displayName: "\u79EF\u6728\u738B\u56FD\xB7\u7EFF"
+  _blocks:
+  - {fileID: 21300000, guid: e1fbfca5cb7b73e49bb2e97d994dbf14, type: 3}
+  - {fileID: 21300000, guid: ee8da2fd8018a554eae691656322b7ea, type: 3}
+  - {fileID: 21300000, guid: d2c4c6ca1507d994d90b8408e9f9eba9, type: 3}
+  - {fileID: 21300000, guid: 5b29a54ac36e02d4ab6cacc532b9114e, type: 3}
+  - {fileID: 21300000, guid: b97b186f21dc5444c90682d17257e127, type: 3}
+  - {fileID: 21300000, guid: ce4d2d820276d4d4fae7c1e9efe9cede, type: 3}
+  - {fileID: 21300000, guid: 54358b160c66f4d4cadd6134a8dd8c7d, type: 3}
+  - {fileID: 21300000, guid: b86a00bcb9396274e8d612d10ab1b881, type: 3}
+  - {fileID: 21300000, guid: 39131031154ea1446ad7a1554b809392, type: 3}
+  - {fileID: 21300000, guid: d2a3a898167c1d7499419046a706737f, type: 3}
+  - {fileID: 21300000, guid: b35172b64f4a8da4f9ffc66bee91a126, type: 3}
+  - {fileID: 21300000, guid: 77e9f5c21a0d2bb49b1e3bbae270b223, type: 3}
+  - {fileID: 21300000, guid: e6356f6f28c07274195979e387df3c21, type: 3}
+  - {fileID: 21300000, guid: 5154690730d7a0547856e039978aeddf, type: 3}
+  - {fileID: 21300000, guid: 8b6615cc094d5444790451d525addf51, type: 3}
+  - {fileID: 21300000, guid: 0027e313647393a4ea414528c41dc70e, type: 3}
+  _variantSeed: 4051

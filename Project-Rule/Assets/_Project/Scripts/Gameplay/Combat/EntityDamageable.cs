@@ -66,6 +66,27 @@ namespace RuleGame.Gameplay.Combat
         public bool Invulnerable { get; private set; }
         public void SetInvulnerable(bool invulnerable) => Invulnerable = invulnerable;
 
+        /// <summary>
+        /// 复活：清死亡标记、回满血、给一小段无敌帧。
+        /// </summary>
+        /// <remarks>
+        /// <para>死亡只广播、不负责收拾（见类注释），所以「活过来」也必须由外层显式调用 ——
+        /// 现在的调用方是 <c>PlayerController.Respawn</c>（玩家被搬回落点时）。</para>
+        /// <para>无敌帧是为了防「复活点旁边正好有伤害源」的连死循环；它至少 1 秒，
+        /// 不受 <see cref="_invincibleSeconds"/> 配成 0 的影响。</para>
+        /// </remarks>
+        public void Revive()
+        {
+            _died = false;
+
+            if (_status != null)
+            {
+                _status.ApplyHealthDelta(_status.HealthMax - _status.Health);
+            }
+
+            _invincibleUntil = Time.time + Mathf.Max(_invincibleSeconds, 1f);
+        }
+
         // ==================================================================
         //  生命周期
         // ==================================================================
@@ -135,18 +156,27 @@ namespace RuleGame.Gameplay.Combat
             float strength = damage.Knockback * (1f - _knockbackResistance);
             if (strength <= 0f || _knockbackReceiver == null) return;
 
-            _knockbackReceiver.AddImpulse(ResolveKnockbackDirection(damage.Attacker) * strength);
+            _knockbackReceiver.AddImpulse(
+                ResolveKnockbackDirection(transform.position, damage.Attacker, _knockbackLift) * strength);
         }
 
-        /// <summary>击退方向：水平背离施加方，再沿「上」抬升一点。</summary>
-        private Vector2 ResolveKnockbackDirection(object attacker)
+        /// <summary>
+        /// 击退方向：水平背离施加方，再沿「上」抬升一点。
+        /// </summary>
+        /// <remarks>
+        /// <para>静态公开：玩家 / 敌人走 <see cref="EntityDamageable"/>，场景机关（<c>SpringBackBody</c>）
+        /// 不吃血量、但要求**同一套手感**，所以共用这一个实现，而不是各自抄一份。</para>
+        /// <para><paramref name="lift"/> 就是各实体自己的 <c>_knockbackLift</c>：
+        /// 抬多少是**实体自己的物理属性**，公式是共用的。</para>
+        /// </remarks>
+        public static Vector2 ResolveKnockbackDirection(Vector2 targetPosition, object attacker, float lift)
         {
             // 施加方拿不到位置时默认往右推（伤害数值本身仍然成立）。
             Vector2 away = Vector2.right;
             if (TryGetPosition(attacker, out Vector2 attackerPosition) &&
-                !Mathf.Approximately(transform.position.x, attackerPosition.x))
+                !Mathf.Approximately(targetPosition.x, attackerPosition.x))
             {
-                away = transform.position.x > attackerPosition.x ? Vector2.right : Vector2.left;
+                away = targetPosition.x > attackerPosition.x ? Vector2.right : Vector2.left;
             }
 
             // 抬升方向跟随重力，「重力反转」后击退也朝新的「上」。
@@ -154,7 +184,7 @@ namespace RuleGame.Gameplay.Combat
                 ? -Physics2D.gravity.normalized
                 : Vector2.up;
 
-            return (away + up * _knockbackLift).normalized;
+            return (away + up * lift).normalized;
         }
 
         /// <summary>施加方在 <see cref="DamageInfo.Attacker"/> 里可能是任意 <c>object</c>。</summary>

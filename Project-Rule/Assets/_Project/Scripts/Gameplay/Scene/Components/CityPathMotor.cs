@@ -1,13 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using RuleGame.Gameplay.Common;
 using RuleGame.Gameplay.Player;
 
 namespace RuleGame.Gameplay.Scene.Components
 {
     /// <summary>两站式电梯、门和站间列车共用路径运动；关卡里只需设置终点偏移和联动开关。</summary>
     [DefaultExecutionOrder(-40)] // 承载位移先提交，随后由 PlayerController 在自己的 Slide 内统一解算。
-    public sealed class CityPathMotor : CityMechanism
+    public sealed class CityPathMotor : CityMechanism, ISwitchTarget
     {
         public Vector2 EndOffset = new Vector2(0f, 5f);
         [Min(.1f)] public float Speed = 2f;
@@ -27,6 +28,9 @@ namespace RuleGame.Gameplay.Scene.Components
 
         protected override void Awake() { base.Awake(); _origin = Body.position; }
         public void SetOn(bool on) { if (TargetEnd != on) { TargetEnd = on; _arrived = false; _wait = 0f; } }
+
+        /// <summary>开关驱动入口（<see cref="ISwitchTarget"/>）：与 <see cref="SetOn"/> 是同一件事。</summary>
+        public void SetSwitchState(bool on) => SetOn(on);
         private void FixedUpdate()
         {
             if (Paused || EndOffset.sqrMagnitude < .001f) return;

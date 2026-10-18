@@ -27,7 +27,7 @@ namespace RuleGame.Development.BrickCity
             "拳套变黄时预警，变红时会造成伤害。跳过地面的荆棘。",
             "攻击可击退弹珠。用规则改变它的重力、质量或摩擦；按 F1 离开。",
             "踩住后起跳，泡泡才会破裂。先按 F6 留影，再按 F7 还原。",
-            "靠近石像按 E 补能；靠近秋千按 E 留下休息点，F8 返回。",
+            "靠近石像按 E 补能；走过绿色落脚点即记录复活点，F8 回到那里。",
             "宝箱与三色龙珠仅记录演示奖励，回溯不会重复领取。",
             "站上小火车，在两站之间往返。到站事件预留正式转场接入。"
         };
@@ -35,7 +35,6 @@ namespace RuleGame.Development.BrickCity
         public int PowerTokens, HealthTokens, EnergyTokens;
         private readonly HashSet<string> _claimed = new HashSet<string>();
         private Snapshot _initial, _mark;
-        private CityCheckpoint _checkpoint;
         private float _nextLabel;
         private int _station;
         private bool _movingStation;
@@ -67,19 +66,16 @@ namespace RuleGame.Development.BrickCity
                 if (keys.f1Key.wasPressedThisFrame) BrowseStation(1);
                 if (keys.f2Key.wasPressedThisFrame) BrowseStation(-1);
                 if (keys.eKey.wasPressedThisFrame && Interactor != null)
-                {
-                    var target = Interactor.FindNearest();
-                    if (target != null && target.Interact(Interactor.GetComponent<PlayerController>()) && target is CityCheckpoint point)
-                        _checkpoint = point;
-                }
+                    Interactor.TryInteract();
                 if (keys.f5Key.wasPressedThisFrame && _initial != null)
                 {
                     _claimed.Clear(); PowerTokens = HealthTokens = EnergyTokens = 0;
-                    SnapshotSystem.Instance.Restore(_initial); _checkpoint = null;
+                    SnapshotSystem.Instance.Restore(_initial);
                 }
                 if (keys.f6Key.wasPressedThisFrame) _mark = SnapshotSystem.Instance?.Capture();
                 if (keys.f7Key.wasPressedThisFrame && _mark != null) SnapshotSystem.Instance?.Restore(_mark);
-                if (keys.f8Key.wasPressedThisFrame) _checkpoint?.TryRespawn();
+                // F8 = 回到最近记录的落点（落点 = 存档点，位置存在玩家身上）。
+                if (keys.f8Key.wasPressedThisFrame) Player?.Respawn();
                 if (keys.f9Key.wasPressedThisFrame && PlayerStatus != null) PlayerStatus.TryConsumeEnergy(30f);
             }
             if (_prompt != null && Time.unscaledTime >= _nextLabel)
@@ -118,6 +114,7 @@ namespace RuleGame.Development.BrickCity
             body.position = Stations[_station]; Physics2D.SyncTransforms();
             PlayerStatus.SetPaused(false); _movingStation = false;
         }
+        private PlayerController Player => Interactor != null ? Interactor.GetComponent<PlayerController>() : null;
         public bool IsClaimed(string id) => _claimed.Contains(id);
         public bool TryGrant(string id, CityRewardKind kind, int amount)
         {

@@ -16,6 +16,7 @@ namespace RuleGame.UI.RuleWheel
         [UxmlAttribute] public float WordHeight { get; set; } = 36f;
         private string[] _words = Array.Empty<string>();
         private bool[] _available = Array.Empty<bool>();
+        private bool[] _active = Array.Empty<bool>();
         private Label[] _labels = Array.Empty<Label>();
         public int SelectedIndex { get; private set; } = -1;
         public Vector2 Center => contentRect.size * 0.5f;
@@ -33,6 +34,7 @@ namespace RuleGame.UI.RuleWheel
             Clear();
             _words = words;
             _available = available;
+            _active = new bool[words.Length];
             _labels = new Label[words.Length];
             SelectedIndex = -1;
             for (int i = 0; i < words.Length; i++)
@@ -53,6 +55,26 @@ namespace RuleGame.UI.RuleWheel
             _available = available;
             for (int i = 0; i < _labels.Length; i++) _labels[i].EnableInClassList("unavailable", !available[i]);
             MarkDirtyRepaint();
+        }
+
+        /// <summary>标记当前生效的规则格位；扇区填充与标签配色一起表现高亮。</summary>
+        /// <remarks>可用性每 0.1 秒刷新一次，所以先比一遍，没变化就不重绘。</remarks>
+        public void SetActiveMarks(bool[] active)
+        {
+            if (SameMarks(active)) return;
+            // 必须复制：调用方复用同一块数组，存引用会让「上一次」跟着一起变，高亮永远不刷新。
+            _active = active == null ? Array.Empty<bool>() : (bool[])active.Clone();
+            for (int i = 0; i < _labels.Length; i++)
+                _labels[i].EnableInClassList("active", i < _active.Length && _active[i]);
+            MarkDirtyRepaint();
+        }
+
+        private bool SameMarks(bool[] active)
+        {
+            int count = active?.Length ?? 0;
+            if (count != _active.Length) return false;
+            for (int i = 0; i < count; i++) if (active[i] != _active[i]) return false;
+            return true;
         }
 
         public void SetArc(float start, float end)
@@ -122,10 +144,16 @@ namespace RuleGame.UI.RuleWheel
             {
                 float start = StartAngle + slice * i + 1.2f;
                 float end = StartAngle + slice * (i + 1) - 1.2f;
-                painter.fillColor = i == SelectedIndex && _available[i] ? new Color(0.12f, 0.12f, 0.11f)
+                bool highlighted = i < _active.Length && _active[i];
+                bool selected = i == SelectedIndex && _available[i];
+                // 生效中的格位用暖金色填充；被选中时改用金边包住深色块，
+                // 让「这是当前生效的规则」和「我现在指着它」能同时读出来。
+                painter.fillColor = selected ? new Color(0.12f, 0.12f, 0.11f)
+                    : highlighted ? new Color(0.95f, 0.79f, 0.40f)
                     : _available[i] ? new Color(0.94f, 0.93f, 0.88f) : new Color(0.77f, 0.77f, 0.73f);
-                painter.strokeColor = new Color(0.12f, 0.12f, 0.11f);
-                painter.lineWidth = i == SelectedIndex ? 3f : 1.6f;
+                painter.strokeColor = highlighted && selected
+                    ? new Color(0.95f, 0.79f, 0.40f) : new Color(0.12f, 0.12f, 0.11f);
+                painter.lineWidth = selected || highlighted ? 3f : 1.6f;
                 painter.BeginPath();
                 // 只镜像几何和标签位置，不翻转 VisualElement，避免中文也被反向显示。
                 Vector2 inner = Center + Direction(start) * InnerRadius;

@@ -1779,13 +1779,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1051551094795255984, guid: f2d44659432004d4b94803a5602f8e5e, type: 3}
-      propertyPath: CheckpointId
-      value: brick-city-lab-rest
-      objectReference: {fileID: 0}
-    - target: {fileID: 2149850335793586024, guid: f2d44659432004d4b94803a5602f8e5e, type: 3}
+    - target: {fileID: 2149850333586024, guid: f2d44659432004d4b94803a5602f8e5e, type: 3}
       propertyPath: m_Name
-      value: CityCheckpoint
+      value: PlayerSpawnPoint
       objectReference: {fileID: 0}
     - target: {fileID: 4592191375058198541, guid: f2d44659432004d4b94803a5602f8e5e, type: 3}
       propertyPath: m_LocalPosition.x

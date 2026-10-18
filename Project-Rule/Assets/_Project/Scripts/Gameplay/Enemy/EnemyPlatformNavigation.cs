@@ -91,6 +91,14 @@ namespace RuleGame.Gameplay.Enemy
         public bool ContinueTraversal(float age)
         {
             if (!_traversing) return false;
+            // 摩擦反转时不做跳跃寻路：抛物线和落点都是**世界坐标**算出来的，
+            // 而 Motor 会把提交的意图翻掉 —— 跳出去只会落在反方向，还会把
+            // AllowLedgeTraversal 锁住直到 4 秒超时（读起来就是「卡住不动」）。
+            // 直接取消，让调用方落到 Direct 的兜底走法上。
+            if (RuleSystem.Instance?.Attributes.Values.FrictionInverted == true)
+            {
+                Cancel(); Motor.Intent = Vector2.zero; return false;
+            }
             if (Vector2.Dot(_up, CurrentUp()) < .99f || age - _launchedAt > 4f)
             {
                 Cancel(); Motor.Intent = Vector2.zero; return false;
@@ -118,10 +126,17 @@ namespace RuleGame.Gameplay.Enemy
             _up = CurrentUp();
             _home = home;
             // Motor 的自主移动沿世界 X；横向重力/失重时不虚构能到达的平台弧线。
-            if (Mathf.Abs(_up.y) < .99f || Physics2D.gravity.sqrMagnitude < .001f
-                || RuleSystem.Instance?.Attributes.Values.FrictionInverted == true)
+            if (Mathf.Abs(_up.y) < .99f || Physics2D.gravity.sqrMagnitude < .001f)
             {
                 Cancel(); Motor.Intent = Vector2.zero; return;
+            }
+            // 摩擦反转：「按右往左走」是 Motor 的事 —— 它会把这里提交的意图再翻一次，
+            // 而导航算的是**世界坐标**路线，翻过之后整条路线就反了（照着走会走反）。
+            // 所以这时候不寻路，退回「直接朝目标给意图」：实体照常走、只是走反。
+            // ⚠️ 这里**不能**把意图清零 —— 清零 = 实体原地冻住（改之前的表现）。
+            if (RuleSystem.Instance?.Attributes.Values.FrictionInverted == true)
+            {
+                Cancel(); Direct(destination); return;
             }
             _filter = new ContactFilter2D { useTriggers = false };
             _filter.SetLayerMask(Motor.SolidMask);
@@ -182,6 +197,28 @@ namespace RuleGame.Gameplay.Enemy
             }
             Motor.AllowLedgeTraversal = true;
             Motor.Intent = Vector2.right * Mathf.Sign(offset);
+            _actor.FaceDirection(Motor.Intent);
+        }
+
+        /// <summary>
+        /// 不做寻路时的兜底走法：朝目标方向直接给意图，撞到墙 / 到边缘就停。
+        /// </summary>
+        /// <remarks>
+        /// 挡路检查走 <see cref="EnemyMotor.HasHorizontalObstacle"/> —— 它内部会把意图换算成
+        /// **世界**方向，所以摩擦反转时看的是实体实际要去的哪一侧。
+        /// </remarks>
+        private void Direct(Vector2 destination)
+        {
+            float offset = destination.x - Position.x;
+            if (Mathf.Abs(offset) <= .12f) { Motor.Intent = Vector2.zero; return; }
+
+            float intent = Mathf.Sign(offset);
+            // ⚠️ 用 HasWallAhead（不含悬崖检测）：反转期间实体是被**推着**走的，
+            //    必须允许它被逼下坑 —— 带悬崖检测的版本会让它在坑边刹住，坑永远进不去。
+            Motor.Intent = Motor.HasWallAhead(intent) ? Vector2.zero : Vector2.right * intent;
+            // 反转期间实体是被**推着**走的：允许踏空，否则 Motor 自己的悬崖保护会在坑边刹死它
+            // （玩家就没法把它逼进坑里了）。
+            Motor.AllowLedgeTraversal = true;
             _actor.FaceDirection(Motor.Intent);
         }
 

@@ -7,7 +7,7 @@ namespace RuleGame.Gameplay.Enemy
 {
     /// <summary>AI 只提交移动意图。这里独立处理重力、摩擦、碰撞和插值，不读取玩家输入。</summary>
     [RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
-    public sealed class EnemyMotor : MonoBehaviour, IKnockbackReceiver
+    public sealed class EnemyMotor : MonoBehaviour, IKnockbackReceiver, IMomentumSource
     {
         public LayerMask SolidMask = 1 << 8;
         [Tooltip("仅阻挡身体移动，不作为地面或悬崖支撑。默认 Enemy 层，包含 Boss 与召唤小兵。")]
@@ -20,6 +20,19 @@ namespace RuleGame.Gameplay.Enemy
         public Vector2 Up { get; private set; } = Vector2.up;
         public Vector2 Velocity { get; private set; }
         public Vector2 GravityDrift { get; private set; }
+
+        /// <summary>
+        /// 本物理帧的动量（kg·单位/秒），给「按动量判定」的机关读（见 <see cref="IMomentumSource"/>）。
+        /// </summary>
+        /// <remarks>
+        /// <para>⚠️ <b>必须自报，不能靠刚体</b>：本类把刚体设成 Kinematic、位移走
+        /// <c>Rigidbody2D.Slide</c> —— 实测这条路径<b>不会</b>更新 <c>linearVelocity</c>
+        /// （模拟一步之后仍是 (0,0)）。机关从刚体上读到的动量永远是 0，表现就是
+        /// 「敌人撞上去按钮不响」。真实速度只有本类自己知道。</para>
+        /// <para>质量读 <c>Rigidbody2D.mass</c> —— 质量规则写的就是它，
+        /// 机关于是不必认识质量规则存在。</para>
+        /// </remarks>
+        public Vector2 Momentum => _body != null ? Velocity * _body.mass : Vector2.zero;
         public bool MassReduced => _rulesBody != null && _body.mass < _rulesBody.BaseMass * .99f;
         private Vector2 _impulse;
         private Rigidbody2D _body;
@@ -56,9 +69,8 @@ namespace RuleGame.Gameplay.Enemy
             Vector2 velocity = Velocity - GravityDrift;
             float massResponse = Mathf.Clamp((_rulesBody != null ? _rulesBody.BaseMass : _body.mass)
                 / Mathf.Max(.01f, _body.mass), .1f, 4f);
-            float direction = Intent.x;
             var attributes = RuleSystem.Instance?.Attributes;
-            if (Grounded && attributes != null && attributes.Values.FrictionInverted) direction = -direction;
+            float direction = WorldDirection(Intent.x);
             float acceleration = (flying ? Mathf.Max(35f, config.FlightAcceleration) : 35f) * massResponse;
             if (Grounded && attributes != null)
                 acceleration *= Mathf.Max(0.02f, attributes.Values.FrictionScale);
@@ -118,21 +130,60 @@ namespace RuleGame.Gameplay.Enemy
             Velocity = velocity;
         }
 
+        /// <summary>
+        /// 本帧提交的意图会被翻成哪个**世界**方向（摩擦反转时是反的）。
+        /// </summary>
+        /// <remarks>
+        /// <para>「摩擦 × 反转」的语义是「按右往左走」：<see cref="Intent"/> 是意图方向，
+        /// 实际位移是它的反向。所有**世界坐标**的探测（往前有没有墙、有没有地）都必须用这里
+        /// 返回的方向，不能直接用意图方向 —— 否则探的是实体根本不去的哪一侧，
+        /// 表现就是「意图一直在推、人却顶在墙上不动」。</para>
+        /// <para>与 <c>Tick</c> 里驱动位移用的是同一个判据，抽出来是为了不再有第二份真相。</para>
+        /// </remarks>
+        public float WorldDirection(float intent)
+        {
+            if (!Grounded) return intent;
+
+            var attributes = RuleSystem.Instance?.Attributes;
+            return attributes != null && attributes.Values.FrictionInverted ? -intent : intent;
+        }
+
         /// <summary>检查真实身体阻挡；不能把摩擦导致的低速误判成撞到了玩家。</summary>
+        /// <remarks>
+        /// ⚠️ <paramref name="direction"/> 是**意图**方向（AI 想走哪边），不是世界方向 ——
+        /// 内部用 <see cref="WorldDirection"/> 换算。摩擦反转时实体实际走反方向，
+        /// 直接拿意图方向去探，会把墙探在背后那一侧。
+        /// </remarks>
         public bool HasHorizontalObstacle(float direction)
         {
-            float side = Mathf.Sign(direction);
-            var filter = new ContactFilter2D { useTriggers = false };
-            filter.SetLayerMask(SolidMask | BodyBlockMask | _actor.PlayerMask);
             // Rigidbody.Cast 排除自身；只接受迎面接触，不把脚下地面当成横向墙壁。
-            int count = _body.Cast(Vector2.right * side, filter, _hits, .035f);
-            for (int i = 0; i < count; i++)
-                if (_hits[i].normal.x * side < -.5f) return true;
+            if (HasWallAhead(direction)) return true;
             if (!Grounded) return false;
+
+            float side = Mathf.Sign(WorldDirection(direction));
             EnemyDefinition config = _actor.Definition;
             Vector2 probe = _body.position - Up * (config.BodySize.y * .5f - .1f)
                 + Vector2.right * side * (config.BodySize.x * .5f + .15f);
             return !Physics2D.Raycast(probe, -Up, .45f, SolidMask);
+        }
+
+        /// <summary>
+        /// 只查「正前方有没有**墙**」，**不看脚下有没有地**。
+        /// </summary>
+        /// <remarks>
+        /// 与 <see cref="HasHorizontalObstacle"/> 的区别只有悬崖那一条。被规则**推着走**的时候要用这个：
+        /// 「摩擦 × 反转」把敌人逼着后退时，它必须能**被逼下坑** —— 用带悬崖检测的那个版本，
+        /// 它会在坑边刹住，玩家永远推不进去。
+        /// </remarks>
+        public bool HasWallAhead(float direction)
+        {
+            float side = Mathf.Sign(WorldDirection(direction));
+            var filter = new ContactFilter2D { useTriggers = false };
+            filter.SetLayerMask(SolidMask | BodyBlockMask | _actor.PlayerMask);
+            int count = _body.Cast(Vector2.right * side, filter, _hits, .035f);
+            for (int i = 0; i < count; i++)
+                if (_hits[i].normal.x * side < -.5f) return true;
+            return false;
         }
         public void AddImpulse(Vector2 impulse) => _impulse += impulse / Mathf.Max(0.1f, _body.mass);
         public void Jump(float height)

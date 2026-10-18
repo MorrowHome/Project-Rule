@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using RuleGame.Gameplay.Common;
 using RuleGame.Gameplay.Player;
 using RuleGame.Gameplay.Combat;
 using RuleGame.Core.Rules;
@@ -36,6 +37,40 @@ namespace RuleGame.Gameplay.Enemy
         public Vector2 ArenaX = new Vector2(-12f, 12f);
         [Tooltip("飞行敌人的场地高度范围，身体边缘会留在范围内。")]
         public Vector2 ArenaY = new Vector2(0f, 10f);
+
+        [Header("巡逻（找不到玩家时的日常范围）")]
+        [Tooltip("以**出生点**为圆心的巡逻半径（世界单位）。0 = 用 EnemyDefinition 的 MinionPatrolDistance。\n" +
+                 "⚠️ 填了就会被夹到「可移动范围」之内（MinionLeashRange 与 ArenaX）——\n" +
+                 "**巡逻范围是可移动范围的子集，这是代码保证的**，填大了也不会越界。\n" +
+                 "把它调小，这只小怪平时就只在原地附近晃，不会提前跑去碰远处的机关。")]
+        public float PatrolRange = 0f;
+
+        /// <summary>
+        /// 本实例实际生效的巡逻半径。
+        /// </summary>
+        /// <remarks>
+        /// <para>规则：<b>Inspector 填了用它，没填（0）用 <see cref="EnemyDefinition.MinionPatrolDistance"/></b>
+        /// —— 没填的那条路径**不夹**，保持所有已有小怪的原有行为。</para>
+        /// <para>填了的那种会被夹到可移动范围内：上限 =
+        /// <c>min(MinionLeashRange, 离家到 ArenaX 两端的余量)</c>，
+        /// 余量取 <c>BodySize.x/2 + .15</c>（与 <c>ClampArenaX</c> 同一个值，保证不会顶着边界）。</para>
+        /// </remarks>
+        public float ResolvePatrolRange(Vector2 home)
+        {
+            if (Definition == null) return 0f;
+            if (PatrolRange <= 0f) return Definition.MinionPatrolDistance;
+
+            float margin = Definition.BodySize.x * .5f + .15f;
+            float arenaRoom = Mathf.Min(home.x - (ArenaX.x + margin), (ArenaX.y - margin) - home.x);
+
+            // 家不在 ArenaX 范围内（摆位漏配）时，ArenaX 这条约束不成立 —— 退回只看 leash。
+            // 否则半径会被夹成 0、小怪原地不动，那是沉默的功能丢失，比越界更难查。
+            float room = arenaRoom > 0f
+                ? Mathf.Min(Definition.MinionLeashRange, arenaRoom)
+                : Definition.MinionLeashRange;
+
+            return Mathf.Clamp(PatrolRange, 0f, room);
+        }
         public bool Defeated { get; private set; }
         public float Facing { get; private set; } = -1f;
         public EntityStatus Status { get; private set; }
@@ -101,7 +136,10 @@ namespace RuleGame.Gameplay.Enemy
         {
             if ((Combat == null || Target == null || (_automaticTarget && !HasTarget))
                 && Time.unscaledTime >= _nextBindingAttempt) ResolveSceneBindings();
-            if (Brain == null || TimeManager.Instance?.IsPaused == true || Status.IsPaused) return;
+            // 开关判定放在 Brain 判空之前：没有 Brain 也照样能按按钮。
+            if (TimeManager.Instance?.IsPaused == true) return;
+            PollContactSwitches();
+            if (Brain == null || Status.IsPaused) return;
             float dt = Time.fixedDeltaTime;
             _invulnerability = Mathf.Max(0f, _invulnerability - dt);
             if (!Defeated) Status.RestoreEnergy(Definition.EnergyRegen * dt);
@@ -138,6 +176,72 @@ namespace RuleGame.Gameplay.Enemy
             if (_contactTargets.Count > 0) _contactCooldown = Mathf.Max(0.05f, Definition.ContactInterval);
         }
         private void OnDisable() { Navigation?.Cancel(); Motor?.Stop(); Brain?.OnDisabled(); }
+
+        // ==================================================================
+        //  接触式开关（撞到按钮 / 摇杆就按下去）
+        // ==================================================================
+
+        /// <summary>身体压到「接触式开关」（<c>CityButton</c> 等）时是否把它按下去。默认开。</summary>
+        public bool PressContactSwitches = true;
+
+        /// <summary>身体重叠查询的缓存。</summary>
+        private readonly Collider2D[] _switchProbe = new Collider2D[8];
+
+        /// <summary>此刻压在身下的开关。</summary>
+        private readonly List<IContactSwitch> _overlappingSwitches = new List<IContactSwitch>();
+
+        /// <summary>上一次报过「按下」的开关。</summary>
+        private readonly List<IContactSwitch> _pressedSwitches = new List<IContactSwitch>();
+
+        /// <summary>
+        /// 每物理帧扫一次「身体压到了哪些接触式开关」，按下 / 松开。
+        /// </summary>
+        /// <remarks>
+        /// <para>分工与 <c>StoneBody</c> / <c>GravityBoulder</c> / <c>ThrownKnife</c> 一致：**谁压过来谁报**，
+        /// 开关自己不扫描（见 <see cref="IContactSwitch"/>）。以前敌人身上**一条都没有**，
+        /// 所以它撞按钮永远没反应。</para>
+        /// <para>⚠️ <b>不用 <c>OnTriggerEnter2D</c></b>：敌人是 Kinematic + <c>Rigidbody2D.Slide</c>，
+        /// 实测穿过 Trigger **不产生回调**（<c>OverlapCollider</c> 查得到、层矩阵也没禁，就是不来事件）。
+        /// 与 <c>CitySwitch</c> 的玩家邻近判定 / <c>ImpactButton</c> / <c>SwordInStone</c> 同一个做法：**自己扫**。</para>
+        /// <para>用 <c>Overlap</c> 而不是 <c>OverlapBox</c>：直接复用身体碰撞体的形状，
+        /// 换胶囊 / 多边形都不用改这里。</para>
+        /// </remarks>
+        private void PollContactSwitches()
+        {
+            if (!PressContactSwitches || _bodyCollider == null || !_bodyCollider.enabled) return;
+
+            var filter = new ContactFilter2D { useTriggers = true };
+            int count = _bodyCollider.Overlap(filter, _switchProbe);
+
+            _overlappingSwitches.Clear();
+            for (int i = 0; i < count; i++)
+            {
+                Collider2D col = _switchProbe[i];
+                if (col == null) continue;
+
+                var contactSwitch = col.GetComponentInParent<IContactSwitch>();
+                if (contactSwitch == null) continue;
+                if (_overlappingSwitches.Contains(contactSwitch)) continue;
+
+                _overlappingSwitches.Add(contactSwitch);
+            }
+
+            for (int i = 0; i < _overlappingSwitches.Count; i++)
+            {
+                if (!_pressedSwitches.Contains(_overlappingSwitches[i]))
+                    _overlappingSwitches[i].PressByContact();
+            }
+
+            // 离开的报一次「松开」；单次锁定的开关（CitySwitch.Toggle=false）自己会忽略。
+            for (int i = 0; i < _pressedSwitches.Count; i++)
+            {
+                if (!_overlappingSwitches.Contains(_pressedSwitches[i]))
+                    _pressedSwitches[i].ReleaseByContact();
+            }
+
+            _pressedSwitches.Clear();
+            _pressedSwitches.AddRange(_overlappingSwitches);
+        }
         private void OnDrawGizmosSelected()
         {
             if (UseSpawnRelativeArena)
@@ -145,6 +249,19 @@ namespace RuleGame.Gameplay.Enemy
                 Gizmos.color = new Color(1f, .75f, .15f, .8f);
                 Gizmos.DrawWireCube(ArenaAnchor + ArenaOffset, new Vector3(ArenaSize.x, ArenaSize.y, .1f));
             }
+            // 巡逻段：只在这只小怪**手动设过**半径时画，免得整张图都是绿线。
+            if (PatrolRange > 0f)
+            {
+                float radius = ResolvePatrolRange(ArenaAnchor);
+                Vector3 home = ArenaAnchor;
+                Vector3 left = home + Vector3.left * radius;
+                Vector3 right = home + Vector3.right * radius;
+                Gizmos.color = new Color(.4f, 1f, .55f, .9f);
+                Gizmos.DrawLine(left, right);
+                Gizmos.DrawWireSphere(left, .08f);
+                Gizmos.DrawWireSphere(right, .08f);
+            }
+
             Navigation?.DrawGizmos();
         }
 

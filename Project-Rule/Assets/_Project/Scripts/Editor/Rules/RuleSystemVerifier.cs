@@ -1,13 +1,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 using RuleGame.Core.Rules;
+using RuleGame.Gameplay.Player;
+using RuleGame.Gameplay.Scene.Rules;
 using RuleGame.Infrastructure.Common;
 using RuleGame.Infrastructure.Rules;
 
 namespace RuleGame.Editor.Rules
 {
     /// <summary>
-    /// 规则系统自身契约的验证器：覆盖清理、失败回滚、<c>OnRuleExpired</c> 触发范围。
+    /// 规则系统自身契约的验证器：覆盖清理、失败回滚、<c>OnRuleExpired</c> 触发范围，
+    /// 以及轮盘「同一格位二次释放 = 免费取消」这条路径。
     /// </summary>
     /// <remarks>
     /// <para>它用 <c>RuleSystem.SetRuleForTesting</c> 把质量槽位换成一个**探针规则**，
@@ -59,7 +62,8 @@ namespace RuleGame.Editor.Rules
             RuleDef[] defs = RuleVerifyHarness.MakeDefs(AttributeId.Mass, 10f);
 
             WorldRegistry.Initialize();
-            RuleSystem.Initialize(new RuleVerifyHarness.TestCatalog(defs));
+            var catalog = new RuleVerifyHarness.TestCatalog(defs);
+            RuleSystem.Initialize(catalog);
             RuleSystem sys = RuleSystem.Instance;
             if (sys == null) return "✗ RuleSystem 初始化失败";
 
@@ -208,6 +212,57 @@ namespace RuleGame.Editor.Rules
             h.Check("取消后槽位为空", !sys.Table.IsActive(AttributeId.Mass), SlotText(sys));
 
             Object.DestroyImmediate(energyHost);
+
+            // ==============================================================
+            //  ⑦ 轮盘二次释放 = 取消（RuleSelectionSession）
+            // ==============================================================
+            h.Section("7 轮盘二次释放（取消，且不扣能量）");
+
+            // 只给 Enhance 一个真实价格，才能验证「取消不扣费」不是靠 0 费蒙过去的。
+            foreach (RuleDef d in defs) if (d.Relation == RelationId.Enhance) d.ActivationCost = 25f;
+
+            sys.ClearAll();
+            var wheelHost = new GameObject("WheelSessionProbe");
+            var wheelStatus = wheelHost.AddComponent<RuleGame.Gameplay.Player.EntityStatus>();
+            var session = new RuleSelectionSession(sys, catalog, wheelStatus,
+                RuleGame.Gameplay.Player.AllUnlockedRuleUnlocks.Instance);
+
+            session.Open();
+            h.Check("首次打开处于属性阶段", session.Stage == RuleSelectionStage.Attribute, session.Stage.ToString());
+            h.Check("选中 Mass 进入关系阶段", session.SelectAttribute(AttributeId.Mass), session.Stage.ToString());
+
+            float firstEnergy = wheelStatus.Energy;
+            RuleReleaseResult first = session.Confirm(RelationId.Enhance);
+            h.Check("首次释放成功", first.Succeeded, first.Status.ToString());
+            h.Check("首次释放扣了能量", Mathf.Abs(firstEnergy - 25f - wheelStatus.Energy) < Tol,
+                    $"{firstEnergy} → {wheelStatus.Energy}");
+            h.Check("Mass/Enhance 生效中",
+                    sys.Table.IsActive(AttributeId.Mass, RelationId.Enhance), SlotText(sys));
+            h.Check("生效属性可查询", session.IsAttributeActive(AttributeId.Mass), "false");
+            h.Check("生效关系可查询", session.IsActive(AttributeId.Mass, RelationId.Enhance), "false");
+            h.Check("生效关系不被冷却 / 能量拦下",
+                    session.GetBlockReason(RelationId.Enhance) == RuleReleaseStatus.Success,
+                    session.GetBlockReason(RelationId.Enhance).ToString());
+
+            // 把能量清空：此时任何正常释放都该被拦下，取消仍要放行。
+            wheelStatus.TryConsumeEnergy(wheelStatus.Energy);
+            float cancelEnergy = wheelStatus.Energy;
+            session.Open();
+            session.SelectAttribute(AttributeId.Mass);
+            h.Check("能量为 0 时生效关系仍可点（取消免费）",
+                    session.GetBlockReason(RelationId.Enhance) == RuleReleaseStatus.Success,
+                    session.GetBlockReason(RelationId.Enhance).ToString());
+
+            RuleReleaseResult second = session.Confirm(RelationId.Enhance);
+            h.Check("二次释放成功", second.Succeeded, second.Status.ToString());
+            h.Check("二次释放 = 取消（槽位清空）", !sys.Table.IsActive(AttributeId.Mass), SlotText(sys));
+            h.Check("✅ 取消不消耗能量",
+                    Mathf.Abs(cancelEnergy - wheelStatus.Energy) < Tol,
+                    $"{cancelEnergy} → {wheelStatus.Energy}");
+            h.Check("取消后高亮消失", !session.IsAttributeActive(AttributeId.Mass), "仍有生效规则");
+            h.Check("二次释放后回到关闭状态", session.Stage == RuleSelectionStage.Closed, session.Stage.ToString());
+
+            Object.DestroyImmediate(wheelHost);
 
             RuleSystem.Reset();
             foreach (RuleDef d in defs) Object.DestroyImmediate(d);
