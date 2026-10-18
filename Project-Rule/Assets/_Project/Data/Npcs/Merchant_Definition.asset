@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9e081dd03aba4fe88103b98fd7dd391, type: 3}
+  m_Name: Merchant_Definition
+  m_EditorClassIdentifier: RuleGame.Npcs::RuleGame.Gameplay.Npcs.NpcDefinition
+  Id: Merchant
+  DisplayName: "\u5546\u4EBA"
+  Region: "\u4E2D\u5FC3\u5C0F\u9547"
+  Role: 0
+  IdleSprite: {fileID: 21300000, guid: 93d5566ccd93c482ea748cd0da21d66c, type: 3}
+  TalkSprite: {fileID: 21300000, guid: 29521ebdf5c3b4588a4ca5b9063460ce, type: 3}
+  InteractionRadius: 2
+  RepeatDelay: 1
+  PatrolRadius: 1.5
+  WalkSpeed: 0.65
+  IdleDuration: 2
+  ActionDuration: 0.65
+  MissingAnimations: "\u5634\u90E8\u5F20\u5408\u3001\u9053\u8C22/\u97A0\u8EAC\u52A8\u753B\u672A\u4EA4\u4ED8\u3002"
+  Products:
+  - Id: town_hp_1
+    DisplayName: "Hp+\uFF081\uFF09"
+    Effect: "\u589E\u52A0\u6700\u5927\u8840\u91CF"
+    Price: -1
+  - Id: town_hp_2
+    DisplayName: "Hp+\uFF082\uFF09"
+    Effect: "\u589E\u52A0\u6700\u5927\u8840\u91CF"
+    Price: -1
+  - Id: town_magic_1
+    DisplayName: "Magic+\uFF081\uFF09"
+    Effect: "\u589E\u52A0\u6700\u5927\u6CD5\u529B"
+    Price: -1
+  - Id: town_magic_2
+    DisplayName: "Magic+\uFF082\uFF09"
+    Effect: "\u589E\u52A0\u6700\u5927\u6CD5\u529B"
+    Price: -1

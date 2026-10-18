@@ -1,0 +1,23 @@
+PASS 玩家、共享 Host 与画面 HUD 接线完成
+PASS 出生点在交互范围外
+PASS 真实 D 键驱动现有玩家控制器移动
+PASS 走近后选择最近商人
+PASS Game 画面显示商人交互提示
+PASS 真实 E 键开始商人交谈
+PASS 交谈占用玩家输入令牌
+PASS 交谈期间 D 和跳跃不驱动角色
+PASS 交互触发真实 Yarn 商人台词
+PASS E 第一次推进显示整句
+PASS 读完后在 Game 画面打开商品展示
+PASS 商品展示期间继续占用输入
+PASS E 关闭展示并进入道别
+PASS 实际播放商人道别
+PASS 道别结束恢复玩家输入
+PASS 对话结束后 D 键恢复移动
+PASS 画面勾选能力达标后 E 触发镇长对应分支
+PASS Esc 取消并释放玩家输入
+PASS 其他界面持有输入门禁时 E 不触发 NPC
+PASS 暂停期间 E 不启动交谈
+PASS 走进守卫范围自动交谈，接入同一个玩家门禁
+PASS 禁用交互组件取消阅读并释放门禁
+PASS ALL 22

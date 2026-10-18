@@ -13,6 +13,20 @@ namespace RuleGame.Gameplay.Dialogue
         public DialogueHost Host => _host;
         public string SpeakerId => _speakerId;
 
+        /// <summary>由正式 NPC 配置器绑定共享 Host 和本次状态入口；原有试播入口不变。</summary>
+        public void Configure(DialogueHost host, string speakerId)
+        {
+            _host = host;
+            _speakerId = speakerId;
+        }
+
+        public void Configure(DialogueHost host, string speakerId, float interactionRadius, float repeatDelay)
+        {
+            Configure(host, speakerId);
+            _interactionRadius = Mathf.Max(0.1f, interactionRadius);
+            _repeatDelay = Mathf.Max(0f, repeatDelay);
+        }
+
         /// <summary>P3 在交互键按下时传入角色 Transform；未接入时可保持不调用。</summary>
         public bool TryInteract(Transform actor)
         {
@@ -27,6 +41,14 @@ namespace RuleGame.Gameplay.Dialogue
         {
             if (!isActiveAndEnabled || _host == null || Time.unscaledTime < _nextSpeakAt) return false;
             if (!_host.TrySpeak(_speakerId)) return false;
+            _nextSpeakAt = Time.unscaledTime + _repeatDelay;
+            return true;
+        }
+
+        /// <summary>交易关闭后的同一轮道别不受重复交互冷却阻塞，Host 忙碌与内容校验照常生效。</summary>
+        public bool TryContinueConversation()
+        {
+            if (!isActiveAndEnabled || _host == null || !_host.TrySpeak(_speakerId)) return false;
             _nextSpeakAt = Time.unscaledTime + _repeatDelay;
             return true;
         }

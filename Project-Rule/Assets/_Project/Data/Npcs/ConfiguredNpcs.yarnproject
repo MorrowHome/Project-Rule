@@ -1,0 +1,9 @@
+{
+  "projectFileVersion": 3,
+  "sourceFiles": [
+    "ConfiguredNpcs.yarn"
+  ],
+  "excludeFiles": [],
+  "localisation": {},
+  "baseLanguage": "zh-CN"
+}

@@ -1,0 +1,6 @@
+{
+    "name": "RuleGame.NpcLab",
+    "rootNamespace": "RuleGame.Development.Npcs",
+    "references": ["RuleGame.Npcs", "RuleGame.Gameplay", "RuleGame.Dialogue", "RuleGame.Infrastructure"],
+    "autoReferenced": true
+}

@@ -1,0 +1,181 @@
+// 按 NPC行为逻辑中的概念示例配置；居民为试播短句，正式文案可直接替换。
+
+title: Merchant_Talk
+---
+=> 商人: 世界就交给你了，来看看有什么能帮助你的商品吧。 #line:npc_merchant_talk
+===
+
+title: Merchant_TalkFallback
+---
+商人: 世界就交给你了，来看看有什么能帮助你的商品吧。 #line:npc_merchant_talk_fallback
+===
+
+title: Merchant_Bye
+---
+=> 商人: 祝你好运。 #line:npc_merchant_bye
+===
+
+title: Merchant_ByeFallback
+---
+商人: 祝你好运。 #line:npc_merchant_bye_fallback
+===
+
+title: Mayor_Talk1
+---
+=> 镇长: 孩子，你的能力还不足以挑战魔王，再去四处修炼一下吧。 #line:npc_mayor_talk1
+===
+
+title: Mayor_Talk1Fallback
+---
+镇长: 孩子，你的能力还不足以挑战魔王，再去四处修炼一下吧。 #line:npc_mayor_talk1_fallback
+===
+
+title: Mayor_Talk2
+---
+=> 镇长: 你已经具备打败魔王的能力，去拯救世界吧。 #line:npc_mayor_talk2
+===
+
+title: Mayor_Talk2Fallback
+---
+镇长: 你已经具备打败魔王的能力，去拯救世界吧。 #line:npc_mayor_talk2_fallback
+===
+
+title: GearKeeper_Talk1
+---
+=> 齿轮人: 这个钟表坏了。请先按按钮通电，再把卡住的齿轮拧开。 #line:npc_gearkeeper_talk1
+===
+
+title: GearKeeper_Talk1Fallback
+---
+齿轮人: 这个钟表坏了。请先按按钮通电，再把卡住的齿轮拧开。 #line:npc_gearkeeper_talk1_fallback
+===
+
+title: GearKeeper_Talk2
+---
+=> 齿轮人: 还是无法运作。按钮和齿轮都还需要检查。 #line:npc_gearkeeper_talk2
+===
+
+title: GearKeeper_Talk2Fallback
+---
+齿轮人: 还是无法运作。按钮和齿轮都还需要检查。 #line:npc_gearkeeper_talk2_fallback
+===
+
+title: GearKeeper_Talk3
+---
+=> 齿轮人: 通上电了，可齿轮还是卡着。 #line:npc_gearkeeper_talk3
+===
+
+title: GearKeeper_Talk3Fallback
+---
+齿轮人: 通上电了，可齿轮还是卡着。 #line:npc_gearkeeper_talk3_fallback
+===
+
+title: GearKeeper_Talk4
+---
+=> 齿轮人: 齿轮不卡了，但还是没电。 #line:npc_gearkeeper_talk4
+===
+
+title: GearKeeper_Talk4Fallback
+---
+齿轮人: 齿轮不卡了，但还是没电。 #line:npc_gearkeeper_talk4_fallback
+===
+
+title: GearKeeper_Talk5
+---
+=> 齿轮人: 谢谢你！我来拧动发条。 #line:npc_gearkeeper_talk5
+===
+
+title: GearKeeper_Talk5Fallback
+---
+齿轮人: 谢谢你！我来拧动发条。 #line:npc_gearkeeper_talk5_fallback
+===
+
+title: Guard_Talk1
+---
+=> 守卫: 有入侵者！ #line:npc_guard_talk1
+===
+
+title: Guard_Talk1Fallback
+---
+守卫: 有入侵者！ #line:npc_guard_talk1_fallback
+===
+
+title: Guard_Talk2
+---
+=> 守卫: 有通行证，请进。 #line:npc_guard_talk2
+===
+
+title: Guard_Talk2Fallback
+---
+守卫: 有通行证，请进。 #line:npc_guard_talk2_fallback
+===
+
+title: MysteryMerchant_Talk1
+---
+=> 神秘商人: 你还没有资格买我的好货。先去看看小镇商人的商品吧。 #line:npc_mysterymerchant_talk1
+===
+
+title: MysteryMerchant_Talk1Fallback
+---
+神秘商人: 你还没有资格买我的好货。先去看看小镇商人的商品吧。 #line:npc_mysterymerchant_talk1_fallback
+===
+
+title: MysteryMerchant_Talk2
+---
+=> 神秘商人: 我有一些真正的好东西，但是要花点价钱哦。 #line:npc_mysterymerchant_talk2
+===
+
+title: MysteryMerchant_Talk2Fallback
+---
+神秘商人: 我有一些真正的好东西，但是要花点价钱哦。 #line:npc_mysterymerchant_talk2_fallback
+===
+
+title: MysteryMerchant_Bye
+---
+=> 神秘商人: 我回去睡觉了。 #line:npc_mysterymerchant_bye
+===
+
+title: MysteryMerchant_ByeFallback
+---
+神秘商人: 我回去睡觉了。 #line:npc_mysterymerchant_bye_fallback
+===
+
+title: ResidentA_Talk
+---
+=> 居民A: 今天镇上很安静。 #line:npc_residenta_talk
+===
+
+title: ResidentA_TalkFallback
+---
+居民A: 今天镇上很安静。 #line:npc_residenta_talk_fallback
+===
+
+title: ResidentB_Talk
+---
+=> 居民B: 走累了，就在镇上歇一会儿吧。 #line:npc_residentb_talk
+===
+
+title: ResidentB_TalkFallback
+---
+居民B: 走累了，就在镇上歇一会儿吧。 #line:npc_residentb_talk_fallback
+===
+
+title: ResidentC_Talk
+---
+=> 居民C: 出门前去看看商人的货物吧。 #line:npc_residentc_talk
+===
+
+title: ResidentC_TalkFallback
+---
+居民C: 出门前去看看商人的货物吧。 #line:npc_residentc_talk_fallback
+===
+
+title: ResidentD_Talk
+---
+=> 居民D: 一路小心。 #line:npc_residentd_talk
+===
+
+title: ResidentD_TalkFallback
+---
+居民D: 一路小心。 #line:npc_residentd_talk_fallback
+===

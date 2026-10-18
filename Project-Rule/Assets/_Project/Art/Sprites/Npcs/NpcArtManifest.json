@@ -1,0 +1,199 @@
+{
+  "actors": [
+    {
+      "id": "Merchant",
+      "height": 2.0,
+      "pivot": [
+        0.5,
+        0
+      ],
+      "frames": [
+        {
+          "path": "Assets/_Project/Art/Sprites/Npcs/Merchant_01.png",
+          "source": "Src/NPC（18，5pm完成/商人/商人-1.png",
+          "sha256": "bba52f5be1a015b671e4932a1705601f12bda1012f8f030bf4f1de54bb2c0230",
+          "width": 512,
+          "height": 488,
+          "ppu": 244.0
+        },
+        {
+          "path": "Assets/_Project/Art/Sprites/Npcs/Merchant_02.png",
+          "source": "Src/NPC（18，5pm完成/商人/商人-2.png",
+          "sha256": "313e4f47906381f2153d8d2f6ce3efad485f26eb39b4f8642aa77ce282701468",
+          "width": 512,
+          "height": 488,
+          "ppu": 244.0
+        }
+      ],
+      "note": "静态姿态；两张图可用于交谈切换，不代表完整动作动画"
+    },
+    {
+      "id": "Mayor",
+      "height": 2.0,
+      "pivot": [
+        0.5,
+        0
+      ],
+      "frames": [
+        {
+          "path": "Assets/_Project/Art/Sprites/Npcs/Mayor_01.png",
+          "source": "Src/NPC（18，5pm完成/镇长/镇长.png",
+          "sha256": "09ffa185f5fc4f11c8977f1ac1d312ee27773ac065bf9cf54ca6df74d1d1019e",
+          "width": 512,
+          "height": 469,
+          "ppu": 234.5
+        }
+      ],
+      "note": "静态姿态；两张图可用于交谈切换，不代表完整动作动画"
+    },
+    {
+      "id": "ResidentA",
+      "height": 1.8,
+      "pivot": [
+        0.5,
+        0
+      ],
+      "frames": [
+        {
+          "path": "Assets/_Project/Art/Sprites/Npcs/ResidentA_01.png",
+          "source": "Src/NPC（18，5pm完成/镇民/镇民-1.png",
+          "sha256": "41e786871abb5bc06d13a0c2bc32e364f3d3a7f83b856c23a54177e6022ed116",
+          "width": 350,
+          "height": 512,
+          "ppu": 284.44444444444446
+        }
+      ],
+      "note": "静态姿态；两张图可用于交谈切换，不代表完整动作动画"
+    },
+    {
+      "id": "ResidentB",
+      "height": 1.8,
+      "pivot": [
+        0.5,
+        0
+      ],
+      "frames": [
+        {
+          "path": "Assets/_Project/Art/Sprites/Npcs/ResidentB_01.png",
+          "source": "Src/NPC（18，5pm完成/镇民/镇民-2.png",
+          "sha256": "795d71e4df585e4933a495c4d4152ef9243fb98fe42adc20c0932a883c389829",
+          "width": 350,
+          "height": 512,
+          "ppu": 284.44444444444446
+        }
+      ],
+      "note": "静态姿态；两张图可用于交谈切换，不代表完整动作动画"
+    },
+    {
+      "id": "ResidentC",
+      "height": 1.8,
+      "pivot": [
+        0.5,
+        0
+      ],
+      "frames": [
+        {
+          "path": "Assets/_Project/Art/Sprites/Npcs/ResidentC_01.png",
+          "source": "Src/NPC（18，5pm完成/镇民/镇民-3.png",
+          "sha256": "6482c9fab422b5a1acd20c2acbe89c753839366b25a094b84dc9c06e563f18ac",
+          "width": 350,
+          "height": 512,
+          "ppu": 284.44444444444446
+        }
+      ],
+      "note": "静态姿态；两张图可用于交谈切换，不代表完整动作动画"
+    },
+    {
+      "id": "ResidentD",
+      "height": 1.8,
+      "pivot": [
+        0.5,
+        0
+      ],
+      "frames": [
+        {
+          "path": "Assets/_Project/Art/Sprites/Npcs/ResidentD_01.png",
+          "source": "Src/NPC（18，5pm完成/镇民/镇民-4.png",
+          "sha256": "d465cf12bf0a12c0aa17568c452a751d0d061bdcf723342ce939d00f7416ac4c",
+          "width": 350,
+          "height": 512,
+          "ppu": 284.44444444444446
+        }
+      ],
+      "note": "静态姿态；两张图可用于交谈切换，不代表完整动作动画"
+    },
+    {
+      "id": "GearKeeper",
+      "height": 1.6,
+      "pivot": [
+        0.5,
+        0
+      ],
+      "frames": [
+        {
+          "path": "Assets/_Project/Art/Sprites/Npcs/GearKeeper_01.png",
+          "source": "Src/NPC（18，5pm完成/齿轮人/齿轮人-1.png",
+          "sha256": "97348bb7085d86762bd317721ab13d21b72275542d3ae105d5930ea0b9294d8b",
+          "width": 331,
+          "height": 401,
+          "ppu": 250.625
+        },
+        {
+          "path": "Assets/_Project/Art/Sprites/Npcs/GearKeeper_02.png",
+          "source": "Src/NPC（18，5pm完成/齿轮人/齿轮人-2.png",
+          "sha256": "d5b45459ca9ff6be701eed69fe8614943c17ae88bb0cd0e86e01712aacf8e78e",
+          "width": 331,
+          "height": 401,
+          "ppu": 250.625
+        }
+      ],
+      "note": "静态姿态；两张图可用于交谈切换，不代表完整动作动画"
+    },
+    {
+      "id": "Guard",
+      "height": 2.4,
+      "pivot": [
+        0.5,
+        0
+      ],
+      "frames": [
+        {
+          "path": "Assets/_Project/Art/Sprites/Npcs/Guard_01.png",
+          "source": "Src/NPC（18，5pm完成/士兵/士兵.png",
+          "sha256": "e832a2cafa12a030286f615872336fb87b033017781025e3d90a486e95911f31",
+          "width": 184,
+          "height": 512,
+          "ppu": 213.33333333333334
+        }
+      ],
+      "note": "静态姿态；两张图可用于交谈切换，不代表完整动作动画"
+    },
+    {
+      "id": "MysteryMerchant",
+      "height": 1.5,
+      "pivot": [
+        0.5,
+        0
+      ],
+      "frames": [
+        {
+          "path": "Assets/_Project/Art/Sprites/Npcs/MysteryMerchant_01.png",
+          "source": "Src/NPC（18，5pm完成/神秘商人/神秘商人-1.png",
+          "sha256": "9279da5e96810278ff705b7b248e99039e9e594370fd2ad3565db6fba119ae21",
+          "width": 512,
+          "height": 236,
+          "ppu": 157.33333333333334
+        },
+        {
+          "path": "Assets/_Project/Art/Sprites/Npcs/MysteryMerchant_02.png",
+          "source": "Src/NPC（18，5pm完成/神秘商人/神秘商人-2.png",
+          "sha256": "42b5c2f328209aee2fab37bb9242a4d2cbd02e8c235988db2e6ad930fcaec78d",
+          "width": 512,
+          "height": 236,
+          "ppu": 157.33333333333334
+        }
+      ],
+      "note": "静态姿态；两张图可用于交谈切换，不代表完整动作动画"
+    }
+  ]
+}
