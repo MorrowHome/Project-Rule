@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4502221175975341964}
   - component: {fileID: 6689891912237384207}
   - component: {fileID: 4291043403585637688}
+  - component: {fileID: 8327969779325461075}
   m_Layer: 0
   m_Name: LevelRuntime
   m_TagString: Untagged
@@ -72,6 +73,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.Audio.SfxPlayer
   _bank: {fileID: 11400000, guid: c123a1130ff994289986fe76e0fa1e69, type: 2}
   _volume: 0.85
+  _hearingDistance: 24
+--- !u!114 &8327969779325461075
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 465974810101199962}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49c7addf7841041ada107382a75e72cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.Audio.WorldSfxBinder
 --- !u!1 &701508034279411341
 GameObject:
   m_ObjectHideFlags: 0
@@ -936,7 +950,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
   m_PanelSettings: {fileID: 11400000, guid: 4418da73983a94f2a814990459ceca32, type: 2}
   m_ParentUI: {fileID: 0}
@@ -959,7 +973,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 452b35e8724464234a1bc4ea6879bca4, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: RuleGame.UI::RuleGame.UI.Launch.PlayerVitalsPresenter
   _status: {fileID: 5714247369272765345}
 --- !u!1 &6617420305150054304

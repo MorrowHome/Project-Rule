@@ -1,0 +1,5 @@
+Swishes Sound Pack by artisticdude
+Source: https://opengameart.org/content/swishes-sound-pack
+License: CC0 1.0
+https://creativecommons.org/publicdomain/zero/1.0/
+Prepared variants: mono PCM16 44100Hz, highpass 120Hz, lowpass 10kHz, gain 0.45, 3ms fade-in.

@@ -44,8 +44,8 @@ namespace RuleGame.Editor.Audio
                 SetEntry(entries, SfxCue.WallJump, 0.52f, 1.04f, 1.14f, "Rpg/cloth2", "Rpg/cloth3");
                 SetEntry(entries, SfxCue.Land, 0.5f, 0.96f, 1.04f, "Impact/footstep_wood_000", "Impact/footstep_wood_001");
                 SetEntry(entries, SfxCue.Dash, 0.6f, 0.85f, 0.94f, "Rpg/cloth3");
-                SetEntry(entries, SfxCue.SwordLight, 0.68f, 0.98f, 1.08f, "Rpg/knifeSlice", "Rpg/knifeSlice2");
-                SetEntry(entries, SfxCue.SwordHeavy, 0.78f, 0.72f, 0.8f, "Rpg/knifeSlice2");
+                SetEntry(entries, SfxCue.SwordLight, 0.55f, 0.96f, 1.04f, WorldSfxSetup.LightA, WorldSfxSetup.LightB);
+                SetEntry(entries, SfxCue.SwordHeavy, 0.65f, 0.88f, 0.96f, WorldSfxSetup.HeavyA, WorldSfxSetup.HeavyB);
                 SetEntry(entries, SfxCue.Hurt, 0.75f, 0.95f, 1.02f, "Impact/impactPunch_medium_000");
                 SetEntry(entries, SfxCue.WheelOpen, 0.45f, 1f, 1f, "Interface/open_001");
                 SetEntry(entries, SfxCue.WheelPreview, 0.26f, 1f, 1f, "Interface/select_001");
@@ -99,7 +99,7 @@ namespace RuleGame.Editor.Audio
             references.arraySize = clips.Length;
             for (int i = 0; i < clips.Length; i++)
             {
-                AudioClip clip = AssetDatabase.LoadAssetAtPath<AudioClip>(AudioFolder + clips[i] + ".ogg");
+                AudioClip clip = AssetDatabase.LoadAssetAtPath<AudioClip>(clips[i].StartsWith("Assets/") ? clips[i] : AudioFolder + clips[i] + ".ogg");
                 if (clip == null) throw new InvalidOperationException("缺少音效：" + clips[i]);
                 references.GetArrayElementAtIndex(i).objectReferenceValue = clip;
             }

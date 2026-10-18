@@ -4,6 +4,9 @@ namespace RuleGame.Presentation.Audio
     public enum SfxCue
     {
         Jump, AirJump, WallJump, Land, Dash, SwordLight, SwordHeavy, Hurt,
-        WheelOpen, WheelPreview, WheelConfirm, WheelCancel, WheelBack, WheelError
+        WheelOpen, WheelPreview, WheelConfirm, WheelCancel, WheelBack, WheelError,
+        EnemyMelee, EnemyShot, EnemyBeam, EnemyHitWood, EnemyHitMetal, EnemyHitSoft,
+        EnemyDeathWood, EnemyDeathMetal, EnemyDeathSoft, SwitchOn, SwitchOff,
+        ImpactStone, ImpactMetal, ImpactWood, BreakStone, BreakWood, Explosion
     }
 }

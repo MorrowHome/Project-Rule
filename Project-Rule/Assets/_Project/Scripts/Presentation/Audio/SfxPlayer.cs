@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using RuleGame.Infrastructure.Snapshot;
 using RuleGame.Infrastructure.Time;
 using UnityEngine;
@@ -11,6 +12,14 @@ namespace RuleGame.Presentation.Audio
     {
         [SerializeField] private SfxBank _bank;
         [Range(0f, 1f)] [SerializeField] private float _volume = 0.85f;
+        [SerializeField, Min(1f)] private float _hearingDistance = 24f;
+        public static SfxPlayer Active { get; private set; }
+        private Transform _listener;
+        private readonly Dictionary<(SfxCue, EntityId), float> _sourceIntervals = new Dictionary<(SfxCue, EntityId), float>();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetSession() => Active = null;
+
         private const int WorldVoices = 6;
         private const int InterfaceVoices = 3;
         private readonly Voice[] _voices = new Voice[WorldVoices + InterfaceVoices];
@@ -36,6 +45,10 @@ namespace RuleGame.Presentation.Audio
 
         private void OnEnable()
         {
+            if (Active != null && Active != this) { enabled = false; return; }
+            Active = this;
+            AudioListener listener = GetComponentInChildren<AudioListener>(true);
+            _listener = listener != null ? listener.transform : null;
             _pool = new GameObject("PlayerWheel_SfxVoices");
             _pool.transform.SetParent(transform, false);
             for (int i = 0; i < _voices.Length; i++)
@@ -46,6 +59,7 @@ namespace RuleGame.Presentation.Audio
                 source.ignoreListenerPause = i >= WorldVoices;
                 _voices[i] = new Voice { Source = source };
             }
+            _sourceIntervals.Clear();
             Array.Clear(_nextAllowed, 0, _nextAllowed.Length);
             for (int i = 0; i < _lastVariant.Length; i++) _lastVariant[i] = -1;
             _paused = false;
@@ -69,7 +83,25 @@ namespace RuleGame.Presentation.Audio
             if (_snapshots != null) _snapshots.OnRestored += ClearWorld;
         }
 
-        public bool Play(SfxCue cue)
+        public bool Play(SfxCue cue) => PlayInternal(cue, EntityId.None, 1f, 0f);
+
+        /// <summary>2D 世界声音按监听位置衰减；每个发声物体独立限频，不占用 UI 通道。</summary>
+        public bool PlayAt(SfxCue cue, Vector3 position, Component source)
+        {
+            if (_listener == null)
+            {
+                AudioListener listener = FindAnyObjectByType<AudioListener>();
+                if (listener == null) return false;
+                _listener = listener.transform;
+            }
+            Vector2 offset = position - _listener.position;
+            float gain = Mathf.Clamp01(1f - Mathf.Max(0f, offset.magnitude - 3f) / Mathf.Max(1f, _hearingDistance - 3f));
+            if (gain <= 0f) return false;
+            return PlayInternal(cue, source != null ? source.GetEntityId() : EntityId.None, gain * gain,
+                Mathf.Clamp(offset.x / 18f, -0.65f, 0.65f));
+        }
+
+        private bool PlayInternal(SfxCue cue, EntityId emitter, float gain, float pan)
         {
             if (!isActiveAndEnabled || _pool == null || _bank == null) return false;
             BindServices();
@@ -79,7 +111,9 @@ namespace RuleGame.Presentation.Audio
             int key = (int)cue;
             if (entry == null || entry.Clips == null || entry.Clips.Length == 0
                 || key < 0 || key >= _nextAllowed.Length || entry.Volume <= 0f || _volume <= 0f
-                || Time.unscaledTime < _nextAllowed[key]) return false;
+                || (emitter == EntityId.None && Time.unscaledTime < _nextAllowed[key])) return false;
+            if (emitter != EntityId.None && _sourceIntervals.TryGetValue((cue, emitter), out float next)
+                && Time.unscaledTime < next) return false;
 
             int start = ui ? WorldVoices : 0;
             int end = ui ? _voices.Length : WorldVoices;
@@ -109,13 +143,21 @@ namespace RuleGame.Presentation.Audio
             slot.Paused = false;
             slot.Started = Time.unscaledTime;
             slot.Source.clip = clip;
-            slot.Source.volume = Mathf.Clamp01(entry.Volume * _volume);
+            slot.Source.volume = Mathf.Clamp01(entry.Volume * _volume * gain);
             slot.Source.pitch = Mathf.Lerp(Mathf.Clamp(entry.Pitch.x, 0.1f, 3f),
                 Mathf.Clamp(Mathf.Max(entry.Pitch.x, entry.Pitch.y), 0.1f, 3f), (float)_random.NextDouble());
             slot.Source.priority = entry.Priority;
+            slot.Source.panStereo = pan;
             slot.Source.Play();
             _lastVariant[key] = variant;
-            _nextAllowed[key] = Time.unscaledTime + Mathf.Max(0f, entry.MinInterval);
+            float allowed = Time.unscaledTime + Mathf.Max(0f, entry.MinInterval);
+            if (emitter == EntityId.None) _nextAllowed[key] = allowed;
+            else
+            {
+                // 不保留实体引用；无限生成的投射物也不会让限频表无限增长。
+                if (_sourceIntervals.Count >= 256) _sourceIntervals.Clear();
+                _sourceIntervals[(cue, emitter)] = allowed;
+            }
             OnPlayed?.Invoke(cue);
             return true;
         }
@@ -143,6 +185,7 @@ namespace RuleGame.Presentation.Audio
         public void ClearWorld()
         {
             if (_pool == null) return;
+            _sourceIntervals.Clear();
             for (int i = 0; i < WorldVoices; i++)
             {
                 _voices[i].Source.Stop();
@@ -155,6 +198,7 @@ namespace RuleGame.Presentation.Audio
 
         private void OnDisable()
         {
+            if (Active == this) Active = null;
             if (_time != null) _time.OnPausedChanged -= SetPaused;
             if (_snapshots != null) _snapshots.OnRestored -= ClearWorld;
             _time = null; _snapshots = null;
