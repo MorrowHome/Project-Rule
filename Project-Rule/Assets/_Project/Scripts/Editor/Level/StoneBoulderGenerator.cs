@@ -22,7 +22,15 @@ namespace RuleGame.Editor.Level
         /// <summary>一块**方的**石头（320px 贴图，带倒角 / 描边 / 裂纹）。</summary>
         private const string SpritePath = "Assets/_Project/Art/Sprites/Stone/StoneSquare.png";
         private const string WhiteboxPath = "Assets/_Project/Art/Sprites/P4WhiteboxSquare.png";
-        private const string MaterialPath = "Assets/_Project/Data/Physics/CrateMaterial2D.asset";
+        /// <summary>
+        /// 石头**专用**物理材质：摩擦 0.5，**Combine = Minimum**。
+        /// </summary>
+        /// <remarks>
+        /// ⚠️ 不能用木箱那块（`CrateMaterial2D`，Combine = Mean）：与地面（没材质，默认 0.4）取平均，
+        /// 会把「摩擦 × 削弱」砍掉一半 —— 0.15 变成 0.275，静摩擦 81 N 还是超过玩家的 60 N，**推不动**。
+        /// Minimum = 谁的摩擦小听谁的：石头自己的倍率改多少，接触面就用多少。
+        /// </remarks>
+        private const string MaterialPath = "Assets/_Project/Data/Physics/StoneMaterial2D.asset";
 
         /// <summary>石头必须落这个层：玩家的 Slide 与接地探测只认它。</summary>
         private const string SolidLayerName = "Ground";
@@ -54,7 +62,7 @@ namespace RuleGame.Editor.Level
 
             Debug.Log($"[地图组件] 已生成预制体 {PrefabPath}：{Size.x} × {Size.y} / {Mass} kg，碰到 CityButton 会自动按下。\n" +
                       "· 用法：拖进场景，Play 后自己落到地面；「重力 × 反转」会把它举起来\n" +
-                      "· 推不动？故意的：正常摩擦下要 147 N，玩家只有 60 N；「摩擦 × 削弱」把它压到 44 N 就推得动了\n" +
+                      "· 推不动？故意的：正常摩擦（μ0.4）要 118 N，玩家只有 60 N；「摩擦 × 削弱」（μ0.15）压到 44 N 就推得动了\n" +
                       "· 想让它按开关：把 CityButton 摆在它会碰到的地方即可（按钮是 Trigger，不用改任何设置）\n" +
                       "· 想要「会碎 + 露剑」的机关：用菜单 ⑫ 巨石断剑，不是这个");
         }
@@ -125,6 +133,11 @@ namespace RuleGame.Editor.Level
             box.offset = Vector2.zero;
 
             PhysicsMaterial2D material = AssetDatabase.LoadAssetAtPath<PhysicsMaterial2D>(MaterialPath);
+            if (material == null)
+            {
+                Debug.LogWarning("[地图组件] 找不到 " + MaterialPath + "（摩擦 Combine=Minimum），" +
+                                 "退回木箱材质 —— 「摩擦 × 削弱」可能推不动这块石头。");
+            }
             if (material != null) box.sharedMaterial = material;   // 也是 RuleAffectedBody 的摩擦克隆来源
 
             var body = root.AddComponent<Rigidbody2D>();

@@ -609,8 +609,7 @@ namespace RuleGame.Editor.Level
             Sprite[] blocks = regionKit != null && regionKit.IsUsable ? regionKit.Blocks : kit.WallBlocks.ToArray();
             if (blocks.Length > 0)
             {
-                return DressBlocks(artRoot, face, run, grid, cell, blocks,
-                                   regionKit != null ? regionKit.VariantSeed : 0);
+                return DressBlocks(artRoot, face, run, grid, cell, blocks, regionKit);
             }
 
             bool vertical = face == Face.Left || face == Face.Right;
@@ -706,12 +705,21 @@ namespace RuleGame.Editor.Level
         /// 旋转后贴图从锚点向另一侧伸展，所以锚点要放在格子对应的对角。
         /// </remarks>
         private static int DressBlocks(Transform artRoot, Face face, List<Vector3Int> run,
-                                       GridLayout grid, Vector3 cell, Sprite[] blocks, int variantSeed)
+                                       GridLayout grid, Vector3 cell, Sprite[] blocks, TileRegionKit regionKit)
         {
+            // 链式套件（积木王国）：沿「本段的方向」逐格递增，相邻两格拼起来颜色才连续。
+            // 普通套件（石头）：按坐标哈希，一块块独立，不会撞出规律。
+            bool chain = regionKit != null && regionKit.ChainVariants && regionKit.IsUsable;
+            bool vertical = face == Face.Left || face == Face.Right;
+
             int count = 0;
             foreach (var c in run)
             {
-                var sprite = blocks[VariantIndex(c, blocks.Length, variantSeed)];
+                int variant = chain
+                    ? regionKit.VariantIndex(c, vertical)
+                    : VariantIndex(c, blocks.Length, regionKit != null ? regionKit.VariantSeed : 0);
+
+                var sprite = blocks[variant % blocks.Length];
                 Vector3 origin = grid.CellToWorld(c);
 
                 // 旋转后贴图从锚点伸出的方向不同，锚点放在「对角」才能盖住这一格。
@@ -813,6 +821,19 @@ namespace RuleGame.Editor.Level
             // 少了渲染器冰面就是隐形的 —— 所以这里显式补齐，老的层也能被修好。
             var map = go.GetComponent<Tilemap>() ?? go.AddComponent<Tilemap>();
 
+            // ⚠️ 冰面层必须和**逻辑层同层**（Ground 8）：玩家的位移解算（Rigidbody2D.Slide）
+            // 和接地探测都只扫这个层。层不对 → 冰面「看得见、踩空」，而且 Console 一句错都不报。
+            // 这里同时修老数据：早先新建冰面层时没设层，一直留在 Default(0)。
+            int wanted = logic.gameObject.layer;
+            if (go.layer != wanted)
+            {
+                int old = go.layer;
+                go.layer = wanted;
+                EditorUtility.SetDirty(go);
+                Debug.Log($"[铺装] 冰面层层级修正：{LayerMask.LayerToName(old)} → " +
+                          $"{LayerMask.LayerToName(wanted)}（原来那一层玩家扫不到，冰面会踩空）");
+            }
+
             var renderer = go.GetComponent<TilemapRenderer>();
             if (renderer == null) renderer = go.AddComponent<TilemapRenderer>();
             var logicRenderer = logic.GetComponent<TilemapRenderer>();
@@ -822,6 +843,14 @@ namespace RuleGame.Editor.Level
 
             var collider = go.GetComponent<TilemapCollider2D>();
             if (collider == null) collider = go.AddComponent<TilemapCollider2D>();
+
+            // 编辑器里没有帧循环，TilemapCollider2D 不会自己重建形状 ——
+            // 「形状没建好」和「层不对」的症状都是踩空，两个都主动兜一遍。
+            if (!Application.isPlaying)
+            {
+                collider.enabled = false;
+                collider.enabled = true;
+            }
 
             var material = AssetDatabase.LoadAssetAtPath<PhysicsMaterial2D>(IceMaterialPath);
             if (material != null)

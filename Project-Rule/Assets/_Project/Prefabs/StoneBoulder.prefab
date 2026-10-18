@@ -47,7 +47,7 @@ BoxCollider2D:
   m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
-  m_Material: {fileID: 6200000, guid: db9cd7c472ea4c8cb1e041dcffe563d2, type: 2}
+  m_Material: {fileID: 6200000, guid: b741147d6a9aba44c9e1c2ec9a454e44, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -138,6 +138,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Scene.StoneBody
   _pressSwitches: 1
+  _logPushes: 0
 --- !u!114 &6563932942982571173
 MonoBehaviour:
   m_ObjectHideFlags: 0

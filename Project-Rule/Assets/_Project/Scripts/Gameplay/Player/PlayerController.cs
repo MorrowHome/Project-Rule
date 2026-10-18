@@ -254,8 +254,8 @@ namespace RuleGame.Gameplay.Player
         [Tooltip("飞刀初速度（米/秒）。与重力合起来决定射程与弧线。")]
         [SerializeField] private float _knifeSpeed = 16f;
 
-        [Tooltip("飞刀的**基础伤害**（会过 DamageProcessor 的伤害 / 因果规则，别在这里先换算）。")]
-        [SerializeField] private float _knifeDamage = 4f;
+        // 飞刀的伤害不在这里配：按策划 5.2 公式由 ThrownKnife 用「质量 × 速度档位」现算
+        // （D_raw = 5 × 质量 × 速度档位），全局倍率由伤害规则乘、减防在承受方。
 
         [Tooltip("飞刀的击退数值。")]
         [SerializeField] private float _knifeKnockback = 4f;
@@ -396,8 +396,14 @@ namespace RuleGame.Gameplay.Player
         //  职能类
         // ==================================================================
 
-        /// <summary>跳穿平台的「按下」闩锁：用掉一次要等松开才复位。见 <see cref="TryConsumeDropPress"/>。</summary>
-        private bool _dropArmed = true;
+        /// <summary>是否有未被取走的「下钻」请求（下 + 跳）。见 <see cref="ConsumeDropRequest"/>。</summary>
+        private bool _dropRequested;
+
+        /// <summary>初始化是否已经完整跑过一次（见 <see cref="EnsureInit"/>）。</summary>
+        private bool _initialized;
+
+        /// <summary>请求的产生时刻：超过 0.12 秒还没人取走就丢弃。</summary>
+        private float _dropRequestTime;
 
         private PlayerInput   _input;
         private ContactSensor _contacts;
@@ -457,31 +463,56 @@ namespace RuleGame.Gameplay.Player
         //  生命周期
         // ==================================================================
 
-        private void Awake()
-        {
-            if (_status == null) _status = GetComponent<EntityStatus>();
+        private void Awake() => EnsureInit("Awake");
 
-            _body = GetComponent<Rigidbody2D>();
-            _damageable = GetComponent<EntityDamageable>();
+        /// <summary>
+        /// **幂等**初始化：先把所有子系统补齐，缺哪个建哪个。
+        /// </summary>
+        /// <remarks>
+        /// <para>⚠️ 为什么要幂等：<c>Awake</c> 有可能**半路没跑完**（流式加载 / 场景切换把我们打断，
+        /// 或者组件是运行时才加的）。那时 <c>_body</c> 已经赋值、<c>_input</c> 还是 null，
+        /// 结果就是「这个玩家什么都不响应」+ 每帧 <c>NullReferenceException</c>（实测踩到过）。</para>
+        /// <para>补齐之后会打一条 warning，方便看出「当初 Awake 确实没跑完」。</para>
+        /// </remarks>
+        private bool EnsureInit(string where)
+        {
+            if (_initialized && _input != null) return true;
+
+            if (_status == null) _status = GetComponent<EntityStatus>();
+            if (_body == null) _body = GetComponent<Rigidbody2D>();
+            if (_damageable == null) _damageable = GetComponent<EntityDamageable>();
+
             var bodyCollider = GetComponent<Collider2D>();
 
-            _input    = new PlayerInput(_inputActions);
-            _contacts = new ContactSensor(_body, bodyCollider);
-            _jump     = new JumpSolver();
-            _dash     = new DashSolver();
-            _attack   = new AttackSolver();
-            _heavy    = new HeavyAttackSolver();
-            _mover    = new MotionMover(_body);          // 刚体的 Kinematic 配置在这里面
-            _wind     = new WindSensor(_body, bodyCollider);
-            _push     = new PushSensor(_body);
+            if (_input == null) _input = new PlayerInput(_inputActions);
+            if (_input == null) return false;
+
+            _contacts ??= new ContactSensor(_body, bodyCollider);
+            _jump     ??= new JumpSolver();
+            _dash     ??= new DashSolver();
+            _attack   ??= new AttackSolver();
+            _heavy    ??= new HeavyAttackSolver();
+            _mover    ??= new MotionMover(_body);          // 刚体的 Kinematic 配置在这里面
+            _wind     ??= new WindSensor(_body, bodyCollider);
+            _push     ??= new PushSensor(_body);
 
             _dash.Reset(BuildTuning());                 // 起手就有冲刺，不必先落地一次
+            _initialized = true;
 
             if (!_input.IsReady)
                 Debug.LogWarning("[PlayerController] 未找到输入动作，请把 InputSystem_Actions 拖到 _inputActions。", this);
+
+            if (where != "Awake")
+                Debug.LogWarning($"[PlayerController] 初始化没跑完，已在 {where} 补全（输入层 {(_input.IsReady ? "ok" : "缺动作")}）。", this);
+
+            return true;
         }
 
-        private void OnEnable()  => _input?.Enable();
+        private void OnEnable()
+        {
+            EnsureInit("OnEnable");     // 组件被重新启用时补齐（Awake 可能根本没跑过）
+            _input?.Enable();
+        }
 
         private void OnDisable() => _input?.Disable();
 
@@ -539,6 +570,11 @@ namespace RuleGame.Gameplay.Player
 
         private void FixedUpdate()
         {
+            // 初始化没跑完就先补全（Awake 可能被流式加载打断过）：补不上才跳过这一帧。
+            // ⚠️ 不挡的话 _input.Sample() 每帧抛 NRE，FixedUpdate 后面的代码全都不执行 ——
+            //    表现就是「这个玩家什么都不响应」。
+            if (!EnsureInit(nameof(FixedUpdate))) return;
+
             // 暂停：速度清零、整帧不跑。冲刺计时与连段计时因此天然冻结
             //（文档 §5）—— 不需要额外的暂停分支。
             if (IsPaused)
@@ -604,6 +640,46 @@ namespace RuleGame.Gameplay.Player
             // ③‴ 投掷（飞刀原型）：冷却按物理帧推进，飞行与命中归 ThrownKnife 自己。
             _knifeCooldownLeft = Mathf.Max(0f, _knifeCooldownLeft - dt);
             if (input.ThrowPressed) ThrowKnife();
+
+            // 「下 + 跳」= **下钻**，不是跳：跳键这一帧被吃掉，转成一次性请求交给脚下的跳穿平台。
+            // 必须在 JumpSolver.Solve 之前改掉 input，否则人会先起跳、再谈穿不穿过去。
+            //
+            // ⚠️ 这里**不再**检查「有没有站稳」（Grounded / 竖直速度）：
+            //    那两个判据在整格的单向平台上会漏判（实测过），一漏就是「按了完全没反应」。
+            //    改成只看「脚底下有没有跳穿平台」—— 有就吃掉跳键，具体放不放行由平台自己判。
+            float speedUp = Vector2.Dot(_mover.Velocity, contact.Up);
+            // 「往下按」两种都认：相对重力的下（正常重力 = 屏幕下）、以及世界坐标 y 为负。
+            // 重力反转 / Up 解析异常时至少还有一条能命中（只在脚下有跳穿平台时才会真正生效）。
+            bool downHeld = Vector2.Dot(input.Move, -contact.Up) > 0.5f || input.Move.y < -0.5f;
+            bool onOneWay = input.JumpPressed && downHeld && HasOneWayUnder(contact);
+
+#if UNITY_EDITOR
+            // 只要按了跳键就报一次：能区分「S 没被读到」和「脚下没有平台」这两种情况。
+            if (input.JumpPressed)
+            {
+                Debug.LogWarning($"[下钻] 跳键：downHeld={downHeld} onOneWay={onOneWay} " +
+                                 $"move={input.Move} up={contact.Up} grounded={contact.Grounded} " +
+                                 $"speedUp={speedUp:0.00} held={MovementHeld}");
+            }
+#endif
+
+            if (onOneWay)
+            {
+                // 请求**留到被取走或超时**：平台脚本与玩家的执行顺序不确定，
+                // 只在这一帧置位的话，下一帧被重算成 false，平台可能永远看不到它。
+                _dropRequested = true;
+                _dropRequestTime = UnityEngine.Time.time;
+            }
+            else if (_dropRequested && UnityEngine.Time.time - _dropRequestTime > 0.12f)
+            {
+                _dropRequested = false;      // 没人取走就作废，别在两层之后突然生效
+            }
+
+            if (input.JumpPressed && _dropRequested)
+            {
+                input = new PlayerInput.State(input.Move, false, input.JumpReleased, input.DashPressed,
+                                              input.AttackPressed, input.RewindPressed, input.ThrowPressed);
+            }
 
             // ②⑦⑧ 跳跃：跳数与土狼时间一直推进；冲刺期间只推进计数、不消费输入。
             JumpSolver.Decision jump = _jump.Solve(tuning, input, contact, dash.Dashing, dt);
@@ -688,41 +764,45 @@ namespace RuleGame.Gameplay.Player
         /// 这里自动是 −1 —— 表现层不需要自己判断方向。</remarks>
         public float Facing => _mover != null ? _mover.Facing : 1f;
 
+        /// <summary>输入层是否已经初始化好（_input 非空）。给场景组件筛掉空壳实例用。</summary>
+        public bool IsInputReady => _input != null;
+
         /// <summary>本帧读到的**原始**移动输入（未经摩擦反转换算）。供调试浮层显示。</summary>
         public Vector2 MoveInput => _input != null ? _input.Move : Vector2.zero;
 
         /// <summary>
-        /// 「朝重力方向按住」的一次性意图：**每按一次只能用一次**，松开才复位。
+        /// 本帧的「下钻」请求：**按住下 + 按跳**。跳键被吃掉（不会真的跳），
+        /// 由脚下的跳穿平台取走。
         /// </summary>
         /// <remarks>
-        /// <para>跳穿平台用它判断玩家是不是**刚按下** S / ↓。不能用「按住」的保持值 ——
-        /// 否则从上层平台掉下来、落在中层平台上的那一帧方向键还按着，中层会立刻放行，
-        /// 表现就是「穿过一层、停在第三层」。而且这个闩锁存在**玩家身上**，
-        /// 不依赖平台脚本的执行顺序（每块平台各自记「上一帧有没有按」在落地那一帧会误判）。</para>
+        /// <para><b>为什么是「下 + 跳」而不是单独按 S</b>：S 是移动方向的一部分，
+        /// 单独按它「跳下去」既误触又难区分「按住下走路」；加了跳键就变成一个明确的组合意图。
+        /// 而且这一帧跳键被吃掉，不会出现「先起跳、再穿过去」。</para>
         ///
-        /// <para>方向按**重力**算（正常重力 = 下）。手动旋转的单向平台也认这个键：
-        /// 想让它从相反方向钻，请改平台自身的实心面，而不是换按键。</para>
+        /// <para>取走即清零，一次组合只放行一次 —— 从上层掉到中层时那个按键已经用过了，
+        /// 中层不会跟着放行（否则会穿过一层、停在第三层）。</para>
         /// </remarks>
-        public bool DropPressHeld => Vector2.Dot(MoveInput, DownDirection) > 0.5f;
+        /// <summary>脚底那一小块区域里有没有跳穿平台（用来决定「下 + 跳」要不要吃掉跳键）。</summary>
+        /// <remarks>
+        /// <para>⚠️ 用**重叠盒**而不是 <c>Collider2D.Cast</c>：人站在平台上时两者是**互相压着**的，
+        /// 形状扫描对「起始就重叠」的碰撞体不一定报命中 —— 表现就是「狂按空格偶尔才生效」（实测）。</para>
+        /// <para>盒子挂在脚底往下压一点、宽只有 0.24，所以只会命中脚下正中间那块，不会误判隔壁格。</para>
+        /// </remarks>
+        private bool HasOneWayUnder(ContactSensor.State contact) =>
+            RuleGame.Gameplay.Scene.OneWayPlatform.AnyClaims(this);
+
+        public bool ConsumeDropRequest()
+        {
+            if (!_dropRequested) return false;
+
+            _dropRequested = false;
+            return true;
+        }
 
         /// <summary>「下」= 重力方向（零重力时按世界下方算）。</summary>
         public static Vector2 DownDirection => Physics2D.gravity.sqrMagnitude > 0.0001f
             ? Physics2D.gravity.normalized
             : Vector2.down;
-
-        public bool TryConsumeDropPress()
-        {
-            if (!DropPressHeld)
-            {
-                _dropArmed = true;      // 松开 → 下次按下重新武装
-                return false;
-            }
-
-            if (!_dropArmed) return false;
-
-            _dropArmed = false;
-            return true;
-        }
 
         /// <summary>
         /// 左侧是否贴着竖墙（**全高**探测；供调试浮层显示）。只用于顶墙分量预夹。
@@ -991,7 +1071,7 @@ namespace RuleGame.Gameplay.Player
 
             Vector2 origin = (Vector2)transform.position + new Vector2(_mover.Facing * _knifeOffset, _knifeHeight);
             ThrownKnife knife = Instantiate(_knifePrefab, origin, Quaternion.identity);
-            knife.Launch(this, _combat, new Vector2(_mover.Facing, 0f), _knifeSpeed, _knifeDamage, _knifeKnockback);
+            knife.Launch(this, _combat, new Vector2(_mover.Facing, 0f), _knifeSpeed, _knifeKnockback);
         }
 
         /// <summary>攻击判定体 + 贴墙探针：调参时直接看得到范围与朝向。</summary>

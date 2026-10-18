@@ -7,8 +7,8 @@ namespace RuleGame.Gameplay.Scene
     /// 跳穿平台（单向）：只能从**实心面**落地，从背面可以直接穿过去。
     /// </summary>
     /// <remarks>
-    /// <para><b>主动跳穿</b>：站在实心面上朝背面按方向键（正常重力下就是 <b>S / ↓</b>）就放行一小段时间，
-    /// 玩家自己钻下去。方向是相对**实心面**算的，所以重力翻转后「往下钻」的键会自然变成 ↑。</para>
+    /// <para><b>主动跳穿</b>：站在实心面上**同时按住下 + 按跳**（正常重力下 = S + 空格）就放行一小段时间，
+    /// 玩家自己钻下去。跳键这一帧被玩家吃掉，不会先起跳。重力翻转后「下」跟着翻，组合键不变。</para>
     ///
     /// <para><b>可翻转 / 可旋转</b>：实心面默认取「重力反方向」（<c>_followGravity</c>）——
     /// 重力规则一翻，玩家从下方掉上来也能落地。关掉它就用物体的 <c>up</c> 当实心面，
@@ -41,11 +41,15 @@ namespace RuleGame.Gameplay.Scene
         [SerializeField] private float _searchInterval = 0.5f;
 
         [Header("主动跳穿")]
-        [Tooltip("站在实心面上朝背面按方向键（正常重力下 = S / ↓）就放行")]
+        [Tooltip("站在实心面上「按住下 + 按跳」（正常重力下 = S + 空格）就放行")]
         [SerializeField] private bool _dropOnDown = true;
 
         [Tooltip("放行时长（秒）：这段时间对玩家不实心，够他穿过去")]
         [SerializeField] private float _dropDuration = 0.35f;
+
+        [Header("重物（拼装件）")]
+        [Tooltip("勾上后：Dynamic 的拼装件从背面过来会被放行（能穿上来），从实心面过来照常落地。取消勾选 = 对重物是实心墙。")]
+        [SerializeField] private bool _passFitBlocks = true;
 
         private BoxCollider2D _collider;
         private PlayerController _player;
@@ -54,8 +58,12 @@ namespace RuleGame.Gameplay.Scene
         private bool _solid = true;
         private bool _visualFlipped;
 
-        /// <summary>诊断日志的节流时间（静态：所有平台共用一个，避免刷屏）。</summary>
-        private static float _nextDiag;
+        /// <summary>此刻被本平台放行的件（已经关掉碰撞的那几个）。</summary>
+        private readonly System.Collections.Generic.HashSet<Collider2D> _passingBlocks =
+            new System.Collections.Generic.HashSet<Collider2D>();
+
+        /// <summary>实心面上方有件压着 —— 这时平台对谁都必须是实心的，否则件会掉下去。</summary>
+        private bool _blockAbove;
 
         /// <summary>此刻对玩家是否实心。</summary>
         public bool IsSolid => _solid;
@@ -83,6 +91,56 @@ namespace RuleGame.Gameplay.Scene
             }
         }
 
+        /// <summary>场上所有跳穿平台（运行时注册；玩家按「下+跳」时用来问「有没有平台认定我在上面」）。</summary>
+        private static readonly System.Collections.Generic.List<OneWayPlatform> s_all
+            = new System.Collections.Generic.List<OneWayPlatform>();
+
+        private void OnEnable()
+        {
+            if (!s_all.Contains(this)) s_all.Add(this);
+        }
+
+        private void OnDisable()
+        {
+            s_all.Remove(this);
+        }
+
+        /// <summary>有没有任意一块跳穿平台认定「玩家站在我上面」。给玩家判断要不要吃掉跳键用。</summary>
+        public static bool AnyClaims(PlayerController player)
+        {
+            for (int i = 0; i < s_all.Count; i++)
+            {
+                var p = s_all[i];
+                if (p != null && p.isActiveAndEnabled && p.Claims(player)) return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 玩家是不是站在我上面（**纯几何**，不做物理查询）。
+        /// </summary>
+        /// <remarks>
+        /// <para>为什么不用射线 / 形状扫描：人站在平台上时两者互相压着，
+        /// 形状扫描对「起始就重叠」的碰撞体不一定报命中 —— 那正是「狂按空格偶尔才生效」的原因。</para>
+        /// <para>判据 = 玩家中心在实心面这一侧，且距离不超过「平台半厚 + 玩家半身高 + 一点余量」。
+        /// 余量不能太大：上下叠放的平台，下面那块必须被排除。</para>
+        /// </remarks>
+        public bool Claims(PlayerController player)
+        {
+            if (player == null || _collider == null) return false;
+
+            Vector2 normal = SolidNormal;
+
+            // 碰撞体刚建好、还没被物理同步过时 bounds 可能是 0 —— 退回 transform 原点，别拿世界原点算距离。
+            Vector2 center = _collider.bounds.extents.sqrMagnitude > 0.000001f
+                ? (Vector2)_collider.bounds.center
+                : (Vector2)transform.position;
+
+            float side = Vector2.Dot((Vector2)player.transform.position - center, normal);
+
+            return side > 0f && side <= Reach(normal);
+        }
+
         private void Awake()
         {
             _collider = GetComponent<BoxCollider2D>();
@@ -95,99 +153,98 @@ namespace RuleGame.Gameplay.Scene
             Vector2 normal = SolidNormal;
             UpdateVisual(normal);
 
-            if (_player == null && !TryFindPlayer())
-            {
-                SetSolid(true);
-                return;
-            }
+            bool solid = EvaluatePlayer(normal);
+            UpdateBlocks(normal);
 
-            Vector2 delta = (Vector2)_player.transform.position - (Vector2)transform.position;
+            // 有件压在实心面上时必须是实心的，否则件会连人带板一起掉下去。
+            SetSolid(solid || _blockAbove);
+        }
+
+        /// <summary>玩家这一侧要不要实心（单向 + 主动跳穿）。</summary>
+        private bool EvaluatePlayer(Vector2 normal)
+        {
+            if ((_player == null || !_player.isActiveAndEnabled || !_player.IsInputReady) && !TryFindPlayer())
+                return true;
+
+            // 用**碰撞体中心**而不是 transform 原点：平台被摆歪 / 碰撞体带 offset 时原点不可靠。
+            Vector2 center = _collider != null ? (Vector2)_collider.bounds.center : (Vector2)transform.position;
+            Vector2 delta = (Vector2)_player.transform.position - center;
             float side = Vector2.Dot(delta, normal);
 
             // ① 主动跳穿：放行窗口内一律不实心，等玩家掉下去。
             if (_dropTimer > 0f)
             {
                 _dropTimer -= UnityEngine.Time.fixedDeltaTime;
-                SetSolid(false);
-                return;
+                return false;
             }
 
-            // 站在**这一块**上 + 刚按下「朝背面」的方向键 → 开一个放行窗口。
-            // 「刚按下」是玩家身上的一次性闩锁：按住不放不会连续放行，
-            // 否则从上层掉下来、落在中层的那一帧会把中层也放行（看起来像穿过一层）。
-            bool resting = _player.IsGrounded
-                           || Mathf.Abs(Vector2.Dot(_player.Velocity, normal)) < 0.5f;
-
-            bool onMe = false;
-            if (_dropOnDown && resting && side > 0f)
+            // 站在**这一块**上 + 这一帧有「下钻」请求（按住下 + 按跳）→ 开一个放行窗口。
+            // 请求在玩家身上生成、取走即清零：从上层掉到中层时那个组合已经用过了，
+            // 中层不会跟着放行（否则会穿过一层、停在第三层）。
+            // 「站在上面」用纯几何的 Claims（不做物理查询 —— 扫描对「贴着」的碰撞体不可靠）。
+            if (_dropOnDown && Claims(_player) && _player.ConsumeDropRequest())
             {
-                onMe = IsStandingOnMe(normal);
-                if (onMe && _player.TryConsumeDropPress())
-                {
-                    _dropTimer = Mathf.Max(0.05f, _dropDuration);
-                    SetSolid(false);
-                    return;
-                }
-            }
-
-            // 诊断：按住了方向键却不下钻时，每秒说一次是哪一条没通过（不刷屏）。
-            if (_player.DropPressHeld && UnityEngine.Time.time >= _nextDiag)
-            {
-                _nextDiag = UnityEngine.Time.time + 1f;
-                if (!resting || side <= 0f || !onMe)
-                {
-                    Debug.Log("[跳穿平台] 按住了下方向键但没下钻："
-                              + $"resting={resting} side={side:0.00} 踩在我上面={onMe} "
-                              + $"玩家={_player.transform.position} 平台={transform.position}");
-                }
+                _dropTimer = Mathf.Max(0.05f, _dropDuration);
+                return false;
             }
 
             // ② 单向：玩家在背面就放行，等他整个越过实心面再恢复，落地才不抖。
-            if (_solid)
+            return _solid ? side >= -_reenableMargin : side > _reenableMargin;
+        }
+
+        /// <summary>
+        /// 拼装件：**只对那一对碰撞体**开关碰撞 —— 件在背面就放行，能穿上来；越过实心面就恢复，能落住。
+        /// </summary>
+        /// <remarks>
+        /// <para><b>为什么不用 <c>collider.enabled</c></b>：那是整块平台的开关，件一穿就把玩家一起关了。
+        /// <c>Physics2D.IgnoreCollision</c> 按「碰撞体对」生效，件和玩家各管各的。</para>
+        ///
+        /// <para><b>放行到哪为止</b>：件心越过「实心面 + 半个件厚」才算过来 ——
+        /// 提早恢复会在平面上卡一下（件被顶回去），延后恢复件会直接穿下去。</para>
+        /// </remarks>
+        private void UpdateBlocks(Vector2 normal)
+        {
+            _blockAbove = false;
+
+            System.Collections.Generic.IReadOnlyList<FitBlock> blocks = FitBlock.All;
+            for (int i = 0; i < blocks.Count; i++)
             {
-                if (side < -_reenableMargin) SetSolid(false);
-            }
-            else if (side > _reenableMargin)
-            {
-                SetSolid(true);
+                FitBlock block = blocks[i];
+                if (block == null || block.Body == null) continue;
+
+                Collider2D body = block.Body.GetComponent<Collider2D>();
+                if (body == null || body.isTrigger) continue;
+
+                // ⚠️ 件用**平台自己的 up**，不跟重力翻 —— 跟重力翻的话，
+                // 重力一反转「实心面」就跑到下面去了，从井底升上来的球反而正撞实心面。
+                // 跳穿平台对件的语义很简单：**从下面顶上来就放行，落到上面就接住**。
+                Vector2 up = transform.up;
+
+                Vector2 delta = (Vector2)block.transform.position - (Vector2)transform.position;
+                float side = Vector2.Dot(delta, up);
+
+                // 放行条件 = **正在朝上过来**（v·up > 0）且还没整个越过。
+                // 只看位置不行：接触点恰好等于「件心越过平面」那一刻，恢复碰撞会把件卡在面里。
+                // 加一段余量，等件真正离开再恢复 —— 停住（v≈0）的件立刻恢复，所以能落住。
+                float clearance = HalfExtent(body, up) + HalfExtent(_collider, up);
+                bool rising = Vector2.Dot(block.Body.linearVelocity, up) > 0.05f;
+                bool pass = _passFitBlocks && rising && side < clearance + 0.30f;
+
+                if (side >= clearance) _blockAbove = true;
+
+                if (pass)
+                {
+                    if (_passingBlocks.Add(body)) Physics2D.IgnoreCollision(body, _collider, true);
+                }
+                else if (_passingBlocks.Remove(body))
+                {
+                    Physics2D.IgnoreCollision(body, _collider, false);
+                }
             }
         }
 
         /// <summary>
-        /// 玩家是不是**踩在这一块**上：从脚下朝背面扫一下，**脚下第一块**必须是我自己。
-        /// </summary>
-        /// <remarks>
-        /// <para>为什么不用「中心距离」算：距离依赖平台的 transform 原点、碰撞体 offset、
-        /// 缩放和厚度，任何一项不对就会误判成「没站在上面」（表现就是按键没反应）。
-        /// 物理扫描只回答一个问题 —— 脚底下那块是不是我，和几何怎么摆无关。</para>
-        ///
-        /// <para>扫不到时退回几何判定，避免刚体形状还没同步的那一帧把功能整个卡死。</para>
-        /// </remarks>
-        private bool IsStandingOnMe(Vector2 normal)
-        {
-            if (_player == null) return false;
-
-            var body = _player.GetComponent<Collider2D>();
-            if (body != null)
-            {
-                var filter = new ContactFilter2D { useTriggers = false };
-                filter.SetLayerMask(Physics2D.AllLayers);
-
-                var hits = new RaycastHit2D[4];
-                int count = body.Cast(-normal, filter, hits, 0.25f);
-                for (int i = 0; i < count; i++)
-                {
-                    var col = hits[i].collider;
-                    if (col == null || col == body) continue;
-
-                    return col == _collider;        // 只认脚下第一块
-                }
-            }
-
-            return Reach(normal) >= Vector2.Dot((Vector2)_player.transform.position - (Vector2)transform.position, normal);
-        }
-
-        /// <summary>站立时玩家中心到平台中心的最大允许距离（几何兜底用）。</summary>
+        /// <summary>站立时玩家中心到平台中心的最大允许距离。</summary>
         private float Reach(Vector2 normal)
         {
             float reach = _reenableMargin + 0.2f + HalfExtent(_collider, normal);
@@ -229,15 +286,37 @@ namespace RuleGame.Gameplay.Scene
             _visual.localRotation = flip ? Quaternion.Euler(0f, 0f, 180f) : Quaternion.identity;
         }
 
+        /// <summary>
+        /// 找玩家：取**最近的、已经初始化好的**那个。
+        /// </summary>
+        /// <remarks>
+        /// <para>⚠️ 不能只取「随便一个」：运行时可能同时存在**空壳实例**（<c>_input</c> 还是 null、
+        /// 位置停在预制体原点、每帧抛 NRE），随机取到它就会表现成「按了完全没反应 / 偶尔才成功」。</para>
+        /// <para>取最近的那个同时解决「多玩家」和「空壳在远处」两种情况。</para>
+        /// </remarks>
         private bool TryFindPlayer()
         {
             if (UnityEngine.Time.time < _nextSearch) return false;
             _nextSearch = UnityEngine.Time.time + Mathf.Max(0.05f, _searchInterval);
 
-            var found = FindAnyObjectByType<PlayerController>(FindObjectsInactive.Include);
-            if (found == null || !found.gameObject.activeInHierarchy) return false;
+            PlayerController best = null;
+            float bestSqr = float.MaxValue;
+            Vector2 self = transform.position;
 
-            _player = found;
+            foreach (var p in FindObjectsByType<PlayerController>(FindObjectsInactive.Exclude))
+            {
+                if (p == null || !p.isActiveAndEnabled || !p.IsInputReady) continue;
+
+                float d = ((Vector2)p.transform.position - self).sqrMagnitude;
+                if (d >= bestSqr) continue;
+
+                bestSqr = d;
+                best = p;
+            }
+
+            if (best == null) return false;
+
+            _player = best;
             return true;
         }
 

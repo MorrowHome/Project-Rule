@@ -44,6 +44,10 @@ namespace RuleGame.Gameplay.Scene
     /// <c>Amount</c> 被直接忽略 —— 它是机关，不是敌人（没有 <c>EntityStatus</c>、没有无敌帧、
     /// 不受伤害挂账影响；挂账期间伤害记 0、击退照样下发）。</para>
     ///
+    /// <para>⚠️ <b>站在块上打别人时，脚下的块不会跟着被弹开</b>：攻击盒是「从身体往前」的横盒，
+    /// 站在块顶挥刀时它的下沿会罩到脚下的块。所以 <see cref="ApplyDamage"/> 先看
+    /// 「攻击者是不是踩着我」（脚底探测盒），是就整下忽略 —— 那不是「在打我」，是打别人。</para>
+    ///
     /// <para>⚠️ <b>要能被打到，必须有受击箱</b>：命中判定只查 <c>Hurtbox</c> 层（10）。
     /// 菜单 ⑭ 生成的预制体自带一个 <c>Hurtbox</c> 子物体；手工搭的话记得补
     /// （<c>Tools/规则游戏/受击箱/①</c>），否则「砍上去毫无反应」。</para>
@@ -82,6 +86,15 @@ namespace RuleGame.Gameplay.Scene
 
         /// <summary>短于这个长度的轨道算退化（当作不会动）。</summary>
         private const float MinTrackLength = 0.0001f;
+
+        /// <summary>「站在我身上」的脚底容差：脚底比我的顶面低超过这么多，就不算踩着我。</summary>
+        private const float RiderFeetTolerance = 0.2f;
+
+        /// <summary>支撑探测盒的中心比脚底抬这么一点（盒一半在脚底下方，脚踩实了才算）。</summary>
+        private const float SupportProbeLift = 0.02f;
+
+        /// <summary>支撑探测盒的高度：脚底上下各罩一点，量「踩没踩实」。</summary>
+        private const float SupportProbeHeight = 0.12f;
 
         // ==================================================================
         //  配置
@@ -180,6 +193,9 @@ namespace RuleGame.Gameplay.Scene
 
         /// <summary>沿轨道的击退惯性（单位/秒，有符号），按 <see cref="_knockbackDrag"/> 指数衰减。</summary>
         private float _impulse;
+
+        /// <summary>「脚底有没有踩着我」的探测结果缓存，避免每次命中都分配。</summary>
+        private readonly Collider2D[] _supportHits = new Collider2D[8];
 
         // ==================================================================
         //  只读状态
@@ -382,6 +398,9 @@ namespace RuleGame.Gameplay.Scene
         {
             if (!isActiveAndEnabled) return;
 
+            // 站在我身上打别人：攻击盒会顺带罩到我，但那不是「在打我」。
+            if (IsRiddenBy(damage.Attacker)) return;
+
             float strength = damage.Knockback * _knockbackScale;
             if (strength <= 0f) return;
 
@@ -392,6 +411,81 @@ namespace RuleGame.Gameplay.Scene
             _impulse = Mathf.Clamp(_impulse + along, -_maxKnockbackSpeed, _maxKnockbackSpeed);
 
             OnKnockedBack?.Invoke(_axis * along);
+        }
+
+        /// <summary>
+        /// 攻击者是不是**站在我身上**（脚踩我的实心碰撞体）。
+        /// </summary>
+        /// <remarks>
+        /// <para><b>为什么需要这条</b>：块可以被站上去，而玩家 / 敌人的攻击盒是「从身体中心往前」的横盒。
+        /// 站在块顶挥刀打旁边的块时，攻击盒底边正好贴着 —— 甚至压进 —— 脚下这块的受击箱；
+        /// Box2D 的重叠判定是**含边界**的，于是脚下的块也被算成「被打中」，跟着一起被弹开。</para>
+        /// <para><b>判据为什么是「脚底探测盒」而不是「高度差」</b>：只看高度差，会把「悬在块正上方挥刀」
+        /// 也当成踩着我；探测盒只看脚底那一小块，量的是**踩实了没有**。
+        /// 两个条件一起用：脚底不低于我的顶面 + 脚底那一块里确实有我的碰撞体。</para>
+        /// </remarks>
+        private bool IsRiddenBy(object attacker)
+        {
+            Collider2D body = ResolveBodyCollider(attacker);
+            if (body == null) return false;
+
+            Collider2D solid = GetComponent<Collider2D>();
+            if (solid == null || solid.isTrigger) return false;
+
+            Bounds rider = body.bounds;
+            Bounds own = solid.bounds;
+
+            // ① 脚底必须高过我的顶面（站在我身上）；从侧面贴着我砍不算。
+            if (rider.min.y < own.max.y - RiderFeetTolerance) return false;
+
+            // ② 在脚底拍一个扁探测盒：里面有没有我的实心碰撞体。
+            //    ⚠️ 用 OverlapBox 不用 Raycast：脚陷进表面几厘米时，射线从碰撞体内部出发会被直接跳过
+            //    （Unity 的 Raycast 不检测起点所在的碰撞体），而 Overlap 不受影响。
+            var probeCenter = new Vector2(rider.center.x, rider.min.y + SupportProbeLift);
+            var probeSize = new Vector2(
+                Mathf.Clamp(rider.size.x * 0.4f, 0.1f, 0.6f),
+                SupportProbeHeight);
+
+            var filter = new ContactFilter2D { useTriggers = false };
+            filter.SetLayerMask(1 << gameObject.layer);
+
+            int count = Physics2D.OverlapBox(probeCenter, probeSize, 0f, filter, _supportHits);
+            for (int i = 0; i < count; i++)
+            {
+                Collider2D hit = _supportHits[i];
+                if (hit == null) continue;
+                if (hit.transform == transform || hit.transform.IsChildOf(transform)) return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>从攻击者身上找**实体碰撞体**（非 Trigger）。找不到返回 <c>null</c>。</summary>
+        /// <remarks>
+        /// <para>攻击者可能是 <see cref="Component"/>（玩家控制器 / 敌人 / 飞刀）或 <see cref="GameObject"/>。
+        /// 优先同物体上的碰撞体，其次父链（角色的碰撞体偶尔挂在子物体上），最后子物体。</para>
+        /// <para>⚠️ 一定要排除 Trigger：受击箱也是 Collider2D，拿它的包围盒会把脚底算到身体中间。</para>
+        /// </remarks>
+        private static Collider2D ResolveBodyCollider(object attacker)
+        {
+            Component source = attacker as Component;
+            if (source == null && attacker is GameObject go) source = go.transform;
+            if (source == null) return null;
+
+            Collider2D own = source.GetComponent<Collider2D>();
+            if (own != null && !own.isTrigger) return own;
+
+            foreach (Collider2D candidate in source.GetComponentsInParent<Collider2D>())
+            {
+                if (!candidate.isTrigger) return candidate;
+            }
+
+            foreach (Collider2D candidate in source.GetComponentsInChildren<Collider2D>())
+            {
+                if (!candidate.isTrigger) return candidate;
+            }
+
+            return null;
         }
 
         // ==================================================================
