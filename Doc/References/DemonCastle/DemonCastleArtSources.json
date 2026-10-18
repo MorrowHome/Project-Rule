@@ -1,0 +1,102 @@
+{
+  "source_root": "/Users/morrow/Downloads/场景组件(4)",
+  "files": [
+    {
+      "source": "基础瓦片（10.14初版完成）/魔王城（已完成10.14）/地块1.png",
+      "asset": "Project-Rule/Assets/_Project/Art/Sprites/DemonCastle/Delivered/DemonGround_01.png",
+      "sha256": "a2286afe5820d4bf80326cac1f18a6a6a7c71b9b084996b171246cefba825c69"
+    },
+    {
+      "source": "基础瓦片（10.14初版完成）/魔王城（已完成10.14）/地块2.png",
+      "asset": "Project-Rule/Assets/_Project/Art/Sprites/DemonCastle/Delivered/DemonGround_02.png",
+      "sha256": "23a698ae54cee70464cb0dc4fb7dc2d7d9e18fb9c05f7c057dc9affe56cdbd4e"
+    },
+    {
+      "source": "基础瓦片（10.14初版完成）/魔王城（已完成10.14）/地块3.png",
+      "asset": "Project-Rule/Assets/_Project/Art/Sprites/DemonCastle/Delivered/DemonGround_03.png",
+      "sha256": "ee49cdd20021e4733d4250e349ebc03de834304524ab3f54555078105e31a76f"
+    },
+    {
+      "source": "基础瓦片（10.14初版完成）/魔王城（已完成10.14）/地块4.png",
+      "asset": "Project-Rule/Assets/_Project/Art/Sprites/DemonCastle/Delivered/DemonGround_04.png",
+      "sha256": "d6bf5c4a85ad6d4ba324fdafea09e8b4abf6c43ed7283f72fe89899c6b9954bd"
+    },
+    {
+      "source": "基础瓦片（10.14初版完成）/魔王城（已完成10.14）/平台1.png",
+      "asset": "Project-Rule/Assets/_Project/Art/Sprites/DemonCastle/Delivered/DemonPlatform_01.png",
+      "sha256": "052d7cc06a9201d8a1352ba889b9a51b56c0fd6fa63e5e8d8ccf9a7fa08809e0"
+    },
+    {
+      "source": "基础瓦片（10.14初版完成）/魔王城（已完成10.14）/平台2.png",
+      "asset": "Project-Rule/Assets/_Project/Art/Sprites/DemonCastle/Delivered/DemonPlatform_02.png",
+      "sha256": "174d1ad8a9ee94034ab4dad1857ddf2c78dcc1492a4e03b04d1ecde1356c524b"
+    },
+    {
+      "source": "基础瓦片（10.14初版完成）/魔王城（已完成10.14）/平台3.png",
+      "asset": "Project-Rule/Assets/_Project/Art/Sprites/DemonCastle/Delivered/DemonPlatform_03.png",
+      "sha256": "b4eaed7d2e5345c8e80a4707023f7d99c18a7db6ee5017d99aeb71ff51d948a2"
+    },
+    {
+      "source": "基础瓦片（10.14初版完成）/魔王城（已完成10.14）/万用1.png",
+      "asset": "Project-Rule/Assets/_Project/Art/Sprites/DemonCastle/Delivered/DemonPillar_01.png",
+      "sha256": "ccb58a10610a6d52beffc7524571f36f7dddfc2641ceaad49df9900e23c299cd"
+    },
+    {
+      "source": "基础瓦片（10.14初版完成）/魔王城（已完成10.14）/万用2.png",
+      "asset": "Project-Rule/Assets/_Project/Art/Sprites/DemonCastle/Delivered/DemonPillar_02.png",
+      "sha256": "4909a830adf867f8ac5ccfba44c13f35d1eed5ecaa183b3405582d996552d930"
+    },
+    {
+      "source": "基础瓦片（10.14初版完成）/魔王城（已完成10.14）/万用3.png",
+      "asset": "Project-Rule/Assets/_Project/Art/Sprites/DemonCastle/Delivered/DemonPillar_03.png",
+      "sha256": "3e209a271100364449c5dbba595714572aa5542b8ee4e7aec95f281c91d1db7d"
+    },
+    {
+      "source": "基础瓦片（10.14初版完成）/魔王城（已完成10.14）/万用4.png",
+      "asset": "Project-Rule/Assets/_Project/Art/Sprites/DemonCastle/Delivered/DemonPillar_04.png",
+      "sha256": "a19425f87c2c47f3549aaacb6cc661ab95895079caf9fe422ba9824e85ff3d14"
+    },
+    {
+      "source": "基础瓦片（10.14初版完成）/魔王城（已完成10.14）/万用5.png",
+      "asset": "Project-Rule/Assets/_Project/Art/Sprites/DemonCastle/Delivered/DemonPillar_05.png",
+      "sha256": "896cf31392eb298f88c8897bf9f9ddd3496a53baa69da8a5629a0a816be245b2"
+    },
+    {
+      "source": "基础瓦片（10.14初版完成）/魔王城（已完成10.14）/万用6.png",
+      "asset": "Project-Rule/Assets/_Project/Art/Sprites/DemonCastle/Delivered/DemonPillar_06.png",
+      "sha256": "b24fe8ba3060db8f04e9e625fbdf5481f67f2c7c4ab88629034bffa7bef22ca9"
+    },
+    {
+      "source": "功能组件（怎么还有那么多？！/魔王城/溜溜球（完成/溜溜球-1.png",
+      "asset": "Project-Rule/Assets/_Project/Art/Sprites/DemonCastle/Delivered/DemonYoyo_01.png",
+      "sha256": "fd2568840c350875a3b6936e70e627d55c3f30c94993d2f2bb841924c6e954b8"
+    },
+    {
+      "source": "功能组件（怎么还有那么多？！/通用/按钮（完成/按钮-1.png",
+      "asset": "Project-Rule/Assets/_Project/Art/Sprites/DemonCastle/Delivered/DemonButton_01.png",
+      "sha256": "ecc126c5f081006f7fea253379be3013e4fe3d313a61efe8ea819f4a92cb21b9"
+    },
+    {
+      "source": "功能组件（怎么还有那么多？！/魔王城/溜溜球（完成/溜溜球-2.png",
+      "asset": "Project-Rule/Assets/_Project/Art/Sprites/DemonCastle/Delivered/DemonYoyo_02.png",
+      "sha256": "6dbef45d9233c071fd15c5125310b9f89584e4e7cf10469ccf2d269282a8e9eb"
+    },
+    {
+      "source": "功能组件（怎么还有那么多？！/通用/按钮（完成/按钮-2.png",
+      "asset": "Project-Rule/Assets/_Project/Art/Sprites/DemonCastle/Delivered/DemonButton_02.png",
+      "sha256": "3c74a0eac6ae9b528022d635776739ccafda357c030a6748e3685f62c080c720"
+    }
+  ],
+  "missing_function_art": [
+    "烟花箱",
+    "跳跃弹簧",
+    "生锈铁块",
+    "钟乳石",
+    "翻转平台",
+    "发条",
+    "七巧板",
+    "旋转木马",
+    "钢琴键"
+  ],
+  "missing_function_art_confirmed_by_user": true
+}

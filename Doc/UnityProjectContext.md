@@ -114,3 +114,13 @@ manifest 已有 Coplay Unity MCP，仓库 `.mcp.json` 指向 `localhost:8080/mcp
 2026-10-17 小怪预制体放置简化：九种 FieldMinions 已通过 Editor API 补齐身体 Hurtbox、显式受击承受方和出生点相对活动范围。EnemyActor 自动绑定玩家、复用场景 CombatSystem（缺少时创建共享服务），缺失/自动绑定的目标失效时每 0.5 秒重试；旧显式引用和 Boss 世界边界保留。新增 UI Toolkit 简化 Inspector 与 Scene 二维边框手柄，默认宽高 20×20，范围固定于出生点。寻路白盒清除临时受击箱，使用预制体继承的一个受击箱和自动接线。使用文档为 Doc/小怪预制体使用指南.md。隔离工程保持实际核心程序集名称编译，20 项定向检查通过，补充核对九种资产的受击承受方与程序集标识；未进行原工程 Play、面板视觉操作、完整 Player 构建和敌群性能验收。
 
 2026-10-18 小怪寻路交付同步受伤视觉 PR #12（48ca1f6）和最新 p2-p3-merge（5fd88a7），保留两套改动。合并时结合弱点 Hurtbox 开合与扣血反馈，Boss 资产采用最新集成版本。EnemyNavigationValidation.RunCombatBatch 针对合并风险运行 12 项通过，覆盖弹体/光束、弱点受击箱开合和一次扣血一次反馈；未重复运行导航或渲染套件。小怪提交排除自动 stash 中的字体图集和 ProjectSettings，原 stash 保留。
+
+2026-10-18 魔王城地图组件：依据本次《游戏组件需求大全.xlsx》交付九类机关与地形/共用滑板车，共 21 个 Prefab（Prefabs/DemonCastle）、独立 Test_DemonCastleComponents 和 Tools/规则游戏/魔王城 放置面板。支持中文搜索、网格吸附、连续点放、父物体、Prefab Stage 与 Undo/Redo；生成仅补缺失资产。新增运行时位于 Gameplay/Scene/DemonCastle，复用 CityMechanism/CityPathMotor、世界规则/快照、现有承载与弹射接口；烟花和落石走 Hurtbox 与 CombatSystem。拼图房、烟花开关组和钢琴房已内部接线。白盒外观和合成琴音可替换，使用说明 Doc/魔王城组件接入.md。Unity6000.6.4f1完整隔离工程验证 87 项通过，含通过两枚发条求解及真实 URP 渲染；日志 /tmp/rule-demon-final-validation.log。未改正式场景、Build Settings、包或原有代码；未跑整关/Player构建。仍见已有 Unity Search 索引异常。
+
+2026-10-18 魔王城补充美术接入：用户给出 Downloads/场景组件(4) 后，从功能组件与同级基础瓦片接入 13 张魔王城地形、2 张按钮状态和2张溜溜球，共17张原PNG，使用 Sprite Data Provider 裁透明边距、保留原图字节和序列共同轴心。预制体增至32个；地面/短长平台/按钮替换外观，额外地块/立柱/中平台可从Tools放置；溜溜球只作双帧视觉件，行为未定义。其余9类机关美术未找到，用户确认暂无其它位置，保留原功能和占位。Presentation/DemonCastle 的 SpriteView 负责暂停与按钮选帧，Editor ArtSetup 按版本标记执行一次美术迁移，保留后续调参。完整隔离工程124项通过、0失败，含真实URP；日志 /tmp/rule-demon-art-validation.log，预览 Doc/Preview/DemonCastle/DeliveredArt.png，来源表 Doc/References/DemonCastle/DemonCastleArtSources.json。未改其它正式地图、包或Build Settings。
+
+2026-10-18 魔王城功能补查及菜单迁移：魔王城工具统一移至 Tools/规则游戏/地图组件/魔王城，放置菜单分地形与装饰、机关、组合机关、美术展示；用户明确保留地图组件下其它条目。单发条/琴键/拼图本体和烟花标注接线要求，溜溜球明确仅动画。32个Prefab实际构成为14个静态地形、17个机关单体/组合和1个视觉件。补充实际按钮触碰点火、落石命中、木马/滑板车往返承载、推力探测及质量削弱后真实推动的检查；隔离基线135项通过0失败，日志 /tmp/rule-demon-function-audit.log。未修改运行代码、正式地图或其它条目；同工作区NPC/轮盘/UI的同期修改未纳入本次检查。
+
+2026-10-18 按用户要求完善魔王城测试场：保持 Test_DemonCastleComponents.unity 的GUID，改成00_Ground与Zone_01—12分区，覆盖九个机关区域及地形试跳/六种立柱/溜溜球展示。DemonCastleLabControls增加下拉/F1/F2跳转、随位置变更说明、生命能量HUD、F5复原机关/角色、F6/F7快照、F9补能、每区复活点。Tools/规则游戏/地图组件/魔王城 提供生成/打开/明确重建测试场景。完整工程副本 /tmp/rule-demon-scene-20261018 验证150项0失败；日志 /tmp/rule-demon-scene-validation.log。已在当前Editor实际进入Play看中文HUD并用F1跳区，完成后退出Play并留在本场景；仅调整测试场、生成器和测试控制，不写回LevelRuntime或正式地图。
+
+2026-10-18 魔王城提交验证：以本地 p2-p3-merge（73857b6）为基线建立 codex/demon-castle-components 独立分支，仅纳入魔王城资产、代码、测试场与文档；在该分支完整工程运行 DemonCastleValidation.RunBatch，150项通过、0失败，Unity进程退出码0。日志 /tmp/rule-demon-branch-validation.log；未纳入规则轮盘美术或NPC的同期工作，未运行Player构建。
