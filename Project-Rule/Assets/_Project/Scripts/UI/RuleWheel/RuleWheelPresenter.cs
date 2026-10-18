@@ -52,6 +52,9 @@ namespace RuleGame.UI.RuleWheel
         public event Action SelectionOpened;
         public event Action<bool> SelectionClosed;
         public event Action<AttributeId> AttributePreviewed;
+        public event Action ChoicePreviewed;
+        public event Action SelectionReturned;
+        public event Action<RuleReleaseStatus> SelectionRejected;
         public bool IsOpen => Stage != RuleSelectionStage.Closed;
         public RuleSelectionStage Stage => _session?.Stage ?? RuleSelectionStage.Closed;
         public RuleFan Fan => _fan;
@@ -178,6 +181,7 @@ namespace RuleGame.UI.RuleWheel
         {
             if (!IsOpen || index < 0 || index >= Attributes.Length || index == _fan.SelectedIndex) return;
             _fan.Select(index); _relationFan.Select(-1); _feedback.text = "";
+            ChoicePreviewed?.Invoke();
             if (!_session.SelectAttribute(Attributes[index]))
             {
                 _session.Back(); SetBranchVisible(false); _feedback.text = "尚不可用"; return;
@@ -192,7 +196,9 @@ namespace RuleGame.UI.RuleWheel
         public void SelectRelationIndex(int index)
         {
             if (Stage != RuleSelectionStage.Relation) return;
+            bool changed = index != _relationFan.SelectedIndex;
             _relationFan.Select(index);
+            if (changed && index >= 0 && index < Relations.Length) ChoicePreviewed?.Invoke();
             if (index < 0 || index >= Relations.Length) { _feedback.text = "悬停关系 · 左键释放"; return; }
             // 生效中的关系再按一次是取消，取消免费 —— 提示里要写清不扣能量。
             if (_session.IsActive(_session.Attribute, Relations[index]))
@@ -208,6 +214,7 @@ namespace RuleGame.UI.RuleWheel
             if (index < 0 || index >= Relations.Length) return false;
             RuleReleaseResult result = _session.Confirm(Relations[index]);
             if (result.Succeeded) { Close(true); return true; }
+            SelectionRejected?.Invoke(result.Status);
             _feedback.text = BlockMessage(result.Status);
             RefreshAvailability();
             return false;
@@ -248,9 +255,11 @@ namespace RuleGame.UI.RuleWheel
 
         private void ReturnToAttributes()
         {
+            bool returning = Stage == RuleSelectionStage.Relation;
             _session.Back(); _relationStick = false; _waitForStickNeutral = true;
             _fan.Select(-1); _relationFan.Select(-1); _feedback.text = "";
             SetBranchVisible(false);
+            if (returning) SelectionReturned?.Invoke();
         }
 
         private void SetBranchVisible(bool visible)
