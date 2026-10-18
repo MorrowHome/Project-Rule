@@ -1,0 +1,90 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5409df8fca2c03648a927d23f4822942, type: 3}
+  m_Name: ConfiguredNpcs_Content
+  m_EditorClassIdentifier: RuleGame.Dialogue::RuleGame.Gameplay.Dialogue.DialogueContent
+  _project: {fileID: 7545569452688597077, guid: cf3d415aa0a2e4f5b8585467c2789fc1, type: 3}
+  _scripts:
+  - {fileID: -8253061345870894857, guid: 987197b2269c24fef8f39e05e44be6bf, type: 3}
+  _speakers:
+  - Id: Merchant_Talk
+    DisplayName: "\u5546\u4EBA / Talk"
+    EntryNode: Merchant_Talk
+    FallbackNode: Merchant_TalkFallback
+  - Id: Merchant_Bye
+    DisplayName: "\u5546\u4EBA / Bye"
+    EntryNode: Merchant_Bye
+    FallbackNode: Merchant_ByeFallback
+  - Id: Mayor_Talk1
+    DisplayName: "\u9547\u957F / Talk1"
+    EntryNode: Mayor_Talk1
+    FallbackNode: Mayor_Talk1Fallback
+  - Id: Mayor_Talk2
+    DisplayName: "\u9547\u957F / Talk2"
+    EntryNode: Mayor_Talk2
+    FallbackNode: Mayor_Talk2Fallback
+  - Id: ResidentA_Talk
+    DisplayName: "\u5C45\u6C11A / Talk"
+    EntryNode: ResidentA_Talk
+    FallbackNode: ResidentA_TalkFallback
+  - Id: ResidentB_Talk
+    DisplayName: "\u5C45\u6C11B / Talk"
+    EntryNode: ResidentB_Talk
+    FallbackNode: ResidentB_TalkFallback
+  - Id: ResidentC_Talk
+    DisplayName: "\u5C45\u6C11C / Talk"
+    EntryNode: ResidentC_Talk
+    FallbackNode: ResidentC_TalkFallback
+  - Id: ResidentD_Talk
+    DisplayName: "\u5C45\u6C11D / Talk"
+    EntryNode: ResidentD_Talk
+    FallbackNode: ResidentD_TalkFallback
+  - Id: GearKeeper_Talk1
+    DisplayName: "\u9F7F\u8F6E\u4EBA / Talk1"
+    EntryNode: GearKeeper_Talk1
+    FallbackNode: GearKeeper_Talk1Fallback
+  - Id: GearKeeper_Talk2
+    DisplayName: "\u9F7F\u8F6E\u4EBA / Talk2"
+    EntryNode: GearKeeper_Talk2
+    FallbackNode: GearKeeper_Talk2Fallback
+  - Id: GearKeeper_Talk3
+    DisplayName: "\u9F7F\u8F6E\u4EBA / Talk3"
+    EntryNode: GearKeeper_Talk3
+    FallbackNode: GearKeeper_Talk3Fallback
+  - Id: GearKeeper_Talk4
+    DisplayName: "\u9F7F\u8F6E\u4EBA / Talk4"
+    EntryNode: GearKeeper_Talk4
+    FallbackNode: GearKeeper_Talk4Fallback
+  - Id: GearKeeper_Talk5
+    DisplayName: "\u9F7F\u8F6E\u4EBA / Talk5"
+    EntryNode: GearKeeper_Talk5
+    FallbackNode: GearKeeper_Talk5Fallback
+  - Id: Guard_Talk1
+    DisplayName: "\u5B88\u536B / Talk1"
+    EntryNode: Guard_Talk1
+    FallbackNode: Guard_Talk1Fallback
+  - Id: Guard_Talk2
+    DisplayName: "\u5B88\u536B / Talk2"
+    EntryNode: Guard_Talk2
+    FallbackNode: Guard_Talk2Fallback
+  - Id: MysteryMerchant_Talk1
+    DisplayName: "\u795E\u79D8\u5546\u4EBA / Talk1"
+    EntryNode: MysteryMerchant_Talk1
+    FallbackNode: MysteryMerchant_Talk1Fallback
+  - Id: MysteryMerchant_Talk2
+    DisplayName: "\u795E\u79D8\u5546\u4EBA / Talk2"
+    EntryNode: MysteryMerchant_Talk2
+    FallbackNode: MysteryMerchant_Talk2Fallback
+  - Id: MysteryMerchant_Bye
+    DisplayName: "\u795E\u79D8\u5546\u4EBA / Bye"
+    EntryNode: MysteryMerchant_Bye
+    FallbackNode: MysteryMerchant_ByeFallback

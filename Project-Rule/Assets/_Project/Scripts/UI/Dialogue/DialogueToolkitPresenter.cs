@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Threading;
+using RuleGame.Gameplay.Dialogue;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Yarn.Unity;
@@ -27,6 +28,7 @@ namespace RuleGame.UI.Dialogue
         private Button _close;
         private CancellationTokenSource _lifetime;
         private bool _typing;
+        private DialogueHost _host;
         public bool IsTyping => _typing;
         public string DisplayedText => _line?.text;
         public string CurrentLineId { get; private set; }
@@ -34,6 +36,7 @@ namespace RuleGame.UI.Dialogue
 
         private void OnEnable()
         {
+            _host = GetComponent<DialogueHost>();
             _lifetime = new CancellationTokenSource();
             VisualElement document = GetComponent<UIDocument>().rootVisualElement;
             _root = document.Q("dialogueRoot");
@@ -65,7 +68,8 @@ namespace RuleGame.UI.Dialogue
 
         public void Close()
         {
-            if (_runner != null && _runner.IsDialogueRunning) _runner.Stop().Forget();
+            if (_host != null) _host.StopDialogue();
+            else if (_runner != null && _runner.IsDialogueRunning) _runner.Stop().Forget();
         }
 
         private void HandleKey(KeyDownEvent evt)

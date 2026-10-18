@@ -20,11 +20,14 @@ namespace RuleGame.Gameplay.Dialogue
         private bool _ready;
         private bool _starting;
         private bool _announcedPlaying;
+        private bool _cancelled;
         public DialogueContent Content => _content;
         public DialogueRunner Runner => _runner;
         public bool IsPlaying => _starting || (_runner != null && _runner.IsDialogueRunning);
         public bool IsReady => _ready;
         public event Action<bool> PlayingChanged;
+        /// <summary>true 为读到结尾；关闭、禁用、异常停止均为 false。任务不能由取消交谈推进。</summary>
+        public event Action<bool> ConversationFinished;
 
         private void Awake()
         {
@@ -67,6 +70,7 @@ namespace RuleGame.Gameplay.Dialogue
             DialogueSpeaker speaker = _content.FindSpeaker(speakerId);
             if (speaker == null) { Debug.LogWarning("[Dialogue] 未知 NPC id：" + speakerId, this); return false; }
             _starting = true;
+            _cancelled = false;
             // 规则系统尚未初始化时直接播独立兜底，不把“未加载”冒充“世界恢复正常”。
             BeginAsync(_context.WorldReady() ? speaker.EntryNode : speaker.FallbackNode).Forget();
             return true;
@@ -75,12 +79,13 @@ namespace RuleGame.Gameplay.Dialogue
         private async YarnTask BeginAsync(string node)
         {
             try { await _runner.StartDialogue(node); }
-            catch (Exception error) { Debug.LogException(error, this); HandleFinished(); }
+            catch (Exception error) { _cancelled = true; Debug.LogException(error, this); HandleFinished(); }
             finally { _starting = false; }
         }
 
         public void StopDialogue()
         {
+            _cancelled = true;
             if (_runner != null && _runner.IsDialogueRunning) _runner.Stop().Forget();
         }
 
@@ -100,6 +105,7 @@ namespace RuleGame.Gameplay.Dialogue
             // 禁用时先释放输入，随后到达的 Yarn 完成回调不能再释放一次。
             if (!_announcedPlaying) return;
             _announcedPlaying = false;
+            ConversationFinished?.Invoke(!_cancelled);
             PlayingChanged?.Invoke(false);
             _onFinished.Invoke();
         }

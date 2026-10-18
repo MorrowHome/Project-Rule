@@ -1,0 +1,6 @@
+{
+    "name": "RuleGame.Npcs",
+    "rootNamespace": "RuleGame.Gameplay.Npcs",
+    "references": ["RuleGame.Gameplay", "RuleGame.Dialogue", "RuleGame.Core", "RuleGame.Infrastructure"],
+    "autoReferenced": true
+}

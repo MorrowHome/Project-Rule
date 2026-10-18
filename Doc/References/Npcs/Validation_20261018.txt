@@ -1,0 +1,146 @@
+PASS 9 个真实预制体实例已加载
+PASS Merchant 条件选择 Talk
+PASS 距离外拒绝 Merchant
+PASS 成功开播 Merchant
+PASS 真实 Yarn 选句 line:npc_merchant_talk
+PASS 交互收尾回到 Idle
+PASS 取消商人不打开商店
+PASS Merchant 条件选择 Talk
+PASS 距离外拒绝 Merchant
+PASS 成功开播 Merchant
+PASS 真实 Yarn 选句 line:npc_merchant_talk
+PASS 取消交谈不会开启交易
+PASS 交易关闭后开播道别
+PASS 交互收尾回到 Idle
+PASS Mayor 条件选择 Talk1
+PASS 距离外拒绝 Mayor
+PASS 成功开播 Mayor
+PASS 真实 Yarn 选句 line:npc_mayor_talk1
+PASS 交互收尾回到 Idle
+PASS Mayor 条件选择 Talk2
+PASS 距离外拒绝 Mayor
+PASS 成功开播 Mayor
+PASS 真实 Yarn 选句 line:npc_mayor_talk2
+PASS 交互收尾回到 Idle
+PASS 取消镇长不发放资格
+PASS Mayor 条件选择 Talk2
+PASS 距离外拒绝 Mayor
+PASS 成功开播 Mayor
+PASS 真实 Yarn 选句 line:npc_mayor_talk2
+PASS 交互收尾回到 Idle
+PASS Mayor 条件选择 Talk2
+PASS 距离外拒绝 Mayor
+PASS 成功开播 Mayor
+PASS 真实 Yarn 选句 line:npc_mayor_talk2
+PASS 交互收尾回到 Idle
+PASS GearKeeper 条件选择 Talk1
+PASS 距离外拒绝 GearKeeper
+PASS 成功开播 GearKeeper
+PASS 真实 Yarn 选句 line:npc_gearkeeper_talk1
+PASS 交互收尾回到 Idle
+PASS 取消齿轮人不触发 Boss
+PASS GearKeeper 条件选择 Talk1
+PASS 距离外拒绝 GearKeeper
+PASS 成功开播 GearKeeper
+PASS 真实 Yarn 选句 line:npc_gearkeeper_talk1
+PASS 交互收尾回到 Idle
+PASS GearKeeper 条件选择 Talk2
+PASS 距离外拒绝 GearKeeper
+PASS 成功开播 GearKeeper
+PASS 真实 Yarn 选句 line:npc_gearkeeper_talk2
+PASS 交互收尾回到 Idle
+PASS GearKeeper 条件选择 Talk3
+PASS 距离外拒绝 GearKeeper
+PASS 成功开播 GearKeeper
+PASS 真实 Yarn 选句 line:npc_gearkeeper_talk3
+PASS 交互收尾回到 Idle
+PASS GearKeeper 条件选择 Talk4
+PASS 距离外拒绝 GearKeeper
+PASS 成功开播 GearKeeper
+PASS 真实 Yarn 选句 line:npc_gearkeeper_talk4
+PASS 交互收尾回到 Idle
+PASS GearKeeper 条件选择 Talk5
+PASS 距离外拒绝 GearKeeper
+PASS 成功开播 GearKeeper
+PASS 真实 Yarn 选句 line:npc_gearkeeper_talk5
+PASS 交互收尾回到 Idle
+PASS 取消齿轮人不触发 Boss
+PASS GearKeeper 条件选择 Talk5
+PASS 距离外拒绝 GearKeeper
+PASS 成功开播 GearKeeper
+PASS 真实 Yarn 选句 line:npc_gearkeeper_talk5
+PASS 交互收尾回到 Idle
+PASS GearKeeper 条件选择 Talk5
+PASS 距离外拒绝 GearKeeper
+PASS 成功开播 GearKeeper
+PASS 真实 Yarn 选句 line:npc_gearkeeper_talk5
+PASS 交互收尾回到 Idle
+PASS Guard 条件选择 Talk1
+PASS 距离外拒绝 Guard
+PASS 成功开播 Guard
+PASS 真实 Yarn 选句 line:npc_guard_talk1
+PASS 交互收尾回到 Idle
+PASS Guard 条件选择 Talk1
+PASS 距离外拒绝 Guard
+PASS 成功开播 Guard
+PASS 真实 Yarn 选句 line:npc_guard_talk1
+PASS 交互收尾回到 Idle
+PASS Guard 条件选择 Talk2
+PASS 距离外拒绝 Guard
+PASS 成功开播 Guard
+PASS 真实 Yarn 选句 line:npc_guard_talk2
+PASS 交互收尾回到 Idle
+PASS 取消守卫不放行
+PASS Guard 条件选择 Talk2
+PASS 距离外拒绝 Guard
+PASS 成功开播 Guard
+PASS 真实 Yarn 选句 line:npc_guard_talk2
+PASS 交互收尾回到 Idle
+PASS Guard 条件选择 Talk2
+PASS 距离外拒绝 Guard
+PASS 成功开播 Guard
+PASS 真实 Yarn 选句 line:npc_guard_talk2
+PASS 交互收尾回到 Idle
+PASS MysteryMerchant 条件选择 Talk1
+PASS 距离外拒绝 MysteryMerchant
+PASS 成功开播 MysteryMerchant
+PASS 真实 Yarn 选句 line:npc_mysterymerchant_talk1
+PASS 交互收尾回到 Idle
+PASS MysteryMerchant 条件选择 Talk2
+PASS 距离外拒绝 MysteryMerchant
+PASS 成功开播 MysteryMerchant
+PASS 真实 Yarn 选句 line:npc_mysterymerchant_talk2
+PASS 交互收尾回到 Idle
+PASS MysteryMerchant 条件选择 Talk2
+PASS 距离外拒绝 MysteryMerchant
+PASS 成功开播 MysteryMerchant
+PASS 真实 Yarn 选句 line:npc_mysterymerchant_talk2
+PASS 取消交谈不会开启交易
+PASS 交易关闭后开播道别
+PASS 交互收尾回到 Idle
+PASS ResidentA 条件选择 Talk
+PASS 距离外拒绝 ResidentA
+PASS 成功开播 ResidentA
+PASS 真实 Yarn 选句 line:npc_residenta_talk
+PASS 交互收尾回到 Idle
+PASS ResidentB 条件选择 Talk
+PASS 距离外拒绝 ResidentB
+PASS 成功开播 ResidentB
+PASS 真实 Yarn 选句 line:npc_residentb_talk
+PASS 交互收尾回到 Idle
+PASS ResidentC 条件选择 Talk
+PASS 距离外拒绝 ResidentC
+PASS 成功开播 ResidentC
+PASS 真实 Yarn 选句 line:npc_residentc_talk
+PASS 交互收尾回到 Idle
+PASS ResidentD 条件选择 Talk
+PASS 距离外拒绝 ResidentD
+PASS 成功开播 ResidentD
+PASS 真实 Yarn 选句 line:npc_residentd_talk
+PASS 交互收尾回到 Idle
+PASS 居民暂停前交互
+PASS 暂停期间居民位置冻结
+PASS 居民通过真实物理步踱步；起点=(-6.52, 0.00) 终点=(-6.77, 0.00, 0.00) 状态=Idle
+PASS 恢复居民行为快照
+PASS 资格/Boss/放行只发一次；攻击一次，两次交易；取消无副作用
+PASS ALL 145
