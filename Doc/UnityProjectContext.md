@@ -114,3 +114,5 @@ manifest 已有 Coplay Unity MCP，仓库 `.mcp.json` 指向 `localhost:8080/mcp
 2026-10-17 小怪预制体放置简化：九种 FieldMinions 已通过 Editor API 补齐身体 Hurtbox、显式受击承受方和出生点相对活动范围。EnemyActor 自动绑定玩家、复用场景 CombatSystem（缺少时创建共享服务），缺失/自动绑定的目标失效时每 0.5 秒重试；旧显式引用和 Boss 世界边界保留。新增 UI Toolkit 简化 Inspector 与 Scene 二维边框手柄，默认宽高 20×20，范围固定于出生点。寻路白盒清除临时受击箱，使用预制体继承的一个受击箱和自动接线。使用文档为 Doc/小怪预制体使用指南.md。隔离工程保持实际核心程序集名称编译，20 项定向检查通过，补充核对九种资产的受击承受方与程序集标识；未进行原工程 Play、面板视觉操作、完整 Player 构建和敌群性能验收。
 
 2026-10-18 小怪寻路交付同步受伤视觉 PR #12（48ca1f6）和最新 p2-p3-merge（5fd88a7），保留两套改动。合并时结合弱点 Hurtbox 开合与扣血反馈，Boss 资产采用最新集成版本。EnemyNavigationValidation.RunCombatBatch 针对合并风险运行 12 项通过，覆盖弹体/光束、弱点受击箱开合和一次扣血一次反馈；未重复运行导航或渲染套件。小怪提交排除自动 stash 中的字体图集和 ProjectSettings，原 stash 保留。
+
+2026-10-18 三地区域背景音乐：Presentation/Audio 新增 MusicProfile、MusicRegion、MusicDirector，LevelRuntime 已接线，GameRoot 嵌套继承。用户确认序章/中心暂用积木音乐；主题正式地图未全部登记，通过三个音乐区域预制体接入，不按预加载事件换曲。DSP 精确前奏接循环，跨区默认1.5秒淡化，1米迟滞/0.25秒稳定期，暂停平滑降至35%继续播放，回访不重复前奏。原始OGG保存在Doc/AudioSources，播放WAV仅裁掉低于-60dBFS的连续尾部静音并保留20ms，长曲Streaming；16份Kenney CC0音效已备选但未挂玩法。原工程Unity6000.6.4f1编译并完成37项定向PlayMode验证，原Boot场景自动恢复；结果Logs/AreaMusic/Validation.txt。试听场景Test_AreaMusic和接入说明Doc/背景音乐接入.md；未做Player构建或目标设备听感验收。
