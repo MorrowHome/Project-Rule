@@ -12,6 +12,8 @@ namespace RuleGame.Editor.Audio
         private static readonly Type AudioUtil = typeof(AudioImporter).Assembly.GetType("UnityEditor.AudioUtil");
         private static readonly MethodInfo PlayMethod = AudioUtil?.GetMethod("PlayPreviewClip", new[] { typeof(AudioClip), typeof(int), typeof(bool) });
         private static readonly MethodInfo StopMethod = AudioUtil?.GetMethod("StopAllPreviewClips");
+        private static readonly MethodInfo PauseMethod = AudioUtil?.GetMethod("PausePreviewClip");
+        private static readonly MethodInfo ResumeMethod = AudioUtil?.GetMethod("ResumePreviewClip");
         private static AudioClip _temporary;
 
         static AudioAudition()
@@ -62,9 +64,25 @@ namespace RuleGame.Editor.Audio
             }
             _temporary = AudioClip.Create("AudioWorkbench_Preview", frames, clip.channels, clip.frequency, false);
             _temporary.hideFlags = HideFlags.HideAndDontSave;
-            _temporary.SetData(output, 0);
-            if (PlayMethod == null) { Stop(); throw new InvalidOperationException("当前 Unity 不支持编辑器参数试听。"); }
-            PlayMethod.Invoke(null, new object[] { _temporary, 0, false });
+            if (PlayMethod == null || PauseMethod == null || ResumeMethod == null)
+            {
+                Stop();
+                throw new InvalidOperationException("当前 Unity 不支持编辑器参数试听。");
+            }
+            try
+            {
+                // Unity 6000.6 的预览入口会重新初始化动态 Clip 的 PCM，清掉此前的 SetData。
+                // 先建立预览并暂停，再写样本，续播不会再次初始化音频缓冲区。
+                PlayMethod.Invoke(null, new object[] { _temporary, 0, false });
+                PauseMethod.Invoke(null, null);
+                if (!_temporary.SetData(output, 0)) throw new InvalidOperationException("参数试听样本写入失败。");
+                ResumeMethod.Invoke(null, null);
+            }
+            catch
+            {
+                Stop();
+                throw;
+            }
         }
     }
 }

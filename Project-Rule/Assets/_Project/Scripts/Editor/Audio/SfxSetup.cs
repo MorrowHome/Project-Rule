@@ -46,7 +46,7 @@ namespace RuleGame.Editor.Audio
                 SetEntry(entries, SfxCue.Dash, 0.6f, 0.85f, 0.94f, "Rpg/cloth3");
                 SetEntry(entries, SfxCue.SwordLight, 0.55f, 0.96f, 1.04f, WorldSfxSetup.LightA, WorldSfxSetup.LightB);
                 SetEntry(entries, SfxCue.SwordHeavy, 0.65f, 0.88f, 0.96f, WorldSfxSetup.HeavyA, WorldSfxSetup.HeavyB);
-                SetEntry(entries, SfxCue.Hurt, 0.75f, 0.95f, 1.02f, "Impact/impactPunch_medium_000");
+                SetEntry(entries, SfxCue.Hurt, 0.62f, 1f, 1.06f, "Assets/_Project/Audio/SFX/Rpg80/creature_hurt_01.ogg", "Assets/_Project/Audio/SFX/Rpg80/creature_hurt_02.ogg");
                 SetEntry(entries, SfxCue.WheelOpen, 0.45f, 1f, 1f, "Interface/open_001");
                 SetEntry(entries, SfxCue.WheelPreview, 0.26f, 1f, 1f, "Interface/select_001");
                 SetEntry(entries, SfxCue.WheelConfirm, 0.55f, 1f, 1f, "Interface/confirmation_001");

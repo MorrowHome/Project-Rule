@@ -77,9 +77,10 @@ MonoBehaviour:
     Priority: 64
   - Cue: 7
     Clips:
-    - {fileID: 8300000, guid: 0dcd4d29e4048482685711365be0cd43, type: 3}
-    Volume: 0.75
-    Pitch: {x: 0.95, y: 1.02}
+    - {fileID: 8300000, guid: 30787889515a848fe8cc632863166e1b, type: 3}
+    - {fileID: 8300000, guid: a34442575314d4081a50c7cf6a04c171, type: 3}
+    Volume: 0.62
+    Pitch: {x: 1, y: 1.06}
     MinInterval: 0.06
     MaxVoices: 2
     Priority: 16

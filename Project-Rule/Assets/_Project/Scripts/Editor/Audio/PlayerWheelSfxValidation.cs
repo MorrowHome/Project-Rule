@@ -167,6 +167,8 @@ namespace RuleGame.Editor.Audio
                         Keys(); Buttons(0);
                         _combat.ApplyDamage(null, _damageable, 10f, 0f);
                         Check(Count(SfxCue.Hurt) == 1 && _actualDamage == 10f, "实际扣血后播放受击声并携带真实伤害");
+                        Check(SfxSources().Any(source => source.isPlaying && _audio.Bank.Find(SfxCue.Hurt).Clips.Contains(source.clip)),
+                            "实际扣血使用当前配置的受击素材进入真实 AudioSource 播放");
                         _combat.ApplyDamage(null, _damageable, 10f, 0f);
                         Check(Count(SfxCue.Hurt) == 1, "受击无敌帧内伤害尝试不重复播声");
                         _snapshot = SnapshotSystem.Instance.Capture();
