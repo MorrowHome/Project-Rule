@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4502221175975341964}
   - component: {fileID: 6689891912237384207}
+  - component: {fileID: 4291043403585637688}
   m_Layer: 0
   m_Name: LevelRuntime
   m_TagString: Untagged
@@ -56,6 +57,20 @@ MonoBehaviour:
   _pausedVolume: 0.35
   _duckSeconds: 0.2
   _scheduleAhead: 0.5
+--- !u!114 &4291043403585637688
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 465974810101199962}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 409b352f64a054f0cb228bd97b6664e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.Audio.SfxPlayer
+  _bank: {fileID: 11400000, guid: c123a1130ff994289986fe76e0fa1e69, type: 2}
+  _volume: 0.85
 --- !u!1 &701508034279411341
 GameObject:
   m_ObjectHideFlags: 0
@@ -74,6 +89,7 @@ GameObject:
   - component: {fileID: 6048151562633117209}
   - component: {fileID: 3563518010594046544}
   - component: {fileID: 372902075844652135}
+  - component: {fileID: 299994958780319301}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -349,6 +365,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 983fb798f0ea2174593564c6bc079e38, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RuleGame.Development::RuleGame.Development.RuleWheel.RuleWheelLabUnlocks
+--- !u!114 &299994958780319301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 701508034279411341}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9be5dceb144a5490e80e8f159df71a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.Audio.PlayerSfxPresenter
+  _audio: {fileID: 4291043403585637688}
 --- !u!1 &863040203698951685
 GameObject:
   m_ObjectHideFlags: 0
@@ -772,6 +801,7 @@ GameObject:
   - component: {fileID: 6004299917009494610}
   - component: {fileID: 4518600675149302340}
   - component: {fileID: 5176214626023696707}
+  - component: {fileID: 403698173532593247}
   m_Layer: 0
   m_Name: Rule Wheel
   m_TagString: Untagged
@@ -849,6 +879,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.RuleWheel.RuleSelectionOrbView
   _art: {fileID: 11400000, guid: 9c570e4d34fea6f43a2207b644fdf9e4, type: 2}
+--- !u!114 &403698173532593247
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4974943283484232420}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95c9062a62c9c401c86360a3cb609554, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.Audio.RuleWheelSfxPresenter
+  _audio: {fileID: 4291043403585637688}
 --- !u!1 &6617420305150054304
 GameObject:
   m_ObjectHideFlags: 0

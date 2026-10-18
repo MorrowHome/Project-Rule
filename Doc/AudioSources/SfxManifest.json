@@ -4,7 +4,8 @@
   "retrieved": "2026-10-18",
   "source_pages": [
     "https://kenney.nl/assets/impact-sounds",
-    "https://kenney.nl/assets/interface-sounds"
+    "https://kenney.nl/assets/interface-sounds",
+    "https://kenney.nl/assets/rpg-audio"
   ],
   "files": [
     {
@@ -102,6 +103,36 @@
       "pack": "interface-sounds",
       "original_path": "Audio/click_001.ogg",
       "sha256": "ccfb7fa0cccdd9faec0eb16033c732b1e308d139d80f799161495d58f7adcdb9"
+    },
+    {
+      "file": "Project-Rule/Assets/_Project/Audio/SFX/Kenney/Rpg/cloth1.ogg",
+      "pack": "rpg-audio",
+      "original_path": "Audio/cloth1.ogg",
+      "sha256": "ddb93a3671233f95da0e0b10367f082f7eb42fa6caaddcf776410aa8833c747d"
+    },
+    {
+      "file": "Project-Rule/Assets/_Project/Audio/SFX/Kenney/Rpg/cloth2.ogg",
+      "pack": "rpg-audio",
+      "original_path": "Audio/cloth2.ogg",
+      "sha256": "8a7451193c38bc05483aec25dd193e163a15d44cf7fff04ac7912573231b0201"
+    },
+    {
+      "file": "Project-Rule/Assets/_Project/Audio/SFX/Kenney/Rpg/cloth3.ogg",
+      "pack": "rpg-audio",
+      "original_path": "Audio/cloth3.ogg",
+      "sha256": "a48632d17a4f1416541d261a32a31612e01267144c407fa3ecab3ff410f0085b"
+    },
+    {
+      "file": "Project-Rule/Assets/_Project/Audio/SFX/Kenney/Rpg/knifeSlice.ogg",
+      "pack": "rpg-audio",
+      "original_path": "Audio/knifeSlice.ogg",
+      "sha256": "4cd96dc630bed9840c15f1dd2306da2cc56a4da26a5d3f1a03c5a7265ac5e54f"
+    },
+    {
+      "file": "Project-Rule/Assets/_Project/Audio/SFX/Kenney/Rpg/knifeSlice2.ogg",
+      "pack": "rpg-audio",
+      "original_path": "Audio/knifeSlice2.ogg",
+      "sha256": "6c2064d0ef988d1ec3d56868e823ea8823a5cac00f2742560052633529407def"
     }
   ]
 }
