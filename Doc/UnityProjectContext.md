@@ -124,3 +124,7 @@ manifest 已有 Coplay Unity MCP，仓库 `.mcp.json` 指向 `localhost:8080/mcp
 2026-10-18 按用户要求完善魔王城测试场：保持 Test_DemonCastleComponents.unity 的GUID，改成00_Ground与Zone_01—12分区，覆盖九个机关区域及地形试跳/六种立柱/溜溜球展示。DemonCastleLabControls增加下拉/F1/F2跳转、随位置变更说明、生命能量HUD、F5复原机关/角色、F6/F7快照、F9补能、每区复活点。Tools/规则游戏/地图组件/魔王城 提供生成/打开/明确重建测试场景。完整工程副本 /tmp/rule-demon-scene-20261018 验证150项0失败；日志 /tmp/rule-demon-scene-validation.log。已在当前Editor实际进入Play看中文HUD并用F1跳区，完成后退出Play并留在本场景；仅调整测试场、生成器和测试控制，不写回LevelRuntime或正式地图。
 
 2026-10-18 魔王城提交验证：以本地 p2-p3-merge（73857b6）为基线建立 codex/demon-castle-components 独立分支，仅纳入魔王城资产、代码、测试场与文档；在该分支完整工程运行 DemonCastleValidation.RunBatch，150项通过、0失败，Unity进程退出码0。日志 /tmp/rule-demon-branch-validation.log；未纳入规则轮盘美术或NPC的同期工作，未运行Player构建。
+
+2026-10-18 魔王城工具按用户要求改为平铺菜单：移除组件放置面板和放置/分类子菜单，32个Prefab在 Tools/规则游戏/地图组件/魔王城 下直接列出，点击放到Scene视图中心。DemonCastlePalette精简并重命名为DemonCastleMenu，保持脚本GUID、Prefab连接及Undo/Redo/Prefab Stage放置实现；同步使用文档和现有验证引用。当前Unity Editor刷新编译后检查实际菜单，实际点击岩石平台·短可放置且撤销后移除；32项唯一菜单与32个Prefab一一对应。未修改运行时、预制体、场景或其它地图组件菜单。
+
+2026-10-18 魔王城菜单进一步收窄：按用户要求仅保留17个机关单体及组合件的平铺放置入口，移除15个静态地形/立柱/纯动画入口；原有32个Prefab及测试场布局保留。Unity刷新编译后核对实际Tools菜单，机关入口完整，地块、岩石平台、立柱和溜溜球入口均已消失，其它地图组件条目保留。

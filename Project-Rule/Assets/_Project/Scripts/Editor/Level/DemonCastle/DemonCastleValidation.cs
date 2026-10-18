@@ -34,7 +34,7 @@ namespace RuleGame.Editor.Level
             if (!Application.isBatchMode) throw new InvalidOperationException("请在独立工程批处理运行。");
             try
             {
-                var menuItems = new[] { typeof(DemonCastleBuilder), typeof(DemonCastlePalette) }
+                var menuItems = new[] { typeof(DemonCastleBuilder), typeof(DemonCastleMenu) }
                     .SelectMany(type => type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
                     .SelectMany(method => method.GetCustomAttributes(typeof(MenuItem), false)).Cast<MenuItem>().ToArray();
                 Check(menuItems.Length > 0 && menuItems.All(item => item.menuItem.StartsWith("Tools/规则游戏/地图组件/魔王城/", StringComparison.Ordinal)),
@@ -53,7 +53,7 @@ namespace RuleGame.Editor.Level
                 DemonCastleBuilder.BuildPrefabs();
                 Check(hashes.All(x => x.Value == File.ReadAllText(DemonCastleBuilder.Folder + "/" + x.Key + ".prefab")), "rebuild preserves authored prefabs");
                 var parent = new GameObject("Parent"); parent.transform.position = new Vector3(100f, 30f);
-                var placed = DemonCastlePalette.PlaceAt("DemonPuzzleRoom", new Vector3(107f, 35f), parent.transform);
+                var placed = DemonCastleMenu.PlaceAt("DemonPuzzleRoom", new Vector3(107f, 35f), parent.transform);
                 Check(placed.transform.position == new Vector3(107f, 35f) && placed.transform.parent == parent.transform && PrefabUtility.IsPartOfPrefabInstance(placed), "placement keeps world position, parent and prefab connection");
                 var instanceId = placed.GetEntityId(); Undo.FlushUndoRecordObjects(); Undo.PerformUndo();
                 Check(placed == null, "placement Undo removes entire assembly"); Undo.PerformRedo();
