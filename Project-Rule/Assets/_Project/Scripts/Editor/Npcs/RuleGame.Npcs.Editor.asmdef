@@ -1,7 +1,7 @@
 {
     "name": "RuleGame.Npcs.Editor",
     "rootNamespace": "RuleGame.Editor.Npcs",
-    "references": ["RuleGame.Npcs", "RuleGame.Gameplay", "RuleGame.Dialogue", "RuleGame.Dialogue.UI", "RuleGame.Core", "RuleGame.Infrastructure", "YarnSpinner.Unity"],
+    "references": ["RuleGame.Npcs", "RuleGame.NpcLab", "RuleGame.Gameplay", "RuleGame.Dialogue", "RuleGame.Dialogue.UI", "RuleGame.Core", "RuleGame.Infrastructure", "Unity.InputSystem", "YarnSpinner.Unity"],
     "includePlatforms": ["Editor"],
     "autoReferenced": true
 }

@@ -19,14 +19,17 @@ Unity 资源均位于 `Assets/_Project/`：
 
 ## 试播与摆放
 
-1. 打开 `Test_NpcConfiguration.unity`，进入 Play，选中某个 NPC。
-2. 在 `NpcActor` Inspector 点「试播当前条件」。台词框的「继续」会推进，「结束交谈」会取消。
-3. 场景中的 `abilityReady`、`buttonPowered`、`gearReleased`、`hasPass`、`townSoldOut` 五个物件各带一个 `DialogueSceneFlag`。在 Inspector 改 `Value` 可切换条件。
-4. 商人说完会停在 `Sell`，等待交易系统。没有交易 UI 时，在 NPC Inspector 点「模拟关闭交易界面」试播 `Bye`。
+1. 打开 `Test_NpcConfiguration.unity`，按 Play。场景已接入现有主角预制体和跟随镜头，`A / D` 移动、空格跳跃。
+2. 走近 NPC，画面出现「E 与某人交谈」。按 `E` 开始交谈，再按 `E` 显示整句/继续；`Esc` 结束。手柄对应 `Y / B`。
+3. 右上角直接勾选「能力达标」「按钮通电」「齿轮解卡」「持有通行证」「小镇商品买齐」切换真实条件组件；无需操作 Hierarchy 或 Inspector。
+4. 商人说完后，Game 画面显示四件商品；按 `E / Esc` 或点击「关闭展示，继续交谈」进入道别。这个面板用于交互验证，不结算购买。
+5. 走进守卫范围会自动交谈。交谈与商品展示期间占用现有玩家输入门禁，结束或取消后恢复跑跳和攻击。
 
 正式场景放一个 `NpcDialogueSystem.prefab`，再拖入所需 NPC；将同一个 Host 赋给各 NPC 的 `_host`。运行时也可 `npc.BindHost(host)`。NPC Prefab 不嵌入独立 Runner，避免每个人抢一个窗口。
 
-P3 交互键调用 **`NpcActor.TryInteract(player.transform)`**，成功才占用交互。这个包装会选取当前状态入口，再复用已有 `DialogueNpc` 的半径、冷却与 Host 忙碌检查。不要直接调用其内部 `DialogueNpc.TryInteract`，那会绕过角色条件选择。守卫还可以将 `_proximityActor` 接到玩家，以距离轮询实现进入范围自动交谈；离开后可再次触发。
+可直接复用 **`NpcPlayerInteraction`**：挂在现有 `PlayerController` 上，绑定共享 Host、NPC 数组，将 `Advance Dialogue` 事件连接到既有 `DialogueToolkitPresenter.Advance`。它负责最近 NPC 选择、E/Y 输入、Esc/B 取消，以及已有输入令牌的取得和释放，尊重其他界面的输入占用。NPC Runtime 不依赖显示程序集。
+
+已有自定义交互入口时，也可调用 **`NpcActor.TryInteract(player.transform)`**。这个包装会选取当前状态入口，再复用已有 `DialogueNpc` 的半径、冷却与 Host 忙碌检查。不要直接调用其内部 `DialogueNpc.TryInteract`，那会绕过角色条件选择。守卫将 `_proximityActor` 接到玩家，以距离轮询实现进入范围自动交谈；离开后可再次触发。
 
 已有的 `Data/Dialogue/NpcBarks.yarn`、原三位试播 NPC 和 `DialogueLab` 不替换。新台词在 `Data/Npcs/ConfiguredNpcs.yarn`，直接修改正文即可。表中概念例句用于首轮配置，居民四句是试播文案，尚未视为正式剧情定稿。
 
@@ -70,8 +73,11 @@ NPC 使用现有 `RuleAffectedBody` 参与规则与内存快照，居民用 `Fix
 - 刷新图像：使用项目附带 Python/Pillow 执行 `Tools/NpcAssets/import_npcs.py`。使用同一角色姿态并集裁切、统一脚底锚点；已有台词不覆盖。
 - Unity 菜单：`Tools → 规则游戏 → NPC → 生成配置、预制体与试播场景`。只生成缺失的角色资产与场景，不覆盖已有调参或关卡。
 - Unity 菜单：`Tools → 规则游戏 → NPC → 校验全部 NPC 配置`。检查九个角色、十八个入口、兜底与资源接线。
+- 已有旧版试播场景用 `Tools → 规则游戏 → NPC → 接入玩家与场景内交互` 补接主角、镜头、地面和 Game 内控件；不重建 NPC 或覆盖其条件参数。
 - `RuleGame.Editor.Npcs.NpcValidation.RunBatch` **仅在临时工程副本**执行，会切换场景、进入 Play 并退出该副本。使用真实 Yarn 和 UI 推进，验证各分支、距离、取消、一次性事件、交易道别、居民暂停及行为快照。
 
-正式地图尚需接 P3 交互输入、真实任务条件、交易 UI、资格进度、Boss 生成和守卫战斗；本次未自动修改正式关卡或 Build Settings。
+测试场景已接玩家输入；正式地图可复用同一个 `NpcPlayerInteraction`。正式商品购买、资格进度、Boss 生成和守卫战斗仍由各自系统接管；本次未自动修改正式关卡或 Build Settings。
 
 2026-10-18 验证：Unity `6000.6.4f1` 临时完整副本 `/tmp/rule-npc-config-20261018` 中，`RunBatch` 的 **145 项断言全部通过**，进程退出码 0。包含十八个入口的实际播放、距离拒绝、正常/取消收尾、商店关闭后道别、任务分支与一次性事件，以及居民实际物理移动、暂停、行为快照。首轮发现驱动力不足以克服摩擦，调整为独立 `WalkForce=60` 后通过；没有绕过物理强行写速度。最终日志 `/tmp/rule-npc-validation-final.log`，断言记录在 `Doc/References/Npcs/Validation_20261018.txt`。后续单独通过 Play 模式渲染九个真实预制体，预览在 `Doc/Preview/NpcConfiguration.png`；最后一次预览生成也通过完整工程编译。未执行 Player 构建或正式关卡流程验收。
+
+后续补接可操控主角，新增 `NpcPlayerValidation.RunBatch`，通过 Input System 队列发送真实 D/E/Esc/Space 键状态，**22 项断言通过**，退出码 0。覆盖玩家实际走近、最近角色提示、按键开播和继续、输入门禁、商品展示与道别、恢复移动、画面切换任务条件、取消、暂停/其他界面输入占用、守卫范围触发和禁用释放。也修复了快速关闭商店时，道别被重复交互冷却挡住的问题；道别作为同一轮交谈的后续，仍遵守共享 Host 忙碌和内容校验。日志 `/tmp/rule-npc-player-validation-final.log`，记录 `Doc/References/Npcs/PlayerInteractionValidation_20261018.txt`，实际画面 `Doc/Preview/NpcPlayerInteraction.png`。前述 145 项是基础 NPC 配置交付时的结果；本轮只针对新增玩家流程执行这 22 项，没有重复跑全量套件。

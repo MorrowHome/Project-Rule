@@ -45,6 +45,14 @@ namespace RuleGame.Gameplay.Dialogue
             return true;
         }
 
+        /// <summary>交易关闭后的同一轮道别不受重复交互冷却阻塞，Host 忙碌与内容校验照常生效。</summary>
+        public bool TryContinueConversation()
+        {
+            if (!isActiveAndEnabled || _host == null || !_host.TrySpeak(_speakerId)) return false;
+            _nextSpeakAt = Time.unscaledTime + _repeatDelay;
+            return true;
+        }
+
         private void OnDrawGizmosSelected()
         {
             Gizmos.color = new Color(0.8f, 0.8f, 0.65f);

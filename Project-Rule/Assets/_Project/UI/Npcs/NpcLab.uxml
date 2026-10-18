@@ -1,0 +1,23 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="NpcLab.uss" />
+    <ui:VisualElement class="npc-lab" picking-mode="Ignore">
+        <ui:VisualElement class="lab-instructions" picking-mode="Ignore">
+            <ui:Label text="NPC 交互试验场" class="lab-heading" />
+            <ui:Label text="A / D 移动　空格跳跃　E 交谈" />
+            <ui:Label name="interactionPrompt" class="lab-prompt" text="走近 NPC，按 E 交谈" />
+        </ui:VisualElement>
+        <ui:VisualElement class="lab-conditions">
+            <ui:Label text="切换测试条件" class="lab-heading" />
+            <ui:Toggle name="abilityReady" label="能力达标" />
+            <ui:Toggle name="buttonPowered" label="按钮通电" />
+            <ui:Toggle name="gearReleased" label="齿轮解卡" />
+            <ui:Toggle name="hasPass" label="持有通行证" />
+            <ui:Toggle name="townSoldOut" label="小镇商品买齐" />
+        </ui:VisualElement>
+        <ui:VisualElement name="shopPanel" class="shop-panel hidden">
+            <ui:Label name="shopTitle" class="lab-heading" />
+            <ui:Label name="shopProducts" class="shop-products" />
+            <ui:Button name="closeShop" text="关闭展示，继续交谈" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -111,7 +111,8 @@ namespace RuleGame.Gameplay.Npcs
             Subscribe();
             _dialogue.Configure(_host, _definition.SpeakerId(state), _definition.InteractionRadius, _definition.RepeatDelay);
             _speaking = true;
-            bool accepted = player == null ? _dialogue.TrySpeak() : _dialogue.TryInteract(player);
+            bool accepted = state == NpcState.Bye ? _dialogue.TryContinueConversation()
+                : player == null ? _dialogue.TrySpeak() : _dialogue.TryInteract(player);
             if (!accepted) { _speaking = false; return false; }
             State = state;
             _nextSpeakAt = Time.unscaledTime + _definition.RepeatDelay;

@@ -5,10 +5,14 @@ using RuleGame.Core.Rules;
 using RuleGame.Gameplay.Common;
 using RuleGame.Gameplay.Dialogue;
 using RuleGame.Gameplay.Npcs;
+using RuleGame.Development.Npcs;
+using RuleGame.UI.Dialogue;
 using UnityEditor;
+using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
 using Yarn.Unity;
 
 namespace RuleGame.Editor.Npcs
@@ -56,6 +60,7 @@ namespace RuleGame.Editor.Npcs
             DialogueContent content = CreateContent(definitions);
             CreateHost(content);
             CreateLab(definitions);
+            ConnectPlayableLab();
             AssetDatabase.SaveAssets();
             Debug.Log("[NPC] 已配置 " + definitions.Count + " 个角色；菜单中的校验可检查台词、资源与接线。");
         }
@@ -226,6 +231,105 @@ namespace RuleGame.Editor.Npcs
                 case NpcRole.GearKeeper: return new[] { NpcState.Talk1, NpcState.Talk2, NpcState.Talk3, NpcState.Talk4, NpcState.Talk5 };
                 case NpcRole.MysteryMerchant: return new[] { NpcState.Talk1, NpcState.Talk2, NpcState.Bye };
                 default: return new[] { NpcState.Talk };
+            }
+        }
+
+        [MenuItem("Tools/规则游戏/NPC/接入玩家与场景内交互")]
+        public static void ConnectPlayableLab()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("先退出 Play，接入后重新运行测试场景。");
+            Scene previous = SceneManager.GetActiveScene();
+            Scene scene = SceneManager.GetSceneByPath(ScenePath);
+            bool opened = !scene.isLoaded;
+            if (opened) scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Additive);
+            SceneManager.SetActiveScene(scene);
+            try
+            {
+                var actors = new List<NpcActor>();
+                var flags = new Dictionary<string, DialogueSceneFlag>();
+                DialogueHost host = null;
+                GameObject player = null;
+                Camera camera = null;
+                GameObject ground = null;
+                NpcLabControls controls = null;
+                foreach (GameObject root in scene.GetRootGameObjects())
+                {
+                    actors.AddRange(root.GetComponentsInChildren<NpcActor>(true));
+                    foreach (DialogueSceneFlag flag in root.GetComponentsInChildren<DialogueSceneFlag>(true)) flags[flag.name] = flag;
+                    if (root.GetComponent<DialogueHost>() != null) host = root.GetComponent<DialogueHost>();
+                    if (root.GetComponent<Camera>() != null) camera = root.GetComponent<Camera>();
+                    if (root.GetComponent<NpcPlayerInteraction>() != null) player = root;
+                    if (root.name == "Ground") ground = root;
+                    if (root.GetComponent<NpcLabControls>() != null) controls = root.GetComponent<NpcLabControls>();
+                }
+                if (host == null || camera == null || ground == null) throw new InvalidOperationException("NPC 试验场缺少 Host、摄像机或地面。");
+                if (player == null)
+                {
+                    GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Enemies/EnemyLabPlayer.prefab");
+                    if (prefab == null) throw new InvalidOperationException("缺少现有主角预制体 EnemyLabPlayer。");
+                    player = (GameObject)PrefabUtility.InstantiatePrefab(prefab, scene);
+                    player.name = "Player";
+                    player.tag = "Player";
+                    player.transform.position = new Vector3(-13.5f, 1f, 0f);
+                    // 复用真实角色与动画，移除占据测试画面的旧 P3 调试面板。
+                    foreach (MonoBehaviour component in player.GetComponents<MonoBehaviour>())
+                        if (component != null && component.GetType().Name == "P3DebugOverlay") UnityEngine.Object.DestroyImmediate(component);
+                    player.AddComponent<NpcPlayerInteraction>();
+                }
+                NpcPlayerInteraction interaction = player.GetComponent<NpcPlayerInteraction>();
+                Set(interaction, "_host", host);
+                var interactionFields = new SerializedObject(interaction);
+                SerializedProperty targets = interactionFields.FindProperty("_npcs");
+                targets.arraySize = actors.Count;
+                for (int i = 0; i < actors.Count; i++) targets.GetArrayElementAtIndex(i).objectReferenceValue = actors[i];
+                interactionFields.ApplyModifiedPropertiesWithoutUndo();
+                UnityEventTools.RemovePersistentListener(interaction.AdvanceDialogue, host.GetComponent<DialogueToolkitPresenter>().Advance);
+                UnityEventTools.AddPersistentListener(interaction.AdvanceDialogue, host.GetComponent<DialogueToolkitPresenter>().Advance);
+                EditorUtility.SetDirty(interaction);
+                foreach (NpcActor actor in actors)
+                    if (actor.Definition.Role == NpcRole.Guard) Set(actor, "_proximityActor", player.transform);
+                camera.orthographicSize = 4f;
+                camera.backgroundColor = new Color(0.78f, 0.8f, 0.82f);
+                camera.transform.position = new Vector3(-12.5f, 1.6f, -10f);
+                SpriteRenderer floor = ground.GetComponent<SpriteRenderer>();
+                if (floor == null) floor = ground.AddComponent<SpriteRenderer>();
+                floor.sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/Sprites/P4WhiteboxSquare.png");
+                floor.drawMode = SpriteDrawMode.Tiled;
+                floor.size = new Vector2(40f, 0.6f);
+                floor.color = new Color(0.28f, 0.34f, 0.38f);
+                floor.sortingOrder = -10;
+                foreach (int direction in new[] { -1, 1 })
+                {
+                    string name = direction < 0 ? "LeftBoundary" : "RightBoundary";
+                    bool exists = false;
+                    foreach (GameObject root in scene.GetRootGameObjects()) if (root.name == name) exists = true;
+                    if (exists) continue;
+                    var wall = new GameObject(name, typeof(BoxCollider2D));
+                    wall.layer = 8;
+                    wall.transform.position = new Vector3(direction * 19.8f, 2.5f, 0f);
+                    wall.GetComponent<BoxCollider2D>().size = new Vector2(0.4f, 6f);
+                }
+                if (controls == null) controls = new GameObject("NPC Interaction HUD", typeof(UIDocument)).AddComponent<NpcLabControls>();
+                UIDocument document = controls.GetComponent<UIDocument>();
+                document.panelSettings = AssetDatabase.LoadAssetAtPath<PanelSettings>("Assets/_Project/UI/Dialogue/DialoguePanelSettings.asset");
+                document.visualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/_Project/UI/Npcs/NpcLab.uxml");
+                document.sortingOrder = 50;
+                Set(controls, "_interaction", interaction);
+                Set(controls, "_camera", camera);
+                var fields = new SerializedObject(controls);
+                SerializedProperty conditions = fields.FindProperty("_conditions");
+                string[] keys = { "abilityReady", "buttonPowered", "gearReleased", "hasPass", "townSoldOut" };
+                conditions.arraySize = keys.Length;
+                for (int i = 0; i < keys.Length; i++) conditions.GetArrayElementAtIndex(i).objectReferenceValue = flags[keys[i]];
+                fields.ApplyModifiedPropertiesWithoutUndo();
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene, ScenePath);
+                Debug.Log("[NPC] 玩家与 Game 画面交互已接好：A/D 移动，空格跳跃，E 交谈/继续，Esc 结束；右上角切换条件。");
+            }
+            finally
+            {
+                if (opened) EditorSceneManager.CloseScene(scene, true);
+                if (previous.IsValid() && previous.isLoaded) SceneManager.SetActiveScene(previous);
             }
         }
 

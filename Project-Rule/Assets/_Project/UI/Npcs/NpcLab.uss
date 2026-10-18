@@ -1,0 +1,43 @@
+.npc-lab {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    color: #252b36;
+    -unity-font-definition: url("../Dialogue/DialogueChineseFont.asset");
+    font-size: 18px;
+}
+.lab-instructions {
+    position: absolute;
+    left: 24px;
+    top: 20px;
+    padding: 14px 18px;
+    background-color: #f2f1eb;
+    border-left-width: 5px;
+    border-left-color: #334757;
+}
+.lab-heading { font-size: 23px; -unity-font-style: bold; margin-bottom: 8px; }
+.lab-prompt { margin-top: 10px; -unity-font-style: bold; }
+.lab-conditions {
+    position: absolute;
+    right: 24px;
+    top: 20px;
+    padding: 14px 18px;
+    background-color: #f2f1eb;
+    min-width: 235px;
+}
+.lab-conditions Toggle { margin-top: 5px; font-size: 16px; }
+.shop-panel {
+    position: absolute;
+    left: 28%;
+    right: 28%;
+    top: 24%;
+    padding: 24px;
+    background-color: #f2f1eb;
+    border-width: 2px;
+    border-color: #334757;
+}
+.shop-products { margin-top: 16px; margin-bottom: 20px; white-space: normal; }
+.shop-panel Button { min-height: 42px; font-size: 18px; background-color: #334757; color: #f2f1eb; }
+.hidden { display: none; }

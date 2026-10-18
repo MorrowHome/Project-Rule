@@ -910,6 +910,9 @@ namespace RuleGame.Gameplay.Player
         /// <summary>UI 仅接管输入；慢时间里的重力、碰撞与外部冲量仍走原 FixedUpdate。</summary>
         public IDisposable BlockGameplayInput() => _input.Block();
 
+        /// <summary>其他交互入口只读现有门禁，避免规则选择器打开时同时开始交谈。</summary>
+        public bool IsGameplayInputSuppressed => _input == null || _input.IsSuppressed;
+
         // ==================================================================
         //  击退
         // ==================================================================
