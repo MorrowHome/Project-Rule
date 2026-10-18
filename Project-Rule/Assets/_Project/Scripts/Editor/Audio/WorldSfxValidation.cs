@@ -147,8 +147,8 @@ namespace RuleGame.Editor.Audio
                         Check(Count(SfxCue.EnemyShot) == 1, "真实投射物生成触发发射声");
                         _wood.Beam(90f, .1f, .05f);
                         Check(Count(SfxCue.EnemyBeam) == 1, "真实光束生成触发蓄能攻击声");
-                        foreach (EnemyProjectile shot in UnityEngine.Object.FindObjectsByType<EnemyProjectile>(FindObjectsSortMode.None)) shot.gameObject.SetActive(false);
-                        foreach (EnemyBeam beam in UnityEngine.Object.FindObjectsByType<EnemyBeam>(FindObjectsSortMode.None)) beam.gameObject.SetActive(false);
+                        foreach (EnemyProjectile shot in UnityEngine.Object.FindObjectsByType<EnemyProjectile>()) shot.gameObject.SetActive(false);
+                        foreach (EnemyBeam beam in UnityEngine.Object.FindObjectsByType<EnemyBeam>()) beam.gameObject.SetActive(false);
                         _combat.ApplyDamage(null, _wood, 1f, 0f);
                         Check(Count(SfxCue.EnemyHitWood) == 1, "真实积木敌人扣血触发木质受击声");
                         _combat.ApplyDamage(null, _wood, 1f, 0f);

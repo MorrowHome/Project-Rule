@@ -196,7 +196,7 @@ namespace RuleGame.Editor.Level
         private static List<PlayerSpawnPoint> AllPoints()
         {
             var list = new List<PlayerSpawnPoint>(
-                Object.FindObjectsByType<PlayerSpawnPoint>(FindObjectsInactive.Include, FindObjectsSortMode.None));
+                Object.FindObjectsByType<PlayerSpawnPoint>(FindObjectsInactive.Include));
             return list;
         }
     }

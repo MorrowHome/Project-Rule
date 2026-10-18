@@ -85,8 +85,8 @@ namespace RuleGame.Editor.Npcs
             Application.runInBackground = true;
             _host = UnityEngine.Object.FindAnyObjectByType<DialogueHost>();
             _view = _host.GetComponent<DialogueToolkitPresenter>();
-            _actors = UnityEngine.Object.FindObjectsByType<NpcActor>(FindObjectsSortMode.None).ToDictionary(a => a.Definition.Id);
-            _flags = UnityEngine.Object.FindObjectsByType<DialogueSceneFlag>(FindObjectsSortMode.None).ToDictionary(f => f.name);
+            _actors = UnityEngine.Object.FindObjectsByType<NpcActor>().ToDictionary(a => a.Definition.Id);
+            _flags = UnityEngine.Object.FindObjectsByType<DialogueSceneFlag>().ToDictionary(f => f.name);
             if (SessionState.GetBool(CaptureOnly, false))
             {
                 _waitUntil = EditorApplication.timeSinceStartup + 1f;
