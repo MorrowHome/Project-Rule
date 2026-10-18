@@ -5,6 +5,7 @@ from array import array
 import hashlib
 import json
 import math
+import shutil
 from pathlib import Path
 import subprocess
 import wave
@@ -26,6 +27,7 @@ def write_wav(path, samples):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('archive', type=Path)
+    parser.add_argument('--install', action='store_true', help='Copy selected prepared clips into existing Unity asset paths')
     args = parser.parse_args()
     originals = ROOT / 'Doc/AudioSources/FeedbackOriginals'
     output = ROOT / 'Doc/AudioPreviews/PlayerFeedback'
@@ -33,17 +35,18 @@ def main():
     output.mkdir(parents=True, exist_ok=True)
     entries = []
     candidates = [
-        ('Hurt_A', 'impactPunch_heavy_003.ogg', .20, 2600, .60),
-        ('Hurt_B', 'impactSoft_medium_003.ogg', .14, 2800, .60),
-        ('Land_A', 'footstep_carpet_000.ogg', .145, 2200, .33),
-        ('Land_B', 'footstep_concrete_002.ogg', .113, 1900, .33),
+        ('Hurt_A', 'impactPunch_heavy_003.ogg', .20, 6, .60),
+        ('Hurt_B', 'impactSoft_medium_003.ogg', .14, 6, .60),
+        ('Land_A', 'footstep_concrete_002.ogg', .113, 5, .33),
+        ('Land_B', 'footstep_carpet_000.ogg', .145, 5, .33),
     ]
     with zipfile.ZipFile(args.archive) as archive:
-        for name, original_name, duration, cutoff, event_volume in candidates:
+        for name, original_name, duration, high_gain, event_volume in candidates:
             raw = archive.read('Audio/' + original_name)
             original = originals / original_name
             original.write_bytes(raw)
-            processing = f'highpass=f=70,lowpass=f={cutoff},atrim=duration={duration},afade=t=in:d=0.001,afade=t=out:st={max(0, duration - .035)}:d=0.035'
+            low_cut = 140 if name.startswith('Land') else 100
+            processing = f'highpass=f={low_cut},equalizer=f=260:t=q:w=0.8:g=-3,highshelf=f=3500:g={high_gain},lowpass=f=14000,atrim=duration={duration},afade=t=in:d=0.0005,afade=t=out:st={max(0, duration - .018)}:d=0.018'
             decoded = subprocess.check_output(['ffmpeg', '-v', 'error', '-i', str(original),
                 '-af', processing, '-ac', '1', '-ar', str(RATE), '-f', 'f32le', '-'])
             samples = array('f')
@@ -54,6 +57,9 @@ def main():
             samples = [x * gain for x in samples]
             target = output / (name + '.wav')
             write_wav(target, samples)
+            if args.install and name in ('Hurt_A', 'Land_A'):
+                runtime = ROOT / 'Project-Rule/Assets/_Project/Audio/SFX/PlayerFeedback' / ('PlayerHurt.wav' if name == 'Hurt_A' else 'PlayerLand.wav')
+                shutil.copyfile(target, runtime)
             audition = [0.] * round(.2 * RATE)
             for _ in range(3):
                 audition.extend(x * event_volume * .85 for x in samples)
@@ -84,16 +90,16 @@ def main():
 
 | 候选 | 方向 | 原素材 |
 | --- | --- | --- |
-| Hurt_A | 短钝击，裁短尾音 | impactPunch_heavy_003 |
-| Hurt_B | 软材质撞击 | impactSoft_medium_003 |
-| Land_A | 软脚步 | footstep_carpet_000 |
-| Land_B | 轻鞋底接触 | footstep_concrete_002 |
+| Hurt_A | 保留清脆高频的短击 | impactPunch_heavy_003 |
+| Hurt_B | 带高频细节的软撞击 | impactSoft_medium_003 |
+| Land_A | 清楚的鞋底接触瞬态 | footstep_concrete_002 |
+| Land_B | 较柔和的脚步对照 | footstep_carpet_000 |
 
-不带叫声、呻吟或木板敲击。低通与末尾淡出减轻高频和拖尾；实际听感由用户选择。
+不带叫声、呻吟或木板敲击。撤销旧版2.2–2.6kHz低通，3.5kHz以上高架提升5–6dB，仅在14kHz处保留带宽保护；削减260Hz低中频，保留起音和短淡出。目标是用户要求的清亮高频；实际听感仍需在游戏中确认。
 
 无后缀 WAV 为可接入素材；_Audition.wav 每段重复三次，已乘拟定事件音量（受击0.60/落地0.33）与主音量0.85。接入时使用无后缀版本，避免重复乘音量。两种受击、两种落地分别匹配近似RMS并保留峰值余量。
 
-复现：python3 Tools/Audio/prepare_player_feedback.py /path/to/kenney_impact-sounds.zip，需要 ffmpeg。
+复现：python3 Tools/Audio/prepare_player_feedback.py /path/to/kenney_impact-sounds.zip，需要 ffmpeg；加 --install 可更新两个现有 Unity 播放文件，保留其 .meta。
 ''')
     print(json.dumps([{'candidate': e['candidate'], 'duration': e['duration'], 'rms': e['rms'], 'peak': e['peak']} for e in entries], ensure_ascii=False))
 

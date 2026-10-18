@@ -265,7 +265,7 @@ MonoBehaviour:
     Priority: 48
   - Cue: 30
     Clips:
-    - {fileID: 8300000, guid: ee1d957f8883843469d9018d4bec1273, type: 3}
+    - {fileID: 8300000, guid: 5dd03328e645347d6adbd354d2f0059e, type: 3}
     Volume: 0.65
     Pitch: {x: 0.98, y: 1.02}
     MinInterval: 0.12

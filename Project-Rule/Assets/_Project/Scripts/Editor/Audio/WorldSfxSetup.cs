@@ -54,7 +54,7 @@ namespace RuleGame.Editor.Audio
             Set(entries, SfxCue.ImpactWood, .48f, 144, .92f, 1.05f, false, SoundFolder + "Kenney/Impact/impactWood_heavy_000.ogg");
             Set(entries, SfxCue.BreakStone, .7f, 32, .8f, .9f, false, SoundFolder + "Rpg80/stones_02.ogg");
             Set(entries, SfxCue.BreakWood, .66f, 48, .8f, .95f, false, SoundFolder + "Rpg80/wood_02.ogg");
-            Set(entries, SfxCue.Explosion, .65f, 32, .98f, 1.02f, false, SoundFolder + "Kenney/SciFi/explosionCrunch_000.ogg");
+            Set(entries, SfxCue.Explosion, .65f, 32, .98f, 1.02f, false, SoundFolder + "Kenney/SciFi/Explosion_Bright.wav");
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(bank);
 
