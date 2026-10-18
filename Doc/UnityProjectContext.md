@@ -2,6 +2,12 @@
 
 <!-- unity-onboarding:generated:start -->
 
+2026-10-18 Boss 白盒 HUD 接入（基线 `9eddb19`）：`EnemyLabs/Test_Enemy_{BrickBoss,ClockBoss,RabbitBoss,BatBoss}.unity` 各增加一个 Player Vitals，显式绑定本场景玩家的 EntityStatus，共用已有 PlayerVitals.uxml 和 VitalsPanelSettings。四场景保持直接 Play 入口。`LaunchUISetup.InstallBossLabs` 提供菜单 `Tools/规则游戏/UI/接入 Boss 测试场景生命能量条`，检查未保存场景后通过 Editor API 接线；`EnsurePlayerVitals` 同时由 EnemyLabBuilder 的场景生成、玩家刷新和引用修复路径调用，避免重建后丢 HUD 或引用旧玩家。四场景已核对单一 HUD、正确状态引用及公共 UI 资源；Unity 6000.6.4f1 实际编译通过，蝙蝠白盒进入 Play 后观察到新血条随玩家生命归零、能量仍为 100，测试后已退出 Play。未重跑其它三个 Boss 的完整战斗或 Player 构建。Unity 在编辑器渲染时自动填充了 P4ChineseFont 的字体缓存，保留该生成变化。 后续按用户反馈将共享 PlayerVitals 的条形尺寸和数值文字统一放大 30%，保持右上角锚点与原图比例；正式关卡及四个 Boss 白盒同时生效。现有 UI 验证器改为检查填充比例，避免绑定旧的固定像素宽度。
+
+2026-10-18 UI 资源接入（工作基线 `2223080`）：原件来自 Downloads 的 `ui，10.18，12am`。`Tools/UI/import_ui.py` 保留像素作固定裁切，生成英文命名贴图与来源哈希记录 `Doc/References/UI/LaunchUI_20261018.json`；PSD 和参考 JPG 不进入运行时。通用九宫格的内部拼接边缘裁掉 2px，避免原样板的半透明边缘形成暗线；外边框保留。UI Toolkit 的 `UI/Launch` 包含开始菜单、通用弹窗和红色生命/紫色能量条。`Boot` 场景的菜单显式引用 GameRoot 与玩家；`LevelRuntime.prefab` 新增事件驱动的 PlayerVitals，扣血、耗能和 EntityStatus.ApplyData 恢复自动同步。菜单保留原画 16:9 比例并同比缩放点击区域，支持窄屏与超宽屏。开始前通过 TimeManager + EntityStatus 暂停、持有玩家输入令牌；GameRoot 的 WorldStreamer 等 StartStreaming 才启用。BootFlowStarter 保留自动启动默认值，只在 Boot 实例关闭自动启动。存档仍未实现，读取按钮显示说明；关于只列游戏简介，总音量控制 AudioListener.volume（本次会话有效），退出需确认。接入工具入口 `Tools/规则游戏/UI/接入开始菜单与生命能量条`，可重跑；未修改 Build Settings、输入资产或规则轮盘。
+
+同轮按用户要求修复原 Boot 出生点出界：`(64.37, -28.07)` 移至附近实际连续地面上的 `(54.288216, 6.025629)`，仅移动 Boot 的 PlayerSpawn；两份地图场景未修改。通过已有 WorldPartitionBuilder 按当前 Renderer 世界边界刷新 PartitionCatalog 的中心/尺寸，保留分区 ID、路径、半径和迟滞。原始配置曾实际复现地图卸载及持续下坠；最终 `LaunchUIValidation.RunBatch` 在保存后的真实 Boot 场景运行，**25 项通过，0 Error/Exception，未使用临时出生点**，确认两个分区在场、玩家落地存活、菜单暂停/输入隔离、弹窗/音量/退出确认、UI 导航提交与 Esc、1920×1080 / 1280×1024 / 2560×1080 比例，以及实际扣血/耗能、快照恢复、HUD 反复启用、零生命/能量。Unity 6000.6.4f1 编译通过；旧 PlayerSpawnPointTool 的弃用警告仍在。黑线修复已检查 Unity 实际渲染。结果与预览在 `Doc/UI预览/`，正式验收结果为 `Validation.json`。未执行 Player 构建、实体鼠标/键盘窗口输入或手柄设备验收；UI 确认使用 NavigationSubmitEvent，Esc 使用 Input System 合成键盘。`RunFixtureBatch` 仅保留作隔离 UI 排错，最终验收没有调用它。
+
 2026-10-17 在新分支 feat/minion-pathfinding 接入 EnemyPlatformNavigation：真实 Collider2D 站立点采样、有界 A*、身体扫掠验证的跳跃与安全落差，Motor 仍是位移权威。地面追击与返回出生点使用路线，飞鸟水平巡飞不改。普通默认索敌6米、出生点二维追击半径8米、失去视线后搜索最后位置1.5秒；脱战返回，旧积木/蝙蝠召唤物也遵守范围。中文配置包含开关、1.6米跳高、2.5米落差、0.5米采样和0.65秒重算；暂停/受击/快照接入。每次搜索最多192节点/2400查询，缓存不参与快照，半空运动参加快照。修复继承的 a79c487 合并版本中的敌人端旧战斗接口，攻击统一 Hurtbox，PlayerMask仅保留身体移动用途。Unity6000.6.4f1隔离PlayMode：平台导航16项、索敌脱战9项、受击箱兼容5项通过，合计30项0失败。新增 Test_Minion_Pathfinding 白盒和独立默认范围配置，由EditorAPI生成，日志见 %TEMP%/rule-minion-{navigation,ranges}.log 与 rule-enemy-hurtbox-compat.log。未执行原工程手动白盒、正式地图难度、敌群性能或完整Player构建；移动/单向平台的专用通行和飞行避障未实现。保留同期字体与ProjectSettings修改。
 2026-10-17 受伤反馈调优与 PR 预览：普通闪白总时长改为 0.30 秒，保持白色约 0.165 秒后淡出；破韧/致命延长倍率保留。完整副本定向验证 65 项通过，含实际 0.15 秒仍保持白色的 URP 像素断言。`Doc/特效预览/EnemyHitFeedback.gif` 与 `EnemyHitFeedback_Comparison.png` 为固定姿态的真实渲染媒体；`Tools/EnemyAssets/create_hit_preview.py` 从验证截图重新导出，未修改游戏摄像机。用户确认仅核对 p2-p3-merge 基线即可，已 fetch 并确认最新 `2fe1dc1` 是当前功能分支的祖先；不继续扩大摄像机修改范围。
 
@@ -37,7 +43,7 @@ Dialogue 在 Gameplay、UI、Editor、Development 下另有专用程序集。保
 
 ## 启动与敌人链路
 
-Build Settings 当前只启用 `Assets/_Project/Scenes/SampleScene.unity`。敌人六个独立白盒位于 `Scenes/EnemyLabs`，未加入构建。`RuleSystemDriver` 创建共享规则、时间等服务；完整产品关卡启动链未在本次任务验证。
+2026-10-18 已核对 Build Settings 启用 `Assets/_Project/Scenes/Boot.unity`、`Start/Level_Start_01.unity` 与 `Start/Level_Center.unity`。Boot 的开始菜单调用 `GameRoot.StartStreaming` 放行分区加载；GameRoot 持有 LevelRuntime、玩家、摄像机和规则系统。敌人独立白盒位于 `Scenes/EnemyLabs`，未加入构建。`RuleSystemDriver` 创建共享规则等服务，复用 GameRoot 已创建的时间管理器。
 
 玩家已拆为 PlayerController 编排与 PlayerInput、MotionTuning、ContactSensor、MotionMover 等职能类；身体阻挡必须通过 MotionTuning.BodyBlockLayer 传给 MotionMover，不能只向 PlayerController 加字段。
 
@@ -115,6 +121,6 @@ manifest 已有 Coplay Unity MCP，仓库 `.mcp.json` 指向 `localhost:8080/mcp
 
 2026-10-18 小怪寻路交付同步受伤视觉 PR #12（48ca1f6）和最新 p2-p3-merge（5fd88a7），保留两套改动。合并时结合弱点 Hurtbox 开合与扣血反馈，Boss 资产采用最新集成版本。EnemyNavigationValidation.RunCombatBatch 针对合并风险运行 12 项通过，覆盖弹体/光束、弱点受击箱开合和一次扣血一次反馈；未重复运行导航或渲染套件。小怪提交排除自动 stash 中的字体图集和 ProjectSettings，原 stash 保留。
 
+2026-10-18 生命/能量条按用户澄清改为在原图上加间隔线。PlayerVitals.uxml/.uss 保留原图、边框、渐变与放大尺寸，仅在填充区域叠加九条细线；扣血、耗能与快照仍走原来的裁切。Boot与四个Boss测试场景共用此资源。Unity6000.6.4f1隔离PlayMode验证26项通过，覆盖两条各九根分隔线、扣血/耗能、恢复、归零与原有菜单/启动流程，日志/tmp/rule-vitals-dividers.log，截图/报告为Doc/UI预览/DividedVitals.png、DividedValidation.json。此前制作的独立格子备选版按用户要求仅保存到stash（b895dd97dddd8528cf71d77a76d4d61e56c183d8，名称 ui: 保留独立格子血条备选版），其中含组件、双样式Presenter、PlayerVitalsCells.uxml/.uss和34项历史验证报告/截图；不纳入本次提交。未执行Player构建或完整Boss战斗回归。
 2026-10-18 三地区域背景音乐：Presentation/Audio 新增 MusicProfile、MusicRegion、MusicDirector，LevelRuntime 已接线，GameRoot 嵌套继承。用户确认序章/中心暂用积木音乐；主题正式地图未全部登记，通过三个音乐区域预制体接入，不按预加载事件换曲。DSP 精确前奏接循环，跨区默认1.5秒淡化，1米迟滞/0.25秒稳定期，暂停平滑降至35%继续播放，回访不重复前奏。原始OGG保存在Doc/AudioSources，播放WAV仅裁掉低于-60dBFS的连续尾部静音并保留20ms，长曲Streaming；16份Kenney CC0音效已备选但未挂玩法。原工程Unity6000.6.4f1编译并完成37项定向PlayMode验证，原Boot场景自动恢复；结果Logs/AreaMusic/Validation.txt。试听场景Test_AreaMusic和接入说明Doc/背景音乐接入.md；未做Player构建或目标设备听感验收。
-
 2026-10-18 玩家与轮盘音效：LevelRuntime 根部 SfxPlayer 使用六个世界/三个界面固定声源，PlayerSfxPresenter 订阅跳跃/二段/蹬墙/落地/冲刺和实际出手事件，RuleWheelSfxPresenter 区分打开/预览/确认/取消/返回/失败。EntityDamageable 新增实际扣血后的 OnDamageTaken，携带抗性和剩余生命钳制后的实际数值；无敌、治疗、挂账纯击退和快照恢复不发出。轮盘新增 ChoicePreviewed、SelectionReturned、SelectionRejected 供表现订阅，原输入、慢时间和结算逻辑保留。SfxBank 可调变体/音高/音量/间隔/并发/优先级，独立 System.Random 不影响玩法随机；真暂停冻结世界声源，界面继续，回溯清世界声音。补充5份Kenney RPG Audio CC0素材，候选共21份。原工程Unity6000.6.4f1编译并通过58项真实输入/战斗/轮盘/暂停/生命周期定向PlayMode检查，原Boot恢复；结果Logs/PlayerWheelSfx/Validation.txt，说明Doc/玩家与轮盘音效接入.md。未跑Player构建或目标设备听感。
