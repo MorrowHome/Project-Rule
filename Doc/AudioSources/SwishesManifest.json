@@ -30,5 +30,6 @@
       "original_sha256": "123883f006ce55feecbff11eea5f87c4493df4399989983037144570a23723c1",
       "sha256": "62babe43743ab386b0322b5265e9685901e4978f165d5c199913a1f9f9606d1a"
     }
-  ]
+  ],
+  "status": "Historical preparation; current runtime sources are recorded by SelectedSfxManifest.json."
 }

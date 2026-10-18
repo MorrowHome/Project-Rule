@@ -13,5 +13,6 @@
   "sha256": "0d29706e77921ae7ba8db166ce15f98b4133a49cea0496c1aaa457a362de3f16",
   "runtime_file": "Project-Rule/Assets/_Project/Audio/SFX/Kenney/SciFi/Explosion_Bright.wav",
   "audition": "Doc/AudioPreviews/Explosion/Explosion_Audition.wav",
-  "audition_sha256": "087bcee18512ffaef2547be6af7de443df996367633b7087c38e46d223ee0bf8"
+  "audition_sha256": "087bcee18512ffaef2547be6af7de443df996367633b7087c38e46d223ee0bf8",
+  "status": "Historical preparation; current runtime sources are recorded by SelectedSfxManifest.json."
 }

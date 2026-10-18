@@ -18,7 +18,7 @@ namespace RuleGame.Editor.Audio
         public static void Install()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("请先退出 Play Mode。");
-            foreach (string guid in AssetDatabase.FindAssets("t:AudioClip", new[] { AudioFolder.TrimEnd('/') }))
+            foreach (string guid in AssetDatabase.FindAssets("t:AudioClip", new[] { "Assets/_Project/Audio/SFX" }))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 var importer = (AudioImporter)AssetImporter.GetAtPath(path);
@@ -38,21 +38,21 @@ namespace RuleGame.Editor.Audio
                 AssetDatabase.CreateAsset(bank, BankPath);
                 var serialized = new SerializedObject(bank);
                 var entries = serialized.FindProperty("_entries");
-                entries.arraySize = Enum.GetValues(typeof(SfxCue)).Length;
-                SetEntry(entries, SfxCue.Jump, 0.48f, 1.08f, 1.18f, "Rpg/cloth1", "Rpg/cloth2");
-                SetEntry(entries, SfxCue.AirJump, 0.46f, 1.18f, 1.28f, "Rpg/cloth1", "Rpg/cloth2");
-                SetEntry(entries, SfxCue.WallJump, 0.52f, 1.04f, 1.14f, "Rpg/cloth2", "Rpg/cloth3");
-                SetEntry(entries, SfxCue.Land, 0.33f, 0.96f, 1.04f, "Assets/_Project/Audio/SFX/PlayerFeedback/PlayerLand.wav");
-                SetEntry(entries, SfxCue.Dash, 0.6f, 0.85f, 0.94f, "Rpg/cloth3");
-                SetEntry(entries, SfxCue.SwordLight, 0.55f, 0.96f, 1.04f, WorldSfxSetup.LightA, WorldSfxSetup.LightB);
-                SetEntry(entries, SfxCue.SwordHeavy, 0.65f, 0.88f, 0.96f, WorldSfxSetup.HeavyA, WorldSfxSetup.HeavyB);
-                SetEntry(entries, SfxCue.Hurt, 0.60f, 0.96f, 1.04f, "Assets/_Project/Audio/SFX/PlayerFeedback/PlayerHurt.wav");
-                SetEntry(entries, SfxCue.WheelOpen, 0.45f, 1f, 1f, "Interface/open_001");
-                SetEntry(entries, SfxCue.WheelPreview, 0.26f, 1f, 1f, "Interface/select_001");
-                SetEntry(entries, SfxCue.WheelConfirm, 0.55f, 1f, 1f, "Interface/confirmation_001");
-                SetEntry(entries, SfxCue.WheelCancel, 0.4f, 1f, 1f, "Interface/close_001");
-                SetEntry(entries, SfxCue.WheelBack, 0.32f, 0.92f, 0.92f, "Interface/click_001");
-                SetEntry(entries, SfxCue.WheelError, 0.42f, 1f, 1f, "Interface/error_001");
+                entries.arraySize = 14; // Player/wheel cues; menu ⑥ adds the world cues without blank entries.
+                SetEntry(entries, SfxCue.Jump, 0.42f, 0.98f, 1.02f, "Assets/_Project/Audio/SFX/Selected/Jump.wav");
+                SetEntry(entries, SfxCue.AirJump, 0.4f, 1.09f, 1.13f, "Assets/_Project/Audio/SFX/Selected/Jump.wav");
+                SetEntry(entries, SfxCue.WallJump, 0.44f, 1.03f, 1.07f, "Assets/_Project/Audio/SFX/Selected/Jump.wav");
+                SetEntry(entries, SfxCue.Land, 0.33f, 0.98f, 1.02f, "Assets/_Project/Audio/SFX/PlayerFeedback/PlayerLand.wav", "Assets/_Project/Audio/SFX/Selected/Land_B.wav");
+                SetEntry(entries, SfxCue.Dash, 0.46f, 0.98f, 1.03f, "Assets/_Project/Audio/SFX/Selected/Dash.wav");
+                SetEntry(entries, SfxCue.SwordLight, 0.5f, 0.98f, 1.04f, "Assets/_Project/Audio/SFX/Swishes/SwordLight_A.wav", "Assets/_Project/Audio/SFX/Swishes/SwordLight_B.wav");
+                SetEntry(entries, SfxCue.SwordHeavy, 0.58f, 0.98f, 1.02f, "Assets/_Project/Audio/SFX/Swishes/SwordHeavy_A.wav", "Assets/_Project/Audio/SFX/Swishes/SwordHeavy_B.wav");
+                SetEntry(entries, SfxCue.Hurt, 0.56f, 0.98f, 1.02f, "Assets/_Project/Audio/SFX/PlayerFeedback/PlayerHurt.wav", "Assets/_Project/Audio/SFX/Selected/Hurt_B.wav");
+                SetEntry(entries, SfxCue.WheelOpen, 0.36f, 1f, 1f, "Assets/_Project/Audio/SFX/Selected/WheelOpen.wav");
+                SetEntry(entries, SfxCue.WheelPreview, 0.2f, 1f, 1f, "Assets/_Project/Audio/SFX/Selected/WheelPreview.wav");
+                SetEntry(entries, SfxCue.WheelConfirm, 0.42f, 1f, 1f, "Assets/_Project/Audio/SFX/Selected/WheelConfirm.wav");
+                SetEntry(entries, SfxCue.WheelCancel, 0.32f, 1f, 1f, "Assets/_Project/Audio/SFX/Selected/WheelCancel.wav");
+                SetEntry(entries, SfxCue.WheelBack, 0.28f, 1f, 1f, "Assets/_Project/Audio/SFX/Selected/WheelBack.wav");
+                SetEntry(entries, SfxCue.WheelError, 0.34f, 1f, 1f, "Assets/_Project/Audio/SFX/Selected/WheelError.wav");
                 serialized.ApplyModifiedPropertiesWithoutUndo();
             }
             GameObject root = PrefabUtility.LoadPrefabContents(RuntimePath);

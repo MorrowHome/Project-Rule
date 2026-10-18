@@ -6,7 +6,6 @@
   "files": [
     {
       "candidate": "Hurt_A",
-      "runtime_file": "Project-Rule/Assets/_Project/Audio/SFX/PlayerFeedback/PlayerHurt.wav",
       "original": "Doc/AudioSources/FeedbackOriginals/impactPunch_heavy_003.ogg",
       "original_sha256": "4ab53b26f4ea575120dcc1348526c9e0db2afc6af7a442aa0489bdead2ca80b6",
       "processing": "highpass=f=100,equalizer=f=260:t=q:w=0.8:g=-3,highshelf=f=3500:g=6,lowpass=f=14000,atrim=duration=0.2,afade=t=in:d=0.0005,afade=t=out:st=0.18200000000000002:d=0.018",
@@ -19,7 +18,8 @@
       "audition_sha256": "dde3a83539187f100fbde61ab57e69b03da96010d225a9407b9e17310ee09bbb",
       "duration": 0.2,
       "rms": 0.1282127376361392,
-      "peak": 0.75
+      "peak": 0.75,
+      "historical_runtime_file": "Project-Rule/Assets/_Project/Audio/SFX/PlayerFeedback/PlayerHurt.wav"
     },
     {
       "candidate": "Hurt_B",
@@ -39,7 +39,6 @@
     },
     {
       "candidate": "Land_A",
-      "runtime_file": "Project-Rule/Assets/_Project/Audio/SFX/PlayerFeedback/PlayerLand.wav",
       "original": "Doc/AudioSources/FeedbackOriginals/footstep_concrete_002.ogg",
       "original_sha256": "b21fa546d74941196b25da8a20b7010abd8c05c4fcf93545d1f344e66a664e13",
       "processing": "highpass=f=140,equalizer=f=260:t=q:w=0.8:g=-3,highshelf=f=3500:g=5,lowpass=f=14000,atrim=duration=0.113,afade=t=in:d=0.0005,afade=t=out:st=0.095:d=0.018",
@@ -52,7 +51,8 @@
       "audition_sha256": "5754e15557bda7454469fb8fe6876e79525816dbd8888cd78e91e041b7b06036",
       "duration": 0.10988662131519275,
       "rms": 0.08329935969475152,
-      "peak": 0.75
+      "peak": 0.75,
+      "historical_runtime_file": "Project-Rule/Assets/_Project/Audio/SFX/PlayerFeedback/PlayerLand.wav"
     },
     {
       "candidate": "Land_B",
@@ -70,5 +70,6 @@
       "rms": 0.07868443509241124,
       "peak": 0.7500000000000001
     }
-  ]
+  ],
+  "status": "Historical preparation; current runtime sources are recorded by SelectedSfxManifest.json."
 }
