@@ -1,5 +1,6 @@
 .audio-workbench {
     padding: 10px;
+    flex-grow: 1;
 }
 .workbench-heading {
     font-size: 20px;
@@ -21,8 +22,8 @@
     min-height: 200px;
 }
 .workbench-list {
-    width: 245px;
-    min-width: 180px;
+    width: 190px;
+    min-width: 150px;
     margin-right: 12px;
     border-right-width: 1px;
     border-right-color: #636363;
@@ -39,7 +40,7 @@
 }
 .workbench-detail {
     flex-grow: 1;
-    min-width: 300px;
+    min-width: 280px;
 }
 .workbench-title {
     font-size: 17px;
@@ -66,3 +67,11 @@
 .workbench-grow {
     flex-grow: 1;
 }
+
+.workbench-browser { min-width: 250px; padding-right: 10px; }
+.workbench-configuration { flex-grow: 1; min-width: 530px; padding-left: 10px; }
+.workbench-source-files { flex-grow: 1; min-height: 150px; margin-top: 7px; }
+.workbench-source-row { padding-left: 5px; -unity-text-align: middle-left; overflow: hidden; text-overflow: ellipsis; }
+.workbench-source-path { white-space: normal; font-size: 11px; margin-bottom: 6px; }
+.workbench-drop-zone { min-height: 52px; margin-top: 9px; padding: 8px; border-width: 1px; border-color: #8297a7; -unity-text-align: middle-center; white-space: normal; }
+.workbench-drop-active { background-color: #315675; color: white; }

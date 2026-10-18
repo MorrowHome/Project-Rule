@@ -55,6 +55,8 @@ namespace RuleGame.Editor.Audio
                 SetEntry(entries, SfxCue.WheelError, 0.34f, 1f, 1f, "Assets/_Project/Audio/SFX/Selected/WheelError.wav");
                 serialized.ApplyModifiedPropertiesWithoutUndo();
             }
+            MainMenuSfxSetup.EnsureEntries(bank);
+            BossSfxSetup.EnsureEntries(bank);
             GameObject root = PrefabUtility.LoadPrefabContents(RuntimePath);
             try
             {

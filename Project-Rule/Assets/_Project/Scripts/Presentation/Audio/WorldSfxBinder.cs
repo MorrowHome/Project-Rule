@@ -1,4 +1,5 @@
 using RuleGame.Gameplay.Enemy;
+using RuleGame.UI.Launch;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -20,6 +21,9 @@ namespace RuleGame.Presentation.Audio
             if (!scene.IsValid() || !scene.isLoaded) return;
             foreach (GameObject root in scene.GetRootGameObjects())
             {
+                foreach (MainMenuPresenter menu in root.GetComponentsInChildren<MainMenuPresenter>(true))
+                    if (menu.GetComponent<MainMenuSfxPresenter>() == null)
+                        menu.gameObject.AddComponent<MainMenuSfxPresenter>();
                 foreach (EnemyActor actor in root.GetComponentsInChildren<EnemyActor>(true))
                     if (actor.GetComponent<EnemySfxPresenter>() == null) actor.gameObject.AddComponent<EnemySfxPresenter>();
                 foreach (MonoBehaviour component in root.GetComponentsInChildren<MonoBehaviour>(true))

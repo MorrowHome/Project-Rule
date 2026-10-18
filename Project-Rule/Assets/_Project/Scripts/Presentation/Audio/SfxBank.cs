@@ -28,6 +28,7 @@ namespace RuleGame.Presentation.Audio
         }
 
         public static bool IsInterface(SfxCue cue) => cue == SfxCue.WheelOpen || cue == SfxCue.WheelPreview
-            || cue == SfxCue.WheelConfirm || cue == SfxCue.WheelCancel || cue == SfxCue.WheelBack || cue == SfxCue.WheelError;
+            || cue == SfxCue.WheelConfirm || cue == SfxCue.WheelCancel || cue == SfxCue.WheelBack || cue == SfxCue.WheelError
+            || cue == SfxCue.MenuClick || cue == SfxCue.MenuBack || cue == SfxCue.MenuConfirm;
     }
 }

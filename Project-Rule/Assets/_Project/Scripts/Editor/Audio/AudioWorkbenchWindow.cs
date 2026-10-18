@@ -18,7 +18,13 @@ namespace RuleGame.Editor.Audio
             "轮盘 · 打开", "轮盘 · 选择预览", "轮盘 · 确认", "轮盘 · 取消", "轮盘 · 返回", "轮盘 · 操作失败",
             "敌人 · 近战攻击", "敌人 · 发射弹体", "敌人 · 光束蓄能", "敌人 · 木质受击", "敌人 · 金属受击", "敌人 · 毛绒受击",
             "敌人 · 木质死亡", "敌人 · 金属死亡", "敌人 · 毛绒死亡", "机关 · 打开", "机关 · 关闭",
-            "碰撞 · 石头", "碰撞 · 金属", "碰撞 · 木头", "碎裂 · 石头", "碎裂 · 木头", "机关 · 爆炸"
+            "碰撞 · 石头", "碰撞 · 金属", "碰撞 · 木头", "碎裂 · 石头", "碎裂 · 木头", "机关 · 爆炸",
+            "主界面 · 按钮点击", "主界面 · 关闭返回", "主界面 · 确认退出",
+            "Boss · 规则施放", "Boss · 召唤成功", "Boss · 阶段转换",
+            "积木 Boss · 重锤蓄力", "积木 Boss · 重锤落地", "积木 Boss · 投掷", "积木 Boss · 分裂",
+            "时钟 Boss · 冲撞", "时钟 Boss · 弹幕预警", "时钟 Boss · 光束发射", "时钟 Boss · 回溯", "时钟 Boss · 核心暴露",
+            "兔子 Boss · 藏帽", "兔子 Boss · 冒出", "兔子 Boss · 魔法投射",
+            "蝙蝠 Boss · 俯冲预警", "蝙蝠 Boss · 俯冲", "蝙蝠 Boss · 展翼施法", "蝙蝠 Boss · 咆哮"
         };
         [SerializeField] private SfxBank _bank;
         [SerializeField] private int _selected = (int)SfxCue.SwordLight;
@@ -26,17 +32,18 @@ namespace RuleGame.Editor.Audio
         [SerializeField] private string _filter = "全部";
         [SerializeField] private string _search = "";
         [SerializeField] private bool _music;
+        [SerializeField] private string _sourceDirectory = "";
         [SerializeField] private string _musicArea = "Bricks";
         private SerializedObject _serialized;
         private ScrollView _list, _detail;
         private Label _status;
         private readonly System.Random _random = new System.Random();
 
-        [MenuItem("Tools/规则游戏/音频/⑧ 音频工作台（试听与配置）")]
+        [MenuItem("Tools/音频工作台")]
         public static void Open()
         {
             var window = GetWindow<AudioWorkbenchWindow>("音频工作台");
-            window.minSize = new Vector2(760f, 520f);
+            window.minSize = new Vector2(1080f, 620f);
             window.Show();
         }
 
@@ -46,6 +53,15 @@ namespace RuleGame.Editor.Audio
             var window = GetWindow<AudioWorkbenchWindow>();
             window._bank = bank;
             window._music = false;
+            window.CreateGUI();
+        }
+
+        internal static void ShowBoss()
+        {
+            Open();
+            var window = GetWindow<AudioWorkbenchWindow>();
+            window._filter = "Boss"; window._search = "";
+            window._selected = (int)SfxCue.BossRuleCast; window._music = false;
             window.CreateGUI();
         }
 
@@ -75,8 +91,13 @@ namespace RuleGame.Editor.Audio
             bank.SetValueWithoutNotify(_bank);
             bank.RegisterValueChangedCallback(evt => { AudioAudition.Stop(); _bank = evt.newValue as SfxBank; Refresh(); });
             rootVisualElement.Add(bank);
-            var filters = Row(rootVisualElement);
-            var category = new DropdownField("分类", new List<string> { "全部", "玩家", "轮盘", "敌人", "机关" }, 0);
+            var split = new TwoPaneSplitView(0, 340, TwoPaneSplitViewOrientation.Horizontal);
+            split.style.flexGrow = 1;
+            rootVisualElement.Add(split);
+            split.Add(new AudioSourceBrowser(_sourceDirectory, () => _previewMaster, Status, path => _sourceDirectory = path));
+            var configuration = new VisualElement(); configuration.AddToClassList("workbench-configuration"); split.Add(configuration);
+            var filters = Row(configuration);
+            var category = new DropdownField("分类", new List<string> { "全部", "玩家", "轮盘", "敌人", "Boss", "机关", "主界面" }, 0);
             category.SetValueWithoutNotify(_filter);
             category.RegisterValueChangedCallback(evt => { _filter = evt.newValue; BuildList(); });
             filters.Add(category);
@@ -84,10 +105,10 @@ namespace RuleGame.Editor.Audio
             search.AddToClassList("workbench-grow");
             search.RegisterValueChangedCallback(evt => { _search = evt.newValue; BuildList(); });
             filters.Add(search);
-            var body = new VisualElement(); body.AddToClassList("workbench-body"); rootVisualElement.Add(body);
+            var body = new VisualElement(); body.AddToClassList("workbench-body"); configuration.Add(body);
             _list = new ScrollView(); _list.AddToClassList("workbench-list"); body.Add(_list);
             _detail = new ScrollView(); _detail.AddToClassList("workbench-detail"); body.Add(_detail);
-            _status = new Label("选中事件后可直接试听，不需要进入 Play Mode。参数修改支持 Ctrl/Cmd+Z；点击保存配置写入资产。");
+            _status = new Label("左侧点击目录进入，点击音频即试听；拖到右侧事件添加变体，拖到变体槽替换。配置支持 Ctrl/Cmd+Z；点击保存配置写入资产。");
             _status.AddToClassList("workbench-status"); rootVisualElement.Add(_status);
             Refresh();
         }
@@ -100,7 +121,9 @@ namespace RuleGame.Editor.Audio
         }
 
         internal static string Name(SfxCue cue) => (int)cue >= 0 && (int)cue < CueNames.Length ? CueNames[(int)cue] : cue.ToString();
-        private static string Category(SfxCue cue) => (int)cue <= 7 ? "玩家" : (int)cue <= 13 ? "轮盘" : (int)cue <= 22 ? "敌人" : "机关";
+        private static string Category(SfxCue cue) => (int)cue >= (int)SfxCue.BossRuleCast ? "Boss"
+            : (int)cue >= (int)SfxCue.MenuClick ? "主界面"
+            : (int)cue <= 7 ? "玩家" : (int)cue <= 13 ? "轮盘" : (int)cue <= 22 ? "敌人" : "机关";
         private void BuildList()
         {
             _list.Clear();
@@ -117,7 +140,9 @@ namespace RuleGame.Editor.Audio
             {
                 if (_filter != "全部" && Category(cue) != _filter) continue;
                 if (!string.IsNullOrWhiteSpace(_search) && !(Name(cue) + " " + cue).Contains(_search, StringComparison.OrdinalIgnoreCase)) continue;
-                var button = new Button(() => { _selected = (int)cue; Refresh(); }) { text = Name(cue), tooltip = cue.ToString() };
+                var button = new Button(() => { _selected = (int)cue; Refresh(); Preview(cue, -1); })
+                { name = "audio-event-" + (int)cue, text = Name(cue), tooltip = cue + " · 点击试听，拖入添加变体" };
+                AcceptDrop(button, cue);
                 if (_selected == (int)cue) button.AddToClassList("workbench-selected");
                 _list.Add(button);
             }
@@ -155,28 +180,68 @@ namespace RuleGame.Editor.Audio
             foreach (var field in new[] { ("MinInterval", "最短间隔（秒）"), ("MaxVoices", "同类最多并发"), ("Priority", "优先级（越小越优先）") })
                 advanced.Add(new PropertyField(item.FindPropertyRelative(field.Item1), field.Item2));
             _detail.Add(advanced);
-            var clips = new PropertyField(item.FindPropertyRelative("Clips"), "素材变体（拖入 AudioClip，可增删）");
-            _detail.Add(clips);
-            var variants = new VisualElement(); _detail.Add(variants);
-            void Variants()
+            var entry = _bank.Find(cue);
+            Title("素材变体");
+            for (int i = 0; i < (entry?.Clips?.Length ?? 0); i++)
             {
-                variants.Clear();
-                SfxBank.Entry entry = _bank.Find(cue);
-                for (int i = 0; i < (entry?.Clips?.Length ?? 0); i++)
+                int index = i;
+                AudioClip clip = entry.Clips[i];
+                var row = new VisualElement { name = "audio-variant-row-" + i };
+                row.AddToClassList("workbench-variant"); _detail.Add(row);
+                row.Add(new Button(() => Preview(cue, index))
+                { text = "▶ 变体 " + (i + 1) + " · " + (clip != null ? clip.name : "未指定素材"), tooltip = "点击按当前参数试听" });
+                var field = new ObjectField("替换素材") { objectType = typeof(AudioClip), allowSceneObjects = false };
+                field.SetValueWithoutNotify(clip);
+                field.RegisterValueChangedCallback(evt =>
                 {
-                    int index = i;
-                    AudioClip clip = entry.Clips[i];
-                    var row = new VisualElement(); row.AddToClassList("workbench-variant"); variants.Add(row);
-                    row.Add(new Label("变体 " + (i + 1) + " · " + (clip != null ? clip.name + " · " + clip.length.ToString("0.000") + " 秒" : "未指定素材")));
-                    var buttons = Row(row);
-                    buttons.Add(new Button(() => Preview(cue, index)) { text = "参数试听" });
-                    buttons.Add(new Button(() => Try(() => AudioAudition.PlayRaw(clip), "原声试听 · 不含音量与音高")) { text = "原声试听" });
-                    buttons.Add(new Button(() => { if (clip != null) { Selection.activeObject = clip; EditorGUIUtility.PingObject(clip); } }) { text = "定位素材" });
-                }
+                    Undo.RecordObject(_bank, "替换音效变体"); entry.Clips[index] = evt.newValue as AudioClip;
+                    EditorUtility.SetDirty(_bank); Refresh();
+                    if (evt.newValue != null) Preview(cue, index);
+                });
+                row.Add(field); AcceptDrop(row, cue, index);
+                var buttons = Row(row);
+                buttons.Add(new Button(() => Try(() => AudioAudition.PlayRaw(clip), "原声试听 · 不含音量与音高")) { text = "原声试听" });
+                buttons.Add(new Button(() => { if (clip != null) { Selection.activeObject = clip; EditorGUIUtility.PingObject(clip); } }) { text = "定位素材" });
+                buttons.Add(new Button(() =>
+                {
+                    Undo.RecordObject(_bank, "移除音效变体");
+                    var remaining = new List<AudioClip>(entry.Clips); remaining.RemoveAt(index); entry.Clips = remaining.ToArray();
+                    EditorUtility.SetDirty(_bank); Refresh();
+                }) { text = "移除" });
             }
-            clips.RegisterValueChangeCallback(_ => Variants());
+            var drop = new Label("＋ 拖到这里添加素材变体（可多选）");
+            drop.AddToClassList("workbench-drop-zone"); AcceptDrop(drop, cue); _detail.Add(drop);
+            _detail.Add(new Button(() =>
+            {
+                Undo.RecordObject(_bank, "添加空白音效槽");
+                var slots = new List<AudioClip>(entry.Clips ?? Array.Empty<AudioClip>()) { null }; entry.Clips = slots.ToArray();
+                EditorUtility.SetDirty(_bank); Refresh();
+            }) { text = "添加空白槽" });
             _detail.Bind(_serialized);
-            Variants();
+        }
+
+        private void AcceptDrop(VisualElement target, SfxCue cue, int replace = -1)
+        {
+            target.RegisterCallback<DragUpdatedEvent>(evt =>
+            {
+                if (AudioClipDrop.DragPaths().Length == 0) return;
+                DragAndDrop.visualMode = EditorApplication.isPlaying ? DragAndDropVisualMode.Rejected : DragAndDropVisualMode.Copy;
+                target.AddToClassList("workbench-drop-active"); evt.StopPropagation();
+            }, TrickleDown.TrickleDown);
+            target.RegisterCallback<DragLeaveEvent>(_ => target.RemoveFromClassList("workbench-drop-active"));
+            target.RegisterCallback<DragExitedEvent>(_ => target.RemoveFromClassList("workbench-drop-active"));
+            target.RegisterCallback<DragPerformEvent>(evt =>
+            {
+                var paths = AudioClipDrop.DragPaths();
+                if (paths.Length == 0) return;
+                evt.StopPropagation(); DragAndDrop.AcceptDrag(); target.RemoveFromClassList("workbench-drop-active");
+                try
+                {
+                    int index = AudioClipDrop.Assign(_bank, cue, paths, replace);
+                    _selected = (int)cue; Refresh(); Preview(cue, index);
+                }
+                catch (Exception error) { Status(error.GetBaseException().Message); }
+            }, TrickleDown.TrickleDown);
         }
 
         private void Preview(SfxCue cue, int variant)

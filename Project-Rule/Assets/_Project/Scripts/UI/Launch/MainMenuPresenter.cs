@@ -25,6 +25,7 @@ namespace RuleGame.UI.Launch
         private bool _started, _initialized, _pausedBeforeMenu, _statusPausedBeforeMenu, _ownsPause;
 
         public bool HasStarted => _started;
+        public event Action<Button> ButtonActivated;
 
         private void OnEnable()
         {
@@ -87,8 +88,13 @@ namespace RuleGame.UI.Launch
         private void Bind(VisualElement root, string name, Action action)
         {
             Button button = root.Q<Button>(name);
-            button.clicked += action;
-            _bindings.Add(button, action);
+            Action activated = () =>
+            {
+                ButtonActivated?.Invoke(button);
+                action();
+            };
+            button.clicked += activated;
+            _bindings.Add(button, activated);
         }
 
         private void ShowDialog(string title, string copy, string origin, bool volume = false, bool quit = false)

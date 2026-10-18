@@ -143,20 +143,6 @@
       "author": "Kenney"
     },
     {
-      "file": "Project-Rule/Assets/_Project/Audio/SFX/Kenney/Rpg/knifeSlice.ogg",
-      "pack": "rpg-audio",
-      "original_path": "Audio/knifeSlice.ogg",
-      "sha256": "4cd96dc630bed9840c15f1dd2306da2cc56a4da26a5d3f1a03c5a7265ac5e54f",
-      "author": "Kenney"
-    },
-    {
-      "file": "Project-Rule/Assets/_Project/Audio/SFX/Kenney/Rpg/knifeSlice2.ogg",
-      "pack": "rpg-audio",
-      "original_path": "Audio/knifeSlice2.ogg",
-      "sha256": "6c2064d0ef988d1ec3d56868e823ea8823a5cac00f2742560052633529407def",
-      "author": "Kenney"
-    },
-    {
       "file": "Project-Rule/Assets/_Project/Audio/SFX/Rpg80/stones_01.ogg",
       "pack": "80-CC0-RPG-SFX",
       "author": "rubberduck",
@@ -269,5 +255,21 @@
   "authors": [
     "Kenney",
     "rubberduck"
+  ],
+  "retired_files": [
+    {
+      "file": "Project-Rule/Assets/_Project/Audio/SFX/Kenney/Rpg/knifeSlice.ogg",
+      "pack": "rpg-audio",
+      "original_path": "Audio/knifeSlice.ogg",
+      "sha256": "4cd96dc630bed9840c15f1dd2306da2cc56a4da26a5d3f1a03c5a7265ac5e54f",
+      "author": "Kenney"
+    },
+    {
+      "file": "Project-Rule/Assets/_Project/Audio/SFX/Kenney/Rpg/knifeSlice2.ogg",
+      "pack": "rpg-audio",
+      "original_path": "Audio/knifeSlice2.ogg",
+      "sha256": "6c2064d0ef988d1ec3d56868e823ea8823a5cac00f2742560052633529407def",
+      "author": "Kenney"
+    }
   ]
 }
