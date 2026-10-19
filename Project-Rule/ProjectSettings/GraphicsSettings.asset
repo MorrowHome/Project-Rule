@@ -34,6 +34,31 @@ GraphicsSettings:
   - {fileID: 10753, guid: 0000000000000000f000000000000000, type: 0}
   - {fileID: 10770, guid: 0000000000000000f000000000000000, type: 0}
   - {fileID: 10783, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 4800000, guid: 09deb3e961a8496eace39fb8529d3d3d, type: 3}
+  - {fileID: 4800000, guid: b201aa61cdb54553b7ba27f28207bb53, type: 3}
+  - {fileID: 4800000, guid: 8a50c2ce12c8ed64eb122a2eb0c6b398, type: 3}
+  - {fileID: 4800000, guid: 0304b3e3113fc2c44b82b6fc311473bc, type: 3}
+  - {fileID: 4800000, guid: ad3e4804193834003bde5bfbdcfb7c4b, type: 3}
+  - {fileID: 4800000, guid: eed96c49bd9177148865b41ce4b1f3ca, type: 3}
+  - {fileID: 4800000, guid: 5f1864addb451f54bae8c86d230f736e, type: 3}
+  - {fileID: 4800000, guid: 5e7134d6e63e0bc47a1dd2669cedb379, type: 3}
+  - {fileID: 4800000, guid: 2aed67ad60045d54ba3a00c91e2d2631, type: 3}
+  - {fileID: 4800000, guid: 1edcd131364091c46a17cbff0b1de97a, type: 3}
+  - {fileID: 4800000, guid: a15b78cf8ca26ca4fb2090293153c62c, type: 3}
+  - {fileID: 4800000, guid: c49e63ed1bbcb334780a3bd19dfed403, type: 3}
+  - {fileID: 4800000, guid: e7857e9d0c934dc4f83f270f8447b006, type: 3}
+  - {fileID: 4800000, guid: e6e9a19c3678ded42a3bc431ebef7dbd, type: 3}
+  - {fileID: 4800000, guid: 5fd9a8feb75a4b5894c241777f519d4e, type: 3}
+  - {fileID: 4800000, guid: c17132b1f77d20942aa75f8429c0f8bc, type: 3}
+  - {fileID: 4800000, guid: 3f6c848ca3d7bca4bbe846546ac701a1, type: 3}
+  - {fileID: 4800000, guid: ce09d4a80b88c5a4eb9768fab4f1ee00, type: 3}
+  - {fileID: 4800000, guid: 44fc62292b65ab04eabcf310e799ccf6, type: 3}
+  - {fileID: 4800000, guid: de02b375720b5c445afe83cd483bedf3, type: 3}
+  - {fileID: 4800000, guid: 19349a0f9a7ed4c48a27445bcf92e5e1, type: 3}
+  - {fileID: 4800000, guid: 77774d9009bb81447b048c907d4c6273, type: 3}
+  - {fileID: 4800000, guid: 9ac9bae9f40d7dc4a80dbf809b9544aa, type: 3}
+  - {fileID: 4800000, guid: d6dae50ee9e1bfa4db75f19f99355220, type: 3}
+  - {fileID: 4800000, guid: 93446b5c5339d4f00b85c159e1159b7c, type: 3}
   m_PreloadedShaders: []
   m_PreloadShadersBatchTimeLimit: -1
   m_GraphicsStateCollection: {fileID: 0}

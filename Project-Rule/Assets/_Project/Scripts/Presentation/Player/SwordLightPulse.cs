@@ -8,6 +8,14 @@ namespace RuleGame.Presentation.Player
     internal sealed class SwordLightPulse
     {
         private const int MaxReflections = 12;
+
+        // URP 在打包时会裁掉运行时灯光的变体，构建版里的 Light2D 会退化成洋红方块。
+        // 构建版只保留精灵反光叠层；编辑器里保持原有的真实补光。
+#if UNITY_EDITOR
+        private const bool UseLight = true;
+#else
+        private const bool UseLight = false;
+#endif
         private static readonly int PositionId = Shader.PropertyToID("_LightPosition");
         private static readonly int RadiusId = Shader.PropertyToID("_Radius");
         private static readonly int IntensityId = Shader.PropertyToID("_Intensity");
@@ -37,33 +45,39 @@ namespace RuleGame.Presentation.Player
             _reflectionMaterial = Resources.Load<Material>("PlayerSwordReflection_Mat");
             var go = new GameObject("PlayerSwordLight");
             go.SetActive(false);
-            _light = go.AddComponent<Light2D>();
-            _light.lightType = Light2D.LightType.Point;
-            _light.blendStyleIndex = 0; // 叠加光能、保留 Sprite 的纹理与底色。
-            _light.color = new Color(.55f, .78f, 1f);
-            _light.shadowIntensity = .45f;
-            _light.shadowsEnabled = true;
-            _light.intensity = 0f;
-            _light.enabled = false;
+            if (UseLight)
+            {
+                _light = go.AddComponent<Light2D>();
+                _light.lightType = Light2D.LightType.Point;
+                _light.blendStyleIndex = 0; // 叠加光能、保留 Sprite 的纹理与底色。
+                _light.color = new Color(.55f, .78f, 1f);
+                _light.shadowIntensity = .45f;
+                _light.shadowsEnabled = true;
+                _light.intensity = 0f;
+                _light.enabled = false;
+            }
             var layers = SortingLayer.layers;
             _sortingLayers = new int[layers.Length];
             for (int i = 0; i < layers.Length; i++) _sortingLayers[i] = layers[i].id;
-            _light.targetSortingLayers = _sortingLayers;
+            if (_light != null) _light.targetSortingLayers = _sortingLayers;
             go.SetActive(true);
         }
 
         public void Pulse(Vector2 center, float radius, float intensity, float duration)
         {
             Clear();
-            if (intensity <= 0f || _light == null) return;
+            if (intensity <= 0f) return;
             EnsureAmbient();
             if (_ambient != null) _ambient.enabled = true;
             _age = 0f; _duration = duration; _intensity = intensity;
-            _light.transform.position = new Vector3(center.x, center.y, _owner.position.z);
-            _light.pointLightInnerRadius = radius * .12f;
-            _light.pointLightOuterRadius = radius;
-            _light.intensity = intensity;
-            _light.enabled = true;
+            if (_light != null)
+            {
+                _light.transform.position = new Vector3(center.x, center.y, _owner.position.z);
+                _light.pointLightInnerRadius = radius * .12f;
+                _light.pointLightOuterRadius = radius;
+                _light.intensity = intensity;
+                _light.enabled = true;
+            }
             _properties.SetVector(PositionId, new Vector4(center.x, center.y, 0f, 0f));
             _properties.SetFloat(RadiusId, radius);
             _properties.SetFloat(IntensityId, intensity * .6f);
@@ -108,12 +122,12 @@ namespace RuleGame.Presentation.Player
 
         public void Advance(float dt)
         {
-            if (_light == null || !_light.enabled) return;
+            if (_duration <= 0f) return;
             _age += dt;
             if (_age >= _duration) { Clear(); return; }
             float t = _age / _duration;
             float fade = (1f - t) * (1f - t);
-            _light.intensity = _intensity * fade;
+            if (_light != null) _light.intensity = _intensity * fade;
             _properties.SetFloat(IntensityId, _intensity * fade * .6f);
             RefreshReflections();
         }
@@ -122,6 +136,7 @@ namespace RuleGame.Presentation.Player
         {
             if (_ambientChecked) return;
             _ambientChecked = true;
+            if (!UseLight) return;
             // URP 在无灯时按原色显示 Lit 精灵；第一盏局部灯不能把其余场景突然变黑。
             // 仅在原本完全无灯的场景，随脉冲临时补回等价白色基底；已有灯光布置不覆盖。
             foreach (Light2D existing in Object.FindObjectsByType<Light2D>())

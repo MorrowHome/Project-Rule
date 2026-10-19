@@ -28,6 +28,13 @@ namespace RuleGame.Presentation.RuleWheel
         private SpriteRenderer _body, _halo;
         private Sprite _haloSprite;
         private Light2D _light;
+
+        // 与 SwordLightPulse 同因：URP 打包裁掉运行时灯光变体，构建版只留精灵光晕。
+#if UNITY_EDITOR
+        private const bool UseLight = true;
+#else
+        private const bool UseLight = false;
+#endif
         private Volume _volume;
         private VolumeProfile _profile;
         private Camera _camera;
@@ -128,11 +135,14 @@ namespace RuleGame.Presentation.RuleWheel
                 new Vector2(.5f, .5f), Texture2D.whiteTexture.width, 0, SpriteMeshType.FullRect);
             _halo.sprite = _haloSprite; _halo.sharedMaterial = _art.HaloMaterial;
             _halo.sortingLayerID = _body.sortingLayerID; _halo.sortingOrder = _body.sortingOrder + 1;
-            _light = _halo.gameObject.AddComponent<Light2D>();
-            _light.lightType = Light2D.LightType.Point;
-            _light.color = new Color(1f, .86f, .62f);
-            _light.pointLightInnerRadius = .12f; _light.pointLightOuterRadius = 1.25f;
-            _light.falloffIntensity = .5f; _light.shadowIntensity = .15f;
+            if (UseLight)
+            {
+                _light = _halo.gameObject.AddComponent<Light2D>();
+                _light.lightType = Light2D.LightType.Point;
+                _light.color = new Color(1f, .86f, .62f);
+                _light.pointLightInnerRadius = .12f; _light.pointLightOuterRadius = 1.25f;
+                _light.falloffIntensity = .5f; _light.shadowIntensity = .15f;
+            }
             _volume = _visualRoot.AddComponent<Volume>(); _volume.isGlobal = true;
             _volume.priority = 25f; _volume.weight = 0f;
             _profile = ScriptableObject.CreateInstance<VolumeProfile>();
@@ -198,7 +208,7 @@ namespace RuleGame.Presentation.RuleWheel
             float spread = _phase == Phase.Returning ? 1f + Mathf.Min(.14f, _elapsed * .3f) : 1f;
             SetWorldScale(_halo.transform, Vector3.one * (.75f * scale * breath * spread));
             _halo.color = new Color(1f, .88f, .65f, _glow * .28f);
-            _light.intensity = _glow * .38f; _volume.weight = _glow;
+            if (_light != null) _light.intensity = _glow * .38f; _volume.weight = _glow;
             _properties.SetVector(OrbPosition, orb); _properties.SetFloat(GlowStrength, _glow);
             _body.SetPropertyBlock(_properties);
         }
