@@ -26,8 +26,8 @@ Transform:
   m_GameObject: {fileID: 36040418990503066}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.65, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: -0.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8026204189619401421}
@@ -81,8 +81,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 2
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -3209511910272548094, guid: f9113bda5603fba42b3acc164cb94477, type: 3}
-  m_Color: {r: 0.85, g: 0.6, b: 0.2, a: 1}
+  m_Sprite: {fileID: 462837482, guid: a62949a6cee440443bf7af8291b6b8c7, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -106,6 +106,7 @@ GameObject:
   - component: {fileID: 8084752514572247338}
   - component: {fileID: 6651702229124784000}
   - component: {fileID: 3009880283803105319}
+  - component: {fileID: 340600871179749492}
   m_Layer: 0
   m_Name: CityLever
   m_TagString: Untagged
@@ -232,6 +233,11 @@ MonoBehaviour:
   Prompt: "\u5207\u6362\u5347\u964D\u65B9\u5411"
   Toggle: 1
   IsOn: 0
+  KeepArtColor: 1
+  _handle: {fileID: 0}
+  _offAngle: 25
+  _onAngle: -35
+  _handleDegreesPerSecond: 540
   FollowMotor: {fileID: 0}
   PressByPlayerProximity: 0
   OnChanged:
@@ -250,3 +256,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.Audio.MechanismSfxPresenter
   _minimumImpactSpeed: 1.5
+--- !u!114 &340600871179749492
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2585989564975497227}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90a29c4019d8c5b489f906b8471da85e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.SceneComponents.CitySwitchSpriteView
+  Switch: {fileID: 6651702229124784000}
+  Target: {fileID: 8469631215446531704}
+  Frames:
+  - {fileID: 462837482, guid: a62949a6cee440443bf7af8291b6b8c7, type: 3}
+  - {fileID: -996426244, guid: 375ed624fa022ea45a2a38743b2d1d32, type: 3}
+  - {fileID: 1299680732, guid: f564873a6ab4a41458141ccde94d5786, type: 3}
+  - {fileID: -1310798952, guid: d12830abd01a54b449bce07163d5d240, type: 3}
+  - {fileID: -475541870, guid: 5491433ce15233442bb0c178c0da9faf, type: 3}
+  FramesPerSecond: 22

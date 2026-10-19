@@ -59,6 +59,15 @@ namespace RuleGame.Gameplay.Player
         /// <summary>门禁正在生效，或刚释放、恢复帧还没过。</summary>
         public bool IsSuppressed => _blockCount > 0 || Time.frameCount < _resumeFrame;
 
+        /// <summary>
+        /// 门禁<b>确实</b>被谁拿着（不含释放后的「恢复帧」）。
+        /// </summary>
+        /// <remarks>
+        /// <para>给「能不能在别人的模态上面再开一层」用：过场 / 传送 / 对话期间必须拒绝，
+        /// 但轮盘自己关掉的那一帧就应该能马上重新打开（那一帧 <see cref="IsSuppressed"/> 仍为 true）。</para>
+        /// </remarks>
+        public bool IsBlocked => _blockCount > 0;
+
         public void Enable()
         {
             _moveAction?.Enable();

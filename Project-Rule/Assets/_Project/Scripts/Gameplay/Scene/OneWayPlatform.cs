@@ -54,9 +54,16 @@ namespace RuleGame.Gameplay.Scene
         private BoxCollider2D _collider;
         private PlayerController _player;
         private float _nextSearch;
-        private float _dropTimer;
+        /// <summary>正在放行（等玩家掉到实心面以下）。</summary>
+        private bool _dropping;
+
+        /// <summary>这次放行开始的时间（兜底超时用）。</summary>
+        private float _dropStart;
         private bool _solid = true;
         private bool _visualFlipped;
+
+        /// <summary>诊断日志节流（静态：所有平台共用，避免刷屏）。</summary>
+        private static float _diagNext;
 
         /// <summary>此刻被本平台放行的件（已经关掉碰撞的那几个）。</summary>
         private readonly System.Collections.Generic.HashSet<Collider2D> _passingBlocks =
@@ -105,6 +112,94 @@ namespace RuleGame.Gameplay.Scene
             s_all.Remove(this);
         }
 
+        /// <summary>「这一对碰撞被忽略」的截止时间（平台自己恢复用，避免卡住）。</summary>
+        private float _ignoredUntil;
+
+        /// <summary>被忽略的玩家碰撞体（恢复时要用；玩家暂时找不到也能恢复）。</summary>
+        private Collider2D _ignoredBody;
+
+        /// <summary>
+        /// 直接把「玩家 ↔ 脚下那些跳穿平台」这一对碰撞**忽略掉** <paramref name="seconds"/> 秒。
+        /// </summary>
+        /// <remarks>
+        /// <para>和「平台自己关碰撞体」是两条独立通道：这条不依赖平台的状态机，
+        /// 只用 <c>Physics2D.IgnoreCollision</c> 按碰撞体对生效，件和别的实体完全不受影响。</para>
+        /// <para>⚠️ 必须先确认玩家**真的站在这块上面**（<see cref="Claims"/>），否则会把整排平台一起忽略掉。</para>
+        /// </remarks>
+        public static int ReleaseFor(PlayerController player, float seconds)
+        {
+            if (player == null || seconds <= 0f) return 0;
+
+            var body = player.GetComponent<Collider2D>();
+            if (body == null) return 0;
+
+            int count = 0;
+            for (int i = 0; i < s_all.Count; i++)
+            {
+                var p = s_all[i];
+                if (p == null || !p.isActiveAndEnabled || p._collider == null) continue;
+                if (!p.Claims(player)) continue;
+                Physics2D.IgnoreCollision(body, p._collider, true);
+                p._ignoredUntil = UnityEngine.Time.time + seconds;
+                count++;
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// 让**所有脚底下的平台**一起放行（横向不做筛选）。
+        /// </summary>
+        /// <remarks>
+        /// <para>为什么必须是一批：玩家胶囊宽 0.76，而一格只有 0.5 —— 人永远同时压在两格上。
+        /// 只放行认领的那一块，接地探测会命中旁边那块（还是实心）→ 人不动，看起来就是「按了没反应」。</para>
+        /// <para>横向不筛选的代价是「同一高度整排都会放行」，但玩家本来也只会在自己脚底下这一排，
+        /// 而且每条放行都带 0.8~2 秒兜底，不会永久失效。</para>
+        /// </remarks>
+        private static void BeginDrop(PlayerController player)
+        {
+            if (player == null) return;
+
+            var body = player.GetComponent<Collider2D>();
+            if (body == null) return;
+
+            for (int i = 0; i < s_all.Count; i++)
+            {
+                var p = s_all[i];
+                if (p == null || !p.isActiveAndEnabled || p._collider == null) continue;
+                if (!p.IsBelow(player)) continue;
+
+                p._dropping = true;
+                p._dropStart = UnityEngine.Time.time;
+                p._ignoredUntil = UnityEngine.Time.time + Mathf.Clamp(p._dropDuration * 3f, 0.8f, 2f);
+                p._ignoredBody = body;
+
+                Physics2D.IgnoreCollision(body, p._collider, true);
+            }
+        }
+
+        /// <summary>玩家是不是在实心面这一侧、且在「踩得到」的距离内（**不做横向筛选**）。</summary>
+        private bool IsBelow(PlayerController player)
+        {
+            if (player == null || _collider == null) return false;
+
+            Vector2 normal = SolidNormal;
+            Vector2 center = SelfCenter();
+            Vector2 delta = (Vector2)player.transform.position - center;
+            float side = Vector2.Dot(delta, normal);
+
+            if (side <= 0f || side > Reach(normal, player)) return false;
+
+            // 横向：只放行**玩家胶囊压得到**的那一两格。
+            // 不筛的话会把同一高度的整排平台（日志里一直排到 x=200）全部放开。
+            var body = player.GetComponent<Collider2D>();
+            Vector2 tangent = new Vector2(-normal.y, normal.x);
+            float offset = Mathf.Abs(Vector2.Dot(delta, tangent));
+            float reachX = HalfExtent(_collider, tangent)
+                           + (body != null ? HalfExtent(body, tangent) : 0.4f);
+
+            return offset <= reachX;
+        }
+
         /// <summary>有没有任意一块跳穿平台认定「玩家站在我上面」。给玩家判断要不要吃掉跳键用。</summary>
         public static bool AnyClaims(PlayerController player)
         {
@@ -132,13 +227,20 @@ namespace RuleGame.Gameplay.Scene
             Vector2 normal = SolidNormal;
 
             // 碰撞体刚建好、还没被物理同步过时 bounds 可能是 0 —— 退回 transform 原点，别拿世界原点算距离。
-            Vector2 center = _collider.bounds.extents.sqrMagnitude > 0.000001f
-                ? (Vector2)_collider.bounds.center
-                : (Vector2)transform.position;
+            Vector2 center = SelfCenter();
+            Vector2 delta = (Vector2)player.transform.position - center;
+            float side = Vector2.Dot(delta, normal);
 
-            float side = Vector2.Dot((Vector2)player.transform.position - center, normal);
+            if (side <= 0f || side > Reach(normal, player)) return false;
 
-            return side > 0f && side <= Reach(normal);
+            // ⚠️ 还要判**横向**：同一排相邻的格子高度一样，只看「在上方」会让左右邻居也认领，
+            //    请求被邻居吃掉 → 玩家脚下那块照样实心 → 表现就是「按了没反应 / 要狂按好几次」。
+            Vector2 tangent = new Vector2(-normal.y, normal.x);
+            float offset = Mathf.Abs(Vector2.Dot(delta, tangent));
+            float halfWidth = HalfExtent(_collider, tangent);
+
+            // 半个身位的容差：站在两块交界处时两边都算「踩着」，谁先跑谁放行，都不会卡住。
+            return offset <= halfWidth + 0.12f;
         }
 
         private void Awake()
@@ -163,18 +265,47 @@ namespace RuleGame.Gameplay.Scene
         /// <summary>玩家这一侧要不要实心（单向 + 主动跳穿）。</summary>
         private bool EvaluatePlayer(Vector2 normal)
         {
+            // ⚠️ 找不到玩家时**保持放行**，不要变成实心：
+            // 变成实心就是「两面都过不去」，重力反转 / 暂停 / 玩家重建之后整排平台会卡死在那儿。
             if ((_player == null || !_player.isActiveAndEnabled || !_player.IsInputReady) && !TryFindPlayer())
-                return true;
+                return false;
 
             // 用**碰撞体中心**而不是 transform 原点：平台被摆歪 / 碰撞体带 offset 时原点不可靠。
             Vector2 center = _collider != null ? (Vector2)_collider.bounds.center : (Vector2)transform.position;
             Vector2 delta = (Vector2)_player.transform.position - center;
             float side = Vector2.Dot(delta, normal);
 
-            // ① 主动跳穿：放行窗口内一律不实心，等玩家掉下去。
-            if (_dropTimer > 0f)
+            // 玩家那边开的「忽略这一对碰撞」到期了就恢复，别把人永久卡穿。
+            if (_ignoredUntil > 0f && UnityEngine.Time.time > _ignoredUntil)
             {
-                _dropTimer -= UnityEngine.Time.fixedDeltaTime;
+                _ignoredUntil = 0f;
+                var bodyCollider = _ignoredBody != null
+                    ? _ignoredBody
+                    : (_player != null ? _player.GetComponent<Collider2D>() : null);
+                if (bodyCollider != null && _collider != null)
+                    Physics2D.IgnoreCollision(bodyCollider, _collider, false);
+                _ignoredBody = null;
+            }
+
+            // ① 主动跳穿：放行窗口内一律不实心，等玩家掉下去。
+            // 放行不是「固定时长」，而是**一直放到玩家真的掉到实心面以下**。
+            // 用固定时长的话，窗口结束时人还卡在平台那一格里 → 碰撞体一恢复就把人顶回去，
+            // 表现就是「按一次没反应、狂按好几次才下去」（实测）。
+            if (_dropping)
+            {
+                float maxWindow = Mathf.Clamp(_dropDuration * 3f, 0.8f, 2f);
+
+                // 必须等**整个人**都掉到平台下面才恢复：只看「中心过线」的话，
+                // 胶囊还有半个身子在平台那一格里，碰撞体一恢复就把人顶回去（这就是「按一次没反应」）。
+                var body = _player.GetComponent<Collider2D>();
+                float clear = -_reenableMargin - SelfExtent(normal)
+                              - (body != null ? HalfExtent(body, normal) : 0.6f);
+
+                if (side < clear || UnityEngine.Time.time - _dropStart > maxWindow)
+                {
+                    _dropping = false;
+                    return true;        // 已经穿过去（或被兜底超时）→ 恢复实心
+                }
                 return false;
             }
 
@@ -182,11 +313,34 @@ namespace RuleGame.Gameplay.Scene
             // 请求在玩家身上生成、取走即清零：从上层掉到中层时那个组合已经用过了，
             // 中层不会跟着放行（否则会穿过一层、停在第三层）。
             // 「站在上面」用纯几何的 Claims（不做物理查询 —— 扫描对「贴着」的碰撞体不可靠）。
-            if (_dropOnDown && Claims(_player) && _player.ConsumeDropRequest())
+            if (_dropOnDown && Claims(_player) && _player.ConsumeDownPress())
             {
-                _dropTimer = Mathf.Max(0.05f, _dropDuration);
+                // ⚠️ 要放行的是**脚底下所有**平台，不只是认领的那一块：
+                //    玩家胶囊宽 0.76 > 一格 0.5，永远同时压着两格；只放行一格的话，
+                //    接地探测会命中旁边那块（仍实心）→ 人照样站在那儿不动（实测 vy 恒为 0）。
+                BeginDrop(_player);
+
+                // 再把玩家**直接挪到平台另一侧**：这条路与接地钳制 / 相邻格 / 重力方向全部无关，
+                // 是唯一能保证「按一次就过去」的做法（见 PlayerController.DisplaceThrough）。
+                var bodyCollider = _player.GetComponent<Collider2D>();
+                float halfBody = bodyCollider != null ? HalfExtent(bodyCollider, normal) : 0.6f;
+                float pass = SelfExtent(normal) + halfBody + 0.06f;
+                _player.DisplaceThrough(-normal, pass, _collider);
+#if UNITY_EDITOR
+                Debug.LogWarning($"[下钻] 平台放行：{name} side={side:0.00} drop={_dropDuration:0.00}");
+#endif
                 return false;
             }
+
+#if UNITY_EDITOR
+            // 玩家发了请求但这一块没接 —— 用来定位「请求发出来了却没反应」。
+            if (_player.DropDownHeld && UnityEngine.Time.time >= _diagNext)
+            {
+                _diagNext = UnityEngine.Time.time + 0.5f;
+                Debug.LogWarning($"[下钻] 平台没接：{name} claims={Claims(_player)} side={side:0.00} " +
+                                 $"reach={Reach(normal, _player):0.00} dropOnDown={_dropOnDown} solid={_solid} blockAbove={_blockAbove}");
+            }
+#endif
 
             // ② 单向：玩家在背面就放行，等他整个越过实心面再恢复，落地才不抖。
             return _solid ? side >= -_reenableMargin : side > _reenableMargin;
@@ -244,13 +398,42 @@ namespace RuleGame.Gameplay.Scene
         }
 
         /// <summary>
-        /// <summary>站立时玩家中心到平台中心的最大允许距离。</summary>
-        private float Reach(Vector2 normal)
+        /// <summary>
+        /// 平台碰撞体的世界中心 + 沿某个方向的半尺寸。
+        /// </summary>
+        /// <remarks>
+        /// ⚠️ 不用 <c>collider.bounds</c>：工程关着 <c>autoSyncTransforms</c>，运行时刚建的碰撞体
+        /// 或者刚被移动过的，<c>bounds</c> 可能还是旧值 / 零 —— 那会让「站在上面」判成 false（实测踩到）。
+        /// 用 <c>transform</c> + <c>size</c> 算，跟物理同步状态无关。
+        /// </remarks>
+        private Vector2 SelfCenter()
         {
-            float reach = _reenableMargin + 0.2f + HalfExtent(_collider, normal);
+            return _collider != null
+                ? (Vector2)transform.TransformPoint(_collider.offset)
+                : (Vector2)transform.position;
+        }
 
-            var body = _player != null ? _player.GetComponent<Collider2D>() : null;
-            reach += body != null ? HalfExtent(body, normal) : 0.3f;
+        /// <summary>平台碰撞体沿 <paramref name="dir"/> 的半尺寸（用 size 算，不读 bounds）。</summary>
+        private float SelfExtent(Vector2 dir)
+        {
+            if (_collider == null) return 0.1f;
+
+            Vector2 size = _collider.size;
+            Vector3 scale = transform.lossyScale;
+            return Mathf.Abs(dir.x) * Mathf.Abs(size.x * scale.x) * 0.5f
+                 + Mathf.Abs(dir.y) * Mathf.Abs(size.y * scale.y) * 0.5f;
+        }
+
+        /// <summary>站立时玩家中心到平台中心的最大允许距离。</summary>
+        private float Reach(Vector2 normal, PlayerController player)
+        {
+            float reach = _reenableMargin + 0.2f + SelfExtent(normal);
+
+            // ⚠️ 必须用**传进来的**玩家：字段 _player 可能还没解析好（刚实例化 / 刚重生），
+            //    那时身体半高会退回 0.3 → Reach 变小 → 明明站在上面却 claims=False（实测踩到过）。
+            var target = player != null ? player : _player;
+            var body = target != null ? target.GetComponent<Collider2D>() : null;
+            reach += body != null ? HalfExtent(body, normal) : 0.6f;
 
             return reach;
         }

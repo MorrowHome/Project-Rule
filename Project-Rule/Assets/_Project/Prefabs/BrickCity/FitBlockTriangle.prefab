@@ -92,7 +92,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Scene.FitBlock
   _shape: 0
   _canBePushed: 1
-  _killY: -20
+  _killBelowSpawn: 30
   _respawnDelay: 2
 --- !u!60 &8498765066261340412
 PolygonCollider2D:

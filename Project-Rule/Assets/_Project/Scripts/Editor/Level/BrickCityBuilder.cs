@@ -12,6 +12,7 @@ using RuleGame.Development.RuleWheel;
 using RuleGame.Development.P3;
 using RuleGame.Core.Rules.Debugging;
 using System.Linq;
+using RuleGame.Gameplay.Common;
 using RuleGame.Gameplay.Player;
 using RuleGame.Gameplay.Combat;
 using RuleGame.Gameplay.Scene;
@@ -171,7 +172,9 @@ namespace RuleGame.Editor.Level
                 player.transform.position = new Vector3(-3f, .85f);
                 var combat = runtime.GetComponentInChildren<CombatSystem>();
                 var controls = new GameObject("BrickCityLabControls").AddComponent<BrickCityLabControls>();
-                controls.Interactor = player.gameObject.AddComponent<CityInteractor>(); controls.PlayerStatus = player.GetComponent<EntityStatus>();
+                var interactor = player.gameObject.AddComponent<CityInteractor>();
+                interactor.SetReadInteractKey(false); // 白盒 BrickCityLabControls 自己读 E，别再抢一遍
+                controls.Interactor = interactor; controls.PlayerStatus = player.GetComponent<EntityStatus>();
                 controls.Stations = new[] { new Vector2(-3f, .85f), new Vector2(14f, .85f), new Vector2(26f, .85f),
                     new Vector2(41f, .85f), new Vector2(51f, .85f), new Vector2(67f, .85f), new Vector2(77f, .85f), new Vector2(90f, 1.3f) };
                 var wheel = runtime.GetComponentInChildren<RuleWheelPresenter>(true);

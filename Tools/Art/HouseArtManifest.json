@@ -1,0 +1,254 @@
+[
+  {
+    "source": "冒险家协会.png",
+    "output": "House_AdventurerGuild.png",
+    "role": "background",
+    "crop": [
+      119,
+      301,
+      2223,
+      1448
+    ],
+    "sourceSize": [
+      2104,
+      1147
+    ],
+    "outputSize": [
+      842,
+      459
+    ],
+    "worldSize": [
+      6.578,
+      3.586
+    ],
+    "pivot": [
+      0.5,
+      0.0
+    ],
+    "ppu": 128
+  },
+  {
+    "source": "水果店.png",
+    "output": "House_FruitShop.png",
+    "role": "background",
+    "crop": [
+      538,
+      433,
+      1994,
+      1429
+    ],
+    "sourceSize": [
+      1456,
+      996
+    ],
+    "outputSize": [
+      582,
+      398
+    ],
+    "worldSize": [
+      4.547,
+      3.109
+    ],
+    "pivot": [
+      0.5,
+      0.0
+    ],
+    "ppu": 128
+  },
+  {
+    "source": "甜品小店.png",
+    "output": "House_DessertShop.png",
+    "role": "background",
+    "crop": [
+      264,
+      18,
+      2101,
+      1550
+    ],
+    "sourceSize": [
+      1837,
+      1532
+    ],
+    "outputSize": [
+      735,
+      613
+    ],
+    "worldSize": [
+      5.742,
+      4.789
+    ],
+    "pivot": [
+      0.5,
+      0.0
+    ],
+    "ppu": 128
+  },
+  {
+    "source": "花店_20261018_190315.png",
+    "output": "House_FlowerShop_Pink.png",
+    "role": "background",
+    "crop": [
+      399,
+      65,
+      2121,
+      1368
+    ],
+    "sourceSize": [
+      1722,
+      1303
+    ],
+    "outputSize": [
+      689,
+      521
+    ],
+    "worldSize": [
+      5.383,
+      4.07
+    ],
+    "pivot": [
+      0.5,
+      0.0
+    ],
+    "ppu": 128
+  },
+  {
+    "source": "花店sp.png",
+    "output": "House_FlowerShop_Teal.png",
+    "role": "background",
+    "crop": [
+      399,
+      62,
+      2121,
+      1368
+    ],
+    "sourceSize": [
+      1722,
+      1306
+    ],
+    "outputSize": [
+      689,
+      522
+    ],
+    "worldSize": [
+      5.383,
+      4.078
+    ],
+    "pivot": [
+      0.5,
+      0.0
+    ],
+    "ppu": 128
+  },
+  {
+    "source": "邻街商铺1.png",
+    "output": "House_StreetShop_01.png",
+    "role": "background",
+    "crop": [
+      656,
+      284,
+      1829,
+      1501
+    ],
+    "sourceSize": [
+      1173,
+      1217
+    ],
+    "outputSize": [
+      469,
+      487
+    ],
+    "worldSize": [
+      3.664,
+      3.805
+    ],
+    "pivot": [
+      0.5,
+      0.0
+    ],
+    "ppu": 128
+  },
+  {
+    "source": "邻街商铺2.png",
+    "output": "House_StreetShop_02.png",
+    "role": "background",
+    "crop": [
+      656,
+      284,
+      1830,
+      1502
+    ],
+    "sourceSize": [
+      1174,
+      1218
+    ],
+    "outputSize": [
+      470,
+      487
+    ],
+    "worldSize": [
+      3.672,
+      3.805
+    ],
+    "pivot": [
+      0.5,
+      0.0
+    ],
+    "ppu": 128
+  },
+  {
+    "source": "邻街商铺3.png",
+    "output": "House_StreetShop_03.png",
+    "role": "platform",
+    "crop": [
+      655,
+      283,
+      1830,
+      1502
+    ],
+    "sourceSize": [
+      1175,
+      1219
+    ],
+    "outputSize": [
+      470,
+      488
+    ],
+    "worldSize": [
+      3.672,
+      3.812
+    ],
+    "pivot": [
+      0.5,
+      0.0
+    ],
+    "ppu": 128
+  },
+  {
+    "source": "首饰店.png",
+    "output": "House_JewelryShop.png",
+    "role": "background",
+    "crop": [
+      538,
+      433,
+      1994,
+      1429
+    ],
+    "sourceSize": [
+      1456,
+      996
+    ],
+    "outputSize": [
+      582,
+      398
+    ],
+    "worldSize": [
+      4.547,
+      3.109
+    ],
+    "pivot": [
+      0.5,
+      0.0
+    ],
+    "ppu": 128
+  }
+]

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f9af3f0e3fd3aa4787024348ddfaaba, type: 3}
+  m_Name: TrainStationCatalog
+  m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Travel.TrainStationCatalog
+  _entries:
+  - Id: station-00
+    DisplayName: "\u8F66\u7AD9 00"
+    ScenePath: Assets/_Project/Scenes/Start/Level_Center.unity
+    Order: 0
+  - Id: station-01
+    DisplayName: "\u8F66\u7AD9 01"
+    ScenePath: Assets/_Project/Scenes/BuildingBlocks/Level_Building_01.unity
+    Order: 0

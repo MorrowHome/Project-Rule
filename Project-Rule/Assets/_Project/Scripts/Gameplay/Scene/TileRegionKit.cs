@@ -28,6 +28,9 @@ namespace RuleGame.Gameplay.Scene
         [Tooltip("链式变体：第 k 张的「右半」= 第 k+1 张的「左半」，铺装时按列（或行）轮流取 —— 相邻两格拼出来颜色是连续的。积木王国的方块必须勾这个")]
         [SerializeField] private bool _chainVariants;
 
+        [Tooltip("刺（Hazard 格）的美术：一格一张。留空 = 刺不铺美术，保持逻辑瓦片原样")]
+        [SerializeField] private Sprite _spike;
+
         public string DisplayName => string.IsNullOrEmpty(_displayName) ? name : _displayName;
 
         public Sprite[] Blocks => _blocks;
@@ -36,6 +39,9 @@ namespace RuleGame.Gameplay.Scene
 
         /// <summary>变体是否是一条「首尾相接的链」（相邻格拼起来颜色连续）。</summary>
         public bool ChainVariants => _chainVariants;
+
+        /// <summary>刺（Hazard 格）用的图；空 = 不铺。</summary>
+        public Sprite Spike => _spike;
 
         /// <summary>
         /// 链式变体按坐标顺序取；否则按哈希取（石头那种一块块独立的素材）。

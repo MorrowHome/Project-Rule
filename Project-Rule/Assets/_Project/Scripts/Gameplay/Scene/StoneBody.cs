@@ -12,8 +12,9 @@ namespace RuleGame.Gameplay.Scene
     /// ③ 收玩家推过来的**力**（<see cref="IPushable"/>）。</para>
     ///
     /// <para><b>“推得动 / 推不动”由摩擦决定，本组件不设任何门槛</b>：玩家推的是 60 N，
-    /// 石头要动就得先克服静摩擦 <c>μ·m·g</c>。30 kg 时 —— 正常（μ 0.4）118 N &gt; 60 N
-    /// **纹丝不动**；「摩擦 × 削弱」（μ 0.15）44 N &lt; 60 N **推得动**；「失效」（μ 0）一推就滑。
+    /// 石头要动就得先克服静摩擦 <c>μ·m·g</c>（μ 是**两个接触面组合后**的值）。18 kg 时 ——
+    /// 正常（组合后 ≈0.45）79 N &gt; 60 N **纹丝不动**；「摩擦 × 削弱」（≈0.275）49 N &lt; 60 N **推得动**；
+    /// 「失效」（0）一推就滑。
     /// 也就是说：**这块石头是被摩擦规则解锁的**，代码里没有任何“推重物”的特判
     /// （与铁箱 <c>PushableBody</c> 同一条路线）。</para>
     ///
@@ -86,17 +87,24 @@ namespace RuleGame.Gameplay.Scene
 
                 // 注意：真正生效的是**两个接触面组合后**的摩擦 —— 这里只报石头自己那份。
                 float threshold = mu * _body.mass * Mathf.Abs(Physics2D.gravity.magnitude);
+                float moved = _body.position.x - _lastLogX;
                 Debug.Log($"[StoneBody] {name}：推力 {force.magnitude:0.#} N，" +
                           $"质量 {_body.mass:0.#} kg，本材质摩擦 {mu:0.###}，" +
                           $"静摩擦门槛 {threshold:0.#} N → " +
-                          (force.magnitude > threshold ? "应该推得动" : "推不动（摩擦力吃掉了）"), this);
+                          (force.magnitude > threshold ? "按本材质应该推得动" : "按本材质推不动") +
+                          $"；上一次日志以来实际位移 {moved:0.000} m", this);
             }
+
+            _lastLogX = _body.position.x;
 
             _body.WakeUp();
             _body.AddForce(force, ForceMode2D.Force);
         }
 
         private float _lastPushLog = -10f;
+
+        /// <summary>上一次日志时石头的 x —— 用来算「上一次日志以来实际位移」。</summary>
+        private float _lastLogX;
 
         // ==================================================================
         //  生命周期

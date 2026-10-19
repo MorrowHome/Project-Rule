@@ -37,6 +37,7 @@ namespace RuleGame.Development.Testing
         private readonly StringBuilder _log = new StringBuilder();
         private int _pass;
         private int _fail;
+        private int _solvedCount;
         private Vector3 _gateClosed;
 
         /// <summary>接线（生成工具在编辑期调用，字段会写进场景）。</summary>
@@ -55,6 +56,8 @@ namespace RuleGame.Development.Testing
         {
             _gateClosed = _gate != null ? _gate.position : Vector3.zero;
             Vector2 gravity = Physics2D.gravity;
+
+            if (_puzzle != null) _puzzle.OnSolved.AddListener(() => _solvedCount++);
 
             yield return new WaitForSeconds(0.8f);
 
@@ -136,8 +139,9 @@ namespace RuleGame.Development.Testing
             Check("重力恢复后球不掉", _ballSocket.IsSeated && Mathf.Abs(_ball.Body.position.y - 5.4f) < 0.2f,
                 "y=" + _ball.Body.position.y.ToString("F2"));
 
-            // --- ⑥ 机关解锁
+            // --- ⑥ 机关解锁（两块合体 = 按一次按钮）
             Check("机关判为已解开", _puzzle.IsSolved, "");
+            Check("按钮事件只发一次", _solvedCount == 1, "count=" + _solvedCount);
 
             t = 0f;
             while (t < 3f && _gate != null && _gate.position.y < _gateClosed.y + 1.9f)

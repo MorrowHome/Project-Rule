@@ -1410,6 +1410,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Scene.Components.CityInteractor
   Range: 2
+  _readInteractKey: 0
 --- !u!1001 &817445436
 PrefabInstance:
   m_ObjectHideFlags: 0

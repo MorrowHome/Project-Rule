@@ -40,5 +40,6 @@
             </ui:VisualElement>
             <ui:Label name="vitalsValue" picking-mode="Ignore" class="vital-label" />
         </ui:VisualElement>
+        <ui:Label name="unlockToast" picking-mode="Ignore" class="unlock-toast" />
     </ui:VisualElement>
 </ui:UXML>

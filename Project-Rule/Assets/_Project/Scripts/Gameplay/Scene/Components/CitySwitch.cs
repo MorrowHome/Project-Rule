@@ -16,6 +16,24 @@ namespace RuleGame.Gameplay.Scene.Components
     {
         public bool Toggle = true;
         public bool IsOn;
+
+        [Tooltip("接正式美术后勾上：刷新状态时不再改 SpriteRenderer 颜色（改由贴图/帧序列表达）。")]
+        public bool KeepArtColor;
+
+        [Header("拉杆表现")]
+        [Tooltip("会跟着开关扳动的把手（子物体）。**留空 = 只换颜色、不转** —— 按钮类不填。\n" +
+                 "⚠️ 绕它自己的轴心转：预制品里指向 Visual，轴心在根部才像拉杆（中心轴心看起来像跷跷板）。")]
+        [SerializeField] private Transform _handle;
+
+        [Tooltip("关状态的角度（绕 Z，度）。")]
+        [SerializeField] private float _offAngle = 25f;
+
+        [Tooltip("开状态的角度（绕 Z，度）。")]
+        [SerializeField] private float _onAngle = -35f;
+
+        [Tooltip("扳动速度（度 / 秒）。小于等于 0 = 直接到位。")]
+        [SerializeField] private float _handleDegreesPerSecond = 540f;
+
         [Tooltip("这个开关**驱动谁**：把带 CityPathMotor（门 / 电梯）或 GravityBoulder（巨石）的 **GameObject** 拖过来即可 ——\n" +
                  "拖哪个组件都能解析到目标（Unity 拖 GameObject 时只会赋第一个 MonoBehaviour，这里做了兜底）。\n" +
                  "门/电梯直接改目标端；其它走 ISwitchTarget.SetSwitchState。")]
@@ -68,6 +86,33 @@ namespace RuleGame.Gameplay.Scene.Components
         {
             if (Paused || !Toggle) return;
             SetOn(false);
+        }
+
+        // ------------------------------------------------------------------
+        //  IContactSwitch：被打中（攻击盒 / 投射物）
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// 被攻击盒或投射物**打中**：切换型翻转，单次按钮按下即锁死。
+        /// </summary>
+        /// <remarks>
+        /// <para>翻转规则与 <see cref="Interact"/> 完全一致（都看 <c>Motor.TargetEnd</c>）——
+        /// 「砍一下拉杆」和「按 E 扳拉杆」对电梯是同一个结果。</para>
+        /// <para>⚠️ 与 <see cref="PressByContact"/> 是两条语义：那条是「压住 → 离开」的保持型
+        /// （石头 / 敌人 / 巨石当压板用），这条是一次性边沿，没有「离开」。</para>
+        /// </remarks>
+        /// <param name="sourcePoint">从哪儿打来的。两态开关用不到它 —— 多档拉杆才按位置选档。</param>
+        public void ImpactByContact(Vector2 sourcePoint)
+        {
+            if (Paused || !Available) return;
+
+            if (!Toggle)
+            {
+                SetOn(true);                        // 按钮：打中就锁死，与按 E 一致
+                return;
+            }
+
+            SetOn(Motor != null ? !Motor.TargetEnd : !IsOn);
         }
 
         public void SetOn(bool on)
@@ -135,10 +180,30 @@ namespace RuleGame.Gameplay.Scene.Components
         private void LateUpdate()
         {
             if (Motor != null && IsOn != Motor.TargetEnd) { IsOn = Motor.TargetEnd; RefreshVisual(); }
+            AnimateHandle();
         }
+
+        /// <summary>把把手从当前角度扳向 <see cref="IsOn"/> 对应的角度。没接把手就什么都不做。</summary>
+        private void AnimateHandle()
+        {
+            if (_handle == null) return;
+
+            float target = IsOn ? _onAngle : _offAngle;
+            Vector3 euler = _handle.localEulerAngles;
+
+            // localEulerAngles 会把角度折回 0~360，MoveTowardsAngle 负责沿最短的弧走。
+            float z = _handleDegreesPerSecond > 0f
+                ? Mathf.MoveTowardsAngle(euler.z, target, _handleDegreesPerSecond * Time.deltaTime)
+                : target;
+
+            if (Mathf.Approximately(z, euler.z)) return;
+            _handle.localRotation = Quaternion.Euler(euler.x, euler.y, z);
+        }
+
         private void RefreshVisual()
         {
-            if (Visuals.Length > 0) Visuals[0].color = IsOn ? new Color(.3f, .75f, .5f) : new Color(.85f, .6f, .2f);
+            if (!KeepArtColor && Visuals.Length > 0)
+                Visuals[0].color = IsOn ? new Color(.3f, .75f, .5f) : new Color(.85f, .6f, .2f);
         }
         protected override object CaptureMechanismState() => IsOn;
         protected override void RestoreMechanismState(object state)

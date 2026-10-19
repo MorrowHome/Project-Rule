@@ -42,6 +42,9 @@ namespace RuleGame.Editor.Level
         /// <summary>圆窝预制体（石板 + 圆形空缺）。</summary>
         public const string RoundSocketPrefabPath = PrefabFolder + "FitSocketRound.prefab";
 
+        /// <summary>机关预制体：拖进关卡即用（凹位自动收集，门拖一下就能开）。</summary>
+        public const string PuzzlePrefabPath = PrefabFolder + "FitPuzzle.prefab";
+
         /// <summary>凹位外观 —— **就是件的外形**，没有外框：件多大，槽就多大。</summary>
         private const string PlateTrianglePath = "Assets/_Project/Art/Sprites/Brick/BrickSocketTriangle.png";
         private const string PlateRoundPath = "Assets/_Project/Art/Sprites/Brick/BrickSocketRound.png";
@@ -174,12 +177,16 @@ namespace RuleGame.Editor.Level
             });
 
             SavePrefab(TriangleSocketPrefabPath, root =>
-                BuildSocket(root, FitShape.Triangle, new Vector2(0.28f, 0.28f), TriangleSocketSize,
+                BuildSocket(root, FitShape.Triangle, new Vector2(0.45f, 0.45f), TriangleSocketSize,
                     LoadSprite(PlateTrianglePath, WhiteboxPath)));
 
             SavePrefab(RoundSocketPrefabPath, root =>
-                BuildSocket(root, FitShape.Round, new Vector2(0.30f, 0.30f), RoundSocketSize,
+                BuildSocket(root, FitShape.Round, new Vector2(0.45f, 0.45f), RoundSocketSize,
                     LoadSprite(PlateRoundPath, WhiteboxPath)));
+
+            // 机关本体：**空物体 + 一个组件**，拖进场景就能用。
+            // 关卡里只有 GameObject 不能加组件的话，拖预制体就是唯一的路。
+            SavePrefab(PuzzlePrefabPath, root => root.AddComponent<FitPuzzle>());
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -189,6 +196,7 @@ namespace RuleGame.Editor.Level
                       "· FitBlockRound（260 kg，允许滚动）\n" +
                       "· FitSocketTriangle（三角槽位，与件同形同大）\n" +
                       "· FitSocketRound（圆槽位，与件同形同大）\n" +
+                      "· FitPuzzle（机关：两块都合体 → 按一次按钮 / 开门）\n" +
                       "用法：石块拖进关卡；凹位拖到「座位中心」，缺口朝向与件的推入方向对齐。\n" +
                       "⚠️ 凹位石板只是**外观 + 触发盒**，没有实体碰撞 —— 墙上的凹腔要靠关卡那面墙自己切。");
             return triangle;
@@ -337,9 +345,9 @@ namespace RuleGame.Editor.Level
 
             // --- 两个凹位（空物体摆在座位中心，FitSocket 自己补 Trigger）
             FitSocket triangleSocket = SpawnSocket(TriangleSocketPrefabPath, "Socket_Triangle", TriangleSeat,
-                FitShape.Triangle, new Vector2(0.28f, 0.28f), gate.transform);
+                FitShape.Triangle, new Vector2(0.45f, 0.45f), gate.transform);
             FitSocket ballSocket = SpawnSocket(RoundSocketPrefabPath, "Socket_Round", BallSeat,
-                FitShape.Round, new Vector2(0.30f, 0.30f), null);
+                FitShape.Round, new Vector2(0.45f, 0.45f), null);
 
             // --- 指示灯
             GameObject lampTri = MakeLamp("Lamp_Triangle", new Vector2(3.0f, 3.55f), new Color(0.96f, 0.68f, 0.33f, 1f));

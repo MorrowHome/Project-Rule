@@ -26,8 +26,8 @@ Transform:
   m_GameObject: {fileID: 1008706694214805674}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 2, y: 0.4, z: 1}
+  m_LocalPosition: {x: 0, y: -0.7307692, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5875232249714656894}
@@ -81,8 +81,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 2
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -3209511910272548094, guid: f9113bda5603fba42b3acc164cb94477, type: 3}
-  m_Color: {r: 0.45, g: 0.75, b: 0.85, a: 0.6}
+  m_Sprite: {fileID: -869562739, guid: c65a807af7a1d1a409c0ead17f02863f, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -105,6 +105,7 @@ GameObject:
   - component: {fileID: 7931111624647203082}
   - component: {fileID: 2128258686349705899}
   - component: {fileID: 2826769163695712119}
+  - component: {fileID: 2558798791770347656}
   m_Layer: 8
   m_Name: CityBubble
   m_TagString: Untagged
@@ -211,7 +212,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a7085f702f0e4752bd2383e7a2978b8b, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Common.RuleAffectedBody
   _applyFriction: 1
   _applyMass: 1
@@ -226,6 +227,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7225d717c41678948987539c09fa62d3, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Scene.Components.CityBubble
   RespawnSeconds: 0
+--- !u!114 &2558798791770347656
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3026813966188677570}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 307db6832f09a1944b8dad043e71b8be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.SceneComponents.CityBubbleSpriteView
+  Bubble: {fileID: 2826769163695712119}
+  Target: {fileID: 7374451837345008263}
+  Intact: {fileID: -869562739, guid: c65a807af7a1d1a409c0ead17f02863f, type: 3}
+  Burst: {fileID: -1151345492, guid: 8ccbfbcdf93aa99469dac96c54bbd71f, type: 3}

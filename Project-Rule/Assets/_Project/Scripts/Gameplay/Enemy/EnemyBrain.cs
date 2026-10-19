@@ -60,6 +60,7 @@ namespace RuleGame.Gameplay.Enemy
                 case EnemyKind.PlushBird: return new PlushBirdBrain(actor);
                 case EnemyKind.HugBear: return new HugBearBrain(actor);
                 case EnemyKind.PlushSeal: return new PlushSealBrain(actor);
+                case EnemyKind.ChargingCube: return new ChargingCubeBrain(actor);
                 default: return new MinionBrain(actor);
             }
         }

@@ -9,6 +9,9 @@ namespace RuleGame.Gameplay.Scene.Components
         public Vector2 Stroke = new Vector2(0f, -4f);
         public float RestSeconds = 1.2f, WarningSeconds = .7f, StrikeSpeed = 12f, ReturnSpeed = 3f, HoldSeconds = .3f;
         public bool Running = true;
+
+        [Tooltip("接正式美术后勾上：预警/出拳不再改 SpriteRenderer 颜色。")]
+        public bool KeepArtColor;
         private enum Phase { Rest, Warning, Strike, Hold, Return }
         private Phase _phase;
         private float _elapsed, _progress;
@@ -40,7 +43,7 @@ namespace RuleGame.Gameplay.Scene.Components
         {
             _phase = phase; _elapsed = 0f;
             _damage.Armed = phase == Phase.Strike || phase == Phase.Hold;
-            if (Visuals.Length > 0) Visuals[0].color = phase == Phase.Warning ? new Color(1f, .7f, .15f)
+            if (!KeepArtColor && Visuals.Length > 0) Visuals[0].color = phase == Phase.Warning ? new Color(1f, .7f, .15f)
                 : _damage.Armed ? new Color(.9f, .25f, .2f) : new Color(.55f, .35f, .3f);
         }
         private struct State { public Phase Phase; public float Elapsed, Progress; public bool Running; }

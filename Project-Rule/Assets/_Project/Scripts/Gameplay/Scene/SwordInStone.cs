@@ -4,6 +4,7 @@ using UnityEngine.Events;
 using RuleGame.Core.Rules;
 using RuleGame.Infrastructure;
 using RuleGame.Gameplay.Common;
+using RuleGame.Gameplay.Player;
 using RuleGame.Infrastructure.Rules;
 using RuleGame.Infrastructure.Time;
 
@@ -43,6 +44,10 @@ namespace RuleGame.Gameplay.Scene
         // ==================================================================
 
         [Header("解锁条件（摩擦规则）")]
+        [Tooltip("是否要求摩擦规则先松脱。默认勾上 = 保留巨石断剑的摩擦解谜；\n" +
+                 "教学剑 / 纯靠近获取的剑把它关掉即可。")]
+        [SerializeField] private bool _requireFreeRule = true;
+
         [Tooltip("「摩擦 × 反转」是否算解锁。**默认勾上 —— 这是本机关设计的钥匙。**")]
         [SerializeField] private bool _acceptInverted = true;
 
@@ -52,6 +57,10 @@ namespace RuleGame.Gameplay.Scene
 
         [Tooltip("摩擦倍率低到多少算「松脱」。正常 = 1，削弱 = 0.3，失效 = 0。只在勾了上一条时有用。")]
         [SerializeField, Min(0f)] private float _releaseThreshold = 1f;
+
+        [Header("取出时解锁")]
+        [Tooltip("拔出来时给取剑的人解锁哪项能力。默认攻击；留 None = 只播事件。")]
+        [SerializeField] private PlayerAbility _grantAbility = PlayerAbility.Attack;
 
         [Header("取剑的人")]
         [Tooltip("是否要有人站在旁边才拔得出来。取消 = 规则一开剑自己飞出来（测试 / 过场用）。")]
@@ -109,7 +118,8 @@ namespace RuleGame.Gameplay.Scene
         public bool PlayerInRange { get; private set; }
 
         /// <summary>现在按一下能不能拔出来。</summary>
-        public bool CanPull => !IsExtracted && !IsPulling && IsFree && (!_requirePlayer || PlayerInRange);
+        public bool CanPull => !IsExtracted && !IsPulling && (!_requireFreeRule || IsFree)
+                            && (!_requirePlayer || PlayerInRange);
 
         /// <summary>已经拔出来了。</summary>
         public bool IsExtracted { get; private set; }
@@ -122,6 +132,7 @@ namespace RuleGame.Gameplay.Scene
         // ==================================================================
 
         private IRuleSystem _rules;
+        private PlayerController _puller;
         private Vector3 _artRest;
         private float _pullClock;
 
@@ -242,7 +253,10 @@ namespace RuleGame.Gameplay.Scene
             int count = Physics2D.OverlapCircle(transform.position, _pullRadius, filter, _hits);
             for (int i = 0; i < count; i++)
             {
-                if (PlayerLookup.IsPlayer(_hits[i])) return true;
+                if (!PlayerLookup.IsPlayer(_hits[i])) continue;
+
+                _puller = _hits[i].GetComponentInParent<PlayerController>();
+                return true;
             }
 
             return false;
@@ -259,7 +273,7 @@ namespace RuleGame.Gameplay.Scene
         public bool TryPull(bool ignoreDistance = false)
         {
             if (IsExtracted || IsPulling) return false;
-            if (!IsFree) return false;
+            if (_requireFreeRule && !IsFree) return false;
             if (_requirePlayer && !ignoreDistance && !PlayerInRange) return false;
 
             BeginPull();
@@ -280,6 +294,7 @@ namespace RuleGame.Gameplay.Scene
             IsPulling = false;
             IsExtracted = true;
 
+            GrantAbility();
             RefreshLabel();
             OnExtracted?.Invoke();
             _onExtracted.Invoke();
@@ -348,8 +363,24 @@ namespace RuleGame.Gameplay.Scene
         {
             if (_label == null) return;
 
-            string wanted = IsExtracted ? "剑 · 已取" : LabelText(IsFree);
+            string wanted = IsExtracted ? "剑 · 已取" : LabelText(IsFree || !_requireFreeRule);
             if (_label.text != wanted) _label.text = wanted;
+        }
+
+        /// <summary>拔出来时把能力写进玩家账本；没有账本就退回玩家自己的位标记。</summary>
+        private void GrantAbility()
+        {
+            PlayerProgress progress = _puller != null
+                ? _puller.GetComponent<PlayerProgress>()
+                : PlayerProgress.Find();
+
+            if (progress != null)
+            {
+                progress.UnlockAbility(_grantAbility);
+                return;
+            }
+
+            _puller?.UnlockAbility(_grantAbility);
         }
 
         private void OnDrawGizmosSelected()

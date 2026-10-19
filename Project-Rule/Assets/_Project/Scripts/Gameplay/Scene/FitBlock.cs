@@ -38,8 +38,8 @@ namespace RuleGame.Gameplay.Scene
         [SerializeField] private bool _canBePushed = true;
 
         [Header("掉出关卡")]
-        [Tooltip("低于这条线就算掉出关卡：等 _respawnDelay 秒回到出生点（防软锁）。")]
-        [SerializeField] private float _killY = -20f;
+        [Tooltip("低于**出生点**多少米算掉出关卡（相对值，不是世界坐标）。本工程的关卡在 y≈-28 一带，写死绝对坐标会把整关判成已掉出。")]
+        [SerializeField, Min(1f)] private float _killBelowSpawn = 30f;
 
         [Tooltip("掉出关卡后多久回到出生点（秒）。")]
         [SerializeField, Min(0f)] private float _respawnDelay = 2f;
@@ -49,6 +49,7 @@ namespace RuleGame.Gameplay.Scene
 
         private Rigidbody2D _body;
         private Vector3 _spawn;
+        private float _killY;
         private bool _seated;
         private float _fellAt = -1f;
 
@@ -101,6 +102,7 @@ namespace RuleGame.Gameplay.Scene
             }
 
             _spawn = transform.position;
+            _killY = _spawn.y - Mathf.Max(1f, _killBelowSpawn);   // 相对出生点，跟关卡在世界的哪个高度无关
         }
 
         private void OnEnable()

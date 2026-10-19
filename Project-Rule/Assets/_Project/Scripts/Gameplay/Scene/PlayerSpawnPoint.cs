@@ -48,7 +48,8 @@ namespace RuleGame.Gameplay.Scene
         [Tooltip("玩家走进这个半径就把它记成复活点。0 = 只能靠开局或手动激活。")]
         [SerializeField, Min(0f)] private float _activateRadius = 1.2f;
 
-        [Tooltip("已经激活过的点，玩家再走进来是否重新广播一次（踩第二次 = 又存一次档）。")]
+        [Tooltip("已经是当前点、再次手动调用 Activate 时是否重新广播一次。" +
+                 "自动轮询不会重复触发：同一个点只在它成为当前点的那一次广播。")]
         [SerializeField] private bool _reactivate;
 
         [Header("事件")]
@@ -63,6 +64,7 @@ namespace RuleGame.Gameplay.Scene
 
         private PlayerController _player;
         private float _nextPoll;
+        private bool _inside;
 
         /// <summary>落点编号；留空按默认点处理。</summary>
         public string Id => string.IsNullOrWhiteSpace(_id) ? DefaultId : _id;
@@ -137,12 +139,15 @@ namespace RuleGame.Gameplay.Scene
         {
             if (player == null) return false;
 
-            bool first = !Activated;
+            // 判断「这个点是否已经是玩家当前的落点」——不是看本组件自己的 Activated。
+            // 这样来回经过 A → B → A 时，每次换点都会重新广播，而站在同一个点上不会刷屏。
+            bool wasCurrent = player.HasRespawn && player.RespawnId == Id;
+
             Activated = true;
             player.SetRespawn(Id, transform.position);
 
-            // 已经激活过的点：默认不再广播（HUD 提示不刷屏，也不会每次复活都写一次盘）。
-            if (!first && !_reactivate) return false;
+            // 已经是当前点：默认不重播；_reactivate 只保留给手动 Activate。
+            if (wasCurrent && !_reactivate) return false;
 
             _onActivated?.Invoke();
             OnActivated?.Invoke(this);
@@ -160,7 +165,6 @@ namespace RuleGame.Gameplay.Scene
         private void Update()
         {
             if (_activateRadius <= 0f) return;
-            if (Activated && !_reactivate) return;
             if (TimeManager.Instance?.IsPaused == true) return;
 
             _nextPoll -= Time.deltaTime;
@@ -171,7 +175,20 @@ namespace RuleGame.Gameplay.Scene
             if (_player == null) return;
 
             Vector2 delta = (Vector2)_player.transform.position - (Vector2)transform.position;
-            if (delta.sqrMagnitude > _activateRadius * _activateRadius) return;
+            bool inside = delta.sqrMagnitude <= _activateRadius * _activateRadius;
+
+            // 只处理「进入半径」这一条边沿；离开后才允许下一次。
+            // 防止两个半径重叠时 A/B 每个轮询互相抢成 ping-pong。
+            if (!inside)
+            {
+                _inside = false;
+                return;
+            }
+            if (_inside) return;
+            _inside = true;
+
+            // 已经是当前落点：不换点、不广播、不播过场。
+            if (_player.HasRespawn && _player.RespawnId == Id) return;
 
             Activate(_player);
         }

@@ -373,6 +373,7 @@ namespace RuleGame.Editor.Level
                 controls.Player = player;
                 controls.ChineseFont = AssetDatabase.LoadAssetAtPath<UnityEngine.TextCore.Text.FontAsset>("Assets/_Project/UI/Fonts/P4ChineseFont.asset");
                 controls.Interactor = player.GetComponent<CityInteractor>() ?? player.gameObject.AddComponent<CityInteractor>();
+                controls.Interactor.SetReadInteractKey(false); // 白盒 DemonCastleLabControls 自己读 E，别再抢一遍
                 controls.PanelSettings = AssetDatabase.LoadAssetAtPath<UnityEngine.UIElements.PanelSettings>("Assets/_Project/UI/RuleWheel/RuleWheelPanelSettings.asset");
                 var floor = new GameObject("00_Ground").transform;
                 for (int i = 0; i < 22; i++) Nested("DemonGround", floor, new Vector2(-4f + 8f * i, -.5f));

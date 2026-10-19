@@ -174,13 +174,16 @@
   自己在物理步进前那一帧的向下速度 —— **不能读 `Collision2D.relativeVelocity`**，它的符号约定一记反，
   巨石顶到天花板那一刻就会被当成落地、**在半空中就碎**（2026-10-18 修）
 - ✅ **纯重力石头**（`Gameplay/Scene/StoneBody.cs`；菜单 `Tools/规则游戏/地图组件/⑬ 巨石（纯重力石头，撞开关）`）——
-  `Prefabs/StoneBoulder.prefab`：Dynamic 30 kg、吃重力、碰到 `CityButton` 就按下去（`IContactSwitch`）、
+  `Prefabs/StoneBoulder.prefab`：Dynamic 18 kg、吃重力、碰到 `CityButton` 就按下去（`IContactSwitch`）、
   收玩家推过来的力（`IPushable`）。**没有碎 / 剑 / 锁** —— 那些是 ⑫ 巨石断剑的事。
   外观与 ⑫ 同一张**方形**石头贴图（`Art/Sprites/Stone/StoneSquare.png`，320px 程序生成：倒角 + 描边 + 裂纹）。
   ⚠️ **「推不动 → 摩擦一减小就推得动」是物理自己算出来的，代码里没有门槛**：玩家推力 60 N，
-  静摩擦 = μ·m·g。30 kg 时 —— 正常（组合后 μ0.4）118 N **推不动**；「摩擦 × 削弱」（μ0.15）44 N **推得动**；
-  「失效」（μ0）一推就滑。`StoneBody.ReceivePush` 只交力（与 `PushableBody` 同一条路），
-  所以「质量 × 削弱」（30 → 9 kg）也会顺带让它推得动 —— 涌现，不是特判。
+  静摩擦 = **μ_eff**·m·g —— μ_eff 是**两个接触面组合后**的值，不是石头自己那份
+  （地面是没材质的 Tilemap → 0.4）。按最坏情况（取平均）算 18 kg：正常 μ_eff≈0.45 → 79 N **推不动**；
+  「摩擦 × 削弱」μ_eff≈0.275 → 49 N **推得动**（净 11 N ≈ 0.6 m/s²）；「失效」→ 一推就滑。
+  18 kg 是反推的边界：> 13.6 kg 保证正常推不动，< 22.2 kg 保证削弱推得动。
+  `StoneBody.ReceivePush` 只交力（与 `PushableBody` 同一条路），
+  所以「质量 × 削弱」（18 → 5.4 kg）也会顺带让它推得动 —— 涌现，不是特判。
   ⚠️ **石头必须用 `Data/Physics/StoneMaterial2D`（摩擦 Combine = `Minimum`）**，不能沿用木箱那块
   （Combine = `Mean`）：与地面（没材质，默认 0.4）取平均后，0.15 会变成 0.275 → 静摩擦 81 N，
   「摩擦 × 削弱」照样推不动（2026-10-18 实测踩到的坑：当时只有「质量 × 削弱」能动）。
@@ -195,8 +198,11 @@
 - ✅ **落点 = 出生点 + 存档点（2026-10-18 合并，主程定）**：`PlayerSpawnPoint` 是**唯一**落点组件。
   开局由 `WorldStreamer` 挑一个点 `Arrive()`（落人 + 记成复活点）；玩家走进 `_activateRadius`
   （默认 1.2 m，**距离轮询**，不用触发回调 —— 玩家是 Kinematic + Slide）自动刷新复活点；
-  死亡后 `PlayerController` 等 `_respawnDelay`（1.2 s）自己 `Respawn()` → `EntityDamageable.Revive()`
-  （清死亡标记 + 回满血 + 至少 1 秒无敌）。复活位置**存在玩家自己的内存字段**
+  死亡后 `PlayerController` 等 `_respawnDelay`（1.2 s）**并且等死亡动画播完**才自己 `Respawn()` ——
+  等待是表现层挂的（`PlayerAnimationDriver` 在倒下时 `HoldRespawn()`、`Die` 播完 `ReleaseRespawnHold()`，
+  `Hero_Die` 是 2.67 s，只靠 1.2 s 会在人还没倒下时就把人搬走）。复活 → `EntityDamageable.Revive()`
+  （清死亡标记 + 回满血 + 至少 1 秒无敌），**同时把动画 `Play("Idle")` 拉回初始态** ——
+  `Die` 是终点状态、没有出边，不显式重置会一直停在尸体那一帧。复活位置**存在玩家自己的内存字段**
   （`RespawnId` / `RespawnPosition`），**不进世界快照** —— 所以跨分区卸载不再失效。
   旧 `CityCheckpoint`（靠全量内存快照记位置）已删除，白盒里的点换成 `PlayerSpawnPoint`。
   ⚠️ 组件只广播 `SaveRequested(id)`，**落盘仍未实现**（`RuleGame.Persistence` 只有 asmdef，
@@ -204,6 +210,11 @@
 - ⚠️ **`WorldStreamer` 会「认领」已经在场的分区**（编辑器多场景开着按 Play 的情况）：
   认领进 `_loaded` 之后 `LoadedCount` 才有值、开局落人才会触发 —— 以前这条路径直接跳过，
   出生点因此**永远不生效**（2026-10-18 修）。开局落人已从 `LoadRoutine` 挪到 `Refresh()`
+- ⚠️ **`Boot` 不是世界分区**（2026-10-19 修）：`PartitionCatalog` 里曾残留一条 Boot（旧矩形，Boot 当年装过积木城），
+  流式加载会在玩家走出范围时**卸载 Boot** —— 主菜单 / `TrainTravelService` / 黑场 / 线路面板一起消失，
+  车站砍不开也没法传送；走回来再**附加加载第二份 Boot**，新主菜单 `_started=false` 在玩到一半弹出来把游戏暂停
+  （存档过场也因此冻住）。现已删掉那条数据；代码侧 `WorldStreamer` 认启动场景（`GameRoot` 在
+  `DontDestroyOnLoad` 之前写入路径）**永不加载 / 卸载**，`世界分区/②` 也拒绝登记 Boot
 - ✅ **回弹块**（`Gameplay/Scene/SpringBackBody.cs`；菜单 `Tools/规则游戏/地图组件/⑭ 回弹块（轨道内受击击退 + 缓慢回正）`）——
   生成 `Prefabs/SpringBackBody.prefab`：被攻击打得**沿自己的轨道**退开（轻击 ≈0.9 格 / 重击顶到轨道尽头），
   停一下再**慢慢回正**。**轨道 = 过锚点的一条直线**（两个相对锚点的偏移，默认水平 ±1.5 格），
@@ -212,7 +223,11 @@
   选 **Kinematic + 自己积分**，不是 Dynamic + 引擎摩擦：这类块悬在竖井里没有接触面；而且静摩擦 `μmg`
   随 ×3 涨过回正力时，块会**卡死在偏移位置**。**只吃击退、不掉血**（`IDamageable` 忽略 `Amount`），
   自带受击箱、能承载（`IMovingSurface`）、无白盒文字标签。**站在块上打别人不会把脚下的块弹开**
-  （攻击盒下沿会罩到脚下那块，Box2D 重叠含边界；`ApplyDamage` 先用脚底探测 `IsRiddenBy` 把这种命中整下忽略）。
+  （攻击盒下沿会罩到脚下那块，Box2D 重叠含边界；`ApplyDamage` 先用脚底探测 `IsStandingOnMe` 把这种命中整下忽略）。
+  **挡路的玩家会被推着走**（2026-10-19 修）：块移动前用 `SafeFraction` 夹短位移（玩家顶着墙就停），
+  再把这段位移交给 `PlayerController.CarryOnPlatform` —— 与电梯 `CityPathMotor` 同一套承载；
+  悬空 / 上升中的玩家推不动，块停住等他们让开，**不会把人包进碰撞体里**（之前正是「包进去」导致玩家卡死）。
+  块自身仍会穿墙、敌人没有承载入口（块对敌人仍是穿过）。
   **根物体可缩放**（关卡里的 8×2 宽板）——
   受击箱随缩放变大（所以它**和身体同尺寸**，不按 0.75 缩：宽板上 0.75 的边距会超出玩家攻击距离，出现「只有一侧打得到」），
   轨道白盒按实际缩放换算。编辑期自检 `规则游戏/验证/回弹块（预制体 + 纯函数）`（32 条）。
@@ -251,7 +266,33 @@
   撞地面**停住不消失**、撞道具 / 敌人**炸开消失**且真的炸出纸屑、穿风场不消失、
   **风场里被吹起来**（0.9 s 从 y=8 吹到 14）、按下开关后继续飞、投掷者自身不误判、只有寿命到才消失），
   自己开空场景跑、跑完把原场景开回来；也有批处理入口 `PaperPlaneKnifeValidation.RunBatch`。
-  `Scenes/Test_RuleSystem.unity` 已接：玩家 `_knifePrefab` + 地面左侧 `PaperPlaneButton`（x=17，按下变绿）当靶子
+  **正式入口已接**（2026-10-19）：`Prefabs/LevelRuntime.prefab` 的 Player 上 `_knifePrefab` 指向它 ——
+  `GameRoot.prefab` / `Boot.unity` 都是它的嵌套实例，**自动继承**（场景里不用再单独拖）。
+  `Scenes/Test_RuleSystem.unity` 另外接了一个靶子按钮 `PaperPlaneButton`（x=17，按下变绿）。
+  ⚠️ `Prefabs/Enemies/EnemyLabPlayer.prefab` 没接（敌人实验室的测试角色，不需要投掷）。
+- ✅ **攻击盒 / 纸飞机也能扳开关**（2026-10-19，方案 B）—— `IContactSwitch` 新增 **`ImpactByContact()`**（**撞击型**：打一下就翻转），
+  与 `PressByContact()` / `ReleaseByContact()` 的**压住型**（石头 / 敌人 / 巨石压在压板上）并存，互不替换。
+  **玩家**侧在 `PlayerController.PerformAttackHit` 里多查一次 `OverlapBox`（`useTriggers = true`、不配 mask、
+  按 `IContactSwitch` 认对象）；**纸飞机**侧 `ThrownKnife.PressSwitch` 改调同一个入口；
+  两边各自按引用去重 —— 一次挥砍 / 一发投掷对同一个开关只翻一次
+  （纸飞机 16 m/s 一帧走 0.32 m，摇杆触发区 0.65 m 宽，不去重会连翻两下 = 看起来没反应）。
+  ⚠️ 这条**不进伤害管线**：开关不是 `IDamageable`，所以「伤害 × 失效」不会把机关一起关掉
+  （`DamageProcessor` 在 `DamageDisabled` 时直接 `return 0`，连命中都不算）。
+  `Toggle = 1` 翻转、`Toggle = 0` 仍按下即锁死；翻转逻辑与按 E 的 `Interact` 同一行。
+  验：`规则游戏/验证/纸飞机飞刀（隔离场景 Play 冒烟）` **21 项全过**（含新增「同一发只撞一次」）；
+  顺手修了该验证里 `WindZone` 的旧字段名（`_forceAtTop` 已不存在，改 `_forceGradient`），在那之前它一跑就 NRE。
+- ✅ **楼层电梯 + 随车拉杆**（2026-10-19，独立预制体）—— `Prefabs/BrickCity/CityFloorLift.prefab`，
+  生成菜单 `Tools/规则游戏/积木城/⑮ 楼层电梯（拉杆随车走）`。**旧的两站电梯一行没动**：
+  `CityPathMotor` / `CityLift` / `CityLever` 原样，新组件是 `CityMultiStopLift` + `CityFloorLever`。
+  层级：容器 → `Car`（Ground 层）+ `Lever`（Default 层），**拉杆是兄弟节点不是子物体** ——
+  Kinematic 子刚体挂在父级 `MovePosition` 下会晚一个物理步，所以由 `_carriedBodies` 显式给同一位移。
+  站点 = 相对摆放位置的偏移数组（2 项 2 站 / 3 项 3 站）；档位 = **打过来的位置**落在横向第几段
+  （近战传玩家位置、纸飞机传自己撞击点、E 键也按玩家位置），2 档时正中算右半。
+  `IContactSwitch.ImpactByContact` 因此多了 `sourcePoint` 参数（两态开关忽略它）。
+  **美术已接交付图**：车厢 = `CityLift_Plane_01/02`（`SpriteFlipbook` 14fps），拉杆 = `CityLever_01..05`
+  （`CityFloorLeverSpriteView` 22fps 按档换帧，`_handle` 留空）。对齐按**机舱顶**（精灵局部 +0.75）而不是包围盒顶 ——
+  尾翼比机舱高 0.15，按包围盒对齐人会悬空。素材在 `Art/Sprites/Components`（`CityArtSetup` 导入，不另存副本）。
+  细节见 `Doc/楼层电梯与多档拉杆.md`。
 
 ## 已定设计决策（2026-10-12，合并 `mortis-sys/main` 时定）
 

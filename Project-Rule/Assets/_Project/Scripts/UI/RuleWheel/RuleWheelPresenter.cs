@@ -93,6 +93,7 @@ namespace RuleGame.UI.RuleWheel
         public bool TryOpen()
         {
             if (!isActiveAndEnabled || _session == null || IsOpen || _player == null || !_player.isActiveAndEnabled
+                || _player.IsInputBlocked                       // 过场 / 传送 / 对话正拿着门禁：不能叠在别人的过场上面开
                 || _player.GetComponent<EntityStatus>().IsPaused) return false;
             try
             {

@@ -97,7 +97,7 @@ namespace RuleGame.Development.Testing
             Check("开局：剑藏着看不见", !_sword.gameObject.activeSelf, "剑是启用状态");
             Check("开局：天花板按钮没被按下", !_armButton.IsOn, "按钮一开始就是打开的");
             Check("开局：解锁按钮没被按下", !_releaseButton.IsOn, "解锁按钮一开始就是打开的");
-            Check("开局：剑锁死（摩擦正常）", !_sword.IsFree, "IsFree 一开始就是 true");
+            Check("开局：摩擦规则没开（剑还没露出来）", !_sword.IsFree, "IsFree 一开始就是 true");
 
             float startY = _boulder.transform.position.y;
 
@@ -166,7 +166,7 @@ namespace RuleGame.Development.Testing
 
             // ---- ⑥ 剑露出来了 --------------------------------------------
             Check("⑥ 碎块里露出剑", _sword.gameObject.activeSelf, "剑还是隐藏的");
-            Check("⑥ 露出来时剑仍然是锁死的", !_sword.IsFree, "IsFree 不该因为碎开而变 true");
+            Check("⑥ 露出来时摩擦规则还没开（但这把剑不再靠它）", !_sword.IsFree, "IsFree 不该因为碎开而变 true");
 
             // ---- ⑦ 摩擦反转之前，站在剑边也拔不动 ------------------------
             _puller.position = _sword.transform.position + new Vector3(0.6f, 0.6f, 0f);
@@ -174,21 +174,18 @@ namespace RuleGame.Development.Testing
 
             Check("⑦ 假玩家站到剑边（距离闸门打开）", _sword.PlayerInRange,
                   $"假玩家在 {_puller.position}，剑在 {_sword.transform.position}，取剑半径 1.6");
-            Check("⑦ 摩擦正常时手动拔也被拒", !_sword.TryPull(ignoreDistance: true), "锁死状态不该拔得动");
-            Check("⑦ 摩擦正常时不会自动拔出", !_sword.IsExtracted, "剑自己飞出来了");
-
-            // ---- ⑧ 摩擦反转，走近就拔出来 --------------------------------
-            RuleRequestResult friction = rules.Request(AttributeId.Friction, RelationId.Revert, RuleSource.Player);
-            Check("⑧「摩擦 × 反转」生效", friction.Succeeded, friction.Status.ToString());
 
             yield return WaitForFixedFrames(2);
-            Check("⑧ 剑解锁", _sword.IsFree, "FrictionInverted 应该是 true");
+            Check("⑦ 靠近就自动开始拔（不要求摩擦）", _sword.IsPulling || _sword.IsExtracted, "没开始拔");
+            Check("⑦ 摩擦没开也能拔（IsFree = false）",
+                  !_sword.IsFree && (_sword.IsPulling || _sword.IsExtracted),
+                  $"IsFree={_sword.IsFree}，IsPulling={_sword.IsPulling}，IsExtracted={_sword.IsExtracted}");
 
+            // ---- ⑧ 不需要摩擦，走近就拔出来 --------------------------------
             yield return WaitUntil(() => _sword.IsExtracted);
             Check("⑧ 剑被拔出来（没调 TryPull，靠走近触发）", _sword.IsExtracted, "等超时了还没拔出来");
-
-            // 收尾：把规则还回去，别把试验场景留在「摩擦反转」里。
-            rules.Cancel(AttributeId.Friction);
+            Check("⑧ 拔出后剑隐藏", !_sword.gameObject.activeSelf, "剑还亮着");
+            Check("⑧ 已拔出后不能再拔", !_sword.TryPull(ignoreDistance: true), "又拔了一次");
 
             Finish();
         }

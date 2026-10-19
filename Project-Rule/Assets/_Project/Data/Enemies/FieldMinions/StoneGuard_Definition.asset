@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Enemy.EnemyDefinition
   Kind: 6
   DisplayName: "\u77F3\u5934\u4EBA\u5C0F\u602A"
-  BodySize: {x: 1.8, y: 2.4}
+  BodySize: {x: 1.5, y: 2.4}
   Health: 17
   Damage: 5
   ContactDamage: 0
@@ -24,7 +24,7 @@ MonoBehaviour:
   EnergyRegen: 0
   RuleAttribute: 0
   RuleRelation: 4
-  MoveSpeed: 1.2
+  MoveSpeed: 1.6
   AttackRange: 1.8
   AttackCooldown: 3
   ProjectileBudget: 192
@@ -127,8 +127,14 @@ MonoBehaviour:
   MinionLeashRange: 8
   MinionTargetMemory: 1.5
   MinionStaggerThreshold: 20
+  MinionHurtDuration: 0.25
   MinionPreferredRange: 4
   MinionAimLockFraction: 0.25
+  MinionNavigationEnabled: 1
+  MinionJumpHeight: 1.6
+  MinionMaxDrop: 2.5
+  MinionNavigationSpacing: 0.5
+  MinionRepathInterval: 0.65
   MinionReassembles: 0
   MinionRespawnDelay: 7
   MinionFuseDuration: 1

@@ -154,9 +154,12 @@ namespace RuleGame.Editor.Verification
                 fieldShape.isTrigger = true;
                 var zone = fieldGo.AddComponent<RuleGame.Gameplay.Scene.WindZone>();
                 var zoneSo = new SerializedObject(zone);
+                // ⚠️ 字段名跟 WindZone 走：现在是「底力 + 梯度」，不再是 _forceAtTop / _forceAtBottom 两端。
+                //    梯度 0 = 整条风道均匀 25 N（与旧断言同一条件）。
                 zoneSo.FindProperty("_forceAtBottom").vector2Value = new Vector2(0f, 25f);
-                zoneSo.FindProperty("_forceAtTop").vector2Value = new Vector2(0f, 25f);
+                zoneSo.FindProperty("_forceGradient").floatValue = 0f;
                 zoneSo.FindProperty("_drag").floatValue = 0f;
+                zoneSo.FindProperty("_verticalDamping").floatValue = 0f;
                 zoneSo.ApplyModifiedPropertiesWithoutUndo();
 
                 // 接触式开关
@@ -168,6 +171,7 @@ namespace RuleGame.Editor.Verification
                 shape.isTrigger = true;
                 _switch = button.AddComponent<TestSwitch>();
                 _switch.Pressed = false;
+                _switch.Impacts = 0;
 
                 // 投掷者：自己身上有一坨碰撞体，刀从它中间出手
                 _thrower = new GameObject("Thrower") { layer = 0 };
@@ -338,6 +342,8 @@ namespace RuleGame.Editor.Verification
 
                 ThrownKnife overSwitch = Knives[5];
                 Check("撞开关时真的按下了它", _switch != null && _switch.Pressed);
+                Check("同一发只撞一次（按开关去重）", _switch != null && _switch.Impacts == 1,
+                      _switch == null ? "没有开关" : "Impacts=" + _switch.Impacts);
                 Check("按下开关之后刀还在飞", overSwitch != null,
                       overSwitch == null ? "刀按完按钮就消失了" : "ok");
 
@@ -400,12 +406,22 @@ namespace RuleGame.Editor.Verification
             SessionState.EraseString(ReturnScene);
         }
 
-        /// <summary>假开关：只记「有没有被按到」。真实按钮是 CitySwitch。</summary>
+        /// <summary>假开关：记录「有没有被按到」与「被撞了几次」。真实按钮是 CitySwitch。</summary>
         private sealed class TestSwitch : MonoBehaviour, IContactSwitch
         {
             public bool Pressed;
+
+            /// <summary>被纸飞机撞了几次 —— 用来抓「同一发翻两次」的去重回归。</summary>
+            public int Impacts;
+
             public void PressByContact() => Pressed = true;
             public void ReleaseByContact() { }
+
+            public void ImpactByContact(Vector2 sourcePoint)
+            {
+                Pressed = true;
+                Impacts++;
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 using RuleGame.UI.RuleWheel;
+using RuleGame.Gameplay.Common;
 using RuleGame.Gameplay.Player;
 using RuleGame.Gameplay.Scene.Components;
 using RuleGame.Infrastructure.Snapshot;
@@ -116,12 +117,20 @@ namespace RuleGame.Development.BrickCity
         }
         private PlayerController Player => Interactor != null ? Interactor.GetComponent<PlayerController>() : null;
         public bool IsClaimed(string id) => _claimed.Contains(id);
-        public bool TryGrant(string id, CityRewardKind kind, int amount)
+        public bool TryGrant(string id, CityReward reward)
         {
-            if (string.IsNullOrWhiteSpace(id) || !_claimed.Add(id)) return false;
-            switch (kind) { case CityRewardKind.Power: PowerTokens += amount; break;
-                case CityRewardKind.Health: HealthTokens += amount; break; case CityRewardKind.Energy: EnergyTokens += amount; break; }
-            Debug.Log("[积木城演示] 已领取奖励：" + kind + " +" + amount + "（" + id + "）");
+            if (string.IsNullOrWhiteSpace(id) || _claimed.Contains(id)) return false;
+
+            switch (reward.Kind)
+            {
+                case CityRewardKind.Power: PowerTokens += reward.Amount; break;
+                case CityRewardKind.Health: HealthTokens += reward.Amount; break;
+                case CityRewardKind.Energy: EnergyTokens += reward.Amount; break;
+                default: return false;
+            }
+
+            _claimed.Add(id);
+            Debug.Log("[积木城演示] 已领取奖励：" + reward.Kind + " +" + reward.Amount + "（" + id + "）");
             return true;
         }
     }

@@ -31,5 +31,11 @@ MonoBehaviour:
     Size: {x: 5.605361, y: 6.846874}
     LoadRadius: 0
     AlwaysLoaded: 0
+  - PartitionId: 4
+    ScenePath: Assets/_Project/Scenes/BuildingBlocks/Level_Building_01.unity
+    Center: {x: 62.25, y: -28.5}
+    Size: {x: 156.5, y: 53}
+    LoadRadius: 0
+    AlwaysLoaded: 0
   _defaultLoadRadius: 12
   _unloadHysteresis: 8

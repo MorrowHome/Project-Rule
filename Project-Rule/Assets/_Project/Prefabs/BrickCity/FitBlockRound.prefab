@@ -184,7 +184,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Scene.FitBlock
   _shape: 1
   _canBePushed: 1
-  _killY: -20
+  _killBelowSpawn: 30
   _respawnDelay: 2
 --- !u!58 &7349917372388349917
 CircleCollider2D:

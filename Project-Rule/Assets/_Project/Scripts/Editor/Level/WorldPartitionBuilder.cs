@@ -68,6 +68,14 @@ namespace RuleGame.Editor.Level
                 return;
             }
 
+            // ⚠️ Boot 不是分区：它只装着 GameRoot / 主菜单 / 传送服务 / 黑场。
+            // 把它登记进去会让流式加载卸载它（主菜单、传送面板一起消失）再加载第二份（第二个开始菜单）。
+            if (string.Equals(scene.path, BootScenePath, System.StringComparison.Ordinal))
+            {
+                Debug.LogError("[世界分区] Boot 是启动场景，不是世界分区，已拒绝登记。");
+                return;
+            }
+
             PartitionCatalog catalog = AssetDatabase.LoadAssetAtPath<PartitionCatalog>(CatalogPath);
             if (catalog == null)
             {

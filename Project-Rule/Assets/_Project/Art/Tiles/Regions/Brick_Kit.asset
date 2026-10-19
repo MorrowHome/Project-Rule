@@ -26,3 +26,4 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 8df8f7faea5a7ac41bc408408e6d1f85, type: 3}
   _variantSeed: 0
   _chainVariants: 1
+  _spike: {fileID: 21300000, guid: 089cb17caf305324db6aac3bc89d974d, type: 3}

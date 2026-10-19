@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using RuleGame.Core.Rules;
 using RuleGame.Gameplay.Combat;
 using RuleGame.Gameplay.Common;
+using RuleGame.Gameplay.Player;
 using RuleGame.Infrastructure;
 using RuleGame.Infrastructure.Rules;
 using RuleGame.Infrastructure.Time;
@@ -43,6 +45,11 @@ namespace RuleGame.Gameplay.Scene
     /// <para>⚠️ <b>它不掉血、也不会死</b>：<see cref="IDamageable"/> 只消费 <c>Knockback</c>，
     /// <c>Amount</c> 被直接忽略 —— 它是机关，不是敌人（没有 <c>EntityStatus</c>、没有无敌帧、
     /// 不受伤害挂账影响；挂账期间伤害记 0、击退照样下发）。</para>
+    ///
+    /// <para><b>挡路的玩家会被推着走</b>：块移动前先问「这一帧的位移会不会把人顶进墙里」，
+    /// 再把夹短后的位移交给玩家自己的承载入口（<c>PlayerController.CarryOnPlatform</c>）——
+    /// 与电梯 <c>CityPathMotor</c> 同一套机制。悬空 / 上升中的玩家推不动，块会停住等他们让开，
+    /// **不会把人包进碰撞体里**（玩家是 Kinematic + Slide，被包进去就解不出来了）。</para>
     ///
     /// <para>⚠️ <b>站在块上打别人时，脚下的块不会跟着被弹开</b>：攻击盒是「从身体往前」的横盒，
     /// 站在块顶挥刀时它的下沿会罩到脚下的块。所以 <see cref="ApplyDamage"/> 先看
@@ -197,6 +204,16 @@ namespace RuleGame.Gameplay.Scene
         /// <summary>「脚底有没有踩着我」的探测结果缓存，避免每次命中都分配。</summary>
         private readonly Collider2D[] _supportHits = new Collider2D[8];
 
+        /// <summary>自己的实心碰撞体（推人时要用它的包围盒与「忽略自己」的判断）。</summary>
+        private Collider2D _solid;
+
+        /// <summary>这一帧挡在路上的角色（去重前先收集，统一给它们承载位移）。</summary>
+        private readonly Collider2D[] _actorHits = new Collider2D[8];
+        private readonly List<PlayerController> _pushers = new List<PlayerController>();
+
+        /// <summary>角色沿位移方向做 Cast 的结果缓存。</summary>
+        private static readonly RaycastHit2D[] ActorCastHits = new RaycastHit2D[8];
+
         // ==================================================================
         //  只读状态
         // ==================================================================
@@ -238,6 +255,7 @@ namespace RuleGame.Gameplay.Scene
             if (!Application.isPlaying) return;
 
             _body = GetComponent<Rigidbody2D>();
+            _solid = GetComponent<Collider2D>();
             ConfigureBody();
 
             if (_anchorAtSpawn) CaptureAnchor();
@@ -259,6 +277,7 @@ namespace RuleGame.Gameplay.Scene
             if (_body == null)
             {
                 _body = GetComponent<Rigidbody2D>();
+                _solid = GetComponent<Collider2D>();
                 ConfigureBody();
                 if (_anchorAtSpawn) CaptureAnchor();
             }
@@ -308,10 +327,18 @@ namespace RuleGame.Gameplay.Scene
                 _offset, ref _impulse, dt,
                 _knockbackDrag, _returnSpeed, ComputeReturnMultiplier(),
                 _returnEaseDistance, _settleDistance, _minOffset, _maxOffset,
-                out float axisSpeed);
+                out _);
 
-            _position = _anchor + _axis * _offset;
-            Velocity = _axis * axisSpeed;
+            Vector2 previous = _position;
+            Vector2 target = _anchor + _axis * _offset;
+            Vector2 delta = target - previous;
+
+            // 路上有人：推得动就带着一起走，推不动就停住 —— 绝不把玩家包进碰撞体里。
+            if (delta.sqrMagnitude > 0f) delta = PushActors(delta);
+
+            _position = previous + delta;
+            _offset = Vector2.Dot(_position - _anchor, _axis);   // 被夹短之后，状态也要跟着缩
+            Velocity = delta / dt;
 
             _body.MovePosition(_position);
             UpdateTrackVisual();
@@ -399,7 +426,7 @@ namespace RuleGame.Gameplay.Scene
             if (!isActiveAndEnabled) return;
 
             // 站在我身上打别人：攻击盒会顺带罩到我，但那不是「在打我」。
-            if (IsRiddenBy(damage.Attacker)) return;
+            if (IsStandingOnMe(damage.Attacker)) return;
 
             float strength = damage.Knockback * _knockbackScale;
             if (strength <= 0f) return;
@@ -414,8 +441,12 @@ namespace RuleGame.Gameplay.Scene
         }
 
         /// <summary>
-        /// 攻击者是不是**站在我身上**（脚踩我的实心碰撞体）。
+        /// 某个实体是不是**站在我身上**（脚踩我的实心碰撞体）。
         /// </summary>
+        /// <remarks>
+        /// <para>两处在用：① 挨打时——站在块上打别人不算打我；② 推人时——站在块顶的人由
+        /// <see cref="IMovingSurface"/> 带，不能再推一次（否则走两倍）。</para>
+        /// </remarks>
         /// <remarks>
         /// <para><b>为什么需要这条</b>：块可以被站上去，而玩家 / 敌人的攻击盒是「从身体中心往前」的横盒。
         /// 站在块顶挥刀打旁边的块时，攻击盒底边正好贴着 —— 甚至压进 —— 脚下这块的受击箱；
@@ -424,7 +455,7 @@ namespace RuleGame.Gameplay.Scene
         /// 也当成踩着我；探测盒只看脚底那一小块，量的是**踩实了没有**。
         /// 两个条件一起用：脚底不低于我的顶面 + 脚底那一块里确实有我的碰撞体。</para>
         /// </remarks>
-        private bool IsRiddenBy(object attacker)
+        private bool IsStandingOnMe(object attacker)
         {
             Collider2D body = ResolveBodyCollider(attacker);
             if (body == null) return false;
@@ -486,6 +517,113 @@ namespace RuleGame.Gameplay.Scene
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// 把挡在路上的玩家**带着一起走**；带不动（悬空 / 顶着墙）就让块停住。
+        /// </summary>
+        /// <remarks>
+        /// <para><b>为什么需要这条</b>：玩家是 Kinematic + <c>Rigidbody2D.Slide</c>，块也是 Kinematic。
+        /// 块用 <c>MovePosition</c> 直接坐进玩家身体里时，引擎**不会**替谁让路 ——
+        /// 玩家下一次 <c>Slide</c> 一开始就处在重叠状态，解不出来，于是**卡在块里**。</para>
+        /// <para><b>做法与 <c>CityPathMotor</c>（电梯 / 闸门）完全一致</b>：
+        /// 先问「这一帧的位移会不会把人顶进墙里」（<see cref="SafeFraction"/>），
+        /// 再把夹短后的位移通过 <see cref="PlayerController.CarryOnPlatform"/> 交给玩家 ——
+        /// 玩家在自己的 <c>Slide</c> 里走同样多，块与玩家**不会**互相穿模。</para>
+        /// <para>⚠️ 带不动的人（悬空、正在上升、或顶着墙）会让块**停住**，而不是硬挤过去 ——
+        /// 这是「不卡人」的底线；玩家走开之后块会继续回正。</para>
+        /// <para>⚠️ 只处理玩家。敌人目前没有承载入口（<c>EnemyMotor</c> 没有 CarryOnPlatform），
+        /// 块对敌人仍是穿过 —— 要处理得先给敌人补同一条路。</para>
+        /// </remarks>
+        /// <returns>夹短之后的位移（可能比 <paramref name="delta"/> 短，甚至为零）。</returns>
+        private Vector2 PushActors(Vector2 delta)
+        {
+            if (_solid == null) return delta;
+
+            Bounds b = _solid.bounds;
+            var center = (Vector2)b.center + delta * 0.5f;
+            var size = new Vector2(
+                b.size.x + Mathf.Abs(delta.x) + 0.06f,
+                b.size.y + Mathf.Abs(delta.y) + 0.06f);
+
+            var filter = new ContactFilter2D { useTriggers = false };
+            int count = Physics2D.OverlapBox(center, size, 0f, filter, _actorHits);
+
+            float fraction = 1f;
+            _pushers.Clear();
+
+            for (int i = 0; i < count; i++)
+            {
+                Collider2D hit = _actorHits[i];
+                if (hit == null) continue;
+                if (hit.transform == transform || hit.transform.IsChildOf(transform)) continue;
+
+                var player = hit.GetComponentInParent<PlayerController>();
+                if (player == null) continue;
+
+                // 只在「块朝着它走」时才算被顶到 —— 块从人身边离开时别把人拖着走。
+                if (Vector2.Dot((Vector2)hit.bounds.center - (Vector2)b.center, delta) <= 0f) continue;
+
+                // 站在块顶的人由 IMovingSurface 带 —— 再推一次会走两倍。
+                if (IsStandingOnMe(player)) continue;
+
+                // 只有「站在地上、没在上升」的人才接得住承载位移
+                // （与 MotionMover 里 carrying 的判据保持一致）。
+                if (!CanCarry(player))
+                {
+                    fraction = 0f;
+                    continue;
+                }
+
+                Rigidbody2D body = player.GetComponent<Rigidbody2D>();
+                if (body != null) fraction = Mathf.Min(fraction, SafeFraction(body, delta));
+
+                if (!_pushers.Contains(player)) _pushers.Add(player);
+            }
+
+            Vector2 pushed = delta * fraction;
+            for (int i = 0; i < _pushers.Count; i++) _pushers[i].CarryOnPlatform(pushed, _solid);
+            return pushed;
+        }
+
+        /// <summary>这个人接不接得住本帧的承载位移（悬空 / 上升中都不接）。</summary>
+        private static bool CanCarry(PlayerController player)
+        {
+            if (player == null || !player.isActiveAndEnabled) return false;
+            if (!player.IsGrounded) return false;
+
+            Vector2 up = Physics2D.gravity.sqrMagnitude > 0.0001f
+                ? -Physics2D.gravity.normalized
+                : Vector2.up;
+
+            return Vector2.Dot(player.Velocity, up) <= 0.01f;
+        }
+
+        /// <summary>
+        /// 这个角色沿 <paramref name="delta"/> 能走多远（0~1 的比例）—— 撞墙就提前停。
+        /// </summary>
+        /// <remarks>与 <c>CityPathMotor.SafeFraction</c> 同一个做法：Cast 玩家自己的碰撞体，
+        /// 忽略正在承载它的块，取最近一面「迎着位移」的墙。留 0.015 的缝，避免贴脸。</remarks>
+        private float SafeFraction(Rigidbody2D body, Vector2 delta)
+        {
+            float distance = delta.magnitude;
+            if (distance < 0.0001f) return 1f;
+
+            var filter = new ContactFilter2D { useTriggers = false };
+            int count = body.Cast(delta / distance, filter, ActorCastHits, distance + 0.02f);
+
+            float fraction = 1f;
+            for (int i = 0; i < count; i++)
+            {
+                RaycastHit2D hit = ActorCastHits[i];
+                if (hit.collider == null) continue;
+                if (hit.collider.transform == transform || hit.collider.transform.IsChildOf(transform)) continue;
+                if (Vector2.Dot(hit.normal, delta) >= -0.00001f) continue;
+
+                fraction = Mathf.Min(fraction, Mathf.Max(0f, hit.distance - 0.015f) / distance);
+            }
+
+            return Mathf.Clamp01(fraction);
         }
 
         // ==================================================================

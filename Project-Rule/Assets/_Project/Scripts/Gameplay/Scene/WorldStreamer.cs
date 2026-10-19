@@ -34,6 +34,9 @@ namespace RuleGame.Gameplay.Scene
         [Tooltip("判定间隔（秒）。不必每帧算")]
         [SerializeField] private float _checkInterval = 0.2f;
 
+        [Tooltip("跨场景传送时等一个分区加载的最长时间（秒）。超时只报错，不把人卡在黑屏里。")]
+        [SerializeField, Min(1f)] private float _ensureLoadTimeout = 10f;
+
         [Tooltip("开局把玩家摆到哪个出生点（PlayerSpawnPoint.Id）")]
         [SerializeField] private string _startEntryId = PlayerSpawnPoint.DefaultId;
 
@@ -44,6 +47,9 @@ namespace RuleGame.Gameplay.Scene
         private readonly Dictionary<string, int> _loaded = new Dictionary<string, int>();
         private readonly HashSet<string> _loading = new HashSet<string>();
 
+        /// <summary>被「钉住」的分区：在 <see cref="Unpin"/> 之前不会被离开范围卸掉。</summary>
+        private readonly HashSet<string> _pinned = new HashSet<string>();
+
         /// <summary>已经报过「没登记」的分区场景，避免每帧刷屏。</summary>
         private readonly HashSet<string> _missingWarned = new HashSet<string>();
         private readonly List<int> _wanted = new List<int>();
@@ -51,6 +57,42 @@ namespace RuleGame.Gameplay.Scene
 
         private float _timer;
         private bool _startSpawnApplied;
+
+        /// <summary>
+        /// 启动场景（Boot）的路径：常驻宿主就住在这里，它<b>不是</b>世界分区。
+        /// </summary>
+        /// <remarks>
+        /// <para>由 <see cref="GameRoot"/> 在 <c>DontDestroyOnLoad</c> 之前写入 —— 之后
+        /// <c>gameObject.scene.path</c> 就变成空字符串（DontDestroyOnLoad）了，再也拿不到 Boot 的路径。</para>
+        /// <para>为什么必须有这道闸：分区表是数据，谁都能把 Boot 登记进去（2026-10-19 就发生过，
+        /// 那条矩形还是 Boot 当年装着积木城时的旧范围）。一旦把 Boot 当分区：
+        /// 玩家走出范围 → <b>Boot 被卸载</b> → 主菜单 / <c>TrainTravelService</c> / 黑场 / 面板一起消失
+        /// （车站砍不开、没法传送）；再走回范围 → <b>Boot 被附加加载第二份</b> → 新的主菜单
+        /// <c>_started=false</c>，在玩到一半时弹出来把游戏暂停。</para>
+        /// </remarks>
+        private string _bootstrapScenePath;
+
+        /// <summary>启动场景不是分区：它必须永远在场，既不加载第二份、也不被卸载。</summary>
+        public bool IsBootstrapScene(string scenePath)
+            => !string.IsNullOrEmpty(_bootstrapScenePath)
+            && string.Equals(scenePath, _bootstrapScenePath, StringComparison.Ordinal);
+
+        /// <summary>由 <see cref="GameRoot"/> 在进入 DontDestroyOnLoad 之前调用。</summary>
+        public void SetBootstrapScene(string scenePath)
+        {
+            if (!string.IsNullOrEmpty(scenePath)) _bootstrapScenePath = scenePath;
+        }
+
+        private void Awake()
+        {
+            // 兜底：GameRoot 会在 DontDestroyOnLoad 之前写一次（权威值）。如果它不在这条链上
+            // （调试场景只放了流式加载器），至少把自己所在的场景记成启动场景 ——
+            // 否则「卸载自己所在的场景」会把这块布景连同流式加载器一起删掉。
+            if (!string.IsNullOrEmpty(_bootstrapScenePath)) return;
+
+            UnityEngine.SceneManagement.Scene home = gameObject.scene;
+            if (home.IsValid() && !string.IsNullOrEmpty(home.path)) _bootstrapScenePath = home.path;
+        }
 
         /// <summary>分区表。</summary>
         public PartitionCatalog Catalog => _catalog;
@@ -60,6 +102,89 @@ namespace RuleGame.Gameplay.Scene
 
         /// <summary>是否还有分区在加载中。</summary>
         public bool IsLoading => _loading.Count > 0;
+
+        /// <summary>这个分区场景此刻是否已经在场。</summary>
+        public bool IsSceneLoaded(string scenePath)
+        {
+            if (string.IsNullOrEmpty(scenePath)) return false;
+            if (_loaded.ContainsKey(scenePath)) return true;
+
+            UnityEngine.SceneManagement.Scene scene =
+                UnityEngine.SceneManagement.SceneManager.GetSceneByPath(scenePath);
+            return scene.IsValid() && scene.isLoaded;
+        }
+
+        /// <summary>
+        /// 钉住一个分区，让它在传送落地之前不会被「离开范围」卸掉。
+        /// </summary>
+        /// <remarks>
+        /// <b>为什么需要</b>：<see cref="Refresh"/> 每 0.2 秒按玩家位置重算一次，
+        /// 而传送时玩家还站在**起点** —— 刚加载好的目的地分区不钉住的话，
+        /// 下一个 Refresh 就会立刻把它卸掉，落人直接落进空气里。
+        /// </remarks>
+        public void Pin(string scenePath)
+        {
+            if (!string.IsNullOrEmpty(scenePath)) _pinned.Add(scenePath);
+        }
+
+        /// <summary>解除钉住。落人完成之后必须调，否则这个分区永远不卸。</summary>
+        public void Unpin(string scenePath)
+        {
+            if (!string.IsNullOrEmpty(scenePath)) _pinned.Remove(scenePath);
+        }
+
+        /// <summary>
+        /// 确保某个分区场景在场：不在就发起加载，并等到它真的进 <c>_loaded</c>。
+        /// </summary>
+        /// <remarks>
+        /// <para>加载期间这个分区会被自动钉住，调用方落人完成后要自己 <see cref="Unpin"/>。</para>
+        /// <para>场景没登记进分区表或 Build Settings 时只报错返回 —— 不能死等。</para>
+        /// </remarks>
+        public IEnumerator EnsureLoaded(string scenePath)
+        {
+            if (string.IsNullOrEmpty(scenePath)) yield break;
+
+            Pin(scenePath);
+
+            if (IsSceneLoaded(scenePath)) yield break;
+
+            if (_catalog == null)
+            {
+                Debug.LogError("[WorldStreamer] 没有分区表，无法预加载：" + scenePath, this);
+                yield break;
+            }
+
+            int index = IndexOfScene(scenePath);
+            if (index < 0)
+            {
+                Debug.LogError("[WorldStreamer] 场景不在分区表里，无法预加载：" + scenePath, this);
+                yield break;
+            }
+
+            if (!_loading.Contains(scenePath)) StartLoad(index, _catalog[index]);
+
+            float deadline = UnityEngine.Time.realtimeSinceStartup + _ensureLoadTimeout;
+            while (!_loaded.ContainsKey(scenePath) && UnityEngine.Time.realtimeSinceStartup < deadline)
+                yield return null;
+
+            if (!_loaded.ContainsKey(scenePath))
+            {
+                Debug.LogError("[WorldStreamer] 等待分区加载超时：" + scenePath, this);
+            }
+        }
+
+        /// <summary>分区表里这个场景的下标；没有返回 −1。</summary>
+        private int IndexOfScene(string scenePath)
+        {
+            if (_catalog == null) return -1;
+
+            for (int i = 0; i < _catalog.Count; i++)
+            {
+                if (_catalog[i].ScenePath == scenePath) return i;
+            }
+
+            return -1;
+        }
 
         /// <summary>一个分区加载完成（参数是分区号）。</summary>
         public event Action<int> OnPartitionLoaded;
@@ -115,7 +240,11 @@ namespace RuleGame.Gameplay.Scene
         public void ReloadAll()
         {
             _toUnload.Clear();
-            foreach (KeyValuePair<string, int> pair in _loaded) _toUnload.Add(pair.Key);
+            foreach (KeyValuePair<string, int> pair in _loaded)
+            {
+                if (IsBootstrapScene(pair.Key)) continue;   // 重开也不卸 Boot
+                _toUnload.Add(pair.Key);
+            }
 
             for (int i = 0; i < _toUnload.Count; i++) StartUnload(_toUnload[i]);
 
@@ -138,6 +267,20 @@ namespace RuleGame.Gameplay.Scene
                 PartitionCatalog.PartitionEntry entry = _catalog[index];
 
                 if (string.IsNullOrEmpty(entry.ScenePath)) continue;
+
+                // 启动场景不加载第二份：Boot 是常驻宿主所在处，附加加载一份会带来第二个主菜单。
+                if (IsBootstrapScene(entry.ScenePath))
+                {
+                    if (_missingWarned.Add(entry.ScenePath + "#bootstrap"))
+                    {
+                        Debug.LogWarning(
+                            $"[WorldStreamer] 分区表把启动场景登记成分区，已跳过：{entry.ScenePath}\n" +
+                            "· Boot 里有主菜单 / 传送服务 / 黑场，不能当世界分区加载或卸载。\n" +
+                            "· 从 PartitionCatalog 里删掉这一条（Boot 只启动世界，没有关卡几何）。", this);
+                    }
+                    continue;
+                }
+
                 if (_loaded.ContainsKey(entry.ScenePath) || _loading.Contains(entry.ScenePath)) continue;
 
                 // ⚠️ 场景**已经在场**（编辑器里开着这个分区、或别的系统加载过）就**不要再 LoadSceneAsync 一次**：
@@ -175,6 +318,8 @@ namespace RuleGame.Gameplay.Scene
 
         private void StartLoad(int index, PartitionCatalog.PartitionEntry entry)
         {
+            if (IsBootstrapScene(entry.ScenePath)) return;   // 最后一道闸：启动场景永不加载第二份
+
             // ⚠️ 不要用 Application.CanStreamedLevelBeLoaded(string) 判断：本工程实测它对**已经登记进
             // Build Settings 的场景**也一律返回 false（Unity 6 里这个字符串重载不可靠），
             // 会把正常配置误报成「没登记」。改查 Build Settings 索引：已登记 ≥ 0，未登记 = -1。
@@ -257,6 +402,12 @@ namespace RuleGame.Gameplay.Scene
                 PartitionCatalog.PartitionEntry entry = _catalog[index];
                 if (entry.AlwaysLoaded) continue;
 
+                // 被钉住的分区（跨场景传送正在加载 / 刚落人）不参与卸载。
+                if (_pinned.Contains(pair.Key)) continue;
+
+                // 启动场景永远不卸：Boot 里有主菜单 / 传送服务 / 黑场 / 面板，卸了游戏就残了。
+                if (IsBootstrapScene(pair.Key)) continue;
+
                 float keep = _catalog.GetLoadRadius(entry) + _catalog.UnloadHysteresis;
                 if (PartitionCatalog.WithinRange(entry, point, keep)) continue;
 
@@ -268,6 +419,8 @@ namespace RuleGame.Gameplay.Scene
 
         private void StartUnload(string scenePath)
         {
+            if (IsBootstrapScene(scenePath)) return;         // 最后一道闸：启动场景永不卸载
+
             UnityEngine.SceneManagement.Scene scene = SceneManager.GetSceneByPath(scenePath);
             if (!scene.IsValid() || !scene.isLoaded)
             {

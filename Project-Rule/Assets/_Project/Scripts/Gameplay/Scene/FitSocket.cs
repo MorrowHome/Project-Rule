@@ -7,9 +7,11 @@ namespace RuleGame.Gameplay.Scene
     /// 拼装凹位：一个**只吃指定形状**的座位。判定三条同时成立才把件吸进来。
     /// </summary>
     /// <remarks>
-    /// <para><b>三条判据</b>：① 形状对（只认 <see cref="Accepted"/>）；② 位置对（块心进容差盒）；
-    /// ③ 已经停（线速度低于 <c>_maxSpeed</c> 连续 <c>_settleTime</c> 秒）。
-    /// 成立即让件 <see cref="FitBlock.Seat"/>：Kinematic + 吸到锚点 + 不再吃推力。</para>
+    /// <para><b>两条判据</b>：① 形状对（只认 <see cref="Accepted"/>）；② 块心进了触发圈。
+    /// **不看速度** —— 靠近即合体，成立就 <see cref="FitBlock.Seat"/>：Kinematic + 吸到锚点 + 不再吃推力。</para>
+    ///
+    /// <para>进圈就合的代价是件会「跳」一小段到锚点（最多一个圈的半径），换来的是不会出现
+    /// 「明明贴上了却一直不合体」的手感问题。圈的边长随物体缩放，所以 2× 的凹位自动有 2× 的范围。</para>
     ///
     /// <para><b>为什么不用「碰撞体卡住」当判定</b>：Dynamic 刚体在凹槽里会抖、会被玩家的
     /// <c>Slide</c> 顶出去一点点、会被别的刚体挤。纯碰撞卡不住「到位」这件事，只能当**视觉**。
@@ -28,21 +30,14 @@ namespace RuleGame.Gameplay.Scene
         [SerializeField] private FitShape _accepted = FitShape.Triangle;
 
         [Header("座位")]
-        [Tooltip("块心与锚点的最大偏差（米）。X = 水平，Y = 竖直。")]
-        [SerializeField] private Vector2 _tolerance = new Vector2(0.25f, 0.25f);
+        [Tooltip("块心与锚点的最大偏差（米，随物体缩放放大）。X = 水平，Y = 竖直。只要进来就算合体，不看速度。")]
+        [SerializeField] private Vector2 _tolerance = new Vector2(0.45f, 0.45f);
 
         [Tooltip("入位角度（度）。三角用 0；圆球会保留自己当前角度。")]
         [SerializeField] private float _seatAngle;
 
         [Tooltip("入位后把件挂到谁下面（可空）。凹位在会动的闸门上时要填，否则闸门升走、件留在原地。")]
         [SerializeField] private Transform _seatParent;
-
-        [Header("判定")]
-        [Tooltip("低于这个线速度才算「停住了」（米/秒）。")]
-        [SerializeField, Min(0f)] private float _maxSpeed = 1f;
-
-        [Tooltip("要连续静止多久才判入位（秒）。防高速穿过时误判。")]
-        [SerializeField, Min(0.01f)] private float _settleTime = 0.12f;
 
         [Header("输出")]
         [Tooltip("入位后要驱动的东西（实现 ISwitchTarget 的任意组件，可留空）。")]
@@ -51,7 +46,6 @@ namespace RuleGame.Gameplay.Scene
         [Tooltip("入位时打一条 Console。调试用，正式关卡可以关。")]
         [SerializeField] private bool _logEvents = true;
 
-        private float _hold;
         private BoxCollider2D _trigger;
 
         // ==================================================================
@@ -92,33 +86,22 @@ namespace RuleGame.Gameplay.Scene
             if (IsSeated) return;
 
             FitBlock block = other.GetComponentInParent<FitBlock>();
-            if (block == null || block.Shape != _accepted || block.IsSeated)
-            {
-                ResetHold();
-                return;
-            }
+            if (block == null || block.Shape != _accepted || block.IsSeated) return;
 
+            // 判据只有两条：**形状对 + 进圈了**。不看速度、不要求停稳 ——
+            // 反过来（要求停稳）会出现在槽口来回蹭却永远不合体的手感问题，
+            // 而且重力反转把球「甩」上去时速度本来就很大，那时正该合体。
+            // 圈的尺寸取触发盒的**世界**半尺寸，所以凹位套了缩放（关卡里常见 2×）也自动跟着放大。
+            Vector2 extent = _trigger.bounds.extents;
             Vector2 delta = block.Body.position - AnchorPosition;
-            if (Mathf.Abs(delta.x) > _tolerance.x || Mathf.Abs(delta.y) > _tolerance.y)
-            {
-                ResetHold();
-                return;
-            }
+            if (Mathf.Abs(delta.x) > extent.x || Mathf.Abs(delta.y) > extent.y) return;
 
-            if (block.Body.linearVelocity.sqrMagnitude > _maxSpeed * _maxSpeed)
-            {
-                ResetHold();
-                return;
-            }
-
-            _hold += Time.fixedDeltaTime;
-            if (_hold >= _settleTime) Seat(block);
+            Seat(block);
         }
 
         private void OnTriggerExit2D(Collider2D other)
         {
-            if (IsSeated) return;
-            if (other.GetComponentInParent<FitBlock>() != null) ResetHold();
+            // 进圈即合体，没有「离开就取消」这回事 —— 这里只留个空壳占位，方便以后加提示音。
         }
 
         // ==================================================================
@@ -129,7 +112,6 @@ namespace RuleGame.Gameplay.Scene
         {
             IsSeated = true;
             SeatedBlock = block;
-            _hold = 0f;
 
             block.Seat(AnchorPosition, _seatAngle, _seatParent);
 
@@ -142,8 +124,6 @@ namespace RuleGame.Gameplay.Scene
 
             SeatedEvent?.Invoke(this);
         }
-
-        private void ResetHold() => _hold = 0f;
 
         // ==================================================================
         //  供关卡工具配置

@@ -1,0 +1,59 @@
+{
+  "generatedBy": "Tools/Art/prepare_backdrops.py",
+  "items": [
+    {
+      "source": "本地文档/纯色大背景/出生地/出生地-4.png",
+      "output": "Project-Rule/Assets/_Project/Art/Sprites/Backdrops/Gradient/Start_Backdrop.png",
+      "sourceSize": [
+        1280,
+        720
+      ],
+      "outputSize": [
+        1024,
+        576
+      ],
+      "pixelsPerUnit": 64,
+      "worldSize": [
+        16.0,
+        9.0
+      ],
+      "note": "出生地/默认背景，暖白渐变"
+    },
+    {
+      "source": "本地文档/纯色大背景/积木/积木-1.png",
+      "output": "Project-Rule/Assets/_Project/Art/Sprites/Backdrops/Gradient/Brick_Backdrop.png",
+      "sourceSize": [
+        1280,
+        720
+      ],
+      "outputSize": [
+        1024,
+        576
+      ],
+      "pixelsPerUnit": 64,
+      "worldSize": [
+        16.0,
+        9.0
+      ],
+      "note": "积木王国背景，淡紫到米黄"
+    },
+    {
+      "source": "本地文档/积木室内背景.png",
+      "output": "Project-Rule/Assets/_Project/Art/Sprites/Backdrops/Painted/BrickBoss_Backdrop.png",
+      "sourceSize": [
+        4800,
+        2700
+      ],
+      "outputSize": [
+        2048,
+        1152
+      ],
+      "pixelsPerUnit": 128,
+      "worldSize": [
+        16.0,
+        9.0
+      ],
+      "note": "积木 BOSS 房背景，室内手绘"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 using UnityEngine;
 using RuleGame.Core.Rules;
+using RuleGame.Gameplay.Scene;
 
 namespace RuleGame.Gameplay.Enemy
 {
@@ -7,7 +8,7 @@ namespace RuleGame.Gameplay.Enemy
     public abstract class FieldMinionBrain : EnemyBrain
     {
         private static readonly string[] States = { "Idle", "Patrol", "Attack", "Ignore", "Hurt", "Down", "Rebirth",
-            "Armed", "Explode", "Hop", "Pop", "Walk", "Hide", "Fly", "Stand", "Chase", "Hug", "Return", "Sit", "Wander", "Slide", "Howl", "BellySlap" };
+            "Armed", "Explode", "Hop", "Pop", "Walk", "Hide", "Fly", "Stand", "Chase", "Hug", "Return", "Sit", "Wander", "Slide", "Howl", "BellySlap", "Charge", "Bump" };
         protected Vector2 Home;
         protected float Heading = 1f, ReadyAt;
         protected int Pattern;
@@ -16,6 +17,7 @@ namespace RuleGame.Gameplay.Enemy
         private Transform _cachedTarget;
         private bool _pursuing, _returning;
         private RuleGame.Gameplay.Player.EntityStatus _targetStatus;
+        private readonly RaycastHit2D[] _sightHits = new RaycastHit2D[8];
         protected Collider2D TargetBody;
         protected readonly Collider2D Body;
         protected override string[] ActionNames => States;
@@ -28,7 +30,8 @@ namespace RuleGame.Gameplay.Enemy
         public override bool BodyEnabled => !Actor.Defeated && !Dormant && !(Config.Kind == EnemyKind.ClockMouse && StateName == "Idle");
         public override bool MovementEnabled => BodyEnabled && StateName != "Armed" && StateName != "Explode";
         public override bool DamageLocked => Dormant || !BodyEnabled || StateName == "Armed" || StateName == "Explode";
-        public override bool ContactDamageEnabled => BodyEnabled && Config.Kind == EnemyKind.ClockMouse && StateName == "Walk";
+        public override bool ContactDamageEnabled => BodyEnabled
+            && ((Config.Kind == EnemyKind.ClockMouse && StateName == "Walk") || Config.Kind == EnemyKind.ChargingCube);
         protected bool LiveTarget
         {
             get
@@ -50,7 +53,23 @@ namespace RuleGame.Gameplay.Enemy
                 if (!LiveTarget || Actor.Distance > Config.MinionSenseRange
                     || Vector2.Distance(Actor.Target.position, Home) > Config.MinionLeashRange
                     || Vector2.Distance(Actor.transform.position, Home) > Config.MinionLeashRange) return false;
-                return !Physics2D.Linecast(Actor.transform.position, Actor.Target.position, Actor.Motor.SolidMask);
+
+                // 贴身距离内不靠视线：三棍 / 细门框这类 0.28 宽的机关会把线挡死，
+                // 玩家明明贴在脸上却判成「看不见」，于是回巢后退。
+                if (Actor.Distance <= 1.6f) return true;
+
+                var filter = new ContactFilter2D { useTriggers = false };
+                filter.SetLayerMask(Actor.Motor.SolidMask);
+                int count = Physics2D.Linecast(Actor.transform.position, Actor.Target.position, filter, _sightHits);
+                for (int i = 0; i < count; i++)
+                {
+                    Collider2D hit = _sightHits[i].collider;
+                    if (hit == null) continue;
+                    // 三棍支架是细木棍，隔着它仍然看得见；地形 / 墙照常挡视线。
+                    if (hit.GetComponentInParent<TrestleTrap>() != null) continue;
+                    return false;
+                }
+                return true;
             }
         }
         protected bool TouchesTarget
@@ -144,6 +163,18 @@ namespace RuleGame.Gameplay.Enemy
             if (Config.MinionNavigationEnabled)
             {
                 Actor.Navigation.MoveTo(_lastSeen, Home, Age);
+                // 寻路失败（体型 / 台阶 / 狭窄口）时不能一边播 Walk 一边原地站着：
+                // 退化为「朝目标直接给意图」，遇墙才停；允许踏空，先追上去再说。
+                if (Actor.Motor.Intent.sqrMagnitude < .0001f)
+                {
+                    float fallback = _lastSeen.x - Actor.transform.position.x;
+                    if (Mathf.Abs(fallback) > .12f && !Actor.Motor.HasWallAhead(Mathf.Sign(fallback)))
+                    {
+                        Actor.FaceDirection(Vector2.right * fallback);
+                        Actor.Motor.Intent = Vector2.right * Mathf.Sign(fallback);
+                        Actor.Motor.AllowLedgeTraversal = true;
+                    }
+                }
                 return;
             }
             float offset = _lastSeen.x - Actor.transform.position.x;

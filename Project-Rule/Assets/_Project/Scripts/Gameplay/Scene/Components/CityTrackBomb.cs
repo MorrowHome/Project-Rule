@@ -51,6 +51,9 @@ namespace RuleGame.Gameplay.Scene.Components
         [Tooltip("玩家碰到就爆。关掉 = 只能被开关联动引爆。")]
         public bool DetonateOnContact = true;
 
+        [Tooltip("敌人碰到也爆（用于「重力反转把小怪送上来同归于尽」）。")]
+        public bool DetonateOnEnemy;
+
         private TrackMotor _track;
         private bool _spent;
         private readonly Collider2D[] _hits = new Collider2D[24];
@@ -84,7 +87,10 @@ namespace RuleGame.Gameplay.Scene.Components
             for (int i = 0; i < count; i++)
             {
                 var faction = _hits[i].GetComponentInParent<IFactionMember>();
-                if (faction == null || faction.Faction != Faction.Player) continue;
+                if (faction == null) continue;
+                bool player = faction.Faction == Faction.Player;
+                bool enemy = DetonateOnEnemy && faction.Faction == Faction.Enemy;
+                if (!player && !enemy) continue;
                 Detonate();
                 return;
             }

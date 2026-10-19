@@ -46,6 +46,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24e180e8532e1304888b305fe7d9ac1b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Scene.SwordInStone
+  _requireFreeRule: 0
+  _grantAbility: 4
   _acceptInverted: 1
   _acceptWeakFriction: 0
   _releaseThreshold: 1

@@ -303,6 +303,9 @@ namespace RuleGame.Editor.Level
             // 跳穿平台：用所在区域套件的方块，但**染上瓦片自己的颜色**。
             pieces += DressOneWay(artRoot, oneWay, tilemap, grid, cell, kits, kitAt);
 
+            // 刺：跟着区域套件走（积木王国 = 旧版红色带凸起瓦片），不参与墙皮铺装。
+            pieces += DressSpikes(artRoot, hazards, tilemap, grid, cell, kitAt, solid, kits);
+
             var logicRenderer = tilemap.GetComponent<TilemapRenderer>();
             if (logicRenderer != null && logicRenderer.enabled)
             {
@@ -951,6 +954,108 @@ namespace RuleGame.Editor.Level
         }
 
         /// <summary>
+        /// 给刺（<see cref="HazardField"/> 的格子）铺美术：一格一张，取自所在区域套件的 <see cref="TileRegionKit.Spike"/>。
+        /// </summary>
+        /// <remarks>
+        /// <para>刺不是几何（不参与外露面判断），所以单独一趟处理：铺完关掉白盒 Renderer 之后，
+        /// 这些格子就只剩这里的图。</para>
+        /// <para>套件没配 <c>Spike</c> 的区域**一格都不铺** —— 保持逻辑瓦片原样，不会突然多出方块。</para>
+        /// </remarks>
+        /// <summary>
+        /// 解锁瓦片的「占用颜色」标记：锁着的时候 <c>Tilemap.SetColor</c> 是**静默无效**的。
+        /// </summary>
+        /// <remarks>会写到瓦片资产上（全项目共用），但只是放开一个开关，不影响画法。</remarks>
+        private static void UnlockTileColor(TileBase tile)
+        {
+            if (!(tile is Tile t)) return;
+            if ((t.flags & TileFlags.LockColor) == 0) return;
+
+            Undo.RecordObject(t, "刺：解锁瓦片颜色");
+            t.flags &= ~TileFlags.LockColor;
+            EditorUtility.SetDirty(t);
+        }
+
+        private static int DressSpikes(Transform artRoot, HazardField hazards, Tilemap tilemap,
+                                       GridLayout grid, Vector3 cell,
+                                       System.Func<Vector3Int, TileRegionKit> kitAt,
+                                       HashSet<Vector3Int> solid, Kit kits)
+        {
+            if (hazards == null) return 0;
+
+            int count = 0;
+            var bounds = tilemap.cellBounds;
+
+            // 先把所有刺格的颜色复位（重铺时上一次隐藏的要还原），再按需隐藏。
+            Undo.RecordObject(tilemap, "刺：隐藏原瓦片");
+            for (int x = bounds.xMin; x < bounds.xMax; x++)
+                for (int y = bounds.yMin; y < bounds.yMax; y++)
+                {
+                    var rc = new Vector3Int(x, y, 0);
+                    if (tilemap.GetTile(rc) == null || !hazards.IsHazardCell(rc)) continue;
+                    UnlockTileColor(tilemap.GetTile(rc));
+                    tilemap.SetColor(rc, Color.white);
+                }
+
+            for (int x = bounds.xMin; x < bounds.xMax; x++)
+                for (int y = bounds.yMin; y < bounds.yMax; y++)
+                {
+                    var c = new Vector3Int(x, y, 0);
+                    if (tilemap.GetTile(c) == null) continue;
+                    if (!hazards.IsHazardCell(c)) continue;
+
+                    var regionKit = kitAt(c);
+                    var sprite = regionKit != null ? regionKit.Spike : null;
+
+                    // 区域套件没配刺 → 用**默认刺**（荆棘玫瑰花丛，开始场景那套）；
+                    // 都没有才跳过（保持逻辑瓦片原样）。
+                    if (sprite == null && kits.DefaultSpikes != null && kits.DefaultSpikes.Count > 0)
+                        sprite = kits.DefaultSpikes[VariantIndex(c, kits.DefaultSpikes.Count, 0)];
+                    if (sprite == null) continue;
+
+                    var go = new GameObject("Spike_" + sprite.name);
+                    go.transform.SetParent(artRoot, false);
+                    go.transform.position = grid.CellToWorld(c);     // 左下角对齐，和方块一致
+
+                    Vector3 size = sprite.bounds.size;
+                    go.transform.localScale = new Vector3(
+                        cell.x / Mathf.Max(size.x, 0.0001f),
+                        cell.y / Mathf.Max(size.y, 0.0001f), 1f);
+
+                    var sr = go.AddComponent<SpriteRenderer>();
+                    sr.sprite = sprite;
+                    sr.sortingOrder = ArtSortingOrder + 1;           // 压在地形之上
+
+                    // 挂在天花板上的刺：凸起要朝**下**（贴地时才朝上）。
+                    // 判据看这一格的实心支撑在哪：下方有实心 → 地刺；否则上方有实心 → 顶刺。
+                    bool onCeiling = !solid.Contains(new Vector3Int(c.x, c.y - 1, 0))
+                                     && solid.Contains(new Vector3Int(c.x, c.y + 1, 0));
+                    sr.flipY = onCeiling;
+
+                    // ⚠️ flipY 是**绕 pivot** 翻的：pivot 在底边时整体会掉一个图高，
+                    // 必须补回来，否则图跑到格子下面（看起来就是「没铺到逻辑层上」）。
+                    // 通用公式：翻完要上移 h - 2d（h=图高、d=pivot 距底），pivot 居中时正好不用补。
+                    if (onCeiling)
+                    {
+                        float h = sprite.bounds.size.y * go.transform.localScale.y;
+                        float d = sprite.pivot.y / Mathf.Max(sprite.pixelsPerUnit, 0.0001f)
+                                  * go.transform.localScale.y;
+                        go.transform.position += Vector3.up * (h - 2f * d);
+                    }
+
+                    // 原瓦片（红色占位）设成全透明：美术压在上面时不能两层叠着。
+                    // ⚠️ 只改颜色，**瓦片本身和碰撞都不动** —— 刺的伤害逻辑还在 HazardField 上。
+                    UnlockTileColor(tilemap.GetTile(c));
+                    tilemap.SetColor(c, new Color(1f, 1f, 1f, 0f));
+
+                    Undo.RegisterCreatedObjectUndo(go, "铺装美术");
+                    count++;
+                }
+
+            EditorUtility.SetDirty(tilemap);
+            return count;
+        }
+
+        /// <summary>
         /// 把表面瓦片（冰面等）自己的贴图搬到美术层。
         /// </summary>
         /// <remarks>
@@ -1018,6 +1123,8 @@ namespace RuleGame.Editor.Level
             public List<Sprite> SlabSlabs;
             /// <summary>墙面方块（新素材，一格一块）。空则退回旧的石片逻辑。</summary>
             public List<Sprite> WallBlocks;
+            /// <summary>默认刺（区域套件没配 Spike 时用它）。</summary>
+            public List<Sprite> DefaultSpikes;
         }
 
         private static Kit LoadKits()
@@ -1034,7 +1141,14 @@ namespace RuleGame.Editor.Level
                 SlabShort = L("Platform_Stone_Short_01"),
                 SlabSlabs = new List<Sprite>(),
                 WallBlocks = new List<Sprite>(),
+                DefaultSpikes = new List<Sprite>(),
             };
+            // 默认刺 = 荆棘玫瑰花丛（本地文档/功能组件-通用 交付图，已导入 Art/Sprites/Tiles/Hazards）
+            for (int i = 1; i <= 4; i++)
+            {
+                var s = AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/_Project/Art/Sprites/Tiles/Hazards/ThornBush_{i:00}.png");
+                if (s != null) kit.DefaultSpikes.Add(s);
+            }
             for (int i = 1; i <= 16; i++)
             {
                 var b = L($"Spawn/Wall_Stone_Block_{i:00}");

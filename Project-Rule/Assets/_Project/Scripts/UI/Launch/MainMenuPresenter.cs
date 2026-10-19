@@ -37,6 +37,16 @@ namespace RuleGame.UI.Launch
             _copy = root.Q<Label>("modalCopy");
             _volume = root.Q<Slider>("volumeSlider");
             _confirm = root.Q<Button>("quitConfirmButton");
+
+            // 世界已经在跑（例如 Boot 被附加加载了第二份 / 菜单被重新启用）：先收起，绝不 EnterMenu ——
+            // 它会 SetPaused(true)，把正在播的存档过场和玩法一起冻住。
+            // 判据用静态单例而不是序列化引用：重复那份 Boot 的 GameRoot 会自毁，
+            // 序列化引用会变成 null，只有 GameRoot.Instance 还指向真正在跑的那个。
+            // ⚠️ 这一步必须在下面的配置校验之前：重复那份可能校验失败直接 return，
+            //    那时菜单已经挂在屏幕上了。
+            if (GameRoot.Instance != null && GameRoot.Instance.HasStarted) _started = true;
+            _viewport?.EnableInClassList("hidden", _started);
+
             if (_gameRoot == null || _player == null || _viewport == null || _volume == null)
             {
                 Debug.LogError("[MainMenu] 请配置 GameRoot、玩家和 MainMenu.uxml。", this);
@@ -61,6 +71,7 @@ namespace RuleGame.UI.Launch
         private void Start()
         {
             _initialized = true;
+            if (GameRoot.Instance != null && GameRoot.Instance.HasStarted) _started = true;
             if (!_started) EnterMenu();
         }
 

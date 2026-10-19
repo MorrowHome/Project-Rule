@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RuleGame.Core::RuleGame.Core.Rules.RuleDef
   Attribute: 0
   Relation: 0
-  Duration: 5
+  Duration: -1
   ActivationCost: 0
   Cooldown: 0
   DisplayName: 

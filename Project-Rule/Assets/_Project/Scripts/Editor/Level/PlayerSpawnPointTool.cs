@@ -23,6 +23,7 @@ namespace RuleGame.Editor.Level
     {
         private const string CatalogPath = "Assets/_Project/Data/Config/PartitionCatalog.asset";
         private const string BootScenePath = "Assets/_Project/Scenes/Boot.unity";
+        private const string SwingPrefabPath = "Assets/_Project/Prefabs/Checkpoints/SwingCheckpoint.prefab";
 
         // ==================================================================
         //  新建
@@ -59,8 +60,58 @@ namespace RuleGame.Editor.Level
                 "\n· 触发半径按门洞/落脚区宽度给，默认 1.2 米；设 0 = 只能靠脚本 Activate。", go);
         }
 
+        [MenuItem("Tools/规则游戏/落点/④ 放置秋千存档点（预制体）", false, 63)]
+        public static void CreateSwing()
+        {
+            Scene scene = SceneManager.GetActiveScene();
+            if (string.IsNullOrEmpty(scene.path) || !scene.isLoaded)
+            {
+                EditorUtility.DisplayDialog(
+                    "放置秋千存档点", "当前场景还没有保存到磁盘。先保存场景，再放落点。", "好");
+                return;
+            }
+
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(SwingPrefabPath);
+            if (prefab == null)
+            {
+                Debug.LogError("[落点] 找不到秋千存档点预制体：" + SwingPrefabPath);
+                return;
+            }
+
+            Vector3 pivot = SceneView.lastActiveSceneView != null
+                ? SceneView.lastActiveSceneView.pivot
+                : Vector3.zero;
+
+            float ground = pivot.y;
+            var hit = Physics2D.Raycast(new Vector2(pivot.x, pivot.y + 2f), Vector2.down, 40f, 1 << 8);
+            if (hit.collider != null) ground = hit.point.y;
+            else Debug.LogWarning("[落点] 秋千下方没打到 Ground 层地面，按场景视图高度放置；请手动核对根节点 y。");
+
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab, scene);
+            go.name = "SwingCheckpoint";
+            go.transform.position = new Vector3(pivot.x, ground + .5f, 0f);
+
+            var point = go.GetComponent<PlayerSpawnPoint>();
+            if (point == null)
+            {
+                Debug.LogError("[落点] 秋千预制体上没有 PlayerSpawnPoint，已取消放置。");
+                UnityEngine.Object.DestroyImmediate(go);
+                return;
+            }
+            point.SetId(NextCheckpointId(scene));
+
+            Undo.RegisterCreatedObjectUndo(go, "放置秋千存档点");
+            Selection.activeGameObject = go;
+            EditorSceneManager.MarkSceneDirty(scene);
+
+            Debug.Log(
+                $"[落点] 已放置秋千存档点 \"{point.Id}\" 于 {go.transform.position}。" +
+                "\n· 根节点 = 玩家复活中心（地面 + 0.5）；Art 已向下偏 0.5，秋千脚底落在地面。" +
+                "\n· 走近半径 1.4 米自动存档；一次运行只播一次过场。", go);
+        }
+
         /// <summary>同一场景里取一个没人用的 <c>checkpoint-NN</c>。</summary>
-        private static string NextCheckpointId(Scene scene)
+        internal static string NextCheckpointId(Scene scene)
         {
             var used = new HashSet<string>();
             foreach (var point in AllPoints())

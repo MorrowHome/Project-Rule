@@ -1,0 +1,13 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="TrainTravel.uss" />
+    <ui:VisualElement name="train-screen" class="train-screen train-hidden">
+        <ui:VisualElement class="train-panel">
+            <ui:VisualElement class="train-header">
+                <ui:Label name="train-title" class="train-title" text="列车线路" />
+                <ui:Button name="train-close" class="train-close" text="关闭" />
+            </ui:VisualElement>
+            <ui:VisualElement name="train-list" class="train-list" />
+            <ui:Label name="train-hint" class="train-hint" text="↑↓ 选择 · Enter / E 出发 · Esc 或「关闭」退出" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

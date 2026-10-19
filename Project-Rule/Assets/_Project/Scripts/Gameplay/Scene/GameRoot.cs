@@ -1,4 +1,5 @@
 using UnityEngine;
+using RuleGame.Gameplay.Player;
 using RuleGame.Infrastructure.LevelFlow;
 using RuleGame.Infrastructure.Time;
 
@@ -32,6 +33,13 @@ namespace RuleGame.Gameplay.Scene
         /// <summary>世界流式加载入口。</summary>
         public WorldStreamer Streamer => _streamer;
 
+        /// <summary>
+        /// 世界是否已经开始（玩家点过「开始游戏」/ 自动启动）。
+        /// </summary>
+        /// <remarks>给「后续才被启用的 UI」判「这是不是一局已经在跑的游戏」——主菜单用它避免
+        /// 重复加载 Boot 时在玩到一半弹出来把游戏暂停。</remarks>
+        public bool HasStarted => _started;
+
         private bool _started;
 
         private void Awake()
@@ -44,6 +52,15 @@ namespace RuleGame.Gameplay.Scene
             }
 
             Instance = this;
+
+            if (_streamer == null) _streamer = GetComponent<WorldStreamer>();
+
+            // 启动场景（Boot）不是世界分区：**必须在 DontDestroyOnLoad 之前**把路径交给流式加载器，
+            // 之后 gameObject.scene 就变成 DontDestroyOnLoad、拿不到 Boot 的路径了。
+            // 不交的话，分区表里一旦有人把 Boot 登记进去，流式加载就会卸载 Boot（主菜单 / 传送 / 黑场一起没）
+            // 再附加加载第二份（第二个主菜单在玩到一半暂停游戏）。
+            if (_streamer != null) _streamer.SetBootstrapScene(gameObject.scene.path);
+
             DontDestroyOnLoad(gameObject);
 
             // 全局时间权威先立起来。规则系统（LevelRuntime 上）会复用它，
@@ -53,7 +70,6 @@ namespace RuleGame.Gameplay.Scene
             LevelFlow = new LevelFlow();
             LevelFlow.OnRestartRequested += HandleRestartRequested;
 
-            if (_streamer == null) _streamer = GetComponent<WorldStreamer>();
             if (_streamer == null) Debug.LogError("[GameRoot] 缺少 WorldStreamer 组件，世界不会加载。", this);
             // 启动入口尚未放行时，不让 Update 提前加载分区。
             if (_streamer != null) _streamer.enabled = false;
@@ -70,6 +86,11 @@ namespace RuleGame.Gameplay.Scene
 
             if (_streamer != null) _streamer.enabled = true;
             _streamer?.Refresh();
+
+            // 正式开局：把能力锁上、规则只留 Gravity × Revert。
+            // 调试场景通常不经过这里，所以那边仍然是全解锁（见 PlayerProgress 的开发期开关）。
+            PlayerProgress progress = GetComponentInChildren<PlayerProgress>(true);
+            if (progress != null) progress.StartNewGame();
 
             // 开局即「一关开始」：进度状态机立起来，UI / 存档可以订阅。
             // 分区切换本身不发这个事件 —— 玩家走过边界不该被当成「又开了一关」。

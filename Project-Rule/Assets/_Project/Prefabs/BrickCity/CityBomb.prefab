@@ -81,8 +81,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 2
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 36b2976af0b0e39468f739a7537ef56e, type: 3}
-  m_Color: {r: 0.4, g: 0.4, b: 0.4, a: 1}
+  m_Sprite: {fileID: 21300000, guid: aa651cc909cacd242972da7fb10c220c, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -106,6 +106,7 @@ GameObject:
   - component: {fileID: 253281297527841699}
   - component: {fileID: 4368025456632720651}
   - component: {fileID: 2398193652446184384}
+  - component: {fileID: 3874505211543384479}
   m_Layer: 0
   m_Name: CityBomb
   m_TagString: Untagged
@@ -240,3 +241,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.Audio.MechanismSfxPresenter
   _minimumImpactSpeed: 1.5
+--- !u!114 &3874505211543384479
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2609766463723165044}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d25e584f2634a346a0b429c51d8a50d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.SceneComponents.CityBombSpriteView
+  Bomb: {fileID: 4368025456632720651}
+  Target: {fileID: 8988591211796732785}
+  Idle: {fileID: 21300000, guid: aa651cc909cacd242972da7fb10c220c, type: 3}
+  Armed: {fileID: 21300000, guid: 3e7ac3a3bfba1d648a1b402df5406f7d, type: 3}

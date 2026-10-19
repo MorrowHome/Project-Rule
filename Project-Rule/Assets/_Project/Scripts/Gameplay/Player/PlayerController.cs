@@ -226,6 +226,11 @@ namespace RuleGame.Gameplay.Player
         [Tooltip("推动探测距离（米）。按住方向顶上去，这个距离内有可推物体就施力。")]
         [SerializeField] private float _pushProbeDistance = 0.15f;
 
+        [Header("能力解锁")]
+        [Tooltip("这个实体当前已解锁的能力。\n" +
+                 "代码默认给 All，保证现有测试场景不被锁住；正式开局由 PlayerProgress.StartNewGame() 设成 None。")]
+        [SerializeField] private PlayerAbility _unlockedAbilities = PlayerAbility.All;
+
         [Header("状态")]
         [Tooltip("同一物体上的状态组件；暂停状态从这里读。留空则自动取。")]
         [SerializeField] private EntityStatus _status;
@@ -371,7 +376,8 @@ namespace RuleGame.Gameplay.Player
                  "关掉 = 死亡不复活，交给关卡脚本处理。")]
         [SerializeField] private bool _respawnOnDeath = true;
 
-        [Tooltip("倒下到复活之间的停顿（秒）。给「Die」动画留出时间。")]
+        [Tooltip("倒下到复活之间的**最短**停顿（秒）。实际复活还要等死亡动画播完 —— " +
+                 "两者取晚的那个（表现层用 HoldRespawn / ReleaseRespawnHold 挂等待）。")]
         [SerializeField, Min(0f)] private float _respawnDelay = 1.2f;
 
         // ==================================================================
@@ -386,8 +392,23 @@ namespace RuleGame.Gameplay.Player
 
         // ---------------- 落点（内存，不落盘 —— 约束 C5） ----------------
 
-        /// <summary>离复活还差多少秒。由 <see cref="SetRespawn"/> / <see cref="Respawn"/> 重置。</summary>
+        /// <summary>离复活还差多少秒。倒下那一帧重置成 <see cref="_respawnDelay"/>。</summary>
         private float   _respawnCountdown;
+
+        /// <summary>上一帧是不是已经倒下。用来只在死亡那一帧重置倒计时。</summary>
+        private bool    _wasDead;
+
+        /// <summary>
+        /// 死亡演出还没播完，<b>倒计时到点也不许复活</b>。
+        /// </summary>
+        /// <remarks>
+        /// <para>只有表现层能判「动画播完了」，而玩法层不认识 Animator —— 所以由
+        /// <c>PlayerAnimationDriver</c> 在倒下时挂上、<c>Die</c> 播完时解除（见
+        /// <see cref="HoldRespawn"/> / <see cref="ReleaseRespawnHold"/>）。</para>
+        /// <para>没有 Animator / 没有驱动时没人挂这个等待，复活就只看
+        /// <see cref="_respawnDelay"/> —— 老行为不变。</para>
+        /// </remarks>
+        private bool    _respawnHeld;
 
         /// <summary>当前落点的世界坐标。</summary>
         private Vector2 _respawnPosition;
@@ -396,8 +417,8 @@ namespace RuleGame.Gameplay.Player
         //  职能类
         // ==================================================================
 
-        /// <summary>是否有未被取走的「下钻」请求（下 + 跳）。见 <see cref="ConsumeDropRequest"/>。</summary>
-        private bool _dropRequested;
+        /// <summary>「下键按下」闩锁：用掉一次要等松开才复位。见 <see cref="ConsumeDownPress"/>。</summary>
+        private bool _dropArmed = true;
 
         /// <summary>初始化是否已经完整跑过一次（见 <see cref="EnsureInit"/>）。</summary>
         private bool _initialized;
@@ -414,6 +435,12 @@ namespace RuleGame.Gameplay.Player
         private MotionMover   _mover;
         private WindSensor    _wind;
         private PushSensor    _push;
+
+        /// <summary>攻击盒查开关用的缓冲（一次挥砍最多 16 个）。</summary>
+        private readonly Collider2D[] _switchHits = new Collider2D[16];
+
+        /// <summary>这次判定里已经翻过的开关 —— 同一个开关只吃一次。</summary>
+        private readonly HashSet<IContactSwitch> _pressedSwitches = new HashSet<IContactSwitch>();
 
         // ==================================================================
         //  表现层事件
@@ -458,6 +485,9 @@ namespace RuleGame.Gameplay.Player
 
         /// <summary>实际判定开窗；表现层直接使用同一次攻击的世界范围，空挥也会通知。</summary>
         public event Action<PlayerAttackCue> OnAttackStruck;
+
+        /// <summary>刚解锁一项能力（参数是新增的那几位）。</summary>
+        public event Action<PlayerAbility> AbilityUnlocked;
 
         // ==================================================================
         //  生命周期
@@ -618,8 +648,9 @@ namespace RuleGame.Gameplay.Player
             // ⚠️ 判「意图」而不是「合法性」：下+攻击**就是**一次重击意图，
             //    不合法（冷却中 / 空中 / 冲刺中 / 轻击在跑）就**丢掉**，
             //    绝不回退成一次轻击 —— 否则冷却期按下去会莫名其妙挥出一刀轻击。
-            bool heavyIntent  = HeavyAttackSolver.IsHeavyIntent(input.Move, input.AttackPressed, contact.Up);
-            bool lightPressed = input.AttackPressed && !heavyIntent;
+            bool attackPressed = input.AttackPressed && HasAbility(PlayerAbility.Attack);
+            bool heavyIntent  = HeavyAttackSolver.IsHeavyIntent(input.Move, attackPressed, contact.Up);
+            bool lightPressed = attackPressed && !heavyIntent;
 
             // 轻击在跑就不给重击：ComboIndex 直到收招结束才回到 −1，
             // 所以 `>= 0` 恰好等价于「连段还在三段里」（不用给 AttackSolver 加新 API）。
@@ -645,41 +676,9 @@ namespace RuleGame.Gameplay.Player
             // 必须在 JumpSolver.Solve 之前改掉 input，否则人会先起跳、再谈穿不穿过去。
             //
             // ⚠️ 这里**不再**检查「有没有站稳」（Grounded / 竖直速度）：
-            //    那两个判据在整格的单向平台上会漏判（实测过），一漏就是「按了完全没反应」。
-            //    改成只看「脚底下有没有跳穿平台」—— 有就吃掉跳键，具体放不放行由平台自己判。
-            float speedUp = Vector2.Dot(_mover.Velocity, contact.Up);
-            // 「往下按」两种都认：相对重力的下（正常重力 = 屏幕下）、以及世界坐标 y 为负。
-            // 重力反转 / Up 解析异常时至少还有一条能命中（只在脚下有跳穿平台时才会真正生效）。
-            bool downHeld = Vector2.Dot(input.Move, -contact.Up) > 0.5f || input.Move.y < -0.5f;
-            bool onOneWay = input.JumpPressed && downHeld && HasOneWayUnder(contact);
-
-#if UNITY_EDITOR
-            // 只要按了跳键就报一次：能区分「S 没被读到」和「脚下没有平台」这两种情况。
-            if (input.JumpPressed)
-            {
-                Debug.LogWarning($"[下钻] 跳键：downHeld={downHeld} onOneWay={onOneWay} " +
-                                 $"move={input.Move} up={contact.Up} grounded={contact.Grounded} " +
-                                 $"speedUp={speedUp:0.00} held={MovementHeld}");
-            }
-#endif
-
-            if (onOneWay)
-            {
-                // 请求**留到被取走或超时**：平台脚本与玩家的执行顺序不确定，
-                // 只在这一帧置位的话，下一帧被重算成 false，平台可能永远看不到它。
-                _dropRequested = true;
-                _dropRequestTime = UnityEngine.Time.time;
-            }
-            else if (_dropRequested && UnityEngine.Time.time - _dropRequestTime > 0.12f)
-            {
-                _dropRequested = false;      // 没人取走就作废，别在两层之后突然生效
-            }
-
-            if (input.JumpPressed && _dropRequested)
-            {
-                input = new PlayerInput.State(input.Move, false, input.JumpReleased, input.DashPressed,
-                                              input.AttackPressed, input.RewindPressed, input.ThrowPressed);
-            }
+            // 「下钻」改回**平台自己判**：玩家只提供「下键刚按下」这个一次性意图，
+            // 不再和跳键绑在一起（那套把跳键吃掉的做法反而多了几条互相干扰的路径）。
+            // 平台侧 = 站在我上面 + 取到这个按下沿 → 放行。
 
             // ②⑦⑧ 跳跃：跳数与土狼时间一直推进；冲刺期间只推进计数、不消费输入。
             JumpSolver.Decision jump = _jump.Solve(tuning, input, contact, dash.Dashing, dt);
@@ -771,31 +770,76 @@ namespace RuleGame.Gameplay.Player
         public Vector2 MoveInput => _input != null ? _input.Move : Vector2.zero;
 
         /// <summary>
-        /// 本帧的「下钻」请求：**按住下 + 按跳**。跳键被吃掉（不会真的跳），
-        /// 由脚下的跳穿平台取走。
+        /// 把玩家**直接挪到平台另一侧**（跳穿平台用）。
         /// </summary>
         /// <remarks>
-        /// <para><b>为什么是「下 + 跳」而不是单独按 S</b>：S 是移动方向的一部分，
-        /// 单独按它「跳下去」既误触又难区分「按住下走路」；加了跳键就变成一个明确的组合意图。
-        /// 而且这一帧跳键被吃掉，不会出现「先起跳、再穿过去」。</para>
-        ///
-        /// <para>取走即清零，一次组合只放行一次 —— 从上层掉到中层时那个按键已经用过了，
-        /// 中层不会跟着放行（否则会穿过一层、停在第三层）。</para>
+        /// <para>为什么不靠「关碰撞体 + 等重力」：玩家是 Kinematic + <c>Slide</c>，竖直速度会被接地判定钳成 0，
+        /// 而接地又可能来自**旁边那一格**（胶囊 0.76 宽 > 一格 0.5）。实测过：平台碰撞体明明关了，
+        /// <c>vy</c> 还是 0、人一动不动。直接挪过去与接地判定、相邻格、重力方向全部无关。</para>
+        /// <para>目标位置若有别的实心几何挡着就不挪（交给「放开平台碰撞体」那条路兜底），不会把人塞进墙里。</para>
         /// </remarks>
-        /// <summary>脚底那一小块区域里有没有跳穿平台（用来决定「下 + 跳」要不要吃掉跳键）。</summary>
-        /// <remarks>
-        /// <para>⚠️ 用**重叠盒**而不是 <c>Collider2D.Cast</c>：人站在平台上时两者是**互相压着**的，
-        /// 形状扫描对「起始就重叠」的碰撞体不一定报命中 —— 表现就是「狂按空格偶尔才生效」（实测）。</para>
-        /// <para>盒子挂在脚底往下压一点、宽只有 0.24，所以只会命中脚下正中间那块，不会误判隔壁格。</para>
-        /// </remarks>
-        private bool HasOneWayUnder(ContactSensor.State contact) =>
-            RuleGame.Gameplay.Scene.OneWayPlatform.AnyClaims(this);
-
-        public bool ConsumeDropRequest()
+        public void DisplaceThrough(Vector2 direction, float distance, Collider2D released)
         {
-            if (!_dropRequested) return false;
+            if (_mover == null || _body == null) return;
+            if (distance <= 0f) return;
 
-            _dropRequested = false;
+            Vector2 from = transform.position;
+            Vector2 to = from + direction.normalized * distance;
+
+            var body = GetComponent<Collider2D>();
+            if (body != null)
+            {
+                // 目标位置被实心几何占着就不挪。
+                Bounds b = body.bounds;
+                var hits = Physics2D.OverlapBoxAll(to, new Vector2(b.size.x * 0.9f, b.size.y * 0.9f), 0f,
+                                                  Physics2D.AllLayers);
+                for (int i = 0; i < hits.Length; i++)
+                {
+                    var c = hits[i];
+                    if (c == null || c == body || c.isTrigger) continue;
+                    if (c == released) continue;
+                    if (c.GetComponent<RuleGame.Gameplay.Scene.OneWayPlatform>() != null) continue;
+                    // 只在意玩家会撞的层。⚠️ _solidLayer 是 **LayerMask**（位掩码），
+                    // 不能和 layer 索引直接比较（8 vs 256 永远不相等 → 一律判定为阻挡，位移永远不生效）。
+                    if ((_solidLayer.value & (1 << c.gameObject.layer)) == 0) continue;
+                    return;
+                }
+            }
+
+            transform.position = new Vector3(to.x, to.y, transform.position.z);
+            _body.position = to;                 // autoSyncTransforms 关着，刚体位置要自己同步
+            _mover.Halt();                       // 挪完这一帧别再叠位移
+        }
+
+        /// <summary>当前是否按着「下」（相对重力的下，或世界坐标朝下）。</summary>
+        public bool DropDownHeld
+        {
+            get
+            {
+                Vector2 m = MoveInput;
+                return Vector2.Dot(m, DownDirection) > 0.5f || m.y < -0.5f;
+            }
+        }
+
+        /// <summary>
+        /// 「按一下下键」的一次性意图：**每按一次只能取走一次**，松开才复位。
+        /// </summary>
+        /// <remarks>
+        /// <para>跳穿平台用它当触发。必须是「按下沿」而不是「按住」：按住不放会在落到下一层时
+        /// 立刻把那一层也放行（穿过一层、停在第三层）。</para>
+        /// <para>闩锁住在**玩家**身上，所以不依赖平台脚本的执行顺序。</para>
+        /// </remarks>
+        public bool ConsumeDownPress()
+        {
+            if (!DropDownHeld)
+            {
+                _dropArmed = true;      // 松开 → 下次按下重新武装
+                return false;
+            }
+
+            if (!_dropArmed) return false;
+
+            _dropArmed = false;
             return true;
         }
 
@@ -843,8 +887,31 @@ namespace RuleGame.Gameplay.Player
         /// <summary>本实体的重力倍率（供风场 Gizmo 预览平衡高度用）。</summary>
         public float GravityScale => _gravityScale;
 
-        /// <summary>总跳数上限 = 第一段 + 空中段。</summary>
-        public int MaxJumps => JumpSolver.MaxJumps(_maxAirJumps);
+        /// <summary>总跳数上限 = 第一段 + 空中段。锁住二段跳时只算第一段。</summary>
+        public int MaxJumps => JumpSolver.MaxJumps(HasAbility(PlayerAbility.AirJump) ? _maxAirJumps : 0);
+
+        /// <summary>这个实体当前已解锁的能力位。</summary>
+        public PlayerAbility UnlockedAbilities => _unlockedAbilities;
+
+        /// <summary>这个实体有没有解锁某一项能力。可以一次传多位（全部命中才返回 true）。</summary>
+        public bool HasAbility(PlayerAbility ability)
+            => ability == PlayerAbility.None || (_unlockedAbilities & ability) == ability;
+
+        /// <summary>解锁一项能力。已经解锁时返回 false，不会重复广播。</summary>
+        public bool UnlockAbility(PlayerAbility ability)
+        {
+            if (ability == PlayerAbility.None) return false;
+
+            PlayerAbility next = _unlockedAbilities | ability;
+            if (next == _unlockedAbilities) return false;
+
+            _unlockedAbilities = next;
+            AbilityUnlocked?.Invoke(ability);
+            return true;
+        }
+
+        /// <summary>只给开局 / 读档用：整体覆盖能力位。正常解锁走 <see cref="UnlockAbility"/>。</summary>
+        public void SetUnlockedAbilities(PlayerAbility abilities) => _unlockedAbilities = abilities;
 
         /// <summary>本次落地以来还剩几段跳（供 HUD / 调试浮层显示）。</summary>
         public int JumpsLeft => Mathf.Max(MaxJumps - (_jump != null ? _jump.JumpsUsed : 0), 0);
@@ -972,6 +1039,7 @@ namespace RuleGame.Gameplay.Player
                 return false;
             }
 
+            _respawnHeld      = false;          // 显式复活（调试键 / 关卡脚本）不等演出
             TeleportTo(_respawnPosition);
             _respawnCountdown = _respawnDelay;
 
@@ -982,10 +1050,39 @@ namespace RuleGame.Gameplay.Player
             return true;
         }
 
+        /// <summary>
+        /// 死亡演出还没播完：<b>复活倒计时到点也先在原地等着</b>。由表现层（动画驱动）调用。
+        /// </summary>
+        /// <remarks>
+        /// <para>为什么要这一层握手：复活是玩法层的事，但「<c>Die</c> 播完了没有」只有
+        /// Animator 知道；玩法层不引用 Animator（依赖方向 Presentation → Gameplay），
+        /// 所以由表现层主动告诉它。<c>Die</c> 剪辑 2.67 秒，光靠倒计时（1.2 秒）会
+        /// 在人还没倒下时就把人搬回存档点。</para>
+        /// <para>幂等：重复调用只会刷新等待，不会叠加。</para>
+        /// </remarks>
+        public void HoldRespawn() => _respawnHeld = true;
+
+        /// <summary>死亡演出播完了，放行复活；复活 / 非死亡状态下调用也安全（幂等）。</summary>
+        public void ReleaseRespawnHold() => _respawnHeld = false;
+
+        /// <summary>现在是否被死亡演出挡着不让复活（供动画驱动 / 验证脚本读）。</summary>
+        public bool IsRespawnHeld => _respawnHeld;
+
         /// <summary>死亡后的复活倒计时。暂停期间不推进（与其它冷却同一条规则）。</summary>
+        /// <remarks>
+        /// <para>倒计时到了也还要过 <see cref="_respawnHeld"/> 这一关：死亡动画没播完就复活，
+        /// 表现是「人还没倒下就被搬回存档点」，而且 Animator 会停在 <c>Die</c> 的最后一帧
+        /// （那个状态没有出边）。</para>
+        /// </remarks>
         private void TickRespawn()
         {
-            if (!_respawnOnDeath || !HasRespawn || !IsDead) return;
+            bool dead = IsDead;
+
+            // 倒下那一帧才重置倒计时：不依赖「上一次走到存档点是什么时候」。
+            if (dead && !_wasDead) _respawnCountdown = _respawnDelay;
+            _wasDead = dead;
+
+            if (!_respawnOnDeath || !HasRespawn || !dead) return;
 
             if (IsPaused)
             {
@@ -995,6 +1092,8 @@ namespace RuleGame.Gameplay.Player
 
             _respawnCountdown -= Time.deltaTime;
             if (_respawnCountdown > 0f) return;
+
+            if (_respawnHeld) return;                // 表现层还没说「死亡动画播完了」
 
             Respawn();
         }
@@ -1008,6 +1107,16 @@ namespace RuleGame.Gameplay.Player
 
         /// <summary>其他交互入口只读现有门禁，避免规则选择器打开时同时开始交谈。</summary>
         public bool IsGameplayInputSuppressed => _input == null || _input.IsSuppressed;
+
+        /// <summary>
+        /// 是否有别的系统<b>正拿着</b>输入门禁（过场 / 传送 / 对话 / 轮盘）。
+        /// </summary>
+        /// <remarks>
+        /// <para>与 <see cref="IsGameplayInputSuppressed"/> 只差「释放后的恢复帧」：那个恢复帧对
+        /// 玩家动作是必要的（同一次确认键不能再挥一刀），但对「能不能开轮盘」是多余的 ——
+        /// 轮盘自己关掉的那一帧就应该能重新打开。</para>
+        /// </remarks>
+        public bool IsInputBlocked => _input == null || _input.IsBlocked;
 
         // ==================================================================
         //  击退
@@ -1038,6 +1147,11 @@ namespace RuleGame.Gameplay.Player
             OnAttackStruck?.Invoke(new PlayerAttackCue(center, boxSize, _mover.Facing,
                 heavy, heavy ? -1 : AttackComboIndex));
 
+            // 机关开关（拉杆 / 按钮）：打中就翻一下。
+            // ⚠️ 单独一条路，**不进伤害管线** —— 开关不是 IDamageable，
+            //    所以「伤害 × 失效」不会把机关一起关掉（DamageProcessor 失效时连命中都不算）。
+            PressSwitches(center, boxSize);
+
             if (_combat == null) return;
 
             int hits = _combat.PerformAttack(this, center, boxSize, damage, knockback);
@@ -1045,6 +1159,33 @@ namespace RuleGame.Gameplay.Player
             // 能量恢复来源之一：命中即回，未命中不给（策划案 §四）。
             if (hits > 0 && _status != null)
                 _status.RestoreEnergy(_energyPerHit * hits);
+        }
+
+        /// <summary>
+        /// 攻击盒里有没有「可被撞击的开关」（拉杆 / 按钮）—— 打中就交给它。
+        /// </summary>
+        /// <remarks>
+        /// <para><b>为什么不去 <c>CombatSystem</c></b>：那里是伤害判定（只查受击箱），
+        /// 开关不是伤害目标；混进去会连带让「伤害 × 失效」把机关也关掉。</para>
+        /// <para>查询与 <c>CityInteractor</c> 同一条做法：不配 mask，靠 <see cref="IContactSwitch"/>
+        /// 认对象。开关的碰撞体是 Trigger，所以 <c>useTriggers = true</c>。</para>
+        /// <para>一次挥砍只翻一次：同一个开关按引用去重（重击的盒子更宽，容易罩到同一根拉杆）。</para>
+        /// </remarks>
+        private void PressSwitches(Vector2 center, Vector2 size)
+        {
+            var filter = new ContactFilter2D { useTriggers = true };
+            int count = Physics2D.OverlapBox(center, size, 0f, filter, _switchHits);
+
+            _pressedSwitches.Clear();
+            for (int i = 0; i < count; i++)
+            {
+                var target = _switchHits[i].GetComponentInParent<IContactSwitch>();
+                if (target == null || !_pressedSwitches.Add(target)) continue;
+
+                // 传**玩家自己的位置**（不是攻击盒中心）：多档拉杆按「站在它左边 / 中间 / 右边」选档，
+                // 攻击盒中心永远在身前 0.8 米，拿它分区会整体偏一档。
+                target.ImpactByContact(transform.position);
+            }
         }
 
         // ==================================================================
@@ -1065,6 +1206,7 @@ namespace RuleGame.Gameplay.Player
         /// </remarks>
         private void ThrowKnife()
         {
+            if (!HasAbility(PlayerAbility.Throw)) return;
             if (_knifePrefab == null || _knifeCooldownLeft > 0f) return;
 
             _knifeCooldownLeft = _knifeCooldown;
@@ -1121,7 +1263,7 @@ namespace RuleGame.Gameplay.Player
 
             JumpSpeed            = _jumpSpeed,
             AirJumpSpeed         = _airJumpSpeed,
-            MaxAirJumps          = _maxAirJumps,
+            MaxAirJumps          = HasAbility(PlayerAbility.AirJump) ? _maxAirJumps : 0,
             GravityScale         = _gravityScale,
             FallGravityMultiplier = _fallGravityMultiplier,
             MaxFallSpeed         = _maxFallSpeed,
@@ -1135,7 +1277,7 @@ namespace RuleGame.Gameplay.Player
             DashCooldown         = _dashCooldown,
             MaxDashes            = _maxDashes,
 
-            WallClimbEnabled     = _wallClimbEnabled,
+            WallClimbEnabled     = _wallClimbEnabled && HasAbility(PlayerAbility.WallClimb),
             WallProbeDistance    = _wallProbeDistance,
             WallClimbProbeRadius = _wallClimbProbeRadius,
             WallSlideSpeed       = _wallSlideSpeed,

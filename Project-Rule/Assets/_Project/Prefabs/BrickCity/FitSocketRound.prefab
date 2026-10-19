@@ -78,7 +78,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.6, y: 0.6}
+  m_Size: {x: 0.9, y: 0.9}
   m_EdgeRadius: 0
 --- !u!114 &2862997058649931814
 MonoBehaviour:
@@ -93,11 +93,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Scene.FitSocket
   _accepted: 1
-  _tolerance: {x: 0.3, y: 0.3}
+  _tolerance: {x: 0.45, y: 0.45}
   _seatAngle: 0
   _seatParent: {fileID: 0}
-  _maxSpeed: 1
-  _settleTime: 0.12
   _onSeatedTarget: {fileID: 0}
   _logEvents: 1
 --- !u!1 &6270074552056179523

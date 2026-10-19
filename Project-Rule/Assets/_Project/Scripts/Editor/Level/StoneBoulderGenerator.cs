@@ -42,12 +42,17 @@ namespace RuleGame.Editor.Level
         private static readonly Vector2 Size = new Vector2(2.4f, 2.4f);
 
         /// <summary>
-        /// 质量（kg）。**故意卡在「正常推不动、摩擦一减小就推得动」的区间里**：
-        /// 玩家推力 60 N，静摩擦 = μ·m·g。30 kg 时 ——
-        /// 正常（μ=0.5）要 147 N → 推不动；「摩擦 × 削弱」（μ=0.15）只要 44 N → 推得动；
-        /// 「摩擦 × 失效」（μ=0）一推就滑。
+        /// 质量（kg）。**故意卡在「正常推不动、摩擦一减小就推得动」的区间里**。
         /// </summary>
-        private const float Mass = 30f;
+        /// <remarks>
+        /// 玩家推力 60 N，静摩擦 = μ_eff·m·g，其中 **μ_eff 是两个接触面组合后**的值
+        /// （地面是 Tilemap，没有材质 → 默认 0.4）。按**最坏情况**（组合方式取平均）算：
+        /// 正常 μ_eff ≈ 0.45 → 18 kg 要 79 N **推不动**；「摩擦 × 削弱」μ_eff ≈ 0.275 → 49 N **推得动**
+        /// （净 11 N ≈ 0.6 m/s²）；「失效」μ_eff = 0 → 一推就滑。
+        /// 18 kg 这个数字就是从上式反推的：> 13.6 kg 保证正常推不动，< 22.2 kg 保证削弱推得动。
+        /// 组合方式若是 Minimum，μ_eff 更低（0.4 / 0.15），只会更好推。
+        /// </remarks>
+        private const float Mass = 18f;
 
         private static readonly Color StoneColor = new Color(0.94f, 0.92f, 0.90f, 1f);
 

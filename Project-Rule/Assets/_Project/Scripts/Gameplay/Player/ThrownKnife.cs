@@ -70,7 +70,8 @@ namespace RuleGame.Gameplay.Player
         [SerializeField] private LayerMask _solidMask = 1 << 8;   // Ground
 
         [Header("命中")]
-        [Tooltip("碰到接触式开关（CitySwitch / 摇杆）时按下去，然后继续飞。")]
+        [Tooltip("撞到接触式开关（CitySwitch / 摇杆 / 按钮）时**撞一下**：切换型的会翻转，\n" +
+                 "然后继续飞。一发投掷对同一个开关只算一次。")]
         [SerializeField] private bool _pressSwitches = true;
 
         [Tooltip("撞到场景道具 / 敌人身体时**炸成一把纸屑再消失**。关掉就只是原地消失。")]
@@ -123,6 +124,9 @@ namespace RuleGame.Gameplay.Player
 
         /// <summary>已经结算过伤害的目标：同一把刀对同一实体只打一次。</summary>
         private readonly HashSet<IDamageable> _damaged = new HashSet<IDamageable>();
+
+        /// <summary>这一发已经撞过的开关：同一个开关只翻一次（Trigger 会被连续几帧扫到）。</summary>
+        private readonly HashSet<IContactSwitch> _pressedSwitches = new HashSet<IContactSwitch>();
 
         /// <summary>消失（寿命到）时广播一次，供表现层接特效。</summary>
         public event Action<ThrownKnife> OnSpent;
@@ -214,6 +218,7 @@ namespace RuleGame.Gameplay.Player
             _stuck          = false;
             _launched       = true;
             _damaged.Clear();
+            _pressedSwitches.Clear();
             LastHit         = null;
 
             // ⚠️ 物理体与 Transform 对齐：工程的 Physics2D.autoSyncTransforms 是关着的，
@@ -365,13 +370,22 @@ namespace RuleGame.Gameplay.Player
             return (_solidMask & (1 << other.gameObject.layer)) != 0;
         }
 
-        /// <summary>Trigger 区穿过去时唯一会做的事：是接触式开关就按下（石头 / 铁箱走的就是这一条）。</summary>
+        /// <summary>
+        /// Trigger 区穿过去时唯一会做的事：是接触式开关就**撞一下**（切换型翻一下）。
+        /// </summary>
+        /// <remarks>
+        /// ⚠️ 必须按**这一发**去重：纸飞机 16 m/s 一帧走 0.32 m，而摇杆的触发区宽 0.65 m，
+        /// 同一发连续两帧都扫到同一个 Trigger 是常态 —— 不去重就是翻两次、看起来像没反应。
+        /// </remarks>
         private void PressSwitch(Collider2D other)
         {
             if (!_pressSwitches || other == null) return;
 
             var target = other.GetComponentInParent<IContactSwitch>();
-            if (target != null) target.PressByContact();
+            if (target == null || !_pressedSwitches.Add(target)) return;
+
+            // 投射物没有「站位」，用自己撞上去那一刻的位置 —— 从左边飞来就按左边那一档算。
+            target.ImpactByContact(_body.position);
         }
 
         /// <summary>撞碎了：在撞击点炸一把纸屑，然后自己消失。</summary>

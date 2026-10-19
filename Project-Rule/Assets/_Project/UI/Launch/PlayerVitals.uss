@@ -21,3 +21,10 @@
 .vital-division { border-right-width: 2px; border-right-color: rgba(30, 20, 28, 0.8); }
 .energy-track .vital-divisions { left: 3.3%; right: 3.3%; top: 26%; bottom: 24%; }
 .energy-track .vital-division { border-right-width: 1.5px; }
+.unlock-toast {
+    position: absolute; left: 0; right: 0; top: 150px;
+    -unity-font-definition: url("project://database/Assets/_Project/UI/Fonts/P4ChineseFont.asset");
+    font-size: 30px; color: #fff8eb; -unity-text-align: middle-center;
+    -unity-text-outline-width: 2px; -unity-text-outline-color: #172135;
+    opacity: 0;
+}

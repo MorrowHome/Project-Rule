@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff07526ecba378c4c9291476eb1f3b68, type: 3}
+  m_Name: StoneGuard_Animations
+  m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.Enemy.EnemyAnimationSet
+  Sequences:
+  - Action: Idle
+    Frames:
+    - {fileID: 1546451243, guid: 3bf3476d6699ba241990b6b74b17d285, type: 3}
+    ClockFaceCenters: []
+    FrameRate: 8
+    FacesRight: 0
+    NativeFrameRate: 1
+  - Action: Walk
+    Frames:
+    - {fileID: 297254206, guid: 6fef41c39421a8f4ebc1bd26ac85df05, type: 3}
+    - {fileID: -607841163, guid: 26fcc29dfb606fc41a1e1e5548b6de60, type: 3}
+    - {fileID: -2008569321, guid: 60ee02ffac36d0f44b0d65afd0fc0a66, type: 3}
+    - {fileID: -1388833329, guid: 126f9a435f95f21478080148a195bae6, type: 3}
+    - {fileID: -1884746698, guid: a9f4e72d5e3777244b0e1dd66c0c25c1, type: 3}
+    - {fileID: -1979175148, guid: 485e968316e2b5b479b09549f3b36695, type: 3}
+    - {fileID: -410049473, guid: beac4a6f698f30c4e970e18be3df1c0f, type: 3}
+    - {fileID: 1365706178, guid: 0dd2a17f2e5668f4dbb3b7f9537c1077, type: 3}
+    - {fileID: 1374369743, guid: 69dd0bc4a13644744a24cc1f3d38bdb2, type: 3}
+    - {fileID: 1269317465, guid: 30ecb029a23790b4292a577ead4db8be, type: 3}
+    - {fileID: 1526391967, guid: ca554a0131525bd4a9386eeda8f063eb, type: 3}
+    - {fileID: -1625203918, guid: 0c2f3c835cfb571499ad40ce2758e58e, type: 3}
+    ClockFaceCenters: []
+    FrameRate: 8
+    FacesRight: 0
+    NativeFrameRate: 1
+  - Action: Attack
+    Frames:
+    - {fileID: -1201757637, guid: 110a31b7ad52cdf4ca8d63fb0b3782bf, type: 3}
+    - {fileID: 1650886530, guid: 6200694a38cd301449c27e6e9c08be9a, type: 3}
+    - {fileID: -457855052, guid: 9dc3501de1b2c5a4fb8e5df0a82cb289, type: 3}
+    - {fileID: -1836841072, guid: 6904c9d7296598a45b2506e9f0070a1b, type: 3}
+    ClockFaceCenters: []
+    FrameRate: 8
+    FacesRight: 0
+    NativeFrameRate: 1
+  - Action: Hurt
+    Frames:
+    - {fileID: 1546451243, guid: 3bf3476d6699ba241990b6b74b17d285, type: 3}
+    ClockFaceCenters: []
+    FrameRate: 8
+    FacesRight: 0
+    NativeFrameRate: 1
+  - Action: Dead
+    Frames:
+    - {fileID: -340792310, guid: 564c2b380b773ae468dfaebbb178bc8d, type: 3}
+    - {fileID: -106350417, guid: b86aaef4bd35dba4db9fabbc30226bbe, type: 3}
+    - {fileID: -1714689344, guid: 4556a8ade17746c40934ccee8edd18aa, type: 3}
+    - {fileID: 121566865, guid: 0d78db9102a9ed74a9773bb86afa1895, type: 3}
+    - {fileID: -1568759981, guid: d1ff35126cfdc444cb9afe838d1da11c, type: 3}
+    - {fileID: -56867071, guid: bae62ebff712ca5418350818a8b1ea6b, type: 3}
+    - {fileID: 810484628, guid: dbe1e797bf01be241a4e6eb90f94b539, type: 3}
+    ClockFaceCenters: []
+    FrameRate: 8
+    FacesRight: 0
+    NativeFrameRate: 1

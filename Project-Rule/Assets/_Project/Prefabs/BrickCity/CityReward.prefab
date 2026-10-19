@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 215986582328158577}
   - component: {fileID: 7218745227461167261}
   - component: {fileID: 6263576372743645707}
+  - component: {fileID: 4599900471548052750}
   m_Layer: 0
   m_Name: CityReward
   m_TagString: Untagged
@@ -109,7 +110,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a7085f702f0e4752bd2383e7a2978b8b, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Common.RuleAffectedBody
   _applyFriction: 1
   _applyMass: 1
@@ -124,14 +125,31 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ccf08898905e20c40965db9ce4e3197c, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: RuleGame.Gameplay::RuleGame.Gameplay.Scene.Components.CityRewardSource
   Prompt: "\u6536\u96C6\u9F99\u73E0"
-  SourceId:
+  SourceId: 
   Kind: 0
   Amount: 1
   Receiver: {fileID: 0}
   PickupVisual: 1
+--- !u!114 &4599900471548052750
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4703208890015907190}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72e0cfdafee7744409cee5a2fb20857a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RuleGame.Presentation::RuleGame.Presentation.SceneComponents.CityRewardSpriteView
+  Source: {fileID: 6263576372743645707}
+  Target: {fileID: 7197198831482701946}
+  Power: {fileID: -39903092, guid: da397c06093b0e7438ffd03be2fe1af9, type: 3}
+  Health: {fileID: -763171640, guid: bd280ffc3e4e30743a8732c79f23c240, type: 3}
+  Energy: {fileID: -1432538740, guid: 99df7c40cf9ea104fb0e955a299b6461, type: 3}
 --- !u!1 &7297367370052768416
 GameObject:
   m_ObjectHideFlags: 0
@@ -159,7 +177,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1460683002273976842}
@@ -213,8 +231,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 2
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 36b2976af0b0e39468f739a7537ef56e, type: 3}
-  m_Color: {r: 0.8, g: 0.35, b: 0.3, a: 1}
+  m_Sprite: {fileID: -39903092, guid: da397c06093b0e7438ffd03be2fe1af9, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

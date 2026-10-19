@@ -6,7 +6,8 @@ namespace RuleGame.Gameplay.Enemy
 {
     // 新类型只追加，保留现有资产的枚举值。
     public enum EnemyKind { BrickMinion, BrickBoss, ClockBoss, RabbitBoss, BatBoss, BatMinion,
-        StoneGuard, ExplosiveBlock, BrickSoldier, SpringToy, ClockMouse, ClockBomb, PlushBird, HugBear, PlushSeal }
+        StoneGuard, ExplosiveBlock, BrickSoldier, SpringToy, ClockMouse, ClockBomb, PlushBird, HugBear, PlushSeal,
+        ChargingCube }
 
     [Serializable]
     public struct EnemyActionTiming

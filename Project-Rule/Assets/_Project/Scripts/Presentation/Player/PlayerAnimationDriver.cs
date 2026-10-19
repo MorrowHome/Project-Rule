@@ -91,6 +91,9 @@ namespace RuleGame.Presentation.Player
         /// </remarks>
         public const string StateWeightless = "Weightless";
 
+        /// <summary>初始状态（地面待机）。复活时把状态机显式拉回这里 —— <c>Die</c> 没有出边，回不来。</summary>
+        public const string StateIdle = "Idle";
+
         private static readonly int HSpeed          = Animator.StringToHash(ParamSpeed);
         private static readonly int HMoving         = Animator.StringToHash(ParamMoving);
         private static readonly int HGrounded       = Animator.StringToHash(ParamGrounded);
@@ -109,6 +112,7 @@ namespace RuleGame.Presentation.Player
         private static readonly int HReacting     = Animator.StringToHash(ParamReacting);
         private static readonly int HurtState     = Animator.StringToHash("Hurt");
         private static readonly int DieState      = Animator.StringToHash("Die");
+        private static readonly int IdleState     = Animator.StringToHash(StateIdle);
         private static readonly int HAttack       = Animator.StringToHash(ParamAttack);
         private static readonly int HAttackNext   = Animator.StringToHash(ParamAttackNext);
         private static readonly int HHeavy        = Animator.StringToHash(ParamHeavy);
@@ -130,6 +134,20 @@ namespace RuleGame.Presentation.Player
         private float _lastHealth;
         private bool  _warnedNoAnimator;
         private bool  _reactionPending;
+
+        // ---------------- 死亡演出 → 复活等待 ----------------
+
+        /// <summary>已经给 <see cref="PlayerController"/> 挂上「等死亡动画播完」的等待。</summary>
+        private bool _deathWaitArmed;
+
+        /// <summary>已经放过行（同一次死亡里不再重复挂）。</summary>
+        private bool _deathWaitReleased;
+
+        /// <summary>这次倒下已经过了多久（只算没暂停的时间）。</summary>
+        private float _deathAge;
+
+        /// <summary>死亡状态连 1 秒都没进（换过控制器 / 那一段没播起来）就放行，别把复活卡死。</summary>
+        private const float DeathAnimationGrace = 1f;
 
         /// <summary>
         /// <b>本轮</b>重力反转里，那条翻转动画（<c>Weightless</c>）**已经播过**了。
@@ -170,6 +188,9 @@ namespace RuleGame.Presentation.Player
         private void OnEnable()
         {
             _reactionPending = false;
+            _deathWaitArmed = false;
+            _deathWaitReleased = false;
+            _deathAge = 0f;
             if (_player != null)
             {
                 _player.OnJumped     += HandleJumped;
@@ -189,6 +210,9 @@ namespace RuleGame.Presentation.Player
 
         private void OnDisable()
         {
+            // 驱动被关掉就把复活放行：等待只能由本类解除，没人解除会把人永远卡在死亡里。
+            ReleaseDeathWait();
+
             if (_player != null)
             {
                 _player.OnJumped     -= HandleJumped;
@@ -223,6 +247,8 @@ namespace RuleGame.Presentation.Player
                 || _animator.IsInTransition(0) && IsReactionState(_animator.GetNextAnimatorStateInfo(0));
             if (reacting) _reactionPending = false;
             _animator.SetBool(HReacting, _reactionPending || reacting);
+
+            TickDeathRespawn();
             PushContinuousParameters();
         }
 
@@ -379,21 +405,129 @@ namespace RuleGame.Presentation.Player
         /// </summary>
         private void HandleHeavyAttacked() => SetTrigger(HHeavy);
 
-        /// <summary>掉血 → 受伤；掉到 0 → 死亡。回血不触发任何东西。</summary>
+        /// <summary>掉血 → 受伤；掉到 0 → 死亡；从 0 回到正数 → 复活并切回初始态。</summary>
         private void HandleHealthChanged(float current, float max)
         {
             if (current <= 0f)
             {
                 BeginReaction();
                 SetTrigger(HDie);
+
+                // 死亡当帧就挂上等待：玩法层的 TickRespawn 可能在同一次 Update 里跑在我们前面，
+                // 等下一帧再挂就晚了一帧（_respawnDelay 配成 0 时会被直接复活走）。
+                ArmDeathWait();
             }
             else if (current < _lastHealth)
             {
                 BeginReaction();
                 SetTrigger(HHurt);
             }
+            else if (_lastHealth <= 0f)
+            {
+                // 复活（EntityDamageable.Revive / 快照回滚把血补回来）：
+                // Die 是终点状态、没有出边，不显式重置就会一直停在最后一帧的尸体。
+                ResetAfterRespawn();
+            }
 
             _lastHealth = current;
+        }
+
+        // ==================================================================
+        //  死亡演出 → 复活
+        // ==================================================================
+
+        /// <summary>
+        /// 死亡演出 → 复活的握手：<c>Die</c> 播完了就放行玩法层复活。
+        /// </summary>
+        /// <remarks>
+        /// <para><b>为什么不能只靠 <c>_respawnDelay</c></b>：<c>Hero_Die</c> 是 32 帧 @ 12fps
+        /// = 2.67 秒，而倒计时默认 1.2 秒 —— 人还没倒下就被搬回存档点了。</para>
+        /// <para>判据用 <c>normalizedTime &gt;= 1</c> 而不是秒表：暂停时 <c>Animator.speed = 0</c>，
+        /// 秒表会走、动画不走；<c>normalizedTime</c> 跟着动画停，天然对齐。</para>
+        /// <para>兜底：换上一个没有 <c>Die</c> 状态的控制器、或那一段根本没播起来时，
+        /// <see cref="DeathAnimationGrace"/> 秒后放行 —— 宁可早一点复活，也不能永远卡在死亡里。</para>
+        /// </remarks>
+        private void TickDeathRespawn()
+        {
+            if (_player == null || _status == null || _animator == null) return;
+
+            if (_status.Health > 0f)
+            {
+                ReleaseDeathWait();       // 复活 / 被其它路径救活：等待必须解除
+                return;
+            }
+
+            ArmDeathWait();
+            if (_deathWaitReleased || _status.IsPaused) return;   // 暂停时动画冻着，别拿秒表判
+
+            _deathAge += Time.deltaTime;
+
+            AnimatorStateInfo current = _animator.GetCurrentAnimatorStateInfo(0);
+            bool inDie = current.shortNameHash == DieState
+                      || _animator.IsInTransition(0)
+                         && _animator.GetNextAnimatorStateInfo(0).shortNameHash == DieState;
+
+            // Die 没有出边：current 落在 Die 且 normalizedTime 到 1 = 整段播完（正在淡入的那段不算）。
+            bool finished = current.shortNameHash == DieState
+                         && !_animator.IsInTransition(0)
+                         && current.normalizedTime >= 1f;
+
+            if (finished || (!inDie && _deathAge >= DeathAnimationGrace))
+            {
+                _deathWaitReleased = true;
+                _player.ReleaseRespawnHold();
+            }
+        }
+
+        /// <summary>挂上「等死亡动画」的等待；同一轮死亡只挂一次。</summary>
+        private void ArmDeathWait()
+        {
+            if (_deathWaitArmed || _animator == null || _player == null) return;
+
+            _deathWaitArmed = true;
+            _deathWaitReleased = false;
+            _deathAge = 0f;
+            _player.HoldRespawn();
+        }
+
+        /// <summary>解除等待（幂等）。复活 / 驱动被关掉时调用。</summary>
+        private void ReleaseDeathWait()
+        {
+            if (!_deathWaitArmed) return;
+
+            _deathWaitArmed = false;
+            _deathWaitReleased = false;
+            _deathAge = 0f;
+            if (_player != null) _player.ReleaseRespawnHold();
+        }
+
+        /// <summary>
+        /// 复活：把动画状态机从终点的 <c>Die</c> 拉回初始态 <c>Idle</c>，并清掉残留的一次性输入。
+        /// </summary>
+        /// <remarks>
+        /// <para>⚠️ 这里**必须**用 <c>Animator.Play</c>，不能靠参数过渡：<c>Die</c> 在图上没有出边
+        /// （见 <c>HeroAnimatorBuilder.LinkReactions</c>），没有任何一条过渡能把人拉出来。</para>
+        /// <para>不 CrossFade：复活是「回到初始态」而不是一次表演过渡，瞬切更可预测
+        /// （也方便验证脚本在复活当帧就断言 state == Idle）。</para>
+        /// </remarks>
+        private void ResetAfterRespawn()
+        {
+            ReleaseDeathWait();
+            if (_animator == null) return;
+
+            _reactionPending = false;
+            _animator.SetBool(HReacting, false);
+            _animator.ResetTrigger(HJump);
+            _animator.ResetTrigger(HAirJump);
+            _animator.ResetTrigger(HWallJump);
+            _animator.ResetTrigger(HLand);
+            _animator.ResetTrigger(HHurt);
+            _animator.ResetTrigger(HDie);
+            _animator.ResetTrigger(HAttack);
+            _animator.ResetTrigger(HAttackNext);
+            _animator.ResetTrigger(HHeavy);
+
+            _animator.Play(IdleState, 0, 0f);
         }
 
         private void BeginReaction()

@@ -13,6 +13,10 @@ namespace RuleGame.Gameplay.Scene.Components
         public LayerMask Targets = ~0;
         public CombatSystem Combat;
         public event Action OnDetonated;
+
+        /// <summary>引信已经点燃（表现层据此换「激活」帧；快照恢复后同样成立）。</summary>
+        public bool Armed => _armed;
+
         private bool _armed, _spent;
         private float _remaining;
         private readonly Collider2D[] _hits = new Collider2D[24];
