@@ -6,7 +6,8 @@ namespace RuleGame.Gameplay.Enemy
     {
         private Vector2 _iceAim;
         private uint _random = 7139;
-        private float _wanderAt;
+        private float _wanderAt, _slideWindup;
+        private bool _sliding;
         protected override string FirstAction => "Wander";
         public PlushSealBrain(EnemyActor actor) : base(actor) { ReadyAt = Config.MinionSkillInterval; }
         protected override void EnterBehavior(string name)
@@ -15,7 +16,11 @@ namespace RuleGame.Gameplay.Enemy
             else
             {
                 ReadyAt = Age + Config.MinionSkillInterval;
-                if (name == "Slide") { Heading = Actor.Facing; Actor.Motor.Stop(); }
+                if (name == "Slide")
+                {
+                    Heading = Actor.Facing; _slideWindup = Actor.Duration("Slide") * .35f; _sliding = false;
+                    Actor.Motor.Stop(); Actor.Cue("Idle", _slideWindup);
+                }
                 if (name == "BellySlap") _iceAim = PredictTarget(.2f);
             }
         }
@@ -24,17 +29,24 @@ namespace RuleGame.Gameplay.Enemy
             if (name == "Wander")
             {
                 if (Config.MinionNavigationEnabled && Actor.Navigation.ContinueTraversal(Age)) return;
-                if (!CanPursue && ReturnHome()) return;
+                if (!CanPursue && ReturnHome()) { CueMovement(Actor.Motor.Intent.sqrMagnitude > .001f); return; }
                 if (Age >= _wanderAt)
                 {
                     _random ^= _random << 13; _random ^= _random >> 17; _random ^= _random << 5;
                     Heading = (_random & 1) == 0 ? -1f : 1f;
                     _wanderAt = Age + 1.3f + (_random % 100) * .01f;
                 }
-                if (CanPursue && SeesTarget && Actor.Distance > Config.AttackRange * 1.25f) Chase();
+                if (CanPursue && SeesTarget)
+                {
+                    Actor.FaceTarget();
+                    if (Actor.Distance > Config.AttackRange * 1.25f) Chase();
+                    else Actor.Motor.Stop();
+                }
                 else Patrol();
+                CueMovement(Actor.Motor.Intent.sqrMagnitude > .001f);
                 if (CanPursue && SeesTarget && Age >= ReadyAt)
                 {
+                    Actor.FaceTarget();
                     int skill = Pattern % 3;
                     float reach = Config.MoveSpeed * Config.MinionDashMultiplier * Config.MinionSlideDuration;
                     bool slidePossible = Mathf.Abs(Actor.Target.position.y - Actor.transform.position.y) <= Config.BodySize.y
@@ -50,12 +62,16 @@ namespace RuleGame.Gameplay.Enemy
             if (name == "Slide")
             {
                 // 先压低身体蓄力，再按锁定方向滑行；不即时贴身命中，也不追踪拐弯。
-                float windup = Actor.AnimationDuration * .35f;
-                if (Elapsed < windup) { Actor.Motor.Intent = Vector2.zero; return; }
+                if (Elapsed < _slideWindup) { Actor.Motor.Intent = Vector2.zero; return; }
+                if (!_sliding)
+                {
+                    _sliding = true;
+                    Actor.Cue("Slide", Config.MinionSlideDuration, true);
+                }
                 Actor.Motor.Intent = Vector2.right * Heading;
                 Actor.Motor.SpeedMultiplier = Config.MinionDashMultiplier;
                 if (TouchesTarget) { Actor.AreaAttack(Config.AttackRange); Go("Wander"); }
-                else if (Elapsed >= windup + Config.MinionSlideDuration || Actor.Motor.HasHorizontalObstacle(Heading)) Go("Wander");
+                else if (Elapsed >= _slideWindup + Config.MinionSlideDuration || Actor.Motor.HasHorizontalObstacle(Heading)) Go("Wander");
                 return;
             }
             if (Impact())
@@ -74,10 +90,10 @@ namespace RuleGame.Gameplay.Enemy
             }
             if (Finished) Go("Wander");
         }
-        protected override object CaptureBehavior() => new object[] { _iceAim, _random, _wanderAt };
+        protected override object CaptureBehavior() => new object[] { _iceAim, _random, _wanderAt, _slideWindup, _sliding };
         protected override void RestoreBehavior(object state)
         {
-            if (state is object[] data) { _iceAim = (Vector2)data[0]; _random = (uint)data[1]; _wanderAt = (float)data[2]; }
+            if (state is object[] data) { _iceAim = (Vector2)data[0]; _random = (uint)data[1]; _wanderAt = (float)data[2]; _slideWindup = (float)data[3]; _sliding = (bool)data[4]; }
         }
     }
 }

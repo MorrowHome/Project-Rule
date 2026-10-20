@@ -36,13 +36,14 @@ namespace RuleGame.Gameplay.Enemy
         {
             get
             {
-                if (!HasTarget) return false;
                 if (_cachedTarget != Actor.Target)
                 {
                     _cachedTarget = Actor.Target;
-                    TargetBody = Actor.Target.GetComponent<Collider2D>() ?? Actor.Target.GetComponentInParent<Collider2D>();
-                    _targetStatus = Actor.Target.GetComponentInParent<RuleGame.Gameplay.Player.EntityStatus>();
+                    TargetBody = HasTarget ? Actor.Target.GetComponent<Collider2D>() ?? Actor.Target.GetComponentInParent<Collider2D>() : null;
+                    _targetStatus = HasTarget ? Actor.Target.GetComponentInParent<RuleGame.Gameplay.Player.EntityStatus>() : null;
+                    _lastSeenAt = float.NegativeInfinity; _pursuing = false; _returning = true;
                 }
+                if (!HasTarget) return false;
                 return _targetStatus == null || _targetStatus.Health > 0f;
             }
         }
@@ -53,10 +54,6 @@ namespace RuleGame.Gameplay.Enemy
                 if (!LiveTarget || Actor.Distance > Config.MinionSenseRange
                     || Vector2.Distance(Actor.Target.position, Home) > Config.MinionLeashRange
                     || Vector2.Distance(Actor.transform.position, Home) > Config.MinionLeashRange) return false;
-
-                // 贴身距离内不靠视线：三棍 / 细门框这类 0.28 宽的机关会把线挡死，
-                // 玩家明明贴在脸上却判成「看不见」，于是回巢后退。
-                if (Actor.Distance <= 1.6f) return true;
 
                 var filter = new ContactFilter2D { useTriggers = false };
                 filter.SetLayerMask(Actor.Motor.SolidMask);
@@ -129,6 +126,11 @@ namespace RuleGame.Gameplay.Enemy
             }
             return true;
         }
+        protected virtual void CueMovement(bool moving)
+        {
+            string action = moving ? (IsFlying ? "Fly" : "Walk") : "Idle";
+            if (Actor.AnimationName != action) Actor.Cue(action, Actor.Duration(action), true);
+        }
         protected void TrackMeleeWindup()
         {
             if (Elapsed <= Actor.AnimationDuration * Config.MinionAimLockFraction && SeesTarget) Actor.FaceTarget();
@@ -197,6 +199,7 @@ namespace RuleGame.Gameplay.Enemy
             else if (name != "Hurt") EnterBehavior(name);
         }
         protected virtual void EnterBehavior(string name) { }
+        protected virtual string AfterHurtAction => FirstAction;
         protected override void TickAction(string name)
         {
             if (name == "Down") { if (Elapsed >= Mathf.Max(Actor.AnimationDuration, Config.MinionRespawnDelay)) Go("Rebirth"); return; }
@@ -210,7 +213,7 @@ namespace RuleGame.Gameplay.Enemy
                 }
                 return;
             }
-            if (name == "Hurt") { if (Finished) Go(FirstAction); return; }
+            if (name == "Hurt") { if (Finished) Go(AfterHurtAction); return; }
 
             // 摩擦反转：锁死在「冲向目标」的意图上 —— 位移反向，于是它一直远离。
             // 不锁的话，回巢 / 发呆 / 巡逻都会把意图指向别处，玩家就会看到它一阵靠近一阵远离。
@@ -239,7 +242,7 @@ namespace RuleGame.Gameplay.Enemy
         {
             if (damage <= 0f) return;
             if (Actor.Status.Health <= 0f) { OnDisabled(); return; }
-            if (Dormant || StateName == "Hurt" || StateName == "Ignore" || Age < NextHurt) return;
+            if (Dormant || StateName == "Hurt" || Age < NextHurt) return;
             // 已经出手的攻击不被轻击逐帧取消；玩家仍可靠重击在前摇打断。
             bool committed = StateName == "Attack" || StateName == "Slide" || StateName == "Howl" || StateName == "BellySlap";
             if (committed && Elapsed >= Actor.AnimationDuration * Config.MinionAimLockFraction) return;

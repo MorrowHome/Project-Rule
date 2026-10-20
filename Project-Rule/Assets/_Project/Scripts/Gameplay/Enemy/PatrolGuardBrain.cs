@@ -11,6 +11,7 @@ namespace RuleGame.Gameplay.Enemy
             if (name == "Patrol" || name == "Chase") Actor.Cue("Walk", Actor.Duration("Walk"), true);
             else if (name == "Ignore") Actor.Cue("Idle", Actor.Duration("Idle"), true);
             if (name == "Attack") { ReadyAt = Age + Config.AttackCooldown; Actor.Motor.Stop(); }
+            if (name == "Ignore") ReadyAt = Mathf.Max(ReadyAt, Age + Config.MinionIgnoreDuration);
         }
         protected override void TickBehavior(string name)
         {
@@ -22,10 +23,15 @@ namespace RuleGame.Gameplay.Enemy
             }
             if (name == "Ignore")
             {
-                // 攻击后的 3 秒只是「不再出手」，不该变成「转身往回走」。
-                // 有目标就站定面对，没目标才巡逻；否则玩家贴在脸上也会看到它后退。
-                if (HasTarget) { Actor.FaceTarget(); Actor.Motor.Stop(); }
-                else Patrol();
+                // 冷却限制下一次攻击，不冻结追踪和站位反应。
+                if (CanPursue)
+                {
+                    if (SeesTarget) Actor.FaceTarget();
+                    if (SeesTarget && TargetInMeleeRange) Actor.Motor.Stop();
+                    else Chase();
+                }
+                else if (!ReturnHome()) Patrol();
+                CueMovement(Actor.Motor.Intent.sqrMagnitude > .001f);
                 if (Elapsed >= Config.MinionIgnoreDuration) Go("Patrol");
                 return;
             }
@@ -41,6 +47,7 @@ namespace RuleGame.Gameplay.Enemy
                 if (name != "Patrol") Go("Patrol");
                 if (!ReturnHome()) Patrol();
             }
+            CueMovement(Actor.Motor.Intent.sqrMagnitude > .001f);
         }
         protected override bool HandleLethal()
         {

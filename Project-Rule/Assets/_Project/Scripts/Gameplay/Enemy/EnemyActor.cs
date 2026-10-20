@@ -84,6 +84,8 @@ namespace RuleGame.Gameplay.Enemy
         public Faction Faction => Faction.Enemy;
         public string AnimationName { get; private set; } = "Idle";
         public float AnimationDuration { get; private set; } = 1f;
+        public float AnimationElapsed { get; private set; }
+        internal void AdvanceAnimation(float dt) => AnimationElapsed += dt;
         public bool AnimationLoop { get; private set; }
         public event Action AnimationChanged;
         public event Action Restored;
@@ -301,6 +303,7 @@ namespace RuleGame.Gameplay.Enemy
         {
             Navigation?.Cancel();
             AnimationName = action;
+            AnimationElapsed = 0f;
             AnimationDuration = Mathf.Max(0.05f, duration);
             AnimationLoop = loop;
             _swingTargets.Clear();
@@ -392,7 +395,7 @@ namespace RuleGame.Gameplay.Enemy
         {
             if (HasTarget) EnemyProjectile.Spawn(this, direction, speed, gravity, radius, visualIndex, origin);
         }
-        public void AreaAttack(float radius)
+        public void AreaAttack(float radius, float knockback = 4f)
         {
             if (Combat == null) return;
             var filter = new ContactFilter2D { useTriggers = true };
@@ -402,7 +405,7 @@ namespace RuleGame.Gameplay.Enemy
             for (int i = 0; i < count; i++)
             {
                 if (CombatSystem.TryResolveTarget(_contacts[i], this, out IDamageable target) && _contactTargets.Add(target))
-                    Combat.ApplyDamage(this, target, Definition.Damage, 4f);
+                    Combat.ApplyDamage(this, target, Definition.Damage, knockback);
             }
             Feedback?.Invoke(new EnemyFeedback(EnemyFeedbackKind.Strike, transform.position, Motor.Up,
                 size: Vector2.one * radius * 2f));
@@ -516,6 +519,9 @@ namespace RuleGame.Gameplay.Enemy
             public float Facing, Invulnerability, ContactCooldown;
             public bool Defeated;
             public bool StrikeAnnounced;
+            public string Animation;
+            public float AnimationDuration, AnimationElapsed;
+            public bool AnimationLoop;
             public EnemyActor[] Summons;
             public Vector2 GravityDrift;
             public IDamageable[] SwingTargets;
@@ -529,6 +535,7 @@ namespace RuleGame.Gameplay.Enemy
             Facing = Facing, Invulnerability = _invulnerability, Defeated = Defeated, Summons = _summons.ToArray(),
             ContactCooldown = _contactCooldown,
             StrikeAnnounced = _strikeAnnounced,
+            Animation = AnimationName, AnimationDuration = AnimationDuration, AnimationElapsed = AnimationElapsed, AnimationLoop = AnimationLoop,
             SwingTargets = new List<IDamageable>(_swingTargets).ToArray()
         };
         public void RestoreSnapshotState(object state)
@@ -541,6 +548,8 @@ namespace RuleGame.Gameplay.Enemy
                 _contactCooldown = data.ContactCooldown;
                 _summons.Clear(); _summons.AddRange(data.Summons);
                 Brain?.Restore(data.Brain);
+                AnimationName = data.Animation; AnimationDuration = data.AnimationDuration;
+                AnimationElapsed = data.AnimationElapsed; AnimationLoop = data.AnimationLoop;
                 if (_bodyCollider != null) _bodyCollider.enabled = Brain?.BodyEnabled ?? true;
                 ClockBeams?.Restore(data.ClockBeams);
                 _swingTargets.Clear();

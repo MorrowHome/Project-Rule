@@ -106,7 +106,7 @@ namespace RuleGame.Gameplay.Enemy
         public void Tick(float dt)
         {
             if (dt <= 0f || Actor.Status.IsPaused) return;
-            Delta = dt; Age += dt; Elapsed += dt;
+            Delta = dt; Actor.AdvanceAnimation(dt); Age += dt; Elapsed += dt;
             // 兔子的退场与半血翻转都按最大生命比例判断，调总血量不会让阶段阈值失真。
             bool end = Actor.Status.Health <= 0f || (Config.Kind == EnemyKind.RabbitBoss && Actor.Status.Health < Config.Health * .2f);
             if (end && Root.ActiveStateName != "Dead" && !TryHandleDeath())
@@ -289,6 +289,12 @@ namespace RuleGame.Gameplay.Enemy
         protected override string[] ActionNames => new[] { "Walk", "Idle", "Hurt" };
         protected override string FirstAction => "Walk";
         public MinionBrain(EnemyActor actor) : base(actor) { _home = actor.transform.position; }
+        protected override void EnterAction(string name)
+        {
+            base.EnterAction(name);
+            // 飞行召唤物停位时仍悬停拍翼，不能在半空切成倒挂姿势。
+            if (Config.Flying && name == "Idle") Actor.Cue("Fly", Actor.Duration("Fly"), true);
+        }
         public override void CommandAttack() => _commanded = true;
         protected override object CaptureExtra() => new object[] { _commanded, _home, _lastSeenAt, _lastSeen };
         protected override void RestoreExtra(object state)
@@ -328,20 +334,28 @@ namespace RuleGame.Gameplay.Enemy
             if (Config.Flying && !_commanded && Actor.Summoner != null)
             {
                 Vector2 orbit = _home + new Vector2(Mathf.Sin(Age) * 0.8f, Mathf.Cos(Age) * 0.3f);
-                Actor.Motor.Intent = Vector2.ClampMagnitude(orbit - (Vector2)Actor.transform.position, 1f);
+                SetMovement(Vector2.ClampMagnitude(orbit - (Vector2)Actor.transform.position, 1f));
                 return;
             }
             bool pursue = HasTarget && (_targetHealth == null || _targetHealth.Health > 0f)
                 && Age - _lastSeenAt <= Config.MinionTargetMemory
                 && Vector2.Distance(Actor.transform.position, _home) <= Config.MinionLeashRange;
             Vector2 destination = pursue ? _lastSeen : _home;
-            if (Config.Flying) Actor.Motor.Intent = Vector2.ClampMagnitude(destination - (Vector2)Actor.transform.position, 1f);
+            if (Config.Flying) SetMovement(Vector2.ClampMagnitude(destination - (Vector2)Actor.transform.position, 1f));
             else if (Config.MinionNavigationEnabled) Actor.Navigation.MoveTo(destination, _home, Age);
             else
             {
                 Vector2 offset = destination - (Vector2)Actor.transform.position;
                 Actor.Motor.Intent = Mathf.Abs(offset.x) > .12f ? Vector2.right * Mathf.Sign(offset.x) : Vector2.zero;
             }
+        }
+        private void SetMovement(Vector2 intent)
+        {
+            if (intent.sqrMagnitude < .01f) intent = Vector2.zero;
+            string state = intent == Vector2.zero ? "Idle" : "Walk";
+            if (StateName != state) Go(state);
+            Actor.Motor.Intent = intent;
+            Actor.FaceDirection(intent);
         }
     }
 }
