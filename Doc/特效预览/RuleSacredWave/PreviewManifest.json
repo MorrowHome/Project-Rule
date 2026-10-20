@@ -4,12 +4,12 @@
       480,
       270
     ],
-    "gif_frames": 23,
+    "gif_frames": 17,
     "duration_ms": 4600,
-    "bytes": 748343,
+    "bytes": 454044,
     "colors": 256,
     "text_overlays": false,
-    "sha256": "8f27a3cc2c9929bf1d944e6f1a137b5263b29dcba68cad97bc5be643ec53ca13",
+    "sha256": "d14187350a6bd4792fc06ced8d4e78ffc0bdc0043237b64278adc2378ae6f5e1",
     "captured_frames": 87
   },
   "Bat": {
@@ -17,12 +17,12 @@
       480,
       270
     ],
-    "gif_frames": 23,
+    "gif_frames": 16,
     "duration_ms": 4600,
-    "bytes": 646981,
+    "bytes": 398488,
     "colors": 256,
     "text_overlays": false,
-    "sha256": "1682ce757dedf4846972a70aa2de7c37d85ace9ecb4cc1a60494dac1fea6ae6e",
+    "sha256": "e4f98ff06c706ccf2dec6f31e28e2b54ae80cc0c43ba6fe19ae56c66f4bc22f6",
     "captured_frames": 89
   },
   "Clock": {
@@ -30,12 +30,12 @@
       480,
       270
     ],
-    "gif_frames": 23,
+    "gif_frames": 16,
     "duration_ms": 4600,
-    "bytes": 645890,
+    "bytes": 418679,
     "colors": 256,
     "text_overlays": false,
-    "sha256": "7b8b500a178a0e8510cd5ab376f76734264338bb286210855997e03c55e5c2b9",
+    "sha256": "767087423eb54f40cfae0b1039b2b4a237bb82e07827f3deac410b8000f50617",
     "captured_frames": 89
   },
   "Rabbit": {
@@ -43,12 +43,12 @@
       480,
       270
     ],
-    "gif_frames": 23,
+    "gif_frames": 16,
     "duration_ms": 4600,
-    "bytes": 650646,
+    "bytes": 408442,
     "colors": 256,
     "text_overlays": false,
-    "sha256": "82248b3bd8075005700104cccc132d3fd99cefd2b3e437de57624784a0bf8c60",
+    "sha256": "14bb80fb4a7820491987079eb9c26419bd4973304540054e89c53415bd937f08",
     "captured_frames": 89
   },
   "Brick": {
@@ -56,12 +56,12 @@
       480,
       270
     ],
-    "gif_frames": 23,
+    "gif_frames": 16,
     "duration_ms": 4600,
-    "bytes": 633828,
+    "bytes": 411255,
     "colors": 256,
     "text_overlays": false,
-    "sha256": "51c86d9e2df4444c2c54ee0f0f284b82a56593dca8796f2f33a91349452b04f9",
+    "sha256": "0096a0f2e1f6abf31ece7fc4303ebdd0cf1a7bd130d908b864449d90512cc19a",
     "captured_frames": 89
   },
   "Overview_Small": {
@@ -69,23 +69,23 @@
       720,
       270
     ],
-    "gif_frames": 23,
+    "gif_frames": 17,
     "duration_ms": 4600,
-    "bytes": 973801,
+    "bytes": 678249,
     "colors": 256,
     "text_overlays": false,
-    "sha256": "f8babe7fd0f190f78e0c89b7cd007b2568aed3a3849effa84230119e58693ccc"
+    "sha256": "247c00329cc948fe1a2670242414722098041cf90f3dfaa5a9e433f966a1eca3"
   },
   "Overview": {
     "size": [
       720,
       270
     ],
-    "gif_frames": 23,
+    "gif_frames": 17,
     "duration_ms": 4600,
-    "bytes": 973801,
+    "bytes": 678249,
     "colors": 256,
     "text_overlays": false,
-    "sha256": "f8babe7fd0f190f78e0c89b7cd007b2568aed3a3849effa84230119e58693ccc"
+    "sha256": "247c00329cc948fe1a2670242414722098041cf90f3dfaa5a9e433f966a1eca3"
   }
 }

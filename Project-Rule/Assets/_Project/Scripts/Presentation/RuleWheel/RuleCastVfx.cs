@@ -15,8 +15,8 @@ namespace RuleGame.Presentation.RuleWheel
     public sealed class RuleCastVfx : MonoBehaviour
     {
         [Header("规则释放 · 神圣光潮")]
-        [SerializeField, Min(.1f)] private float _expandDuration = 1.05f;
-        [SerializeField, Min(.1f)] private float _returnDuration = .85f;
+        [SerializeField, Min(.1f)] private float _expandDuration = .7f;
+        [SerializeField, Min(.1f)] private float _returnDuration = .55f;
         [Tooltip("最小世界尺寸。实际扩散终点按世界相机最远角点继续放大，直到所有光圈完全出屏。")]
         [SerializeField, Min(6f)] private float _radius = 13f;
         private static readonly int RadiusId = Shader.PropertyToID("_Radius");
@@ -248,7 +248,7 @@ namespace RuleGame.Presentation.RuleWheel
             visual.localScale = new Vector3(diameter / Mathf.Max(.001f, Mathf.Abs(parent.x)),
                 diameter / Mathf.Max(.001f, Mathf.Abs(parent.y)), 1f);
             float returning = halo.Returning ? halo.ReturnAge / _returnDuration : 0f;
-            float burst = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(.12f, _expandDuration + .25f, halo.Age));
+            float burst = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(.12f, _expandDuration + .18f, halo.Age));
             Color accent = _palette != null ? _palette.Accent : Color.white;
             Color secondary = _palette != null ? _palette.Secondary : accent;
             _properties.Clear();
@@ -263,7 +263,7 @@ namespace RuleGame.Presentation.RuleWheel
             _properties.SetFloat(GlyphId, (int)halo.Attribute);
             halo.Renderer.SetPropertyBlock(_properties);
             // 规则仍生效时保留回吸状态，完全展开后停止渲染，不在屏幕里留圆圈/射线。
-            halo.Renderer.enabled = halo.Returning || halo.Age < _expandDuration + .25f;
+            halo.Renderer.enabled = halo.Returning || halo.Age < _expandDuration + .18f;
         }
         private void Restored()
         {

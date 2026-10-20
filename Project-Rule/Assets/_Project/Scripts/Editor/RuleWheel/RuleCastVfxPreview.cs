@@ -135,7 +135,7 @@ namespace RuleGame.Editor.RuleWheel
             File.WriteAllBytes(Folder + "/" + Names[_clip] + "/" + file, _pixels.EncodeToPNG());
             RenderTexture.active = previous;
             _recording.frames.Add(new Frame { file = file, time = time,
-                phase = time < .5 ? "Before" : time < 1.8 ? "Expand" : time < 2.3 ? "Active" : time < 3.15 ? "Return" : "After",
+                phase = time < .5 ? "Before" : time < 1.38 ? "Expand" : time < 2.3 ? "Active" : time < 2.85 ? "Return" : "After",
                 visible = _view.GetComponentsInChildren<SpriteRenderer>(true).Count(r => r.name == "Rule Star Halo" && r.enabled) });
         }
         private static void Finish(string error)

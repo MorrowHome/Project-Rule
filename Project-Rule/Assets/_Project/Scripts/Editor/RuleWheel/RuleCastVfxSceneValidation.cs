@@ -126,7 +126,7 @@ namespace RuleGame.Editor.RuleWheel
                         Check(worldRadius > FurthestCorner(_camera, Visible[0].transform.position) * 2.5f,
                             "所有延迟光圈和宽辉光均超过最远屏幕角点");
                         _radius = worldRadius;
-                        Wait(.45f); break;
+                        Wait(.32f); break;
                     case 4:
                         Check(Visible.Length == 1 && Radius(Visible[0]) < _radius * .35f, "光圈从画外向核心收束");
                         Capture("Return");

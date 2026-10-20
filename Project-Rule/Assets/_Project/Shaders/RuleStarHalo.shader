@@ -85,8 +85,6 @@ Shader "RuleGame/Rules/StarHalo"
                 float blessing = exp2(-r * r / max(.004, R * R * .7)) * (.008 + energy * .025);
                 float2 coreP = p * max(1, _WorldScale);
                 float coreR = length(coreP);
-                float pillar = exp2(-coreP.x * coreP.x * 1700) * exp2(-abs(coreP.y) * 2.4);
-                float horizon = exp2(-coreP.y * coreP.y * 10000) * exp2(-abs(coreP.x) * 7);
                 float launch = exp2(-age * 5) + pow(C, 8) * 1.2;
                 float core = exp2(-coreR * coreR / (.003 + launch * .012));
                 float coreGlow = exp2(-coreR * coreR * 24) * (.015 + launch * .14);
@@ -103,14 +101,17 @@ Shader "RuleGame/Rules/StarHalo"
                     float plume = exp2(-along * along / .00065 - across * across / .000035);
                     feathers += plume * sin(travel * 3.14159) * (.2 + energy * .8);
                 }
-                half3 sacredWhite = lerp(_Accent.rgb, half3(1,1,1), .08);
+                // 用原配色混入柔白，降低饱和度；中心只保留圆形光晕。
+                half3 sacredWhite = lerp(_Accent.rgb, half3(1,1,1), .32);
+                half3 softAccent = lerp(_Accent.rgb, half3(1,1,1), .22);
+                half3 softSecondary = lerp(_Secondary.rgb, half3(1,1,1), .22);
                 half3 light = sacredWhite * (front * 2.8 + scattering + trailing + echo + sheet + shafts + blessing);
-                light += _Accent.rgb * (edgeTint + coreGlow + feathers * .35);
-                light += _Secondary.rgb * (Band(d + width * 1.2, width * 2.7) * .15 + feathers * .3);
-                light += half3(1,1,1) * (core * (.12 + launch * .65) + (pillar * .8 + horizon * .5) * launch + feathers * .8);
+                light += softAccent * (edgeTint + coreGlow + feathers * .35);
+                light += softSecondary * (Band(d + width * 1.2, width * 2.7) * .15 + feathers * .3);
+                light += half3(1,1,1) * (core * (.12 + launch * .65) + feathers * .8);
                 light *= _Opacity * input.color.a * (1 - smoothstep(.91, .995, r));
                 // Screen 混合配合柔性压高光，保留大面积白光中的层次和场景轮廓。
-                light = 1 - exp2(-light * 1.4);
+                light = 1 - exp2(-light * 1.2);
                 return half4(light, 0);
             }
             ENDHLSL
