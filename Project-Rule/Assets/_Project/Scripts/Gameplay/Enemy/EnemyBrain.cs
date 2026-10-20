@@ -37,7 +37,10 @@ namespace RuleGame.Gameplay.Enemy
         protected bool IsBoss => Config.IsBoss;
         public virtual bool BodyEnabled => true;
         public virtual bool MovementEnabled => true;
+        public virtual bool Anchored => false;
+        public virtual bool OnMotorCollision(Collider2D collider, Vector2 normal, Vector2 velocity) => false;
         public virtual bool ContactDamageEnabled => true;
+        public virtual float ContactKnockback => 5f;
         public virtual void OnDisabled() { }
         protected float CombatDistance => !HasTarget ? float.PositiveInfinity : Actor.IsFlying
             ? Actor.Distance : Mathf.Abs(Actor.Target.position.x - Actor.transform.position.x);
@@ -65,6 +68,8 @@ namespace RuleGame.Gameplay.Enemy
                 case EnemyKind.PlushBird: return new PlushBirdBrain(actor);
                 case EnemyKind.HugBear: return new HugBearBrain(actor);
                 case EnemyKind.PlushSeal: return new PlushSealBrain(actor);
+                case EnemyKind.DiscoBall: return new DiscoBallBrain(actor);
+                case EnemyKind.SpinningTop: return new SpinningTopBrain(actor);
                 case EnemyKind.ChargingCube: return new ChargingCubeBrain(actor);
                 default: return new MinionBrain(actor);
             }

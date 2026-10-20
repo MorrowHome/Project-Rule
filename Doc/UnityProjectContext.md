@@ -1,5 +1,11 @@
 # Unity 项目上下文
 
+2026-10-20 迪斯科球光效追加：按用户要求将绿光改为流动彩虹、反向旋转双层光束、扩散环纹和镜面亮片，带柔和节拍亮度变化；低亮暖色预警，连续彩色危险底色与清晰的掩体阴影保留。仅修改DiscoRadiation.shader及Editor渲染验证/预览，游戏伤害、遮挡、周期和资源接线不变。效果沿用MechanicsAge以支持暂停/回溯；实际GPU像素核验三类色区、掩体阴影、暂停冻结和恢复流动。新功能102+实际场景11共113组通过，无新增脚本/Shader错误；日志/tmp/rule-disco-top-effects-final.log和effects-scene2.log，动图Doc/特效预览/DemonMinions/DiscoRainbow.gif。未测GPU性能或做完整Player构建。
+
+2026-10-20 晚间策划新增迪斯科球/陀螺需求，交付分支 feat/enemy：EnemyKind 在末尾追加 DiscoBall/SpinningTop（16/17），旧枚举不变。复用 EnemyActor、HFSM、CombatSystem、RuleAffectedBody、快照和原画动画；毛绒蜘蛛暂不做。DiscoBall 固定悬挂，低亮预警0.75秒→连续360°辐射4秒→停火2秒，半径8、每0.5秒伤害，Ground墙/移动平台实时遮挡；连续可见多边形网格+角点采样形成动态阴影，命中按Hurtbox可见部分判定/去重，非弹体。SpinningTop旋转平移，Motor真实Slide接触回调按双方质量分配等大反向冲量，玩家/敌人/动态刚体都能反弹，静态地形只反弹自身，固定路径平台不被抛走；接触伤害不给额外击退以免叠加。固定球通过Brain.Anchored保持原位，其它敌人默认false；旧碰撞默认无反弹，公共接口兼容。
+
+新增两个FieldMinions预制体、中文配置、交付四张原PNG与来源哈希、独立辐射Shader/材质及Test_Minion_DiscoTop集中场（左移动掩体、右反弹箱）。均通过Unity API生成，脚本/资产/meta已同步原项目；既有投掷物和蜘蛛均未动。隔离Unity6000.6.4f1新功能102+实际场景11+全部18类AI69+原规则401+导航16=599项0失败，实际渲染Doc/特效预览/DemonMinions；日志/tmp/rule-disco-top-{final,scene2,ai,rules,navigation}.log。修复首次新View的MaterialPropertyBlock字段初始化时机及新材质的Sprite纹理显示；最终无新增编译/Shader错误，仅既有QuickSearch启动异常。未做Player打包、正式地图平衡或多辐射源性能验收。用法与默认数值见Doc/迪斯科球与陀螺接入.md；保留同期轮盘UI和EnemyLabPlayer未提交修改。
+
 2026-10-20 全部现有敌人 AI 强化（当前 main）：覆盖12非Boss+4Boss，不新增玩法或调整生命/伤害数值，投掷物文件/资源/尺寸不变。共用预判改读玩家 PlayerController.Velocity，截断穿墙预判并排除死亡目标；守卫冷却期压近且不叠加额外等待；蝙蝠召唤小兵可主动接敌；鼠按当前位置选向、遇阻钻地；弹簧按高度选已有跳跃；鸟预判升降；自爆/冲撞怪改进接近。抱熊拥抱冷却中对可见近身攻击延迟反应并短撤，保留站姿、接触优先、挣脱及快照。海豹按近远/高度选择滑撞或冰块，三招独立冷却、短恢复，嚎叫仅在能施法且规则有变化时选用，冷却中调整站位。四Boss改进可见目标选招、早段瞄准后锁向、前压遇阻/被逼边界反应；兔子开场可撤退，蝙蝠第二阶段支援不再被冲刺饿死，完整前摇和休息仍保留。另修接触伤害实际身体已相撞而内缩受击箱未进入Overlap导致不掉血：只桥接到启用的正规Hurtbox，公共规则/冷却/去重和隔墙检查保持。
 
 新增 EnemyAiValidation：真实16类敌人的移动预判、15秒物理对战、失效目标/快照及战术专项，最终63组通过。HEAD的旧Field套件6项失败已对照复现，补齐正规Hurtbox及当前动作时长/巡飞/选招语义；旧Boss测试按破韧阈值与Clock Charge/独立冷却核验。最终AI63+规则401+决策53+关卡战斗64+Boss119+抱熊接近20+破韧53+导航16+场景56=845项0失败，脚本与隔离副本一致；日志/tmp/rule-enemy-ai-{final,rules1,decisions2,field2,boss2,bear,resilience,nav,gallery}.log，副本/tmp/rule-minion-delivery-20261020。QuickSearch既有启动索引异常单独记录，无脚本编译错误；未运行Player构建、正式关卡难度/群怪性能验收或旧战术/兔子开场动画套件。详情见Doc/小怪预制体使用指南.md末节。

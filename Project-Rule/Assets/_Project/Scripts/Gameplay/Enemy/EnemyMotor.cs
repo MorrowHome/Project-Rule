@@ -20,6 +20,7 @@ namespace RuleGame.Gameplay.Enemy
         public Vector2 Up { get; private set; } = Vector2.up;
         public Vector2 Velocity { get; private set; }
         public Vector2 GravityDrift { get; private set; }
+        public Vector2 ContactVelocity => Velocity + _impulse;
 
         /// <summary>
         /// 本物理帧的动量（kg·单位/秒），给「按动量判定」的机关读（见 <see cref="IMomentumSource"/>）。
@@ -124,13 +125,14 @@ namespace RuleGame.Gameplay.Enemy
             if (slide.slideHit.collider != null)
             {
                 Vector2 normal = slide.slideHit.normal;
+                bool bounced = _actor.Brain?.OnMotorCollision(slide.slideHit.collider, normal, velocity + _impulse) == true;
                 if (Vector2.Dot(GravityDrift, normal) < 0f)
                 {
                     GravityDrift -= normal * Vector2.Dot(GravityDrift, normal);
                     if (Vector2.Dot(velocity, normal) < 0f) velocity -= normal * Vector2.Dot(velocity, normal);
                 }
-                if (Mathf.Abs(normal.x) > 0.9f && velocity.x * normal.x < 0f) velocity.x = 0f;
-                if (Vector2.Dot(normal, Up) < -0.5f && Vector2.Dot(velocity, Up) > 0f)
+                if (!bounced && Mathf.Abs(normal.x) > 0.9f && velocity.x * normal.x < 0f) velocity.x = 0f;
+                if (!bounced && Vector2.Dot(normal, Up) < -0.5f && Vector2.Dot(velocity, Up) > 0f)
                     velocity -= Up * Vector2.Dot(velocity, Up);
             }
             Velocity = velocity;

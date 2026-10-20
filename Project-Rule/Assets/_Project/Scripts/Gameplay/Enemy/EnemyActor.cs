@@ -173,7 +173,8 @@ namespace RuleGame.Gameplay.Enemy
             Brain.Tick(dt);
             ClockBeams?.Tick(dt);
             if (_bodyCollider != null) _bodyCollider.enabled = Brain.BodyEnabled;
-            if (Brain.MovementEnabled) Motor.Tick(dt);
+            if (Brain.Anchored) Motor.Stop();
+            else if (Brain.MovementEnabled) Motor.Tick(dt);
             else
             {
                 // 锁住自主动作，不锁世界物理：引信与拥抱期间仍响应重力、质量和外部冲量。
@@ -205,7 +206,7 @@ namespace RuleGame.Gameplay.Enemy
                 if (!CombatSystem.TryResolveTarget(_contacts[i], this, out IDamageable receiver)) continue;
                 if (Physics2D.Linecast(center, _contacts[i].bounds.center, Motor.SolidMask)) continue;
                 if (!_contactTargets.Add(receiver)) continue;
-                Combat.ApplyDamage(this, receiver, Definition.Damage, 5f);
+                Combat.ApplyDamage(this, receiver, Definition.Damage, Brain?.ContactKnockback ?? 5f);
             }
             // 玩家身体可能比受击箱大：Slide 已挡住双方，不能再要求身体盒穿进内缩的受击箱。
             // 只桥接实际身体接触到仍开启的正规受击箱，结算与阵营过滤继续走公共入口。
@@ -225,7 +226,7 @@ namespace RuleGame.Gameplay.Enemy
                     && !Physics2D.Linecast(_bodyCollider.bounds.center, _targetContactBody.bounds.center, Motor.SolidMask)
                     && CombatSystem.TryResolveTarget(_targetContactHurtbox.Area, this, out IDamageable receiver)
                     && _contactTargets.Add(receiver))
-                    Combat.ApplyDamage(this, receiver, Definition.Damage, 5f);
+                    Combat.ApplyDamage(this, receiver, Definition.Damage, Brain?.ContactKnockback ?? 5f);
             }
             if (_contactTargets.Count > 0) _contactCooldown = Mathf.Max(0.05f, Definition.ContactInterval);
         }
