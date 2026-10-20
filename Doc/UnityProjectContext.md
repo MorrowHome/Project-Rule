@@ -2,6 +2,10 @@
 
 <!-- unity-onboarding:generated:start -->
 
+2026-10-20 积木普通锤击特效纠正：用户确认悬空的是HammerPlayer近身小圈，非HammerGround。撤回上轮程序方块粒子、三条直线边界及EnemyGroundSlamView，恢复大砸地原序列布局。小圈沿用Sword3原材质/ImpactSize，作者发射轴心落在身前地面，持续帧也不回身体中心；以同作者Blow2原序列补五组冲击，保留原风格与范围可读性。未改战斗/投掷物参数。完整副本Unity6000.6.4f1最终17组通过；基线13通过/4失败含左右小圈高于地面约1米。最新真实URP预览Doc/特效预览/BossVfxAlignment/BrickNormalHammer_{Left,Right}_After.png，日志/tmp/rule-brick-normal-author-{before,final}.log，说明Doc/Boss特效接入.md。本轮未跑Player构建、正式关卡人工验收或旧战斗回归。
+
+2026-10-20 Boss特效范围校准：四Boss共用攻击通知携带实际尺寸；积木近战/砸地与蝙蝠斩击按片段可见联合边界适配，冲刺跟随持续攻击查询；四Boss弹体按可见网格中心对齐并保留原美术尺寸（已撤回把透明画布归一化导致缩小的回归），闹钟三束宽与回退核心沿用伤害宽度，弹幕预警跟随表盘。Editor校准七片段VisibleRect，未改Boss攻击范围/伤害数值或选招。完整副本Unity6000.6.4f1对齐15组、弹体回归11项通过；原战斗回归修改前后均115通过/3既有失败（兔子撤退、小怪受击、闹钟休息），记录Doc/Boss特效接入.md，URP对照Doc/特效预览/BossVfxAlignment。副本/tmp/rule-boss-vfx-alignment-20261020，日志/tmp/rule-boss-vfx-{final,projectile-regression,combat,combat-baseline2}.log。未跑Player构建/正式关卡人工验收，保留同期小怪和抱抱熊改动。
+
 2026-10-17 在新分支 feat/minion-pathfinding 接入 EnemyPlatformNavigation：真实 Collider2D 站立点采样、有界 A*、身体扫掠验证的跳跃与安全落差，Motor 仍是位移权威。地面追击与返回出生点使用路线，飞鸟水平巡飞不改。普通默认索敌6米、出生点二维追击半径8米、失去视线后搜索最后位置1.5秒；脱战返回，旧积木/蝙蝠召唤物也遵守范围。中文配置包含开关、1.6米跳高、2.5米落差、0.5米采样和0.65秒重算；暂停/受击/快照接入。每次搜索最多192节点/2400查询，缓存不参与快照，半空运动参加快照。修复继承的 a79c487 合并版本中的敌人端旧战斗接口，攻击统一 Hurtbox，PlayerMask仅保留身体移动用途。Unity6000.6.4f1隔离PlayMode：平台导航16项、索敌脱战9项、受击箱兼容5项通过，合计30项0失败。新增 Test_Minion_Pathfinding 白盒和独立默认范围配置，由EditorAPI生成，日志见 %TEMP%/rule-minion-{navigation,ranges}.log 与 rule-enemy-hurtbox-compat.log。未执行原工程手动白盒、正式地图难度、敌群性能或完整Player构建；移动/单向平台的专用通行和飞行避障未实现。保留同期字体与ProjectSettings修改。
 2026-10-17 受伤反馈调优与 PR 预览：普通闪白总时长改为 0.30 秒，保持白色约 0.165 秒后淡出；破韧/致命延长倍率保留。完整副本定向验证 65 项通过，含实际 0.15 秒仍保持白色的 URP 像素断言。`Doc/特效预览/EnemyHitFeedback.gif` 与 `EnemyHitFeedback_Comparison.png` 为固定姿态的真实渲染媒体；`Tools/EnemyAssets/create_hit_preview.py` 从验证截图重新导出，未修改游戏摄像机。用户确认仅核对 p2-p3-merge 基线即可，已 fetch 并确认最新 `2fe1dc1` 是当前功能分支的祖先；不继续扩大摄像机修改范围。
 

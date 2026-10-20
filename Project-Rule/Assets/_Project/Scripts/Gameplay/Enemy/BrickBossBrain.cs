@@ -102,8 +102,8 @@ namespace RuleGame.Gameplay.Enemy
                         Go(TargetInMeleeRange ? "HammerPlayer" : "HammerGround");
                     break;
                 case "HammerPlayer":
-                    if (Impact()) Actor.Attack(Config.AttackRange, true);
-                    if (Pulses > 0 && Elapsed < Actor.AnimationDuration * .8f) Actor.Attack(Config.AttackRange);
+                    if (Impact()) Actor.Attack(Config.AttackRange, true, sustained: true);
+                    if (Pulses > 0 && Elapsed < Actor.AnimationDuration * .8f) Actor.Attack(Config.AttackRange, sustained: true);
                     if (Finished) FinishAttack(name);
                     break;
                 case "HammerGround":
@@ -139,7 +139,8 @@ namespace RuleGame.Gameplay.Enemy
             Actor.Shoot(Vector2.right, 11f, 0f, .5f);
             if (Config.BrickSlamRange <= 0f) return;
             Vector2 feet = (Vector2)Actor.transform.position - Actor.Motor.Up * Config.BodySize.y * .5f;
-            Actor.AttackArea(feet + Actor.Motor.Up * 1.1f, new Vector2(Config.BrickSlamRange * 2f, 2.2f));
+            Bounds area = Actor.GroundSlamBounds;
+            Actor.AttackArea(area.center, area.size);
             Actor.ShootFan(Actor.Motor.Up, Config.BrickThrowCount, 150f, 9f, .8f, .25f, origin: feet + Actor.Motor.Up * .5f);
         }
         private void FinishAttack(string name)

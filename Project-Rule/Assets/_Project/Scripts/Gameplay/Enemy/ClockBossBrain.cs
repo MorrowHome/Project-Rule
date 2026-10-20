@@ -97,7 +97,8 @@ namespace RuleGame.Gameplay.Enemy
             {
                 _burstPreparing = true;
                 _burstRelease = Age + Mathf.Max(.2f, Config.ClockBurstWarning);
-                Actor.EmitFeedback(EnemyFeedbackKind.BarrageWarning, Actor.transform.position, Actor.Motor.Up);
+                Actor.EmitFeedback(EnemyFeedbackKind.BarrageWarning,
+                    Actor.BeamOrigin != null ? Actor.BeamOrigin.position : Actor.transform.position, Actor.Motor.Up);
             }
             if (_burstPreparing && Age >= _burstRelease)
             {

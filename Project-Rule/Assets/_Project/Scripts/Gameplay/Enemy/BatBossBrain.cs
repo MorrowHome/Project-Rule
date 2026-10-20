@@ -166,7 +166,7 @@ namespace RuleGame.Gameplay.Enemy
                 case "Dash":
                     Actor.Motor.Intent = BoundIntent(_dashDirection);
                     Actor.Motor.SpeedMultiplier = 3f * Tempo;
-                    Actor.Attack(Config.AttackRange);
+                    Actor.Attack(Config.AttackRange, sustained: true);
                     bool blocked = Elapsed > 0.16f && Actor.Motor.Velocity.sqrMagnitude < 0.25f;
                     if (Finished || blocked || Actor.Motor.Intent.sqrMagnitude < 0.01f) Go("Recover");
                     break;

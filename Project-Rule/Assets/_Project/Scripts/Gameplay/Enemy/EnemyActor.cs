@@ -91,6 +91,11 @@ namespace RuleGame.Gameplay.Enemy
         public event Action<EnemyActor> OnDefeated;
         public event Action<EnemyFeedback> Feedback;
         private bool _strikeAnnounced;
+        public bool MeleeActive { get; private set; }
+        public Vector2 MeleeCenter { get; private set; }
+        public Vector2 MeleeSize { get; private set; }
+        public Bounds GroundSlamBounds => new Bounds(transform.position
+            - (Vector3)Motor.Up * (Definition.BodySize.y * .5f - 1.1f), new Vector3(Definition.BrickSlamRange * 2f, 2.2f));
         private float _invulnerability;
         private float _contactCooldown;
         private BoxCollider2D _bodyCollider;
@@ -141,6 +146,7 @@ namespace RuleGame.Gameplay.Enemy
             if (TimeManager.Instance?.IsPaused == true) return;
             PollContactSwitches();
             if (Brain == null || Status.IsPaused) return;
+            MeleeActive = false;
             float dt = Time.fixedDeltaTime;
             _invulnerability = Mathf.Max(0f, _invulnerability - dt);
             if (!Defeated) Status.RestoreEnergy(Definition.EnergyRegen * dt);
@@ -299,6 +305,7 @@ namespace RuleGame.Gameplay.Enemy
             AnimationLoop = loop;
             _swingTargets.Clear();
             _strikeAnnounced = false;
+            MeleeActive = false;
             Motor.Intent = Vector2.zero;
             Motor.SpeedMultiplier = 1f;
             AnimationChanged?.Invoke();
@@ -364,18 +371,21 @@ namespace RuleGame.Gameplay.Enemy
             Feedback?.Invoke(new EnemyFeedback(EnemyFeedbackKind.Hit, position, direction, subject,
                 amount, staggered, lethal));
         }
-        public void Attack(float reach, bool newPulse = false)
+        public void Attack(float reach, bool newPulse = false, bool sustained = false)
         {
             if (Combat == null || !HasTarget) return;
             if (newPulse) _swingTargets.Clear();
             Vector2 center = (Vector2)transform.position + Vector2.right * Facing * reach * 0.55f;
+            Vector2 size = new Vector2(reach, Definition.BodySize.y * 0.8f);
+            MeleeActive = sustained; MeleeCenter = center; MeleeSize = size;
             // 持续判定窗不逐帧发特效；连斩的 newPulse 则每刀单独通知。
             if (newPulse || !_strikeAnnounced)
             {
                 _strikeAnnounced = true;
-                EmitFeedback(EnemyFeedbackKind.Strike, center, Vector2.right * Facing);
+                Feedback?.Invoke(new EnemyFeedback(EnemyFeedbackKind.Strike, center, Vector2.right * Facing,
+                    size: size, sustained: sustained));
             }
-            Combat.PerformAttack(this, center, new Vector2(reach, Definition.BodySize.y * 0.8f),
+            Combat.PerformAttack(this, center, size,
                 Definition.Damage, 5f, _swingTargets);
         }
         public void Shoot(Vector2 direction, float speed = 8f, float gravity = 0f, float radius = 0.22f, int visualIndex = -1, Vector2? origin = null)
@@ -394,7 +404,8 @@ namespace RuleGame.Gameplay.Enemy
                 if (CombatSystem.TryResolveTarget(_contacts[i], this, out IDamageable target) && _contactTargets.Add(target))
                     Combat.ApplyDamage(this, target, Definition.Damage, 4f);
             }
-            EmitFeedback(EnemyFeedbackKind.Strike, transform.position, Motor.Up);
+            Feedback?.Invoke(new EnemyFeedback(EnemyFeedbackKind.Strike, transform.position, Motor.Up,
+                size: Vector2.one * radius * 2f));
         }
         /// <summary>围绕锁定方向展开等角扇形；每发仍使用共用弹池与战斗结算。</summary>
         public void ShootFan(Vector2 direction, int count, float spread, float speed, float gravity = 0f,
@@ -422,7 +433,7 @@ namespace RuleGame.Gameplay.Enemy
             if (Combat == null || !HasTarget) return;
             _swingTargets.Clear();
             Combat.PerformAttack(this, center, size, Definition.Damage, 7f, _swingTargets);
-            EmitFeedback(EnemyFeedbackKind.AreaStrike, center, Motor.Up);
+            Feedback?.Invoke(new EnemyFeedback(EnemyFeedbackKind.AreaStrike, center, Motor.Up, size: size));
         }
         public void Beam(float angle, float width, float warning = 0.65f)
         {
