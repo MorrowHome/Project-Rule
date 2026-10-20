@@ -181,11 +181,13 @@ namespace RuleGame.Gameplay.Enemy
         /// 「摩擦 × 反转」把敌人逼着后退时，它必须能**被逼下坑** —— 用带悬崖检测的那个版本，
         /// 它会在坑边刹住，玩家永远推不进去。
         /// </remarks>
-        public bool HasWallAhead(float direction)
+        public bool HasTerrainWallAhead(float direction) => CastWallAhead(direction, SolidMask | BodyBlockMask);
+        public bool HasWallAhead(float direction) => CastWallAhead(direction, SolidMask | BodyBlockMask | _actor.PlayerMask);
+        private bool CastWallAhead(float direction, LayerMask mask)
         {
             float side = Mathf.Sign(WorldDirection(direction));
             var filter = new ContactFilter2D { useTriggers = false };
-            filter.SetLayerMask(SolidMask | BodyBlockMask | _actor.PlayerMask);
+            filter.SetLayerMask(mask);
             int count = _body.Cast(Vector2.right * side, filter, _hits, .035f);
             for (int i = 0; i < count; i++)
                 if (_hits[i].normal.x * side < -.5f) return true;

@@ -152,14 +152,15 @@ namespace RuleGame.Gameplay.Enemy
         {
             if (Config.MinionNavigationEnabled && Actor.Navigation.ContinueTraversal(Age)) return;
             if (!CanPursue) { Actor.Motor.Intent = Vector2.zero; return; }
+            Vector2 pursuit = SeesTarget ? PredictTarget(.18f) : _lastSeen;
             if (Config.MinionNavigationEnabled)
             {
-                Actor.Navigation.MoveTo(_lastSeen, Home, Age);
+                Actor.Navigation.MoveTo(pursuit, Home, Age);
                 // 寻路失败（体型 / 台阶 / 狭窄口）时不能一边播 Walk 一边原地站着：
                 // 退化为「朝目标直接给意图」，遇墙才停；允许踏空，先追上去再说。
                 if (Actor.Motor.Intent.sqrMagnitude < .0001f)
                 {
-                    float fallback = _lastSeen.x - Actor.transform.position.x;
+                    float fallback = pursuit.x - Actor.transform.position.x;
                     if (Mathf.Abs(fallback) > .12f && !Actor.Motor.HasWallAhead(Mathf.Sign(fallback)))
                     {
                         Actor.FaceDirection(Vector2.right * fallback);
@@ -169,7 +170,7 @@ namespace RuleGame.Gameplay.Enemy
                 }
                 return;
             }
-            float offset = _lastSeen.x - Actor.transform.position.x;
+            float offset = pursuit.x - Actor.transform.position.x;
             Actor.FaceDirection(Vector2.right * offset);
             Actor.Motor.Intent = Mathf.Abs(offset) > .12f ? Vector2.right * Mathf.Sign(offset) : Vector2.zero;
             if (Actor.Motor.HasHorizontalObstacle(Actor.Facing) && !TouchesTarget) Actor.Motor.Intent = Vector2.zero;

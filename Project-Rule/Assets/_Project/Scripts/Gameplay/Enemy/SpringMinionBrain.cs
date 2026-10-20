@@ -51,15 +51,20 @@ namespace RuleGame.Gameplay.Enemy
                 if (Config.MinionNavigationEnabled && Physics2D.gravity.sqrMagnitude > .001f)
                 {
                     Actor.Navigation.MoveTo(LastSeenPosition, Home, Age, true,
-                        (Pattern & 1) == 0 ? Config.MinionHopHeight : Config.MinionHighHopHeight);
+                        DesiredHopHeight());
                     if (Actor.Navigation.JumpStarted) { Pattern++; Heading = Actor.Facing; }
                     return;
                 }
                 Actor.FaceTarget(); Heading = Actor.Facing;
                 if (Actor.Motor.HasHorizontalObstacle(Heading) && !TouchesTarget) return;
-                Actor.Motor.Jump((Pattern++ & 1) == 0 ? Config.MinionHopHeight : Config.MinionHighHopHeight);
+                Actor.Motor.Jump(DesiredHopHeight()); Pattern++;
                 Actor.Motor.Intent = Vector2.right * Heading;
             }
+        }
+        private float DesiredHopHeight()
+        {
+            bool high = CanPursue && Vector2.Dot(LastSeenPosition - (Vector2)Actor.transform.position, Actor.Motor.Up) > Config.MinionHopHeight * .5f;
+            return high || (Pattern & 1) != 0 ? Config.MinionHighHopHeight : Config.MinionHopHeight;
         }
         protected override object CaptureBehavior() => new object[] { _hopAt, _wasAirborne };
         protected override void RestoreBehavior(object state)

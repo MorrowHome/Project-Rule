@@ -80,7 +80,9 @@ namespace RuleGame.Gameplay.Enemy
         private void ChargeTowards()
         {
             if (!CanPursue) { Actor.Motor.Intent = Vector2.zero; return; }
-            float offset = LastSeenPosition.x - Actor.transform.position.x;
+            float offset = (SeesTarget ? PredictTarget(.2f).x : LastSeenPosition.x) - Actor.transform.position.x;
+            if (Config.MinionNavigationEnabled && Actor.Motor.HasTerrainWallAhead(Mathf.Sign(offset)))
+            { Chase(); return; }
             Actor.FaceDirection(Vector2.right * offset);
             Actor.Motor.Intent = Mathf.Abs(offset) > .12f ? Vector2.right * Mathf.Sign(offset) : Vector2.zero;
         }

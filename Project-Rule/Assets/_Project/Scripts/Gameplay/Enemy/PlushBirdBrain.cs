@@ -57,7 +57,7 @@ namespace RuleGame.Gameplay.Enemy
             }
             else { _spacing = 0; Patrol(); }
             float hover = Mathf.Sin(Age * 1.5f) * .4f;
-            float height = CanPursue ? LastSeenPosition.y + Actor.Motor.Up.y * 1.5f : Home.y;
+            float height = CanPursue ? (SeesTarget ? PredictTarget(.15f).y : LastSeenPosition.y) + Actor.Motor.Up.y * 1.5f : Home.y;
             Actor.Motor.Intent = new Vector2(Actor.Motor.Intent.x, HeightIntent(height + hover));
         }
         private float HeightIntent(float height)

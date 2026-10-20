@@ -196,12 +196,48 @@ namespace RuleGame.Gameplay.Enemy
             return true;
         }
         protected bool Finished => Elapsed >= Actor.AnimationDuration;
+        private Transform _motionTarget;
+        private RuleGame.Gameplay.Player.PlayerController _targetPlayer;
+        private Rigidbody2D _targetMotion;
+        protected Vector2 TargetVelocity
+        {
+            get
+            {
+                if (!HasTarget) return Vector2.zero;
+                if (_motionTarget != Actor.Target)
+                {
+                    _motionTarget = Actor.Target;
+                    _targetPlayer = Actor.Target.GetComponentInParent<RuleGame.Gameplay.Player.PlayerController>();
+                    _targetMotion = Actor.Target.GetComponentInParent<Rigidbody2D>();
+                }
+                // Slide 驱动的 Kinematic 玩家不把自主速度写进 linearVelocity。
+                return Vector2.ClampMagnitude(_targetPlayer != null ? _targetPlayer.Velocity
+                    : _targetMotion != null ? _targetMotion.linearVelocity : Vector2.zero, 12f);
+            }
+        }
+        protected bool TargetThreatening
+        {
+            get
+            {
+                if (!HasTarget) return false;
+                _ = TargetVelocity;
+                return _targetPlayer != null && (_targetPlayer.AttackComboIndex >= 0 || _targetPlayer.IsHeavyBusy);
+            }
+        }
+        protected bool TargetVisible => HasTarget && !Physics2D.Linecast(Actor.transform.position,
+            Actor.Target.position, Actor.Motor.SolidMask);
         protected Vector2 PredictTarget(float lead)
         {
             if (!HasTarget) return Actor.transform.position;
-            var body = Actor.Target.GetComponentInParent<Rigidbody2D>();
-            Vector2 velocity = body != null ? Vector2.ClampMagnitude(body.linearVelocity, 12f) : Vector2.zero;
-            return (Vector2)Actor.Target.position + velocity * lead;
+            Vector2 origin = Actor.Target.position;
+            Vector2 offset = TargetVelocity * Mathf.Clamp(lead, 0f, .75f);
+            if (offset.sqrMagnitude < .0001f) return origin;
+            RaycastHit2D hit = Physics2D.Raycast(origin, offset.normalized, offset.magnitude, Actor.Motor.SolidMask);
+            return origin + offset.normalized * (hit.collider != null ? Mathf.Max(0f, hit.distance - .05f) : offset.magnitude);
+        }
+        protected void TrackAttackWindup()
+        {
+            if (Elapsed <= Actor.AnimationDuration * Config.MinionAimLockFraction && TargetVisible) Actor.FaceTarget();
         }
         protected float ClampArenaX(float x)
         {
@@ -340,7 +376,8 @@ namespace RuleGame.Gameplay.Enemy
         {
             if (name == "Hurt") { if (CooldownElapsed >= Actor.AnimationDuration) Go("Walk"); return; }
             if (!HasTarget && !Config.Flying && Config.MinionNavigationEnabled && Actor.Navigation.ContinueTraversal(Age)) return;
-            if (Config.Flying && !_commanded && Actor.Summoner != null)
+            bool sees = HasTarget && TargetVisible && Actor.Distance <= Config.MinionSenseRange;
+            if (Config.Flying && !_commanded && Actor.Summoner != null && !sees)
             {
                 Vector2 orbit = _home + new Vector2(Mathf.Sin(Age) * 0.8f, Mathf.Cos(Age) * 0.3f);
                 SetMovement(Vector2.ClampMagnitude(orbit - (Vector2)Actor.transform.position, 1f));
@@ -349,9 +386,16 @@ namespace RuleGame.Gameplay.Enemy
             bool pursue = HasTarget && (_targetHealth == null || _targetHealth.Health > 0f)
                 && Age - _lastSeenAt <= Config.MinionTargetMemory
                 && Vector2.Distance(Actor.transform.position, _home) <= Config.MinionLeashRange;
-            Vector2 destination = pursue ? _lastSeen : _home;
+            Vector2 destination = pursue ? (sees ? PredictTarget(.18f) : _lastSeen) : _home;
             if (Config.Flying) SetMovement(Vector2.ClampMagnitude(destination - (Vector2)Actor.transform.position, 1f));
-            else if (Config.MinionNavigationEnabled) Actor.Navigation.MoveTo(destination, _home, Age);
+            else if (Config.MinionNavigationEnabled)
+            {
+                Actor.Navigation.MoveTo(destination, _home, Age);
+                if (Actor.Motor.Intent.sqrMagnitude < .001f && Mathf.Abs(destination.x - Actor.transform.position.x) > .12f
+                    && !Actor.Motor.HasHorizontalObstacle(Mathf.Sign(destination.x - Actor.transform.position.x)))
+                    Actor.Motor.Intent = Vector2.right * Mathf.Sign(destination.x - Actor.transform.position.x);
+                SetMovement(Actor.Motor.Intent);
+            }
             else
             {
                 Vector2 offset = destination - (Vector2)Actor.transform.position;

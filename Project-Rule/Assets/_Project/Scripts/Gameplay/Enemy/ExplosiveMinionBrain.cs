@@ -26,6 +26,7 @@ namespace RuleGame.Gameplay.Enemy
             if (TouchesTarget) { Arm(); return; }
             if (name == "Idle")
             {
+                if (SeesTarget) Heading = Mathf.Sign(Actor.Target.position.x - Actor.transform.position.x);
                 Patrol();
                 if (Config.Kind == EnemyKind.ClockBomb && SeesTarget) Go("Chase");
             }

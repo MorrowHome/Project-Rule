@@ -79,7 +79,17 @@ namespace RuleGame.Gameplay.Enemy
         public EnemyPlatformNavigation Navigation { get; private set; }
         public ClockBeamEmitter ClockBeams { get; private set; }
         public bool IsFlying => Brain?.IsFlying ?? (Definition != null && Definition.Flying);
-        public bool HasTarget => Target != null && Target.gameObject.activeInHierarchy;
+        private Transform _vitalsTarget;
+        private EntityStatus _targetVitals;
+        public bool HasTarget
+        {
+            get
+            {
+                if (Target == null || !Target.gameObject.activeInHierarchy) return false;
+                if (_vitalsTarget != Target) { _vitalsTarget = Target; _targetVitals = Target.GetComponentInParent<EntityStatus>(); }
+                return _targetVitals == null || _targetVitals.Health > 0f;
+            }
+        }
         public Vector2 ArenaAnchor => _arenaInitialized ? _arenaOrigin : (Vector2)transform.position;
         public Faction Faction => Faction.Enemy;
         public string AnimationName { get; private set; } = "Idle";
@@ -101,6 +111,9 @@ namespace RuleGame.Gameplay.Enemy
         private float _invulnerability;
         private float _contactCooldown;
         private BoxCollider2D _bodyCollider;
+        private Transform _contactTarget;
+        private Collider2D _targetContactBody;
+        private Hurtbox _targetContactHurtbox;
         private readonly Collider2D[] _contacts = new Collider2D[8];
         private readonly HashSet<IDamageable> _contactTargets = new HashSet<IDamageable>();
         private readonly HashSet<IDamageable> _swingTargets = new HashSet<IDamageable>();
@@ -174,7 +187,7 @@ namespace RuleGame.Gameplay.Enemy
         {
             _contactCooldown = Mathf.Max(0f, _contactCooldown - (Definition.IsBoss || TimeManager.Instance?.TimeMechanicsEnabled != false ? dt : 0f));
             if (Defeated || Brain?.ContactDamageEnabled == false || !Definition.ContactDamage || Combat == null || _contactCooldown > 0f
-                || _bodyCollider == null || !_bodyCollider.enabled
+                || _bodyCollider == null || !_bodyCollider.enabled || (Target != null && !HasTarget)
                 || (!Definition.IsBoss && TimeManager.Instance?.TimeMechanicsEnabled == false)) return;
             // 用身体盒检查接触，不依赖 Kinematic 刚体是否触发碰撞回调。
             // 身体接触与招式攻击共用战斗结算，持续重叠也不会每帧掉血。
@@ -190,8 +203,29 @@ namespace RuleGame.Gameplay.Enemy
             for (int i = 0; i < count; i++)
             {
                 if (!CombatSystem.TryResolveTarget(_contacts[i], this, out IDamageable receiver)) continue;
+                if (Physics2D.Linecast(center, _contacts[i].bounds.center, Motor.SolidMask)) continue;
                 if (!_contactTargets.Add(receiver)) continue;
                 Combat.ApplyDamage(this, receiver, Definition.Damage, 5f);
+            }
+            // 玩家身体可能比受击箱大：Slide 已挡住双方，不能再要求身体盒穿进内缩的受击箱。
+            // 只桥接实际身体接触到仍开启的正规受击箱，结算与阵营过滤继续走公共入口。
+            if (HasTarget)
+            {
+                if (_contactTarget != Target)
+                {
+                    _contactTarget = Target;
+                    Transform contactRoot = _targetVitals != null ? _targetVitals.transform : Target;
+                    _targetContactBody = contactRoot.GetComponent<Collider2D>();
+                    _targetContactHurtbox = contactRoot.GetComponentInChildren<Hurtbox>(true);
+                }
+                if (_targetContactBody != null && _targetContactBody.enabled && _targetContactHurtbox != null
+                    && _targetContactHurtbox.isActiveAndEnabled && _targetContactHurtbox.Area != null
+                    && _targetContactHurtbox.Area.enabled && _targetContactHurtbox.Area.gameObject.activeInHierarchy
+                    && _bodyCollider.Distance(_targetContactBody).distance <= Mathf.Max(.035f, Definition.ContactPadding)
+                    && !Physics2D.Linecast(_bodyCollider.bounds.center, _targetContactBody.bounds.center, Motor.SolidMask)
+                    && CombatSystem.TryResolveTarget(_targetContactHurtbox.Area, this, out IDamageable receiver)
+                    && _contactTargets.Add(receiver))
+                    Combat.ApplyDamage(this, receiver, Definition.Damage, 5f);
             }
             if (_contactTargets.Count > 0) _contactCooldown = Mathf.Max(0.05f, Definition.ContactInterval);
         }

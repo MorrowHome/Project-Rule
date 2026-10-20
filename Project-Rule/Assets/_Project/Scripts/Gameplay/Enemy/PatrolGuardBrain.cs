@@ -11,7 +11,7 @@ namespace RuleGame.Gameplay.Enemy
             if (name == "Patrol" || name == "Chase") Actor.Cue("Walk", Actor.Duration("Walk"), true);
             else if (name == "Ignore") Actor.Cue("Idle", Actor.Duration("Idle"), true);
             if (name == "Attack") { ReadyAt = CooldownAge + Config.AttackCooldown; Actor.Motor.Stop(); }
-            if (name == "Ignore") ReadyAt = Mathf.Max(ReadyAt, CooldownAge + Config.MinionIgnoreDuration);
+
         }
         protected override void TickBehavior(string name)
         {
@@ -27,12 +27,14 @@ namespace RuleGame.Gameplay.Enemy
                 if (CanPursue)
                 {
                     if (SeesTarget) Actor.FaceTarget();
-                    if (SeesTarget && TargetInMeleeRange) Actor.Motor.Stop();
+                    if (SeesTarget && CombatDistance <= Mathf.Max(Config.BodySize.x * .5f + .45f, Config.AttackRange * .65f)) Actor.Motor.Stop();
                     else Chase();
                 }
                 else if (!ReturnHome()) Patrol();
                 CueMovement(Actor.Motor.Intent.sqrMagnitude > .001f);
-                if (CooldownElapsed >= Config.MinionIgnoreDuration) Go("Patrol");
+                if (TimeMechanicsEnabled && CooldownAge >= ReadyAt && CooldownElapsed >= .25f
+                    && CanPursue && SeesTarget && TargetInMeleeRange) Go("Attack");
+                else if (CooldownElapsed >= Config.MinionIgnoreDuration) Go("Patrol");
                 return;
             }
             if (!CanPursue && Config.MinionNavigationEnabled && Actor.Navigation.ContinueTraversal(Age)) return;

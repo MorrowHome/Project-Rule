@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using RuleGame.Core.Rules;
 using RuleGame.Gameplay.Enemy;
 using RuleGame.Infrastructure;
@@ -149,7 +150,7 @@ namespace RuleGame.Editor.Enemy
                 Case("海豹滑行", () =>
                 {
                     var actor = Spawn(EnemyKind.PlushSeal, -2f);
-                    Step(actor, actor.Definition.MinionSkillInterval + .02f);
+                    for (int i = 0; i < 50 && actor.Brain.StateName != "Slide"; i++) Step(actor, .02f);
                     Check(actor.Brain.StateName == "Slide" && actor.Facing < 0f, "海豹按目标方向准备滑行");
                     Check(actor.AnimationName == "Idle" && actor.Motor.Intent == Vector2.zero, "滑行前摇保持蓄势，不提前播放位移动作");
                     Step(actor, .3f);
@@ -170,8 +171,10 @@ namespace RuleGame.Editor.Enemy
                 });
                 Case("动画权威时钟", () =>
                 {
-                    var actor = Spawn(EnemyKind.PlushSeal, 2f); Step(actor, actor.Definition.MinionSkillInterval + .04f);
-                    Step(actor, .3f); actor.Cue("BellySlap", .8f);
+                    var actor = Spawn(EnemyKind.PlushSeal, 2f);
+                    typeof(EnemyBrain).GetMethod("Go", BindingFlags.Instance | BindingFlags.NonPublic)
+                        .Invoke(actor.Brain, new object[] { "BellySlap" });
+                    actor.Cue("BellySlap", .8f);
                     Step(actor, .41f); var frames = Sequence(actor, "BellySlap").Frames;
                     Check(Body(actor).sprite == frames[frames.Length / 2], "动画精确跟随逻辑推进，不依赖渲染帧率");
                     var snapshot = actor.CaptureSnapshotState(); var sprite = Body(actor).sprite;
