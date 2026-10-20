@@ -10,7 +10,7 @@ namespace RuleGame.Gameplay.Enemy
         public ClockMouseBrain(EnemyActor actor) : base(actor) { }
         protected override void EnterBehavior(string name)
         {
-            if (name == "Idle") { ReadyAt = Age + Config.MinionMouseCooldown; Actor.Motor.Stop(); }
+            if (name == "Idle") { ReadyAt = CooldownAge + Config.MinionMouseCooldown; Actor.Motor.Stop(); }
             if (name == "Pop")
             {
                 Heading = HasTarget && Actor.Target.position.x < Home.x ? -1f : 1f;
@@ -20,11 +20,11 @@ namespace RuleGame.Gameplay.Enemy
         }
         protected override void TickBehavior(string name)
         {
-            if (name == "Idle") { if (Age >= ReadyAt && SeesTarget) Go("Pop"); return; }
+            if (name == "Idle") { if (TimeMechanicsEnabled && CooldownAge >= ReadyAt && SeesTarget) Go("Pop"); return; }
             if (name == "Pop") { if (Finished) Go("Walk"); return; }
             if (name == "Hide") { if (Finished) Go("Idle"); return; }
             // 狭窄地形或玩家身体可能阻止经过出生点，不能因此永远卡在地面来回转向。
-            if (Elapsed >= Config.MinionMouseRange * 4f / Mathf.Max(.1f, Config.MoveSpeed) + 2f) { Go("Hide"); return; }
+            if (CooldownElapsed >= Config.MinionMouseRange * 4f / Mathf.Max(.1f, Config.MoveSpeed) + 2f) { Go("Hide"); return; }
             float offset = Actor.transform.position.x - Home.x;
             if ((_previousOffset > .01f && offset <= 0f) || (_previousOffset < -.01f && offset >= 0f)) _passes++;
             _previousOffset = offset;

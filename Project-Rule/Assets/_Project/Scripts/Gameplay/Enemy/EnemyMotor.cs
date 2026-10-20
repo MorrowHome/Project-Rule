@@ -40,6 +40,13 @@ namespace RuleGame.Gameplay.Enemy
         private RuleAffectedBody _rulesBody;
         private readonly RaycastHit2D[] _hits = new RaycastHit2D[8];
 
+        // Kinematic 自主运动不吃引擎材质阻力，需在真实速度上消费规则。
+        public float GroundSpeedScale => 1f / Mathf.Max(1f, RuleSystem.Instance?.Attributes.Values.FrictionScale ?? 1f);
+        public float MassResponse => Mathf.Clamp((_rulesBody != null ? _rulesBody.BaseMass : _body.mass)
+            / Mathf.Max(.01f, _body.mass), .1f, 4f);
+        public float GroundAcceleration => 35f * MassResponse * Mathf.Max(0f, RuleSystem.Instance?.Attributes.Values.FrictionScale ?? 1f);
+        public float JumpSpeed(float height) => Mathf.Sqrt(2f * 9.81f * _actor.Definition.GravityScale * Mathf.Max(0f, height));
+
         private void Awake()
         {
             _body = GetComponent<Rigidbody2D>();
@@ -67,14 +74,13 @@ namespace RuleGame.Gameplay.Enemy
 
             // 飞行的操纵速度与规则造成的漂移分开，AI 转向不会每帧抹掉反重力效果。
             Vector2 velocity = Velocity - GravityDrift;
-            float massResponse = Mathf.Clamp((_rulesBody != null ? _rulesBody.BaseMass : _body.mass)
-                / Mathf.Max(.01f, _body.mass), .1f, 4f);
+            float massResponse = MassResponse;
             var attributes = RuleSystem.Instance?.Attributes;
             float direction = WorldDirection(Intent.x);
             float acceleration = (flying ? Mathf.Max(35f, config.FlightAcceleration) : 35f) * massResponse;
             if (Grounded && attributes != null)
-                acceleration *= Mathf.Max(0.02f, attributes.Values.FrictionScale);
-            velocity.x = Mathf.MoveTowards(velocity.x, direction * config.MoveSpeed * SpeedMultiplier, acceleration * dt);
+                acceleration *= Mathf.Max(0f, attributes.Values.FrictionScale);
+            velocity.x = Mathf.MoveTowards(velocity.x, direction * config.MoveSpeed * SpeedMultiplier * (Grounded ? GroundSpeedScale : 1f), acceleration * dt);
             if (flying && !_actor.Defeated)
             {
                 velocity.y = Mathf.MoveTowards(velocity.y, Intent.y * config.MoveSpeed * SpeedMultiplier,
@@ -103,7 +109,7 @@ namespace RuleGame.Gameplay.Enemy
                     if (!Physics2D.Raycast(probe, -Up, 0.45f, SolidMask)) velocity.x = 0f;
                 }
             }
-            _impulse = Vector2.MoveTowards(_impulse, Vector2.zero, 24f * dt);
+            _impulse = Vector2.MoveTowards(_impulse, Vector2.zero, 24f * (Grounded ? Mathf.Max(0f, attributes?.Values.FrictionScale ?? 1f) : 1f) * dt);
             var movement = new Rigidbody2D.SlideMovement
             {
                 surfaceUp = Up, surfaceSlideAngle = 60f, gravitySlipAngle = 0f,
@@ -189,10 +195,18 @@ namespace RuleGame.Gameplay.Enemy
         public void Jump(float height)
         {
             if (!Grounded) return;
-            float speed = Mathf.Sqrt(2f * Mathf.Max(.01f, Physics2D.gravity.magnitude * _actor.Definition.GravityScale) * height);
+            float speed = JumpSpeed(height);
             Velocity += Up * (speed - Vector2.Dot(Velocity, Up));
         }
-        public void Stop() { Intent = Vector2.zero; Velocity = _impulse = GravityDrift = Vector2.zero; SpeedMultiplier = 1f; AllowLedgeTraversal = false; }
+        public void Stop()
+        {
+            // 普通收步不能凭空吃掉冰面动量；拥抱、引信、死亡等明确锁位仍立即停住。
+            bool sliding = Grounded && !_actor.Defeated && _actor.Brain?.MovementEnabled == true
+                && (RuleSystem.Instance?.Attributes.Values.FrictionScale ?? 1f) < 1f;
+            Intent = Vector2.zero;
+            if (!sliding) Velocity = _impulse = GravityDrift = Vector2.zero;
+            SpeedMultiplier = 1f; AllowLedgeTraversal = false;
+        }
         public Vector2 CaptureImpulse() => _impulse;
         public void Restore(Vector2 velocity, Vector2 impulse, Vector2 gravityDrift = default)
         {

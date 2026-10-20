@@ -141,7 +141,7 @@ namespace RuleGame.Gameplay.Player
 
         private void Update()
         {
-            if (IsPaused) return;                    // 暂停：冷却不前进
+            if (IsPaused || RuleGame.Infrastructure.Time.TimeManager.Instance?.TimeMechanicsEnabled == false) return; // 动画时钟照常，冷却计时暂停
             if (_cooldowns.Count == 0) return;
 
             float dt = Time.deltaTime;

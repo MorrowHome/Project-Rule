@@ -122,7 +122,7 @@ namespace RuleGame.Gameplay.Enemy
             if (Definition == null) { Debug.LogError("EnemyActor 缺少 EnemyDefinition。", this); enabled = false; return; }
             _arenaOrigin = transform.position;
             _arenaInitialized = true;
-            if (UseSpawnRelativeArena)
+            if (UseSpawnRelativeArena && Summoner == null)
             {
                 Vector2 half = new Vector2(Mathf.Max(Definition.BodySize.x + .1f, ArenaSize.x),
                     Mathf.Max(Definition.BodySize.y + .1f, ArenaSize.y)) * .5f;
@@ -150,21 +150,32 @@ namespace RuleGame.Gameplay.Enemy
             if (Brain == null || Status.IsPaused) return;
             MeleeActive = false;
             float dt = Time.fixedDeltaTime;
-            _invulnerability = Mathf.Max(0f, _invulnerability - dt);
-            if (!Defeated) Status.RestoreEnergy(Definition.EnergyRegen * dt);
+            _invulnerability = Mathf.Max(0f, _invulnerability - (Definition.IsBoss || TimeManager.Instance?.TimeMechanicsEnabled != false ? dt : 0f));
+            if (!Defeated && (Definition.IsBoss || TimeManager.Instance?.TimeMechanicsEnabled != false))
+            {
+                if (Combat != null) Combat.RestoreEnergy(Status, Definition.EnergyRegen * dt);
+                else Status.RestoreEnergy(Definition.EnergyRegen * dt);
+            }
             Motor.AllowLedgeTraversal = false;
             Brain.Tick(dt);
             ClockBeams?.Tick(dt);
             if (_bodyCollider != null) _bodyCollider.enabled = Brain.BodyEnabled;
             if (Brain.MovementEnabled) Motor.Tick(dt);
-            else Motor.Stop();
+            else
+            {
+                // 锁住自主动作，不锁世界物理：引信与拥抱期间仍响应重力、质量和外部冲量。
+                Motor.Intent = Vector2.zero; Motor.SpeedMultiplier = 1f; Motor.AllowLedgeTraversal = false;
+                if (Brain.BodyEnabled) Motor.Tick(dt);
+                else Motor.Stop();
+            }
             TickContactDamage(dt);
         }
         private void TickContactDamage(float dt)
         {
-            _contactCooldown = Mathf.Max(0f, _contactCooldown - dt);
+            _contactCooldown = Mathf.Max(0f, _contactCooldown - (Definition.IsBoss || TimeManager.Instance?.TimeMechanicsEnabled != false ? dt : 0f));
             if (Defeated || Brain?.ContactDamageEnabled == false || !Definition.ContactDamage || Combat == null || _contactCooldown > 0f
-                || _bodyCollider == null || !_bodyCollider.enabled) return;
+                || _bodyCollider == null || !_bodyCollider.enabled
+                || (!Definition.IsBoss && TimeManager.Instance?.TimeMechanicsEnabled == false)) return;
             // 用身体盒检查接触，不依赖 Kinematic 刚体是否触发碰撞回调。
             // 身体接触与招式攻击共用战斗结算，持续重叠也不会每帧掉血。
             // 判定的是**对方的受击箱**（挡自伤 / 挡同阵营的规则在 CombatSystem.TryResolveTarget 里）。

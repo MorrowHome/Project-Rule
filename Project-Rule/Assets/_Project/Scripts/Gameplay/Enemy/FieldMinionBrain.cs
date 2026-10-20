@@ -94,18 +94,8 @@ namespace RuleGame.Gameplay.Enemy
         /// <summary>「摩擦 × 反转」现在生效 —— 本实体的**意图与位移是反的**。</summary>
         protected static bool IsInverted => RuleSystem.Instance?.Attributes.Values.FrictionInverted == true;
 
-        /// <summary>
-        /// 反转期间「一直远离玩家」的锁。
-        /// </summary>
-        /// <remarks>
-        /// <para>反转之后「意图朝哪、人就往反方向走」，所以**只有一直保持「冲向玩家」的意图，
-        /// 位移才会一直远离**。任何把意图指向别处的行为（回巢 <c>ReturnHome</c>、
-        /// 攻击后发呆的 <c>Ignore</c> → <c>Patrol</c>、到界折返的 <c>Patrol</c>）都会让它
-        /// **掉头往玩家这边走** —— 玩家看到的就是「一会儿靠近、一会儿远离」。</para>
-        /// <para>所以：只要反转生效且还认得目标，就锁死在追击意图上。攻击（已经贴脸了）不锁，
-        /// 让它正常出手。</para>
-        /// </remarks>
-        protected bool FleeMode => IsInverted && LiveTarget;
+        // 只影响地面移动意图；不覆盖具体动作，不接管飞行控制。
+        protected bool FleeMode => IsInverted && !IsFlying && Actor.Motor.Grounded && LiveTarget;
 
         protected bool CanPursue => LiveTarget && Age - _lastSeenAt <= Config.MinionTargetMemory
             && Vector2.Distance(_lastSeen, Home) <= Config.MinionLeashRange
@@ -202,52 +192,42 @@ namespace RuleGame.Gameplay.Enemy
         protected virtual string AfterHurtAction => FirstAction;
         protected override void TickAction(string name)
         {
-            if (name == "Down") { if (Elapsed >= Mathf.Max(Actor.AnimationDuration, Config.MinionRespawnDelay)) Go("Rebirth"); return; }
+            if (name == "Down") { if (CooldownElapsed >= Mathf.Max(Actor.AnimationDuration, Config.MinionRespawnDelay)) Go("Rebirth"); return; }
             if (name == "Rebirth")
             {
                 if (Finished)
                 {
                     Actor.Status.ApplyHealthDelta(Config.Health - Actor.Status.Health);
-                    ReadyAt = Age + .3f;
+                    ReadyAt = CooldownAge + .3f;
                     Go(FirstAction);
                 }
                 return;
             }
-            if (name == "Hurt") { if (Finished) Go(AfterHurtAction); return; }
-
-            // 摩擦反转：锁死在「冲向目标」的意图上 —— 位移反向，于是它一直远离。
-            // 不锁的话，回巢 / 发呆 / 巡逻都会把意图指向别处，玩家就会看到它一阵靠近一阵远离。
-            if (FleeMode && name != "Attack")
-            {
-                if (name != "Chase") Go("Chase");
-
-                if (Config.MinionNavigationEnabled)
-                {
-                    Actor.Navigation.MoveTo(LastSeenPosition, Home, Age);
-                }
-                else
-                {
-                    float offset = LastSeenPosition.x - Actor.transform.position.x;
-                    Actor.FaceDirection(Vector2.right * offset);
-                    Actor.Motor.Intent = Mathf.Abs(offset) > .12f ? Vector2.right * Mathf.Sign(offset) : Vector2.zero;
-                }
-
-                return;
-            }
+            if (name == "Hurt") { if (CooldownElapsed >= Actor.AnimationDuration) Go(AfterHurtAction); return; }
 
             TickBehavior(name);
+            // 回位、巡逻等移动在反转时保持朝目标的意图，使实际位移持续远离。
+            // 拥抱、引信、攻击和滑行等状态仍由各自 Brain 完整执行。
+            if (FleeMode && Mathf.Abs(Actor.Motor.Intent.x) > .001f
+                && (StateName == "Chase" || StateName == "Patrol" || StateName == "Ignore"
+                    || StateName == "Wander" || StateName == "Return" || StateName == "Charge"))
+            {
+                float offset = Actor.Target.position.x - Actor.transform.position.x;
+                Actor.Motor.Intent = new Vector2(Mathf.Abs(offset) > .12f ? Mathf.Sign(offset) : 0f, Actor.Motor.Intent.y);
+                Actor.FaceTarget(); Actor.Motor.AllowLedgeTraversal = true;
+            }
         }
         protected abstract void TickBehavior(string name);
         public override void OnHit(float damage)
         {
             if (damage <= 0f) return;
             if (Actor.Status.Health <= 0f) { OnDisabled(); return; }
-            if (Dormant || StateName == "Hurt" || Age < NextHurt) return;
+            if (Dormant || StateName == "Hurt" || HurtClock < NextHurt) return;
             // 已经出手的攻击不被轻击逐帧取消；玩家仍可靠重击在前摇打断。
             bool committed = StateName == "Attack" || StateName == "Slide" || StateName == "Howl" || StateName == "BellySlap";
             if (committed && Elapsed >= Actor.AnimationDuration * Config.MinionAimLockFraction) return;
-            if (Age - _lastHit > Config.StaggerResetDelay) _staggerDamage = 0f;
-            _lastHit = Age;
+            if (CooldownAge - _lastHit > Config.StaggerResetDelay) _staggerDamage = 0f;
+            _lastHit = CooldownAge;
             _staggerDamage += damage;
             if (_staggerDamage < Mathf.Max(1f, Config.MinionStaggerThreshold)) return;
             _staggerDamage = 0f;

@@ -32,6 +32,7 @@ namespace RuleGame.Gameplay.Enemy
         [Tooltip("身体接触伤害向外检测的余量，覆盖移动解算保留的微小间隙。")]
         [Min(0f)] public float ContactPadding = 0.05f;
         public float Energy = 100f;
+        public float EnergyPerHit = 4f;
         public float EnergyRegen = 2f;
         public AttributeId RuleAttribute = AttributeId.Gravity;
         public RelationId RuleRelation = RelationId.Weaken;

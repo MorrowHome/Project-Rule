@@ -15,7 +15,7 @@ namespace RuleGame.Gameplay.Enemy
             if (name == "Wander") Actor.Cue("Walk", Actor.Duration("Walk"), true);
             else
             {
-                ReadyAt = Age + Config.MinionSkillInterval;
+                ReadyAt = CooldownAge + Config.MinionSkillInterval;
                 if (name == "Slide")
                 {
                     Heading = Actor.Facing; _slideWindup = Actor.Duration("Slide") * .35f; _sliding = false;
@@ -44,7 +44,7 @@ namespace RuleGame.Gameplay.Enemy
                 }
                 else Patrol();
                 CueMovement(Actor.Motor.Intent.sqrMagnitude > .001f);
-                if (CanPursue && SeesTarget && Age >= ReadyAt)
+                if (CanPursue && SeesTarget && TimeMechanicsEnabled && CooldownAge >= ReadyAt)
                 {
                     Actor.FaceTarget();
                     int skill = Pattern % 3;

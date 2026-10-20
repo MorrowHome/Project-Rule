@@ -5,6 +5,8 @@ using RuleGame.Infrastructure;
 using RuleGame.Infrastructure.Common;
 using RuleGame.Infrastructure.Rules;
 using RuleGame.Core.Rules;
+using RuleGame.Gameplay.Player;
+using RuleGame.Gameplay.Enemy;
 
 namespace RuleGame.Gameplay.Combat
 {
@@ -27,6 +29,7 @@ namespace RuleGame.Gameplay.Combat
         private readonly List<IDamageable> _hitTargets = new List<IDamageable>();
 
         private DamageProcessor _processor;
+        private readonly HashSet<EntityStatus> _energyTargets = new HashSet<EntityStatus>();
 
         public event Action<DamageInfo> OnDamageApplied;
         public event Action<object>     OnEntityDied;
@@ -48,6 +51,33 @@ namespace RuleGame.Gameplay.Combat
                 _processor.OnDamageApplied += info => OnDamageApplied?.Invoke(info);
                 return _processor;
             }
+        }
+
+        /// <summary>因果失效期间，命中回能与敌人自然回能共享给所有存活实体。</summary>
+        public void RestoreEnergy(EntityStatus source, float amount)
+        {
+            if (source == null || amount <= 0f) return;
+            if (RuleSystem.Instance?.Attributes.Values.CausalityRecoveryShared != true)
+            { source.RestoreEnergy(amount); return; }
+            _energyTargets.Clear();
+            _energyTargets.Add(source);
+            var all = WorldRegistry.Instance?.All;
+            if (all != null)
+                for (int i = 0; i < all.Count; i++)
+                {
+                    var body = all[i].Body;
+                    if (body == null || !body.gameObject.activeInHierarchy) continue;
+                    var status = body.GetComponentInParent<EntityStatus>();
+                    if (status != null && status.Health > 0f) _energyTargets.Add(status);
+                }
+            foreach (var status in _energyTargets) status.RestoreEnergy(amount);
+        }
+        private int RewardEnemyHits(object attacker, int hits)
+        {
+            if (hits > 0 && attacker is EnemyActor enemy && !enemy.Definition.IsBoss
+                && RuleSystem.Instance?.Attributes.Values.CausalityRecoveryShared == true)
+                RestoreEnergy(enemy.Status, enemy.Definition.EnergyPerHit * hits);
+            return hits;
         }
 
         private void Update() => _processor?.Tick();
@@ -109,7 +139,7 @@ namespace RuleGame.Gameplay.Combat
                 Targets    = _hitTargets,
             };
 
-            return processor.Process(attack);
+            return RewardEnemyHits(attacker, processor.Process(attack));
         }
 
         // ==================================================================
@@ -214,7 +244,7 @@ namespace RuleGame.Gameplay.Combat
                 Targets    = _hitTargets,
             };
 
-            return processor.Process(attack);
+            return RewardEnemyHits(attacker, processor.Process(attack));
         }
 
         /// <summary>

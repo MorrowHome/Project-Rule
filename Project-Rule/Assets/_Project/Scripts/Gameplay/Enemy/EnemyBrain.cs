@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityHFSM;
+using RuleGame.Infrastructure.Time;
 
 namespace RuleGame.Gameplay.Enemy
 {
@@ -13,6 +14,10 @@ namespace RuleGame.Gameplay.Enemy
         protected EnemyDefinition Config => Actor.Definition;
         protected readonly StateMachine Root = new StateMachine();
         protected readonly StateMachine Actions = new StateMachine();
+        protected float CooldownAge, CooldownElapsed;
+        protected bool TimeMechanicsEnabled => IsBoss || TimeManager.Instance?.TimeMechanicsEnabled != false;
+        protected float HurtClock => IsBoss ? Age : CooldownAge;
+        public float MechanicsAge => CooldownAge;
         protected float Age, Elapsed, NextAttack, NextHurt, TransitionDuration;
         protected string TransitionName;
         protected int NextPhase, Pulses;
@@ -81,7 +86,7 @@ namespace RuleGame.Gameplay.Enemy
             Root.AddState("Alive", Actions);
             Root.AddState("Transition", new State(onEnter: _ =>
             {
-                Elapsed = 0f; Pulses = 0;
+                Elapsed = 0f; CooldownElapsed = 0f; Pulses = 0;
                 Actor.Cue(TransitionName, TransitionDuration);
             }, onLogic: _ =>
             {
@@ -107,6 +112,7 @@ namespace RuleGame.Gameplay.Enemy
         {
             if (dt <= 0f || Actor.Status.IsPaused) return;
             Delta = dt; Actor.AdvanceAnimation(dt); Age += dt; Elapsed += dt;
+            if (TimeMechanicsEnabled) { CooldownAge += dt; CooldownElapsed += dt; }
             // 兔子的退场与半血翻转都按最大生命比例判断，调总血量不会让阶段阈值失真。
             bool end = Actor.Status.Health <= 0f || (Config.Kind == EnemyKind.RabbitBoss && Actor.Status.Health < Config.Health * .2f);
             if (end && Root.ActiveStateName != "Dead" && !TryHandleDeath())
@@ -119,7 +125,7 @@ namespace RuleGame.Gameplay.Enemy
         }
         protected virtual void EnterAction(string name)
         {
-            Elapsed = 0f; Pulses = 0;
+            Elapsed = 0f; CooldownElapsed = 0f; Pulses = 0;
             Actor.FaceTarget();
             if (name == "Rest")
             {
@@ -133,7 +139,7 @@ namespace RuleGame.Gameplay.Enemy
                 : Actor.Duration(name);
             Actor.Cue(name, duration, name == "Idle" || name == "Walk" || name == "Fly");
             // 从受击恢复后开始完整冷却，长受击动画不能吃掉保护窗口。
-            if (name == "Hurt") NextHurt = Age + duration + Mathf.Max(0f, Config.HurtCooldown);
+            if (name == "Hurt") NextHurt = HurtClock + duration + Mathf.Max(0f, Config.HurtCooldown);
         }
         protected void Go(string action)
         {
@@ -229,9 +235,9 @@ namespace RuleGame.Gameplay.Enemy
         public virtual void OnHit(float damage)
         {
             if (damage <= 0f || Actor.Status.Health <= 0f || Root.ActiveStateName != "Alive"
-                || StateName == "Hurt" || Age < NextHurt) return;
-            if (Age - _lastStaggerHit > Mathf.Max(0.1f, Config.StaggerResetDelay)) _staggerDamage = 0f;
-            _lastStaggerHit = Age;
+                || StateName == "Hurt" || HurtClock < NextHurt) return;
+            if (HurtClock - _lastStaggerHit > Mathf.Max(0.1f, Config.StaggerResetDelay)) _staggerDamage = 0f;
+            _lastStaggerHit = HurtClock;
             _staggerDamage += damage;
             float threshold = IsBoss ? Config.StaggerDamageThreshold : Config.MinionStaggerThreshold;
             if (_staggerDamage < Mathf.Max(1f, threshold)) return;
@@ -242,6 +248,7 @@ namespace RuleGame.Gameplay.Enemy
         private sealed class Data
         {
             public string Root, Action, Transition;
+            public float CooldownAge, CooldownElapsed;
             public float Age, Elapsed, Attack, Hurt, Duration;
             public float StaggerDamage, LastStaggerHit;
             public float RestUntil;
@@ -255,6 +262,7 @@ namespace RuleGame.Gameplay.Enemy
             Root = Root.ActiveStateName,
             Action = Root.ActiveStateName == "Alive" ? Actions.ActiveStateName : null,
             Transition = TransitionName,
+            CooldownAge = CooldownAge, CooldownElapsed = CooldownElapsed,
             Age = Age, Elapsed = Elapsed, Attack = NextAttack, Hurt = NextHurt, Duration = TransitionDuration,
             Phase = Phase, NextPhase = NextPhase, Pulses = Pulses, Extra = CaptureExtra(),
             StaggerDamage = _staggerDamage, LastStaggerHit = _lastStaggerHit,
@@ -266,9 +274,10 @@ namespace RuleGame.Gameplay.Enemy
             TransitionName = data.Transition; TransitionDuration = data.Duration;
             Phase = data.Phase;
             // EnterAction/Go 可能读取休息状态，先恢复时钟和休息期限。
-            Age = data.Age; _restUntil = data.RestUntil; _restReturn = data.RestReturn;
+            Age = data.Age; CooldownAge = data.CooldownAge; _restUntil = data.RestUntil; _restReturn = data.RestReturn;
             Root.RequestStateChange(data.Root, true);
             if (data.Root == "Alive") Actions.RequestStateChange(data.Action, true);
+            CooldownAge = data.CooldownAge; CooldownElapsed = data.CooldownElapsed;
             Age = data.Age; Elapsed = data.Elapsed; NextAttack = data.Attack; NextHurt = data.Hurt;
             Phase = data.Phase; NextPhase = data.NextPhase; Pulses = data.Pulses;
             _staggerDamage = data.StaggerDamage; _lastStaggerHit = data.LastStaggerHit;
@@ -329,7 +338,7 @@ namespace RuleGame.Gameplay.Enemy
         }
         protected override void TickAction(string name)
         {
-            if (name == "Hurt") { if (Finished) Go("Walk"); return; }
+            if (name == "Hurt") { if (CooldownElapsed >= Actor.AnimationDuration) Go("Walk"); return; }
             if (!HasTarget && !Config.Flying && Config.MinionNavigationEnabled && Actor.Navigation.ContinueTraversal(Age)) return;
             if (Config.Flying && !_commanded && Actor.Summoner != null)
             {

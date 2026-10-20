@@ -12,7 +12,7 @@ namespace RuleGame.Gameplay.Enemy
         public override bool IsFlying => !Actor.Defeated;
         protected override void EnterBehavior(string name)
         {
-            if (name == "Attack") { _aim = PredictTarget(.2f); _attackHeight = Actor.transform.position.y; ReadyAt = Age + Config.AttackCooldown; }
+            if (name == "Attack") { _aim = PredictTarget(.2f); _attackHeight = Actor.transform.position.y; ReadyAt = CooldownAge + Config.AttackCooldown; }
             else { _spacing = 0; Actor.Cue("Fly", Actor.Duration("Fly", .5f), true); }
         }
         protected override void TickBehavior(string name)
@@ -35,7 +35,7 @@ namespace RuleGame.Gameplay.Enemy
                 return;
             }
             FlyWithSpacing(true);
-            if (CanPursue && Age >= ReadyAt && SeesTarget && Actor.Distance <= Config.AttackRange) Go("Attack");
+            if (CanPursue && TimeMechanicsEnabled && CooldownAge >= ReadyAt && SeesTarget && Actor.Distance <= Config.AttackRange) Go("Attack");
         }
         private void FlyWithSpacing(bool faceTarget)
         {

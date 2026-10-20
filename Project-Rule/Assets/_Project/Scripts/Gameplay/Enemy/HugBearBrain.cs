@@ -18,7 +18,7 @@ namespace RuleGame.Gameplay.Enemy
         {
             if (!ContactInReach) return false;
             Actor.FaceTarget(); Actor.Motor.Stop();
-            if (Age >= ReadyAt) Go("Hug");
+            if (TimeMechanicsEnabled && CooldownAge >= ReadyAt) Go("Hug");
             else CueMovement(false);
             return true;
         }
@@ -37,7 +37,7 @@ namespace RuleGame.Gameplay.Enemy
             OnDisabled();
             if (name == "Idle") _standing = false;
             if (name == "Stand" || name == "Chase" || name == "Return" || name == "Hug") _standing = true;
-            if (name == "Hug") { _damageAt = Age; Actor.Motor.Stop(); Hold(); }
+            if (name == "Hug") { _damageAt = CooldownAge; Actor.Motor.Stop(); Hold(); }
             if (name == "Chase" || name == "Return") Actor.Cue("Walk", Actor.Duration("Walk"), true);
         }
         protected override void CueMovement(bool moving)
@@ -60,13 +60,13 @@ namespace RuleGame.Gameplay.Enemy
                     Chase(); CueMovement(Actor.Motor.Intent.sqrMagnitude > .001f);
                     break;
                 case "Hug":
-                    if (!ContactInReach || Elapsed >= Config.MinionHugDuration)
+                    if (!ContactInReach || CooldownElapsed >= Config.MinionHugDuration)
                     {
-                        ReadyAt = Age + Config.AttackCooldown; Go("Chase"); break;
+                        ReadyAt = CooldownAge + Config.AttackCooldown; Go("Chase"); break;
                     }
-                    if (Age >= _damageAt)
+                    if (TimeMechanicsEnabled && CooldownAge >= _damageAt)
                     {
-                        _damageAt = Age + Config.MinionHugTickInterval;
+                        _damageAt = CooldownAge + Config.MinionHugTickInterval;
                         // 拥抱持续伤害不推开被抱住的玩家；外部攻击仍可正常打断。
                         Actor.AreaAttack(Config.AttackRange, 0f);
                     }
@@ -99,7 +99,7 @@ namespace RuleGame.Gameplay.Enemy
         }
         public override void OnHit(float damage)
         {
-            if (StateName == "Hug" && damage > 0f) { ReadyAt = Age + Config.AttackCooldown; Go("Chase"); }
+            if (StateName == "Hug" && damage > 0f) { ReadyAt = CooldownAge + Config.AttackCooldown; Go("Chase"); }
             base.OnHit(damage);
         }
         private sealed class Data { public float DamageAt; public bool Standing; }

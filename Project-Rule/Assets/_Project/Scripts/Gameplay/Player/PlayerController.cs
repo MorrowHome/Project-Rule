@@ -43,7 +43,7 @@ namespace RuleGame.Gameplay.Player
     /// <c>PlayerAnimationDriver</c> / <c>P3DebugOverlay</c> / <c>RuleWheelPresenter</c> 等
     /// 六个文件引用它。重构只搬内脏，不换壳。</para>
     /// </remarks>
-    [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
+    [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D), typeof(RuleAffectedBody))]
     public class PlayerController : MonoBehaviour, IKnockbackReceiver, IRuleSelectionInputGate, IMomentumSource
     {
         private readonly HashSet<object> _movementHolders = new HashSet<object>();
@@ -522,6 +522,7 @@ namespace RuleGame.Gameplay.Player
             _dash     ??= new DashSolver();
             _attack   ??= new AttackSolver();
             _heavy    ??= new HeavyAttackSolver();
+            if (!TryGetComponent<RuleAffectedBody>(out _)) gameObject.AddComponent<RuleAffectedBody>();
             _mover    ??= new MotionMover(_body);          // 刚体的 Kinematic 配置在这里面
             _wind     ??= new WindSensor(_body, bodyCollider);
             _push     ??= new PushSensor(_body);
@@ -1158,7 +1159,7 @@ namespace RuleGame.Gameplay.Player
 
             // 能量恢复来源之一：命中即回，未命中不给（策划案 §四）。
             if (hits > 0 && _status != null)
-                _status.RestoreEnergy(_energyPerHit * hits);
+                _combat.RestoreEnergy(_status, _energyPerHit * hits);
         }
 
         /// <summary>
